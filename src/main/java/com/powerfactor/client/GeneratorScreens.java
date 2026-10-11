@@ -145,7 +145,7 @@ public final class GeneratorScreens {
                             menu.get(PowerMeterBlockEntity.DATA_LOAD) / 10).getString(),
                     Component.translatable("gui.powerfactor.meter.interference", menu.get(PowerMeterBlockEntity.DATA_INTERFERENCE)).getString()};
             for (int i = 0; i < lines.length; i++) {
-                g.text(font, lines[i], 8, 20 + i * 11, i == 2 ? 0xFF404040 : 0xFF303030, false);
+                g.text(font, lines[i], 8, 18 + i * 10, i == 2 ? 0xFF404040 : 0xFF303030, false);
             }
         }
     }

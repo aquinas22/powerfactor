@@ -42,6 +42,7 @@ public final class PowerFactorClient {
         event.registerLayerDefinition(TurbineRotorRenderer.LAYER, TurbineRotorRenderer::createLayer);
         event.registerLayerDefinition(EnderCoreRenderer.LAYER, EnderCoreRenderer::createLayer);
         event.registerLayerDefinition(SpinningRenderers.WIND, SpinningRenderers::windLayer);
+        event.registerLayerDefinition(CrusherJawRenderer.LAYER, CrusherJawRenderer::createLayer);
         event.registerLayerDefinition(SpinningRenderers.HYDRO, SpinningRenderers::hydroLayer);
         event.registerLayerDefinition(SpinningRenderers.CONDENSER, SpinningRenderers::condenserLayer);
     }
@@ -57,6 +58,7 @@ public final class PowerFactorClient {
         event.registerBlockEntityRenderer(ModBlockEntities.HYDRO_TURBINE.get(), SpinningRenderers::hydro);
         event.registerBlockEntityRenderer(ModBlockEntities.SYNCHRONOUS_CONDENSER.get(), SpinningRenderers::condenser);
         event.registerBlockEntityRenderer(ModBlockEntities.PYLON.get(), PylonRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CRUSHER.get(), CrusherJawRenderer::new);
     }
 
     @SubscribeEvent

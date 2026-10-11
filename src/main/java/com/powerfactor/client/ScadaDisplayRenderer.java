@@ -389,7 +389,7 @@ public class ScadaDisplayRenderer implements BlockEntityRenderer<ScadaDisplayBlo
                     c.fill(cx - 1, dy - 1, cx + 1, dy + 1, 0xFFFFE070, 0.25F);
                 }
             }
-            String symbol = generators ? "G" : r.ee() < 0 ? "C" : r.ee() > 0 ? "M" : "R";
+            String symbol = generators ? "G" : r.ee() < 0 ? "C" : r.ee() > 0 ? "M" : r.controllable() ? "R" : "I";
             c.fill(cx - 7, symY - 7, cx + 7, symY + 7, color, 0.2F);
             c.fill(cx - 6, symY - 6, cx + 6, symY + 6, 0xFF0A140D, 0.22F);
             c.textCenter(cx, symY - 3, symbol, color, 0.6F);

@@ -4241,7 +4241,7 @@ def wind_turbine_blades():
         return t
 
     box_uv(img, 0, 0, 6, 6, 4, hub)
-    box_uv(img, 0, 16, 2, 32, 1, blade)
+    box_uv(img, 0, 16, 4, 30, 1, blade)
     return img
 
 
@@ -4443,6 +4443,8 @@ def phaseC_F():
     save(cable_tile(hexc("a8b1b8"), hexc("d4dbe0"), hexc("7c858c"), band=hexc("f0c020")), "block/aluminum_cable.png")
     save(hv_pylon(), "block/hv_pylon.png")
     save(wind_turbine_blades(), "entity/wind_turbine_blades.png")
+    save(crusher_jaws(), "entity/crusher_jaws.png")
+    save(crusher_inner(), "block/crusher_inner.png")
     save(hydro_runner(), "entity/hydro_runner.png")
     save(condenser_rotor(), "entity/condenser_rotor.png")
     save(conductor_spool(), "item/conductor_spool.png")
@@ -4450,6 +4452,54 @@ def phaseC_F():
     save(gui_battery_bank(), "gui/battery_bank.png")
     save(gui_diesel_generator(), "gui/diesel_generator.png")
     save(gui_power_meter(), "gui/power_meter.png")
+
+
+def crusher_jaws():
+    """Jaw plate (9x4x2) at (0,0) and a tooth (1x4x1) at (0,8): manganese steel, worn bright on the crushing faces."""
+    img = Image.new("RGBA", (32, 32), CLEAR)
+
+    def plate(face, fw, fh):
+        t = Image.new("RGBA", (fw, fh), hexc("3a3f44"))
+        for y in range(fh):
+            for x in range(fw):
+                n = ((x * 7 + y * 13) % 5) * 3
+                t.putpixel((x, y), tuple(min(255, c + n) for c in hexc("3a3f44")[:3]) + (255,))
+        if face == "south":   # crushing face
+            for x in range(fw):
+                t.putpixel((x, 0), hexc("8a9399"))
+        face_edges(t, hexc("24282c"))
+        return t
+
+    def tooth(face, fw, fh):
+        t = Image.new("RGBA", (fw, fh), hexc("9aa3a9"))
+        for y in range(fh):
+            for x in range(fw):
+                if (x + y) % 3 == 0:
+                    t.putpixel((x, y), hexc("c4ccd1"))
+        if face in ("top", "bottom"):
+            t = Image.new("RGBA", (fw, fh), hexc("6c757b"))
+        return t
+
+    box_uv(img, 0, 0, 9, 4, 2, plate)
+    box_uv(img, 0, 8, 1, 4, 1, tooth)
+    return img
+
+
+def crusher_inner():
+    """Walls and floor of the crusher's feed hopper: dark scuffed steel with grit."""
+    img = Image.new("RGBA", (16, 16), hexc("2c3034"))
+    import random
+    r = random.Random(7)
+    for y in range(16):
+        for x in range(16):
+            v = r.randint(-6, 6)
+            base = hexc("2c3034")
+            img.putpixel((x, y), tuple(max(0, min(255, c + v)) for c in base[:3]) + (255,))
+    for _ in range(14):
+        img.putpixel((r.randrange(16), r.randrange(16)), hexc("6b5a4a"))
+    for x in range(16):
+        img.putpixel((x, 15), hexc("1d2023"))
+    return img
 
 
 if __name__ == "__main__":

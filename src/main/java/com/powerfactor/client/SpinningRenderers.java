@@ -80,7 +80,7 @@ public class SpinningRenderers<T extends BlockEntity> implements BlockEntityRend
         PartDefinition rotor = mesh.getRoot().addOrReplaceChild("rotor",
                 CubeListBuilder.create().texOffs(0, 0).addBox(-3, -3, -2, 6, 6, 4), PartPose.ZERO);
         for (int i = 0; i < 3; i++) {
-            rotor.addOrReplaceChild("blade" + i, CubeListBuilder.create().texOffs(0, 16).addBox(-1, 2, -0.5F, 2, 32, 1),
+            rotor.addOrReplaceChild("blade" + i, CubeListBuilder.create().texOffs(0, 16).addBox(-2, 2, -0.5F, 4, 30, 1),
                     PartPose.rotation(0, 0.25F, i * (float) (Math.PI * 2 / 3)));
         }
         return LayerDefinition.create(mesh, 64, 64);
@@ -122,7 +122,8 @@ public class SpinningRenderers<T extends BlockEntity> implements BlockEntityRend
         pose.mulPose(Axis.YP.rotationDegrees(-state.facing.toYRot()));
         pose.translate(0, 0, offset);
         pose.mulPose(Axis.ZP.rotationDegrees(state.angle));
-        pose.scale(scale, scale, scale);
+        // Entity-model convention: flip Y and Z so the nose faces out and the faces light correctly.
+        pose.scale(scale, -scale, -scale);
         collector.submitModelPart(rotor, pose, RenderTypes.entityCutout(texture), state.lightCoords, OverlayTexture.NO_OVERLAY, null, -1,
                 state.breakProgress);
         pose.popPose();

@@ -78,8 +78,9 @@ public class PowerMeterBlockEntity extends MachineBlockEntity implements Reactiv
         double pf = state.powerFactor();
         ScadaReading.Status status = state.current() > 1 || state.volts() < 0.9 ? ScadaReading.Status.WARNING
                 : tier < 0 ? ScadaReading.Status.OFF : ScadaReading.Status.RUNNING;
-        return new ScadaReading(worldPosition, getDisplayName(), status, (int) state.fe(), (int) Math.round(state.netEe()),
-                Component.translatable("scada.powerfactor.meter", String.format("%.2f", pf), Math.round(state.current() * 100),
+        // An instrument, not a load: its grid totals go in the detail line so they aren't counted twice.
+        return new ScadaReading(worldPosition, getDisplayName(), status, 0, 0,
+                Component.translatable("scada.powerfactor.meter", (int) state.fe(), String.format("%.2f", pf), Math.round(state.current() * 100),
                         String.format("%.1f", state.lossFe())), false, true, false, (float) state.volts(), (float) hertz);
     }
 

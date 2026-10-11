@@ -64,7 +64,8 @@ public class EnderLinkScreen extends MachineScreen<EnderLinkMenu> {
         super.extractLabels(g, xm, ym);
         g.text(font, Component.translatable(menu.transmitter() ? "gui.powerfactor.ender.sending" : "gui.powerfactor.ender.receiving",
                 menu.flow()), 34, 51, 0xFFB070FF, false);
-        g.text(font, Component.translatable("gui.powerfactor.ender.channel", menu.channel() + 1), 104, 51, 0xFF404040, false);
+        Component channel = Component.translatable("gui.powerfactor.ender.channel", menu.channel() + 1);
+        g.text(font, channel, 34 + 110 - font.width(channel), 51, 0xFF000000 | DyeColor.byId(menu.channel()).getTextureDiffuseColor(), false);
     }
 
     @Override

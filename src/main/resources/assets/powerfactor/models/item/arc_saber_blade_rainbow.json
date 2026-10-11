@@ -1,6 +1,7 @@
 {
   "textures": {
     "blade": "powerfactor:block/arc_saber_blade_rainbow",
+    "core": "powerfactor:block/arc_saber_blade_solid",
     "particle": "powerfactor:block/arc_saber_blade_rainbow"
   },
   "gui_light": "front",

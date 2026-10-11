@@ -235,7 +235,7 @@ def models():
     for b in ("zinc_ore", "deepslate_zinc_ore", "raw_zinc_block", "zinc_block", "brass_block"):
         simple_block(b)
     coal_turbine()
-    orientable_machine("crusher", bottom="crusher_side")
+    crusher_model()
     orientable_machine("charger", bottom="charger_side")
     orientable_machine("electric_furnace", bottom="electric_furnace_side")
     orientable_machine("scada_terminal", top="scada_terminal_side")
@@ -647,7 +647,7 @@ def lang():
         "gui.powerfactor.panel.motor_tripped": "UNDERVOLTAGE TRIP",
         "gui.powerfactor.panel.motor_off": "MOTOR OFF",
         "gui.powerfactor.autocap.disabled": "DISABLED",
-        "gui.powerfactor.autocap.no_grid": "NO GRID: connect to wire",
+        "gui.powerfactor.autocap.no_grid": "NOT ON A GRID",
         "gui.powerfactor.autocap.tripped": "OVERVOLTAGE TRIP",
         "gui.powerfactor.autocap.auto": "AUTO · target PF 1.0",
         "gui.powerfactor.autocap.steps": "Steps in: %s/%s  (%s EE/t)",
@@ -1095,10 +1095,15 @@ def arc_saber_models():
         tint = {} if style == "rainbow" else {"tintindex": 0}
         faces = {d: dict({"texture": "#blade", "uv": [5, 0, 11, 16]}, **tint) for d in ("north", "east", "south", "west", "up", "down")}
         # The hilt sprite's emitter is at pixel (8, 7), i.e. model (8, 9); the blade leans 45 degrees up-right from there.
-        write(asset("models", "item", f"arc_saber_blade_{style}.json"), {"textures": {"blade": tex, "particle": tex},
-            "gui_light": "front", "display": HANDHELD_DISPLAY,
-            "elements": [{"from": [7.25, 9, 7.25], "to": [8.75, 31.5, 8.75], "faces": faces, "light_emission": 15, "shade": False,
-                          "rotation": {"angle": -45, "axis": "z", "origin": [8, 9, 8]}}]})
+        rot = {"angle": -45, "axis": "z", "origin": [8, 9, 8]}
+        elements = [{"from": [7.25, 9, 7.25], "to": [8.75, 31.5, 8.75], "faces": faces, "light_emission": 15, "shade": False, "rotation": rot}]
+        if style != "rainbow":
+            # Untinted white core in a plus shape: each bar pokes just through two opposite faces of the colored glow.
+            core = {d: {"texture": "#core", "uv": [7, 0, 9, 16]} for d in ("north", "east", "south", "west", "up", "down")}
+            elements += [{"from": [7.7, 9.2, 7.2], "to": [8.3, 31.3, 8.8], "faces": core, "light_emission": 15, "shade": False, "rotation": rot},
+                         {"from": [7.2, 9.2, 7.7], "to": [8.8, 31.3, 8.3], "faces": core, "light_emission": 15, "shade": False, "rotation": rot}]
+        write(asset("models", "item", f"arc_saber_blade_{style}.json"), {"textures": {"blade": tex, "core": pf("block/arc_saber_blade_solid"), "particle": tex},
+            "gui_light": "front", "display": HANDHELD_DISPLAY, "elements": elements})
     blades = {"type": "minecraft:select", "property": "minecraft:custom_model_data", "index": 1,
               "cases": [{"when": st, "model": {"type": "minecraft:model", "model": pf(f"item/arc_saber_blade_{st}"),
                                                "tints": [{"type": "minecraft:custom_model_data", "index": 0, "default": -1}]}}
@@ -1115,11 +1120,11 @@ def pylon_model():
     t = {"lattice": pf("block/hv_pylon"), "arm": pf("block/steel_block"), "ins": "minecraft:block/white_terracotta",
          "particle": pf("block/hv_pylon")}
     lattice = lambda rot: {"from": [2, 0, 8], "to": [14, 30, 8], "rotation": {"angle": rot, "axis": "y", "origin": [8, 0, 8]},
-                           "faces": {"north": {"texture": "#lattice"}, "south": {"texture": "#lattice"}}}
-    els = [lattice(45), lattice(-45),
-           {"from": [-4, 29, 7], "to": [20, 31, 9], "faces": {d: face("#arm") for d in ("north", "east", "south", "west", "up", "down")}}]
+                           "faces": {"north": {"texture": "#lattice", "uv": [2, 0, 14, 16]}, "south": {"texture": "#lattice", "uv": [2, 0, 14, 16]}}}
+    six = lambda tex, uv: {d: {"texture": tex, "uv": uv} for d in ("north", "east", "south", "west", "up", "down")}
+    els = [lattice(45), lattice(-45), {"from": [-4, 29, 7], "to": [20, 31, 9], "faces": six("#arm", [0, 0, 16, 2])}]
     for x in (-3.5, 7, 17.5):
-        els.append({"from": [x, 26, 7], "to": [x + 2, 29, 9], "faces": {d: face("#ins") for d in ("north", "east", "south", "west", "up", "down")}})
+        els.append({"from": [x, 26, 7], "to": [x + 2, 29, 9], "faces": six("#ins", [0, 0, 2, 3])})
     write(asset("models", "block", "hv_pylon.json"), {"parent": "minecraft:block/block", "render_type": "minecraft:cutout",
                                                       "textures": t, "elements": els, "ambientocclusion": False})
     write(asset("blockstates", "hv_pylon.json"), {"variants": {"": {"model": pf("block/hv_pylon")}}})
@@ -1272,7 +1277,7 @@ def phase_cf_data():
         "gui.powerfactor.display.page.auto": "auto layout", "gui.powerfactor.display.page.summary": "system summary",
         "gui.powerfactor.display.page.list": "device list", "gui.powerfactor.display.page.trend": "trends",
         "gui.powerfactor.display.page.diagram": "one-line diagram", "gui.powerfactor.display.page.device": "device cycle",
-        "gui.powerfactor.drill.modules": "Drill Modules", "gui.powerfactor.drill.hint": "Silk/Fortune apply as enchantments",
+        "gui.powerfactor.drill.modules": "Drill Modules", "gui.powerfactor.drill.hint": "Silk & Fortune act as enchants",
         "tooltip.powerfactor.drill.module": "%s x%s", "tooltip.powerfactor.drill.open": "Sneak-use to change modules",
         "tooltip.powerfactor.drill_module.install": "Sneak-use an Electric Drill to install",
         "tooltip.powerfactor.drill_module.area": "Mines a 3x3 face (sneak to mine one block)",
@@ -1288,7 +1293,7 @@ def phase_cf_data():
         "gui.powerfactor.saber.style.arc": "Crackling Arc", "gui.powerfactor.saber.style.rainbow": "Rainbow",
         "gui.powerfactor.saber.effect.none": "None", "gui.powerfactor.saber.effect.stun": "Stun", "gui.powerfactor.saber.effect.ignite": "Ignite",
         "gui.powerfactor.saber.effect.chain": "Chain Arc", "gui.powerfactor.saber.effect.drain": "Drain",
-        "gui.powerfactor.ender.sending": "Sending %s FE/t", "gui.powerfactor.ender.receiving": "Receiving %s FE/t",
+        "gui.powerfactor.ender.sending": "TX %s FE/t", "gui.powerfactor.ender.receiving": "RX %s FE/t",
         "gui.powerfactor.ender.channel": "Ch %s", "gui.powerfactor.ender.linked": "LINKED", "gui.powerfactor.ender.idle": "IDLE",
         "gui.powerfactor.ender.noisy": "INTERFERENCE", "gui.powerfactor.ender.severe": "SEVERE INTERFERENCE",
         "gui.powerfactor.ender.interference": "Interference here: %s%%",
@@ -1307,7 +1312,7 @@ def phase_cf_data():
         "scada.powerfactor.hydro": "%s faces of flowing water", "scada.powerfactor.diesel": "%s Hz · %s mB fuel",
         "scada.powerfactor.condenser.synced": "Synchronized · %s RPM", "scada.powerfactor.condenser.spinning": "Spinning up · %s RPM",
         "scada.powerfactor.battery": "%s%% charged", "scada.powerfactor.battery.support": "SUPPORTING GRID · %s%%",
-        "scada.powerfactor.meter": "PF %s · %s%% loaded · %s FE lost",
+        "scada.powerfactor.meter": "%s FE · PF %s · %s%% loaded · %s FE lost",
         "gui.powerfactor.battery.support": "SUPPORTING GRID", "gui.powerfactor.battery.standby": "STANDBY / CHARGING",
         "gui.powerfactor.meter.loading": "%s%% LOADED", "gui.powerfactor.meter.no_grid": "Not on a grid",
         "gui.powerfactor.meter.loss": "Line loss %s FE/t · %s%% loaded", "gui.powerfactor.meter.interference": "Ender interference %s%%",
@@ -1339,7 +1344,7 @@ HANDBOOK = {
         "three times harder than FE. Line loss goes with current squared, and current follows CE, so a poor power factor wastes FE as heat in "
         "the wires.\n\nTurbines set the frequency and droop slightly under load (60 Hz down to about 58). They also supply the grid's EE. "
         "Solar, wind and batteries can't, so a grid of those plus motors needs capacitors or a synchronous condenser."),
-    "power_factor": ("Power Factor Correction",
+    "power_factor": ("PF Correction",
         "Motors draw EE, and lightly loaded motors draw it worst: a crusher idling between jobs runs at about PF 0.25.\n\nCapacitor Banks "
         "supply EE locally so the generator doesn't have to, which brings voltage back up and cuts losses. Their output goes with V^2, and "
         "too many push the grid to a leading PF and raise the voltage. Above 1.12 pu they trip out.\n\nThe Automatic Capacitor Bank switches "
@@ -1375,7 +1380,7 @@ HANDBOOK = {
         "(4,096), and HV pylons (16,384) with far lower loss. Transformers join two grids: power enters the red primary face and leaves the "
         "blue secondary face, and they carry EE back upstream. Overload one and it trips; right-click to reset.\n\nString HV conductors "
         "between pylons with a Conductor Spool, up to 32 blocks per span. Circuit Breakers split a grid when open and trip on overcurrent."),
-    "generators": ("Generators and Storage",
+    "generators": ("Generators & Storage",
         "Coal Turbine and Diesel Generator: synchronous, so they supply EE. The diesel starts in two seconds and burns modded diesel or "
         "fuel, or lava at a worse rate. Hydro Turbine: flowing water around it; also synchronous. Solar Panel and Wind Turbine: FE only. "
         "Wind needs clear air for its blades and likes height and storms.\n\nSynchronous Condenser: a spinning machine that only makes EE. "
@@ -1414,7 +1419,7 @@ def finishing():
     flat_item("powerfactor_handbook")
     name(f"item.{NS}.powerfactor_handbook", "PowerFactor Handbook")
     shapeless("powerfactor_handbook", ["minecraft:book", "#c:ingots/copper"], category="misc")
-    LANG["handbook.powerfactor.title"] = "PowerFactor Handbook"
+    LANG["handbook.powerfactor.title"] = "PowerFactor"
     for cid, (title, text) in HANDBOOK.items():
         LANG[f"handbook.powerfactor.{cid}.title"] = title
         LANG[f"handbook.powerfactor.{cid}.text"] = text
@@ -1438,6 +1443,35 @@ def finishing():
         LANG[f"advancements.powerfactor.{aid}.description"] = desc
     write(data(NS, "loot_table", "grant", "handbook.json"), {"type": "minecraft:advancement_reward", "pools": [{"rolls": 1.0,
         "entries": [{"type": "minecraft:item", "name": pf("powerfactor_handbook")}]}]})
+
+
+def crusher_model():
+    """Crusher with a real 10x10, 5-deep feed hopper on top; the jaws are drawn by CrusherJawRenderer."""
+    six = ("north", "east", "south", "west", "up", "down")
+    for suffix in ("", "_on"):
+        t = {"front": pf(f"block/crusher_front{suffix}"), "side": pf("block/crusher_side"), "top": pf("block/crusher_top"),
+             "inner": pf("block/crusher_inner"), "particle": pf("block/crusher_side")}
+        outer = {"north": "#front", "east": "#side", "south": "#side", "west": "#side", "up": "#top", "down": "#side"}
+
+        def box(frm, to, inner_faces=(), skip=()):
+            faces = {}
+            for d in six:
+                if d in skip:
+                    continue
+                tex = "#inner" if d in inner_faces else outer[d]
+                on_edge = {"north": frm[2] == 0, "south": to[2] == 16, "west": frm[0] == 0, "east": to[0] == 16,
+                           "up": to[1] == 16, "down": frm[1] == 0}[d]
+                faces[d] = face(tex, d if on_edge and d not in inner_faces else None)
+            return {"from": frm, "to": to, "faces": faces}
+
+        els = [box([0, 0, 0], [16, 11, 16], inner_faces=("up",)),
+               box([0, 11, 0], [16, 16, 3], inner_faces=("south",), skip=("down",)),
+               box([0, 11, 13], [16, 16, 16], inner_faces=("north",), skip=("down",)),
+               box([0, 11, 3], [3, 16, 13], inner_faces=("east",), skip=("down", "north", "south")),
+               box([13, 11, 3], [16, 16, 13], inner_faces=("west",), skip=("down", "north", "south"))]
+        write(asset("models", "block", f"crusher{suffix}.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els})
+    machine_states("crusher", pf("block/crusher"), pf("block/crusher_on"))
+    item_def("crusher")
 
 
 if __name__ == "__main__":

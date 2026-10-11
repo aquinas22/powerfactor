@@ -32,7 +32,7 @@ public class HandbookScreen extends Screen {
             new Chapter("tools", ModItems.ARC_SABER.get()));
 
     private static int selected;
-    private static final int W = 320, H = 200, LIST_W = 104;
+    private static final int W = 340, H = 200, LIST_W = 124;
     private int left, top, scroll;
     private List<FormattedCharSequence> lines = List.of();
 

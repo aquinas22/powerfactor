@@ -1,6 +1,7 @@
 {
   "textures": {
     "blade": "powerfactor:block/arc_saber_blade_solid",
+    "core": "powerfactor:block/arc_saber_blade_solid",
     "particle": "powerfactor:block/arc_saber_blade_solid"
   },
   "gui_light": "front",
@@ -192,6 +193,164 @@
             16
           ],
           "tintindex": 0
+        }
+      },
+      "light_emission": 15,
+      "shade": false,
+      "rotation": {
+        "angle": -45,
+        "axis": "z",
+        "origin": [
+          8,
+          9,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        7.7,
+        9.2,
+        7.2
+      ],
+      "to": [
+        8.3,
+        31.3,
+        8.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        }
+      },
+      "light_emission": 15,
+      "shade": false,
+      "rotation": {
+        "angle": -45,
+        "axis": "z",
+        "origin": [
+          8,
+          9,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        7.2,
+        9.2,
+        7.7
+      ],
+      "to": [
+        8.8,
+        31.3,
+        8.3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#core",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
         }
       },
       "light_emission": 15,

@@ -75,6 +75,59 @@ public class CrusherBlockEntity extends ProcessingBlockEntity {
         return com.powerfactor.registry.ModSounds.CRUSHER_RUN.get();
     }
 
+    // ---- client sync of the input slot, so the jaw renderer can show the ore being crushed
+
+    private net.minecraft.world.item.Item syncedInput = net.minecraft.world.item.Items.AIR;
+    private ItemStack clientInput = ItemStack.EMPTY;
+    private float swing, swingPrev;
+
+    @Override
+    public void serverTick(net.minecraft.server.level.ServerLevel level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.level.block.state.BlockState state) {
+        super.serverTick(level, pos, state);
+        net.minecraft.world.item.Item now = items.getItem(INPUT).getItem();
+        if (now != syncedInput) {
+            syncedInput = now;
+            level.sendBlockUpdated(pos, state, state, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        }
+    }
+
+    @Override
+    public void clientTick() {
+        super.clientTick();
+        swingPrev = swing;
+        boolean running = getBlockState().getValueOrElse(com.powerfactor.machine.MachineBlock.RUNNING, false);
+        swing = running ? Math.min(1, swing + 0.05F) : Math.max(0, swing - 0.03F);
+    }
+
+    /** 0 when stopped, 1 at full stroke; eases over a second or two. */
+    public float jawSwing(float partialTicks, boolean running) {
+        return swingPrev + (swing - swingPrev) * partialTicks;
+    }
+
+    public ItemStack shownInput() {
+        return clientInput;
+    }
+
+    @Override
+    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        tag.putString("shown_input", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(items.getItem(INPUT).getItem()).toString());
+        return tag;
+    }
+
+    @Override
+    protected void loadAdditional(net.minecraft.world.level.storage.ValueInput input) {
+        super.loadAdditional(input);
+        input.getString("shown_input").ifPresent(id -> clientInput = new ItemStack(
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(net.minecraft.resources.Identifier.parse(id))));
+    }
+
     public Drive.State motor() {
         return drive.state();
     }
