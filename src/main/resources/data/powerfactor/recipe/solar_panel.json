@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "GGG",
+    "SSS",
+    "PWP"
+  ],
+  "key": {
+    "G": "#c:glass_blocks",
+    "S": "powerfactor:silicon",
+    "P": "#c:plates/aluminum",
+    "W": "powerfactor:copper_wire"
+  },
+  "result": {
+    "id": "powerfactor:solar_panel",
+    "count": 1
+  }
+}

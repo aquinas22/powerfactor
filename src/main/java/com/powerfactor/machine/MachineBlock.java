@@ -53,8 +53,12 @@ public abstract class MachineBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MenuProvider menu) {
-            player.openMenu(menu, pos);
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
+            if (machine.hasMenu()) {
+                player.openMenu(machine, pos);
+            } else {
+                player.sendOverlayMessage(machine.describe());
+            }
         }
         return InteractionResult.SUCCESS;
     }

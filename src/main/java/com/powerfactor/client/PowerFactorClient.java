@@ -20,13 +20,24 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 public final class PowerFactorClient {
     public PowerFactorClient() {
         ScadaPayloads.clientHandler = ScadaTerminalScreen::receive;
+        ScadaPayloads.displayHandler = ScadaDisplayRenderer::receive;
         com.powerfactor.api.MachineAudio.handler = MachineSoundLoop::update;
+        com.powerfactor.item.ArcSaberItem.openScreen = hand -> net.minecraft.client.Minecraft.getInstance().gui.setScreen(new SaberScreen(hand));
+    }
+
+    @SubscribeEvent
+    static void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
+        SaberHum.clientTick();
     }
 
     @SubscribeEvent
     static void onLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(EngineRenderer.LAYER, EngineRenderer::createLayer);
         event.registerLayerDefinition(TurbineRotorRenderer.LAYER, TurbineRotorRenderer::createLayer);
+        event.registerLayerDefinition(EnderCoreRenderer.LAYER, EnderCoreRenderer::createLayer);
+        event.registerLayerDefinition(SpinningRenderers.WIND, SpinningRenderers::windLayer);
+        event.registerLayerDefinition(SpinningRenderers.HYDRO, SpinningRenderers::hydroLayer);
+        event.registerLayerDefinition(SpinningRenderers.CONDENSER, SpinningRenderers::condenserLayer);
     }
 
     @SubscribeEvent
@@ -34,6 +45,12 @@ public final class PowerFactorClient {
         event.registerBlockEntityRenderer(ModBlockEntities.ENGINE.get(), EngineRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.COAL_TURBINE.get(), TurbineRotorRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.FLUID_TANK.get(), FluidTankRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.SCADA_DISPLAY.get(), ScadaDisplayRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ENDER_LINK.get(), EnderCoreRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.WIND_TURBINE.get(), SpinningRenderers::wind);
+        event.registerBlockEntityRenderer(ModBlockEntities.HYDRO_TURBINE.get(), SpinningRenderers::hydro);
+        event.registerBlockEntityRenderer(ModBlockEntities.SYNCHRONOUS_CONDENSER.get(), SpinningRenderers::condenser);
+        event.registerBlockEntityRenderer(ModBlockEntities.PYLON.get(), PylonRenderer::new);
     }
 
     @SubscribeEvent
@@ -54,5 +71,10 @@ public final class PowerFactorClient {
         }
         event.register(ModMenus.AUTO_CAPACITOR_BANK.get(), AutoCapacitorScreen::new);
         event.register(ModMenus.ELECTRIC_PUMP.get(), PumpScreen::new);
+        event.register(ModMenus.DRILL.get(), DrillScreen::new);
+        event.register(ModMenus.ENDER_LINK.get(), EnderLinkScreen::new);
+        event.register(ModMenus.DIESEL_GENERATOR.get(), GeneratorScreens.Diesel::new);
+        event.register(ModMenus.BATTERY_BANK.get(), GeneratorScreens.Battery::new);
+        event.register(ModMenus.POWER_METER.get(), GeneratorScreens.Meter::new);
     }
 }

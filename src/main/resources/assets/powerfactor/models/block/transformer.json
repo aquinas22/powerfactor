@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "powerfactor:block/transformer_side",
+    "north": "powerfactor:block/transformer_secondary",
+    "south": "powerfactor:block/transformer_primary",
+    "east": "powerfactor:block/transformer_side",
+    "west": "powerfactor:block/transformer_side",
+    "up": "powerfactor:block/transformer_top",
+    "down": "powerfactor:block/transformer_side"
+  }
+}

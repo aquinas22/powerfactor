@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "P P",
+    "PSP",
+    "P P"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "S": "#c:ingots/steel"
+  },
+  "result": {
+    "id": "powerfactor:wind_turbine_tower",
+    "count": 4
+  }
+}

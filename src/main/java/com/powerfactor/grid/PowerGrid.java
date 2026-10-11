@@ -41,6 +41,7 @@ public final class PowerGrid implements Bus {
     private final Set<BlockPos> wires;
     private final List<Endpoint> endpoints;
     private final int ratingCe;
+    private final CableTier tier;
     private final List<BlockCapabilityCache<EnergyHandler, @Nullable Direction>> caches = new ArrayList<>();
     private final Buffer buffer;
     private boolean valid = true;
@@ -52,12 +53,18 @@ public final class PowerGrid implements Bus {
     /** A rebuilt grid assumes it's live until proven otherwise, so machines don't see a 1-tick blackout. */
     private int ticksSinceSupply = 0;
     private int lastDelivered;
+    private double interference;
 
-    PowerGrid(Set<BlockPos> wires, List<Endpoint> endpoints, int ratingCe) {
+    PowerGrid(Set<BlockPos> wires, List<Endpoint> endpoints, CableTier tier) {
         this.wires = wires;
         this.endpoints = endpoints;
-        this.ratingCe = ratingCe;
+        this.tier = tier;
+        this.ratingCe = tier.ratingCe;
         this.buffer = new Buffer(ratingCe);
+    }
+
+    public CableTier tier() {
+        return tier;
     }
 
     Set<BlockPos> wires() {
@@ -95,6 +102,10 @@ public final class PowerGrid implements Bus {
         return energized() ? hertz : 0;
     }
 
+    public double interference() {
+        return interference;
+    }
+
     public PowerTriangle lastFlow() {
         return new PowerTriangle(state.fe(), state.netEe());
     }
@@ -113,18 +124,24 @@ public final class PowerGrid implements Bus {
             }
         }
 
-        // Survey what's attached. One block entity can touch the grid on several sides; count it once.
-        Map<BlockEntity, Boolean> seen = new IdentityHashMap<>();
+        // Survey what's attached. One block entity can touch the grid on several sides; count it once
+        // per role. Sided devices (transformers) say which role each face plays.
+        Map<BlockEntity, Boolean> seenLoad = new IdentityHashMap<>(), seenSource = new IdentityHashMap<>();
         double loadEe = 0, capacitorEe = 0, genCe = 0, genHz = 0, genEeCap = 0;
         for (Endpoint e : endpoints) {
             if (!level.isLoaded(e.pos())) {
                 continue;
             }
             BlockEntity be = level.getBlockEntity(e.pos());
-            if (be == null || seen.put(be, Boolean.TRUE) != null) {
+            if (be == null) {
                 continue;
             }
-            if (be instanceof ReactiveLoad load) {
+            var role = be instanceof com.powerfactor.api.SidedGridDevice sided ? sided.role(e.side()) : com.powerfactor.api.SidedGridDevice.Role.BOTH;
+            boolean asLoad = (role == com.powerfactor.api.SidedGridDevice.Role.LOAD || role == com.powerfactor.api.SidedGridDevice.Role.BOTH)
+                    && seenLoad.put(be, Boolean.TRUE) == null;
+            boolean asSource = (role == com.powerfactor.api.SidedGridDevice.Role.SOURCE || role == com.powerfactor.api.SidedGridDevice.Role.BOTH)
+                    && seenSource.put(be, Boolean.TRUE) == null;
+            if (asLoad && be instanceof ReactiveLoad load) {
                 double ee = load.eeDemand();
                 if (ee >= 0) {
                     loadEe += ee;
@@ -132,7 +149,7 @@ public final class PowerGrid implements Bus {
                     capacitorEe -= ee;
                 }
             }
-            if (be instanceof GridGenerator gen && gen.hertz() > 0) {
+            if (asSource && be instanceof GridGenerator gen && gen.hertz() > 0) {
                 genCe += gen.ratedCe();
                 genHz += gen.hertz() * gen.ratedCe();
                 genEeCap += gen.eeCapacity();
@@ -145,7 +162,17 @@ public final class PowerGrid implements Bus {
         }
         hertz = genCe > 0 ? genHz / genCe : 60.0;
         generatorEeCapacity = genEeCap;
-        state = BusSolver.solve(ratingCe, lastDelivered, loadEe, capacitorEe, genEeCap, state.volts() > 0 ? state.volts() : 1.0);
+        state = BusSolver.solve(ratingCe, tier.resistance, lastDelivered, loadEe, capacitorEe, genEeCap, state.volts() > 0 ? state.volts() : 1.0);
+
+        // Ender interference: busy wireless links nearby make voltage flicker and frequency jitter.
+        interference = com.powerfactor.ender.EnderNetwork.interference(level, wires.iterator().next());
+        if (interference > 0.01) {
+            var rand = level.getRandom();
+            double dip = interference * 0.14 * rand.nextDouble();
+            state = new BusSolver.Result(Math.max(BusSolver.MIN_VOLTS, state.volts() * (1 - dip)), state.current(), state.fe(), state.netEe(),
+                    state.generatorEe(), state.lossFe());
+            hertz += (rand.nextDouble() - 0.5) * 0.8 * interference;
+        }
 
         // Line heat comes off the top.
         buffer.take(Math.min(buffer.amount(), (int) Math.ceil(state.lossFe())));

@@ -13,19 +13,19 @@ import net.minecraft.sounds.SoundEvent;
 /** Everything that differs between the recipe-driven machines. */
 public enum RecipeMachine {
     ALLOY_FURNACE("alloy_furnace", MachineRecipeKind.ALLOYING, 2, 1, false, false, 24, true,
-            () -> new HeaterDrive(24, 1.33, false), EnumSet.complementOf(EnumSet.of(UpgradeType.VFD)), ModSounds.ELECTRIC_FURNACE_RUN::get,
+            () -> new HeaterDrive(24, 1.33, false), EnumSet.complementOf(EnumSet.of(UpgradeType.VFD)), ModSounds.ALLOY_FURNACE_RUN::get,
             new int[][] {{38, 35}, {56, 35}}, new int[][] {{116, 35}}, null, 79, 34),
     ARC_FURNACE("arc_furnace", MachineRecipeKind.ARC_SMELTING, 2, 1, true, false, 64, true,
-            () -> new HeaterDrive(64, 0.85, true), EnumSet.complementOf(EnumSet.of(UpgradeType.VFD)), ModSounds.ARC_ZAP::get,
+            () -> new HeaterDrive(64, 0.85, true), EnumSet.complementOf(EnumSet.of(UpgradeType.VFD)), ModSounds.ARC_FURNACE_RUN::get,
             new int[][] {{38, 26}, {56, 26}}, new int[][] {{116, 35}}, new int[] {47, 52}, 79, 34),
     WIRE_DRAWER("wire_drawer", MachineRecipeKind.WIRE_DRAWING, 1, 1, false, false, 12, false,
-            () -> new MotorDrive(9), EnumSet.allOf(UpgradeType.class), ModSounds.CRUSHER_IDLE::get,
+            () -> new MotorDrive(9), EnumSet.allOf(UpgradeType.class), ModSounds.WIRE_DRAWER_RUN::get,
             new int[][] {{56, 35}}, new int[][] {{116, 35}}, null, 79, 34),
     ROLLING_MILL("rolling_mill", MachineRecipeKind.ROLLING, 1, 1, false, false, 24, false,
-            () -> new MotorDrive(18), EnumSet.allOf(UpgradeType.class), ModSounds.CRUSHER_RUN::get,
+            () -> new MotorDrive(18), EnumSet.allOf(UpgradeType.class), ModSounds.ROLLING_MILL_RUN::get,
             new int[][] {{56, 35}}, new int[][] {{116, 35}}, null, 79, 34),
     ORE_WASHER("ore_washer", MachineRecipeKind.WASHING, 1, 2, false, true, 12, false,
-            () -> new MotorDrive(9), EnumSet.allOf(UpgradeType.class), ModSounds.CRUSHER_IDLE::get,
+            () -> new MotorDrive(9), EnumSet.allOf(UpgradeType.class), ModSounds.ORE_WASHER_RUN::get,
             new int[][] {{44, 35}}, new int[][] {{104, 35}, {130, 35}}, null, 70, 34);
 
     public final String id;

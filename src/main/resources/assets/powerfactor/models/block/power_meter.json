@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "powerfactor:block/power_meter_side",
+    "side": "powerfactor:block/power_meter_side",
+    "front": "powerfactor:block/power_meter_front"
+  }
+}

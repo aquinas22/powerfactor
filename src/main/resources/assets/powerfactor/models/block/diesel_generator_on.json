@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "powerfactor:block/diesel_generator_top",
+    "bottom": "powerfactor:block/diesel_generator_side",
+    "side": "powerfactor:block/diesel_generator_side",
+    "front": "powerfactor:block/diesel_generator_front_on"
+  }
+}

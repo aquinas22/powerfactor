@@ -1,0 +1,118 @@
+package com.powerfactor.generator;
+
+import com.powerfactor.api.Bus;
+import com.powerfactor.grid.BusLocator;
+import com.powerfactor.grid.PowerGrid;
+import com.powerfactor.machine.MachineBlockEntity;
+import com.powerfactor.registry.ModBlockEntities;
+import com.powerfactor.scada.ScadaReading;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Grid battery. Soaks up surplus FE like any load; when its grid sags (frequency under 59.7 Hz or
+ * voltage under 0.95 pu) it pushes power back in to hold it up. Inverter-fed: FE only.
+ */
+public class BatteryBankBlockEntity extends MachineBlockEntity {
+    public static final int CAPACITY = 2_000_000, RATE = 1_024;
+    private final SimpleEnergyHandler energy = new SimpleEnergyHandler(CAPACITY, RATE, RATE) {
+        @Override
+        protected void onEnergyChanged(int previousAmount) {
+            setChanged();
+        }
+    };
+    private int lastIn, lastOut;
+    private int previous;
+    private boolean supporting;
+
+    private final ContainerData data = new ContainerData() {
+        @Override
+        public int get(int i) {
+            return switch (i) {
+                case DieselMenu.DATA_FE -> lastOut;
+                case DieselMenu.DATA_EE -> lastIn;
+                case DieselMenu.DATA_STORED -> energy.getAmountAsInt() / 1000;
+                case DieselMenu.DATA_FLAGS -> supporting ? 1 : 0;
+                case DieselMenu.DATA_REDSTONE -> redstoneMode().ordinal();
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int i, int v) {}
+
+        @Override
+        public int getCount() {
+            return DieselMenu.DATA_COUNT;
+        }
+    };
+
+    public BatteryBankBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.BATTERY_BANK.get(), pos, state);
+    }
+
+    @Override
+    public void serverTick(ServerLevel level, BlockPos pos, BlockState state) {
+        int now = energy.getAmountAsInt();
+        lastIn = Math.max(0, now - previous);
+        lastOut = 0;
+        Bus bus = BusLocator.find(level, pos);
+        supporting = bus instanceof PowerGrid grid && grid.energized() && (grid.hertz() < 59.7 || grid.volts() < 0.95);
+        if (supporting && enabled(level, pos) && bus instanceof PowerGrid grid) {
+            try (Transaction tx = Transaction.openRoot()) {
+                int moved = grid.handler().insert(Math.min(RATE, now), tx);
+                tx.commit();
+                energy.set(now - moved);
+                lastOut = moved;
+            }
+        }
+        previous = energy.getAmountAsInt();
+        setRunning(level, pos, state, energy.getAmountAsInt() > CAPACITY / 5);
+    }
+
+    public EnergyHandler getEnergy() {
+        return energy;
+    }
+
+    @Override
+    public int comparatorSignal() {
+        return (int) (15L * energy.getAmountAsInt() / CAPACITY);
+    }
+
+    @Override
+    public ScadaReading scadaReading() {
+        return new ScadaReading(worldPosition, getDisplayName(), supporting ? ScadaReading.Status.WARNING : ScadaReading.Status.RUNNING,
+                lastOut, 0, Component.translatable(supporting ? "scada.powerfactor.battery.support" : "scada.powerfactor.battery",
+                        (int) (100L * energy.getAmountAsInt() / CAPACITY)), true, remoteEnabled(), lastOut > 0, 1F, 0F);
+    }
+
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        energy.deserialize(input);
+        previous = energy.getAmountAsInt();
+    }
+
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        energy.serialize(output);
+    }
+
+    @Override
+    public @Nullable AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+        return new DieselMenu.Battery(id, inventory, worldPosition, data, this);
+    }
+}

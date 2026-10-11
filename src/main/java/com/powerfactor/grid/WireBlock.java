@@ -14,16 +14,20 @@ import net.neoforged.neoforge.capabilities.Capabilities;
  * Wires of different ratings don't join; that's what transformers will be for.
  */
 public class WireBlock extends ConnectorBlock {
-    private final int ratingCe;
+    private final CableTier tier;
 
-    public WireBlock(Properties properties, int ratingCe) {
-        super(properties, 4);
-        this.ratingCe = ratingCe;
+    public WireBlock(Properties properties, CableTier tier) {
+        super(properties, tier == CableTier.ALUMINUM ? 6 : 4);
+        this.tier = tier;
+    }
+
+    public CableTier tier() {
+        return tier;
     }
 
     /** Apparent power (CE/t) the whole network can carry. */
     public int ratingCe() {
-        return ratingCe;
+        return tier.ratingCe;
     }
 
     @Override
@@ -31,6 +35,9 @@ public class WireBlock extends ConnectorBlock {
         BlockPos other = pos.relative(side);
         if (level.getBlockState(other).getBlock() instanceof ConnectorBlock connector) {
             return connector == this;
+        }
+        if (level.getBlockState(other).getBlock() instanceof BreakerBlock) {
+            return true;
         }
         if (level.getBlockEntity(other) instanceof ReactiveLoad) {
             return true;

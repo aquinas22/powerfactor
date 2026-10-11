@@ -15,6 +15,23 @@ public final class ModComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> ENERGY = COMPONENTS.registerComponentType("energy",
             b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
+    /** Modules installed in an electric drill. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.world.item.component.ItemContainerContents>> DRILL_MODULES =
+            COMPONENTS.registerComponentType("drill_modules", b -> b.persistent(net.minecraft.world.item.component.ItemContainerContents.CODEC)
+                    .networkSynchronized(net.minecraft.world.item.component.ItemContainerContents.STREAM_CODEC));
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.powerfactor.item.SaberSettings>> SABER =
+            COMPONENTS.registerComponentType("saber", b -> b.persistent(com.powerfactor.item.SaberSettings.CODEC)
+                    .networkSynchronized(com.powerfactor.item.SaberSettings.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.util.Unit>> SABER_LIT =
+            COMPONENTS.registerComponentType("saber_lit", b -> b.persistent(net.minecraft.util.Unit.CODEC)
+                    .networkSynchronized(net.minecraft.util.Unit.STREAM_CODEC));
+
+    /** First pylon picked with a conductor spool. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.core.BlockPos>> LINK_START =
+            COMPONENTS.registerComponentType("link_start", b -> b.persistent(net.minecraft.core.BlockPos.CODEC)
+                    .networkSynchronized(net.minecraft.core.BlockPos.STREAM_CODEC));
+
     /** Fluid carried by a tank item. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.neoforged.neoforge.fluids.SimpleFluidContent>> FLUID =
             COMPONENTS.registerComponentType("fluid", b -> b.persistent(net.neoforged.neoforge.fluids.SimpleFluidContent.CODEC)

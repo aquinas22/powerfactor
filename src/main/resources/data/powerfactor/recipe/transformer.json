@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PKP",
+    "SIS",
+    "PKP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:copper_coil",
+    "S": "powerfactor:silicon",
+    "I": "#c:storage_blocks/iron"
+  },
+  "result": {
+    "id": "powerfactor:transformer",
+    "count": 1
+  }
+}

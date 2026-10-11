@@ -1,0 +1,99 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "cases": [
+      {
+        "when": "lit",
+        "model": {
+          "type": "minecraft:composite",
+          "models": [
+            {
+              "type": "minecraft:model",
+              "model": "powerfactor:item/arc_saber_hilt"
+            },
+            {
+              "type": "minecraft:select",
+              "property": "minecraft:custom_model_data",
+              "index": 1,
+              "cases": [
+                {
+                  "when": "solid",
+                  "model": {
+                    "type": "minecraft:model",
+                    "model": "powerfactor:item/arc_saber_blade_solid",
+                    "tints": [
+                      {
+                        "type": "minecraft:custom_model_data",
+                        "index": 0,
+                        "default": -1
+                      }
+                    ]
+                  }
+                },
+                {
+                  "when": "plasma",
+                  "model": {
+                    "type": "minecraft:model",
+                    "model": "powerfactor:item/arc_saber_blade_plasma",
+                    "tints": [
+                      {
+                        "type": "minecraft:custom_model_data",
+                        "index": 0,
+                        "default": -1
+                      }
+                    ]
+                  }
+                },
+                {
+                  "when": "arc",
+                  "model": {
+                    "type": "minecraft:model",
+                    "model": "powerfactor:item/arc_saber_blade_arc",
+                    "tints": [
+                      {
+                        "type": "minecraft:custom_model_data",
+                        "index": 0,
+                        "default": -1
+                      }
+                    ]
+                  }
+                },
+                {
+                  "when": "rainbow",
+                  "model": {
+                    "type": "minecraft:model",
+                    "model": "powerfactor:item/arc_saber_blade_rainbow",
+                    "tints": [
+                      {
+                        "type": "minecraft:custom_model_data",
+                        "index": 0,
+                        "default": -1
+                      }
+                    ]
+                  }
+                }
+              ],
+              "fallback": {
+                "type": "minecraft:model",
+                "model": "powerfactor:item/arc_saber_blade_solid",
+                "tints": [
+                  {
+                    "type": "minecraft:custom_model_data",
+                    "index": 0,
+                    "default": -1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "powerfactor:item/arc_saber_hilt"
+    }
+  }
+}

@@ -123,5 +123,233 @@
       }
     ],
     "subtitle": "subtitles.powerfactor.arc_zap"
+  },
+  "alloy_furnace_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:alloy_furnace_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.alloy_furnace_run"
+  },
+  "arc_furnace_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:arc_furnace_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.arc_furnace_run"
+  },
+  "pump_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:pump_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.pump_run"
+  },
+  "ore_washer_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:ore_washer_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.ore_washer_run"
+  },
+  "rolling_mill_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:rolling_mill_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.rolling_mill_run"
+  },
+  "wire_drawer_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:wire_drawer_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wire_drawer_run"
+  },
+  "sword_hum": {
+    "sounds": [
+      {
+        "name": "powerfactor:sword_hum",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.sword_hum"
+  },
+  "drill_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:drill_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.drill_run"
+  },
+  "wireless_hum": {
+    "sounds": [
+      {
+        "name": "powerfactor:wireless_hum",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wireless_hum"
+  },
+  "transformer_hum": {
+    "sounds": [
+      {
+        "name": "powerfactor:transformer_hum",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.transformer_hum"
+  },
+  "wind_turbine_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:wind_turbine_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wind_turbine_run"
+  },
+  "hydro_turbine_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:hydro_turbine_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.hydro_turbine_run"
+  },
+  "diesel_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:diesel_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.diesel_run"
+  },
+  "condenser_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:condenser_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.condenser_run"
+  },
+  "sword_ignite": {
+    "sounds": [
+      {
+        "name": "powerfactor:sword_ignite"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.sword_ignite"
+  },
+  "sword_retract": {
+    "sounds": [
+      {
+        "name": "powerfactor:sword_retract"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.sword_retract"
+  },
+  "sword_swing": {
+    "sounds": [
+      {
+        "name": "powerfactor:sword_swing1"
+      },
+      {
+        "name": "powerfactor:sword_swing2"
+      },
+      {
+        "name": "powerfactor:sword_swing3"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.sword_swing"
+  },
+  "sword_hit": {
+    "sounds": [
+      {
+        "name": "powerfactor:sword_hit"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.sword_hit"
+  },
+  "arc_gun_charge": {
+    "sounds": [
+      {
+        "name": "powerfactor:arc_gun_charge"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.arc_gun_charge"
+  },
+  "arc_gun_fire": {
+    "sounds": [
+      {
+        "name": "powerfactor:arc_gun_fire"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.arc_gun_fire"
+  },
+  "drill_start": {
+    "sounds": [
+      {
+        "name": "powerfactor:drill_start"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.drill_start"
+  },
+  "breaker_trip": {
+    "sounds": [
+      {
+        "name": "powerfactor:breaker_trip"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.breaker_trip"
+  },
+  "wireless_surge": {
+    "sounds": [
+      {
+        "name": "powerfactor:wireless_surge"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wireless_surge"
+  },
+  "transformer_buzz_overload": {
+    "sounds": [
+      {
+        "name": "powerfactor:transformer_buzz_overload"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.transformer_buzz_overload"
+  },
+  "pipe_click": {
+    "sounds": [
+      {
+        "name": "powerfactor:pipe_click"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.pipe_click"
+  },
+  "tank_slosh": {
+    "sounds": [
+      {
+        "name": "powerfactor:tank_slosh"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.tank_slosh"
   }
 }

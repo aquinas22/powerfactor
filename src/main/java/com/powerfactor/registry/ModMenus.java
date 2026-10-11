@@ -34,6 +34,16 @@ public final class ModMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<ScadaTerminalMenu>> SCADA_TERMINAL = MENUS.register("scada_terminal",
             () -> IMenuTypeExtension.create(ScadaTerminalMenu::new));
 
+    public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.ender.EnderLinkMenu>> ENDER_LINK = MENUS.register("ender_link",
+            () -> IMenuTypeExtension.create(com.powerfactor.ender.EnderLinkMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.generator.DieselMenu>> DIESEL_GENERATOR = MENUS.register(
+            "diesel_generator", () -> IMenuTypeExtension.create(com.powerfactor.generator.DieselMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.generator.DieselMenu.Battery>> BATTERY_BANK = MENUS.register(
+            "battery_bank", () -> IMenuTypeExtension.create(com.powerfactor.generator.DieselMenu.Battery::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.generator.DieselMenu.Meter>> POWER_METER = MENUS.register(
+            "power_meter", () -> IMenuTypeExtension.create(com.powerfactor.generator.DieselMenu.Meter::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.item.DrillMenu>> DRILL = MENUS.register("drill",
+            () -> IMenuTypeExtension.create(com.powerfactor.item.DrillMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.logistics.PumpMenu>> ELECTRIC_PUMP = MENUS.register("electric_pump",
             () -> IMenuTypeExtension.create(com.powerfactor.logistics.PumpMenu::new));
 

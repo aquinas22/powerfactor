@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "powerfactor:block/wind_turbine_tower"
+    }
+  }
+}

@@ -26,6 +26,7 @@ import com.powerfactor.machine.MachineBlock;
 import com.powerfactor.machine.RecipeMachine;
 import com.powerfactor.machine.RecipeMachineBlock;
 import com.powerfactor.scada.FiberCableBlock;
+import com.powerfactor.scada.ScadaDisplayBlock;
 import com.powerfactor.scada.ScadaTerminalBlock;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.level.block.Block;
@@ -78,8 +79,22 @@ public final class ModBlocks {
 
     // ---------------------------------------------------------------- wiring and SCADA
     public static final DeferredBlock<WireBlock> COPPER_WIRE = BLOCKS.registerBlock("copper_wire",
-            p -> new WireBlock(p, 512),
+            p -> new WireBlock(p, com.powerfactor.grid.CableTier.COPPER),
             () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.5F).sound(SoundType.COPPER).noOcclusion());
+    public static final DeferredBlock<WireBlock> INSULATED_COPPER_CABLE = BLOCKS.registerBlock("insulated_copper_cable",
+            p -> new WireBlock(p, com.powerfactor.grid.CableTier.INSULATED),
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SoundType.WOOL).noOcclusion());
+    public static final DeferredBlock<WireBlock> ALUMINUM_CABLE = BLOCKS.registerBlock("aluminum_cable",
+            p -> new WireBlock(p, com.powerfactor.grid.CableTier.ALUMINUM),
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.8F).sound(SoundType.METAL).noOcclusion());
+    public static final DeferredBlock<com.powerfactor.grid.BreakerBlock> CIRCUIT_BREAKER = BLOCKS.registerBlock("circuit_breaker",
+            com.powerfactor.grid.BreakerBlock::new, ModBlocks::machine);
+    public static final DeferredBlock<com.powerfactor.grid.TransformerBlock> TRANSFORMER = BLOCKS.registerBlock("transformer",
+            com.powerfactor.grid.TransformerBlock::new, ModBlocks::machine);
+    public static final DeferredBlock<com.powerfactor.grid.PylonBlock> HV_PYLON = BLOCKS.registerBlock("hv_pylon",
+            com.powerfactor.grid.PylonBlock::new,
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(4.0F, 8.0F).sound(SoundType.METAL).noOcclusion()
+                    .requiresCorrectToolForDrops());
     public static final DeferredBlock<FiberCableBlock> FIBER_OPTIC_CABLE = BLOCKS.registerBlock("fiber_optic_cable", FiberCableBlock::new,
             () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SoundType.WOOL).noOcclusion());
     public static final DeferredBlock<ScadaTerminalBlock> SCADA_TERMINAL = BLOCKS.registerBlock("scada_terminal", ScadaTerminalBlock::new,
@@ -93,6 +108,32 @@ public final class ModBlocks {
                     () -> machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) && m.heater ? 11 : 0)));
         }
     }
+
+    public static final DeferredBlock<ScadaDisplayBlock> SCADA_DISPLAY = BLOCKS.registerBlock("scada_display", ScadaDisplayBlock::new,
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(2.0F, 6.0F).sound(SoundType.METAL).lightLevel(s -> 6));
+
+    public static final DeferredBlock<com.powerfactor.ender.EnderLinkBlock> ENDER_TRANSMITTER = BLOCKS.registerBlock("ender_transmitter",
+            p -> new com.powerfactor.ender.EnderLinkBlock(true, p), () -> machine().lightLevel(s -> 8));
+    public static final DeferredBlock<com.powerfactor.ender.EnderLinkBlock> ENDER_RECEIVER = BLOCKS.registerBlock("ender_receiver",
+            p -> new com.powerfactor.ender.EnderLinkBlock(false, p), () -> machine().lightLevel(s -> 8));
+
+    // ---------------------------------------------------------------- generators and grid devices
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> SOLAR_PANEL = BLOCKS.registerBlock("solar_panel",
+            p -> com.powerfactor.generator.GeneratorBlock.slab(() -> ModBlockEntities.SOLAR_PANEL.get(), p), () -> machine().noOcclusion());
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> WIND_TURBINE = BLOCKS.registerBlock("wind_turbine",
+            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.WIND_TURBINE.get(), p), () -> machine().noOcclusion());
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> HYDRO_TURBINE = BLOCKS.registerBlock("hydro_turbine",
+            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.HYDRO_TURBINE.get(), p), () -> machine().noOcclusion());
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> DIESEL_GENERATOR = BLOCKS.registerBlock("diesel_generator",
+            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.DIESEL_GENERATOR.get(), p), () -> machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 7 : 0));
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> SYNCHRONOUS_CONDENSER = BLOCKS.registerBlock("synchronous_condenser",
+            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.SYNCHRONOUS_CONDENSER.get(), p), () -> machine().noOcclusion());
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> BATTERY_BANK = BLOCKS.registerBlock("battery_bank",
+            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.BATTERY_BANK.get(), p), ModBlocks::machine);
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> POWER_METER = BLOCKS.registerBlock("power_meter",
+            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.POWER_METER.get(), p), ModBlocks::machine);
+    public static final DeferredBlock<Block> WIND_TURBINE_TOWER = BLOCKS.registerSimpleBlock("wind_turbine_tower",
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
 
     // ---------------------------------------------------------------- logistics
     public static final DeferredBlock<FluidTankBlock> FLUID_TANK = BLOCKS.registerBlock("fluid_tank", FluidTankBlock::new,

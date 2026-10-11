@@ -58,6 +58,12 @@ public final class BusSolver {
      * @param previousVolts  last tick's voltage, for the V^2 dependence of capacitors
      */
     public static Result solve(double ratingCe, double fe, double loadEe, double capacitorEe, double generatorEeCap, double previousVolts) {
+        return solve(ratingCe, R, fe, loadEe, capacitorEe, generatorEeCap, previousVolts);
+    }
+
+    /** As above, for a conductor with per-unit resistance {@code r} (reactance 3r). */
+    public static Result solve(double ratingCe, double r, double fe, double loadEe, double capacitorEe, double generatorEeCap, double previousVolts) {
+        double x = 3 * r;
         if (ratingCe <= 0) {
             return Result.NOMINAL;
         }
@@ -68,9 +74,9 @@ public final class BusSolver {
 
         double p = fe / ratingCe;
         double q = netEe / ratingCe;
-        double volts = Math.clamp(1.0 - R * p - X * q - DEFICIT_GAIN * unsupplied / ratingCe, MIN_VOLTS, MAX_VOLTS);
+        double volts = Math.clamp(1.0 - r * p - x * q - DEFICIT_GAIN * unsupplied / ratingCe, MIN_VOLTS, MAX_VOLTS);
         double current = Math.hypot(fe, netEe) / (volts * ratingCe);
-        double loss = R * current * current * ratingCe;
+        double loss = r * current * current * ratingCe;
         return new Result(volts, current, fe, netEe, genEe, loss);
     }
 

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PKP",
+    "CLC",
+    "PWP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "K": "powerfactor:control_circuit",
+    "C": "powerfactor:copper_coil",
+    "L": "minecraft:lever",
+    "W": "powerfactor:copper_wire"
+  },
+  "result": {
+    "id": "powerfactor:circuit_breaker",
+    "count": 1
+  }
+}

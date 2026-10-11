@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PRP",
+    "IKI",
+    "PRP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:advanced_circuit",
+    "R": "#c:dusts/redstone",
+    "I": "#c:ingots/iron"
+  },
+  "result": {
+    "id": "powerfactor:drill_magnet_module",
+    "count": 1
+  }
+}

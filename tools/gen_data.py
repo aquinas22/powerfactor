@@ -730,7 +730,9 @@ def rubber_tree_models():
                 variants[f"axis={axis},latex={latex},natural={natural}"] = v
     write(asset("blockstates", "rubber_log.json"), {"variants": variants})
     item_def("rubber_log")
-    write(asset("models", "block", "rubber_leaves.json"), {"parent": "minecraft:block/leaves", "textures": {"all": pf("block/rubber_leaves")}})
+    # Already colored, so no tint; cutout for the holes.
+    write(asset("models", "block", "rubber_leaves.json"), {"parent": "minecraft:block/cube_all", "render_type": "minecraft:cutout_mipped",
+        "textures": {"all": pf("block/rubber_leaves")}})
     write(asset("blockstates", "rubber_leaves.json"), {"variants": {"": {"model": pf("block/rubber_leaves")}}})
     item_def("rubber_leaves")
     write(asset("models", "block", "rubber_sapling.json"), {"parent": "minecraft:block/cross", "render_type": "minecraft:cutout",
@@ -1060,6 +1062,265 @@ def phase_b():
     phase_b_lang()
 
 
+# ======================================================================== Phases C-F: SCADA walls, tools, Ender, grid, generators
+
+HANDHELD_DISPLAY = {
+    "thirdperson_righthand": {"rotation": [0, -90, 55], "translation": [0, 4.0, 0.5], "scale": [0.85, 0.85, 0.85]},
+    "thirdperson_lefthand": {"rotation": [0, 90, -55], "translation": [0, 4.0, 0.5], "scale": [0.85, 0.85, 0.85]},
+    "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
+    "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
+    "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
+    "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
+    "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]}}
+SABER_STYLES = ["solid", "plasma", "arc", "rainbow"]
+GENERATOR_BLOCKS = ["solar_panel", "wind_turbine", "hydro_turbine", "diesel_generator", "synchronous_condenser", "battery_bank", "power_meter"]
+DRILL_MODULES = ["area", "speed", "silk", "fortune", "magnet", "battery"]
+
+
+def facing_states(block, model):
+    write(asset("blockstates", f"{block}.json"), {"variants": {f"facing={f}": dict({"model": model}, **({"y": y} if y else {}))
+                                                              for f, y in HORIZONTAL.items()}})
+
+
+def cube_faces(name, north, south, east, west, up, down):
+    write(asset("models", "block", f"{name}.json"), {"parent": "minecraft:block/cube", "textures": {
+        "particle": east, "north": north, "south": south, "east": east, "west": west, "up": up, "down": down}})
+
+
+def arc_saber_models():
+    write(asset("models", "item", "arc_saber_hilt.json"), {"parent": "minecraft:item/handheld",
+                                                           "textures": {"layer0": pf("item/arc_saber_hilt")}})
+    for style in SABER_STYLES:
+        tex = pf(f"block/arc_saber_blade_{style}")
+        tint = {} if style == "rainbow" else {"tintindex": 0}
+        faces = {d: dict({"texture": "#blade", "uv": [5, 0, 11, 16]}, **tint) for d in ("north", "east", "south", "west", "up", "down")}
+        # The hilt sprite's emitter is at pixel (8, 7), i.e. model (8, 9); the blade leans 45 degrees up-right from there.
+        write(asset("models", "item", f"arc_saber_blade_{style}.json"), {"textures": {"blade": tex, "particle": tex},
+            "gui_light": "front", "display": HANDHELD_DISPLAY,
+            "elements": [{"from": [7.25, 9, 7.25], "to": [8.75, 31.5, 8.75], "faces": faces, "light_emission": 15, "shade": False,
+                          "rotation": {"angle": -45, "axis": "z", "origin": [8, 9, 8]}}]})
+    blades = {"type": "minecraft:select", "property": "minecraft:custom_model_data", "index": 1,
+              "cases": [{"when": st, "model": {"type": "minecraft:model", "model": pf(f"item/arc_saber_blade_{st}"),
+                                               "tints": [{"type": "minecraft:custom_model_data", "index": 0, "default": -1}]}}
+                        for st in SABER_STYLES],
+              "fallback": {"type": "minecraft:model", "model": pf("item/arc_saber_blade_solid"),
+                           "tints": [{"type": "minecraft:custom_model_data", "index": 0, "default": -1}]}}
+    hilt = {"type": "minecraft:model", "model": pf("item/arc_saber_hilt")}
+    write(asset("items", "arc_saber.json"), {"model": {"type": "minecraft:select", "property": "minecraft:custom_model_data", "index": 0,
+        "cases": [{"when": "lit", "model": {"type": "minecraft:composite", "models": [hilt, blades]}}], "fallback": hilt}})
+
+
+def pylon_model():
+    """A lattice tower two blocks tall with a crossarm and three insulators on top."""
+    t = {"lattice": pf("block/hv_pylon"), "arm": pf("block/steel_block"), "ins": "minecraft:block/white_terracotta",
+         "particle": pf("block/hv_pylon")}
+    lattice = lambda rot: {"from": [2, 0, 8], "to": [14, 30, 8], "rotation": {"angle": rot, "axis": "y", "origin": [8, 0, 8]},
+                           "faces": {"north": {"texture": "#lattice"}, "south": {"texture": "#lattice"}}}
+    els = [lattice(45), lattice(-45),
+           {"from": [-4, 29, 7], "to": [20, 31, 9], "faces": {d: face("#arm") for d in ("north", "east", "south", "west", "up", "down")}}]
+    for x in (-3.5, 7, 17.5):
+        els.append({"from": [x, 26, 7], "to": [x + 2, 29, 9], "faces": {d: face("#ins") for d in ("north", "east", "south", "west", "up", "down")}})
+    write(asset("models", "block", "hv_pylon.json"), {"parent": "minecraft:block/block", "render_type": "minecraft:cutout",
+                                                      "textures": t, "elements": els, "ambientocclusion": False})
+    write(asset("blockstates", "hv_pylon.json"), {"variants": {"": {"model": pf("block/hv_pylon")}}})
+    item_def("hv_pylon")
+
+
+def phase_cf_models():
+    # SCADA display: dark glass; the renderer draws over the front when linked.
+    write(asset("models", "block", "scada_display.json"), {"parent": "minecraft:block/orientable", "textures": {
+        "top": pf("block/scada_display_side"), "side": pf("block/scada_display_side"), "front": pf("block/scada_display_front")}})
+    facing_states("scada_display", pf("block/scada_display"))
+    item_def("scada_display")
+    # Ender links.
+    for b in ("ender_transmitter", "ender_receiver"):
+        write(asset("models", "block", f"{b}.json"), {"parent": "minecraft:block/cube_bottom_top", "textures": {
+            "top": pf(f"block/{b}_top"), "bottom": pf(f"block/{b}_bottom"), "side": pf(f"block/{b}_side")}})
+        machine_states(b, pf(f"block/{b}"), pf(f"block/{b}"))
+        item_def(b)
+    # Breaker: lever up when closed.
+    for closed in ("closed", "open"):
+        write(asset("models", "block", f"circuit_breaker_{closed}.json"), {"parent": "minecraft:block/orientable", "textures": {
+            "top": pf("block/circuit_breaker_side"), "side": pf("block/circuit_breaker_side"),
+            "front": pf(f"block/circuit_breaker_front_{closed}")}})
+    write(asset("blockstates", "circuit_breaker.json"), {"variants": {
+        f"closed={c},facing={f}": dict({"model": pf(f"block/circuit_breaker_{'closed' if c == 'true' else 'open'}")}, **({"y": y} if y else {}))
+        for c in ("true", "false") for f, y in HORIZONTAL.items()}})
+    item_def("circuit_breaker", pf("block/circuit_breaker_closed"))
+    # Transformer: blue LV secondary on the front, red HV primary on the back.
+    cube_faces("transformer", pf("block/transformer_secondary"), pf("block/transformer_primary"), pf("block/transformer_side"),
+               pf("block/transformer_side"), pf("block/transformer_top"), pf("block/transformer_side"))
+    machine_states("transformer", pf("block/transformer"), pf("block/transformer"))
+    item_def("transformer")
+    pylon_model()
+    # Cables.
+    cable("insulated_copper_cable")
+    cable("aluminum_cable", thick=6)
+    # Generators.
+    write(asset("models", "block", "solar_panel.json"), {"parent": "minecraft:block/block", "textures": {
+        "top": pf("block/solar_panel_top"), "side": pf("block/solar_panel_side"), "particle": pf("block/solar_panel_side")},
+        "elements": [{"from": [0, 0, 0], "to": [16, 6, 16], "faces": {"up": face("#top"), "down": face("#side", "down"),
+            "north": face("#side", "north"), "south": face("#side", "south"), "east": face("#side", "east"), "west": face("#side", "west")}}]})
+    machine_states("solar_panel", pf("block/solar_panel"), pf("block/solar_panel"))
+    item_def("solar_panel")
+    write(asset("models", "block", "wind_turbine.json"), {"parent": "minecraft:block/cube_all", "textures": {"all": pf("block/wind_turbine_nacelle")}})
+    machine_states("wind_turbine", pf("block/wind_turbine"), pf("block/wind_turbine"))
+    item_def("wind_turbine")
+    write(asset("models", "block", "wind_turbine_tower.json"), {"parent": "minecraft:block/cube_column", "textures": {
+        "end": pf("block/wind_turbine_base"), "side": pf("block/wind_turbine_base")}})
+    write(asset("blockstates", "wind_turbine_tower.json"), {"variants": {"": {"model": pf("block/wind_turbine_tower")}}})
+    item_def("wind_turbine_tower")
+    for b, front, side, top in (("hydro_turbine", "hydro_turbine_front", "hydro_turbine_side", "hydro_turbine_top"),
+                                ("synchronous_condenser", "synchronous_condenser_end", "synchronous_condenser_side", "synchronous_condenser_side"),
+                                ("power_meter", "power_meter_front", "power_meter_side", "power_meter_side")):
+        write(asset("models", "block", f"{b}.json"), {"parent": "minecraft:block/orientable", "textures": {
+            "top": pf(f"block/{top}"), "side": pf(f"block/{side}"), "front": pf(f"block/{front}")}})
+        machine_states(b, pf(f"block/{b}"), pf(f"block/{b}"))
+        item_def(b)
+    orientable_machine("diesel_generator", bottom="diesel_generator_side")
+    orientable_machine("battery_bank", top="battery_bank_top", bottom="battery_bank_top")
+    # Items.
+    arc_saber_models()
+    flat_item("arc_gun", "minecraft:item/handheld")
+    flat_item("conductor_spool")
+    for m in DRILL_MODULES:
+        flat_item(f"drill_{m}_module")
+
+
+def cable(block, thick=4):  # noqa: F811 - overrides the earlier copper-only version with a thickness
+    lo, hi = 8 - thick / 2, 8 + thick / 2
+    tex = pf(f"block/{block}")
+    all_faces = lambda: {d: face("#t") for d in ("north", "east", "south", "west", "up", "down")}
+    write(asset("models", "block", f"{block}_core.json"), {"parent": "minecraft:block/block", "textures": {"t": tex, "particle": tex},
+                                                           "elements": [{"from": [lo, lo, lo], "to": [hi, hi, hi], "faces": all_faces()}]})
+    arm_faces = all_faces()
+    arm_faces["north"] = face("#t", "north")
+    del arm_faces["south"]
+    write(asset("models", "block", f"{block}_arm.json"), {"parent": "minecraft:block/block", "textures": {"t": tex, "particle": tex},
+                                                          "elements": [{"from": [lo, lo, 0], "to": [hi, hi, lo], "faces": arm_faces}]})
+    rotations = {"north": {}, "east": {"y": 90}, "south": {"y": 180}, "west": {"y": 270}, "up": {"x": 270}, "down": {"x": 90}}
+    parts = [{"apply": {"model": pf(f"block/{block}_core")}}]
+    for d, rot in rotations.items():
+        parts.append({"when": {d: "true"}, "apply": dict({"model": pf(f"block/{block}_arm"), "uvlock": True}, **rot)})
+    write(asset("blockstates", f"{block}.json"), {"multipart": parts})
+    write(asset("models", "item", f"{block}.json"), {"parent": "minecraft:block/block", "textures": {"t": tex, "particle": tex},
+        "elements": [{"from": [lo, lo, 0], "to": [hi, hi, 16], "faces": all_faces()}],
+        "display": {"gui": {"rotation": [30, 45, 0], "scale": [0.9, 0.9, 0.9]}}})
+    item_def(block, pf(f"item/{block}"))
+
+
+def phase_cf_data():
+    new_blocks = ["scada_display", "ender_transmitter", "ender_receiver", "circuit_breaker", "transformer", "hv_pylon",
+                  "insulated_copper_cable", "aluminum_cable", "wind_turbine_tower"] + GENERATOR_BLOCKS
+    for b in new_blocks:
+        drops_self(b)
+    tag("block", "minecraft", "mineable/pickaxe", [pf(b) for b in new_blocks])
+    card = {"P": "#c:plates/steel", "K": pf("advanced_circuit")}
+    recipes = [
+        ("scada_display", ["GGG", "GCG", "IFI"], {"G": "#c:glass_panes", "C": pf("control_circuit"), "I": "#c:ingots/iron", "F": pf("optical_fiber")}, 4),
+        ("ender_transmitter", ["EPE", "OKO", "OCO"], {"E": "minecraft:ender_pearl", "P": "minecraft:ender_eye", "O": "minecraft:obsidian",
+                                                      "K": pf("advanced_circuit"), "C": pf("copper_coil")}, 1),
+        ("ender_receiver", ["OPO", "EKE", "OCO"], {"E": "minecraft:ender_pearl", "P": "minecraft:ender_eye", "O": "minecraft:obsidian",
+                                                   "K": pf("advanced_circuit"), "C": pf("copper_coil")}, 1),
+        ("insulated_copper_cable", ["RRR", "WWW", "RRR"], {"R": pf("rubber"), "W": pf("copper_wire")}, 6),
+        ("aluminum_cable", ["RRR", "AAA", "RRR"], {"R": pf("rubber"), "A": pf("fine_aluminum_wire")}, 6),
+        ("circuit_breaker", ["PKP", "CLC", "PWP"], {"P": "#c:plates/iron", "K": pf("control_circuit"), "C": pf("copper_coil"),
+                                                   "L": "minecraft:lever", "W": pf("copper_wire")}, 1),
+        ("transformer", ["PKP", "SIS", "PKP"], {"P": "#c:plates/steel", "K": pf("copper_coil"), "S": pf("silicon"), "I": "#c:storage_blocks/iron"}, 1),
+        ("hv_pylon", ["S S", "SPS", "S S"], {"S": "#c:ingots/steel", "P": "#c:plates/steel"}, 2),
+        ("conductor_spool", [" A ", "AWA", " A "], {"A": pf("fine_aluminum_wire"), "W": "#minecraft:planks"}, 4),
+        ("solar_panel", ["GGG", "SSS", "PWP"], {"G": "#c:glass_blocks", "S": pf("silicon"), "P": "#c:plates/aluminum", "W": pf("copper_wire")}, 1),
+        ("wind_turbine", [" B ", "BMB", "PKP"], {"B": pf("turbine_blade"), "M": pf("electric_motor"), "P": "#c:plates/steel",
+                                                 "K": pf("control_circuit")}, 1),
+        ("wind_turbine_tower", ["P P", "PSP", "P P"], {"P": "#c:plates/steel", "S": "#c:ingots/steel"}, 4),
+        ("hydro_turbine", ["PBP", "BMB", "PKP"], {"P": "#c:plates/bronze", "B": pf("turbine_blade"), "M": pf("electric_motor"),
+                                                  "K": pf("control_circuit")}, 1),
+        ("diesel_generator", ["PXP", "GMG", "PKP"], {"P": "#c:plates/steel", "X": "minecraft:piston", "G": "#c:gears/steel",
+                                                     "M": pf("electric_motor"), "K": pf("control_circuit")}, 1),
+        ("synchronous_condenser", ["PCP", "CMC", "PKP"], {"P": "#c:plates/steel", "C": pf("copper_coil"), "M": pf("electric_motor"),
+                                                          "K": pf("advanced_circuit")}, 1),
+        ("battery_bank", ["LZL", "LCL", "PWP"], {"L": "#c:plates/lead", "Z": "#c:ingots/zinc", "C": pf("capacitor"), "P": "#c:plates/steel",
+                                                 "W": pf("copper_wire")}, 1),
+        ("power_meter", [" G ", "PKP", " W "], {"G": "#c:glass_panes", "P": "#c:plates/iron", "K": pf("control_circuit"), "W": pf("copper_wire")}, 1),
+        ("arc_gun", ["  E", "KCK", "B  "], {"E": pf("graphite_electrode"), "K": pf("copper_coil"), "C": pf("capacitor"), "B": "#c:ingots/brass"}, 1),
+        ("arc_saber", [" D ", "KCK", " P "], {"D": "#c:gems/diamond", "K": pf("capacitor"), "C": pf("advanced_circuit"), "P": "#c:plates/steel"}, 1),
+        ("drill_area_module", ["PDP", "DKD", "PDP"], {**card, "D": "#c:gems/diamond"}, 1),
+        ("drill_speed_module", ["PRP", "RKR", "PRP"], {**card, "R": "#c:dusts/redstone"}, 1),
+        ("drill_silk_module", ["PSP", "EKE", "PSP"], {**card, "S": "minecraft:string", "E": "#c:gems/emerald"}, 1),
+        ("drill_fortune_module", ["PLP", "GKG", "PLP"], {**card, "L": "#c:gems/lapis", "G": "#c:ingots/gold"}, 1),
+        ("drill_magnet_module", ["PRP", "IKI", "PRP"], {**card, "R": "#c:dusts/redstone", "I": "#c:ingots/iron"}, 1),
+        ("drill_battery_module", ["PZP", "CKC", "PZP"], {**card, "Z": "#c:ingots/zinc", "C": pf("capacitor")}, 1),
+    ]
+    for out_name, pattern, key, count in recipes:
+        cat = "equipment" if out_name.startswith(("arc_", "drill_")) else "redstone"
+        shaped(out_name, pattern, key, count, category=cat)
+
+    pretty = lambda s: " ".join(w.capitalize() for w in s.split("_"))
+    for b in new_blocks:
+        name(f"block.{NS}.{b}", pretty(b))
+    name(f"block.{NS}.hv_pylon", "HV Transmission Pylon")
+    name(f"block.{NS}.scada_display", "SCADA Display")
+    for i in ["arc_gun", "arc_saber", "conductor_spool"] + [f"drill_{m}_module" for m in DRILL_MODULES]:
+        name(f"item.{NS}.{i}", pretty(i))
+    name(f"item.{NS}.arc_gun", "Tesla Arc Gun")
+    # Subtitles for every synthesized sound.
+    sounds = json.load(open(os.path.join(ASSETS, "sounds.json")))
+    for event in sounds:
+        name(f"subtitles.{NS}.{event}", pretty(event).replace("Run", "runs").replace("Scada", "SCADA"))
+    LANG.update({
+        "message.powerfactor.display.page": "Display: %s (%sx%s)",
+        "gui.powerfactor.display.page.auto": "auto layout", "gui.powerfactor.display.page.summary": "system summary",
+        "gui.powerfactor.display.page.list": "device list", "gui.powerfactor.display.page.trend": "trends",
+        "gui.powerfactor.display.page.diagram": "one-line diagram", "gui.powerfactor.display.page.device": "device cycle",
+        "gui.powerfactor.drill.modules": "Drill Modules", "gui.powerfactor.drill.hint": "Silk/Fortune apply as enchantments",
+        "tooltip.powerfactor.drill.module": "%s x%s", "tooltip.powerfactor.drill.open": "Sneak-use to change modules",
+        "tooltip.powerfactor.drill_module.install": "Sneak-use an Electric Drill to install",
+        "tooltip.powerfactor.drill_module.area": "Mines a 3x3 face (sneak to mine one block)",
+        "tooltip.powerfactor.drill_module.speed": "+50% mining speed per module",
+        "tooltip.powerfactor.drill_module.silk": "Silk Touch", "tooltip.powerfactor.drill_module.fortune": "Fortune, one level per module",
+        "tooltip.powerfactor.drill_module.magnet": "Pulls nearby drops to you", "tooltip.powerfactor.drill_module.battery": "+100% capacity per module",
+        "tooltip.powerfactor.arc_gun": "%s FE per shot; arcs to %s more targets",
+        "tooltip.powerfactor.saber.style": "Blade: %s", "tooltip.powerfactor.saber.effect": "Effect: %s",
+        "tooltip.powerfactor.saber.help": "Use: ignite. Sneak-use: customize.",
+        "gui.powerfactor.saber.title": "Arc Saber", "gui.powerfactor.saber.presets": "Presets", "gui.powerfactor.saber.apply": "Apply",
+        "gui.powerfactor.saber.style": "Blade: %s", "gui.powerfactor.saber.effect": "Effect: %s",
+        "gui.powerfactor.saber.style.solid": "Solid", "gui.powerfactor.saber.style.plasma": "Plasma",
+        "gui.powerfactor.saber.style.arc": "Crackling Arc", "gui.powerfactor.saber.style.rainbow": "Rainbow",
+        "gui.powerfactor.saber.effect.none": "None", "gui.powerfactor.saber.effect.stun": "Stun", "gui.powerfactor.saber.effect.ignite": "Ignite",
+        "gui.powerfactor.saber.effect.chain": "Chain Arc", "gui.powerfactor.saber.effect.drain": "Drain",
+        "gui.powerfactor.ender.sending": "Sending %s FE/t", "gui.powerfactor.ender.receiving": "Receiving %s FE/t",
+        "gui.powerfactor.ender.channel": "Ch %s", "gui.powerfactor.ender.linked": "LINKED", "gui.powerfactor.ender.idle": "IDLE",
+        "gui.powerfactor.ender.noisy": "INTERFERENCE", "gui.powerfactor.ender.severe": "SEVERE INTERFERENCE",
+        "gui.powerfactor.ender.interference": "Interference here: %s%%",
+        "gui.powerfactor.ender.interference.desc": "Busy Ender links make nearby grids flicker and motors trip.",
+        "scada.powerfactor.ender.tx": "Channel %s · interference %s%%", "scada.powerfactor.ender.rx": "Channel %s · interference %s%%",
+        "message.powerfactor.breaker.closed": "Breaker CLOSED", "message.powerfactor.breaker.open": "Breaker OPEN",
+        "scada.powerfactor.breaker.closed": "Closed · %s%% current", "scada.powerfactor.breaker.open": "Open",
+        "scada.powerfactor.breaker.tripped": "TRIPPED on overcurrent",
+        "message.powerfactor.transformer": "Transformer: %s FE/t, %s EE/t, %s%% loaded",
+        "message.powerfactor.transformer.tripped": "Transformer TRIPPED on overload (reset)",
+        "scada.powerfactor.transformer": "%s%% loaded", "scada.powerfactor.transformer.tripped": "TRIPPED: overload",
+        "message.powerfactor.spool.start": "Conductor starts at %s", "message.powerfactor.spool.linked": "Strung a %s-block span",
+        "message.powerfactor.spool.too_far": "Too far: spans are at most %s blocks", "message.powerfactor.spool.full": "Pylon has no free arms",
+        "message.powerfactor.spool.cut": "Conductors cut",
+        "scada.powerfactor.solar": "%s%% of peak", "scada.powerfactor.wind": "Wind %s%%", "scada.powerfactor.wind.blocked": "BLADES OBSTRUCTED",
+        "scada.powerfactor.hydro": "%s faces of flowing water", "scada.powerfactor.diesel": "%s Hz · %s mB fuel",
+        "scada.powerfactor.condenser.synced": "Synchronized · %s RPM", "scada.powerfactor.condenser.spinning": "Spinning up · %s RPM",
+        "scada.powerfactor.battery": "%s%% charged", "scada.powerfactor.battery.support": "SUPPORTING GRID · %s%%",
+        "scada.powerfactor.meter": "PF %s · %s%% loaded · %s FE lost",
+        "gui.powerfactor.battery.support": "SUPPORTING GRID", "gui.powerfactor.battery.standby": "STANDBY / CHARGING",
+        "gui.powerfactor.meter.loading": "%s%% LOADED", "gui.powerfactor.meter.no_grid": "Not on a grid",
+        "gui.powerfactor.meter.loss": "Line loss %s FE/t · %s%% loaded", "gui.powerfactor.meter.interference": "Ender interference %s%%",
+        "gui.powerfactor.meter.tier.copper": "Copper wire", "gui.powerfactor.meter.tier.insulated": "Insulated cable",
+        "gui.powerfactor.meter.tier.aluminum": "MV aluminum", "gui.powerfactor.meter.tier.hv": "HV line",
+    })
+
+
+def phase_cf():
+    phase_cf_models()
+    phase_cf_data()
+
+
 if __name__ == "__main__":
     models()
     loot()
@@ -1067,6 +1328,7 @@ if __name__ == "__main__":
     tags()
     worldgen()
     phase_b()
+    phase_cf()
     flush_tags()
     lang()
     print("data written to", os.path.normpath(ROOT))

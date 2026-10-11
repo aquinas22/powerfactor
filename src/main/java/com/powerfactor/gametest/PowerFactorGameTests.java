@@ -53,6 +53,9 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("ore_washer_triples", () -> PowerFactorGameTests::oreWasherTriples);
         FUNCTIONS.register("item_pipe_moves_items", () -> PowerFactorGameTests::itemPipeMovesItems);
         FUNCTIONS.register("pump_fills_tank_through_pipe", () -> PowerFactorGameTests::pumpFillsTank);
+        FUNCTIONS.register("ender_link_beams_power", () -> PowerFactorGameTests::enderLinkBeamsPower);
+        FUNCTIONS.register("long_transformer_chain", () -> PowerFactorGameTests::transformerChain);
+        FUNCTIONS.register("breaker_splits_grid", () -> PowerFactorGameTests::breakerSplitsGrid);
     }
 
     public static void register(IEventBus modBus) {
@@ -66,9 +69,11 @@ public final class PowerFactorGameTests {
 
     private static void onRegisterTests(RegisterGameTestsEvent event) {
         var env = event.registerEnvironment(PowerFactor.id("default"));
+        java.util.Set<String> wide = java.util.Set.of("long_transformer_chain", "breaker_splits_grid");
         for (var fn : FUNCTIONS.getEntries()) {
+            String structure = wide.contains(fn.getId().getPath()) ? "empty_9x3x3" : "empty_3x3x3";
             event.registerTest(fn.getId(), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, fn.getId()),
-                    new TestData<>(env, PowerFactor.id("empty_3x3x3"), MAX_TICKS, 0, true)));
+                    new TestData<>(env, PowerFactor.id(structure), MAX_TICKS, 0, true)));
         }
     }
 
@@ -369,6 +374,82 @@ public final class PowerFactorGameTests {
             var tank = helper.getBlockEntity(tankPos, com.powerfactor.logistics.FluidTankBlockEntity.class);
             helper.assertTrue(tank.fluid().is(net.minecraft.world.level.material.Fluids.WATER) && tank.fluid().getAmount() >= 500,
                     "tank has " + tank.fluid().getAmount() + " " + tank.fluid().getFluid());
+            helper.succeed();
+        });
+    }
+
+    // ------------------------------------------------------------------ phases C-F
+
+    private static void enderLinkBeamsPower(GameTestHelper helper) {
+        BlockPos tx = new BlockPos(0, 1, 0), rx = new BlockPos(2, 1, 2), crusherPos = new BlockPos(2, 1, 1);
+        helper.setBlock(tx, ModBlocks.ENDER_TRANSMITTER.get().defaultBlockState());
+        helper.setBlock(rx, ModBlocks.ENDER_RECEIVER.get().defaultBlockState());
+        CrusherBlockEntity crusher = placeCrusher(helper, crusherPos);
+        var transmitter = helper.getBlockEntity(tx, com.powerfactor.ender.EnderLinkBlockEntity.class);
+        var receiver = helper.getBlockEntity(rx, com.powerfactor.ender.EnderLinkBlockEntity.class);
+        transmitter.setChannel(7);
+        receiver.setChannel(7);
+        helper.onEachTick(() -> {
+            try (var t = Transaction.openRoot()) {
+                transmitter.getEnergy().insert(1024, t);
+                t.commit();
+            }
+        });
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(crusher.getEnergy().getAmountAsInt() > 1000, "crusher got " + crusher.getEnergy().getAmountAsInt() + " FE over the air");
+            helper.assertTrue(transmitter.eeDemand() > 100, "transmitter should draw EE while sending, got " + transmitter.eeDemand());
+            helper.assertTrue(com.powerfactor.ender.EnderNetwork.interference(helper.getLevel(), helper.absolutePos(crusherPos)) > 0.5,
+                    "busy links should radiate interference");
+            helper.succeed();
+        });
+    }
+
+    /** Turbine -> copper -> step-up -> MV aluminum -> step-down -> copper -> crusher. */
+    private static void transformerChain(GameTestHelper helper) {
+        CoalTurbineBlockEntity turbine = placeTurbine(helper, new BlockPos(0, 1, 1), Direction.NORTH);
+        placeWire(helper, new BlockPos(1, 1, 1));
+        helper.setBlock(new BlockPos(2, 1, 1), ModBlocks.TRANSFORMER.get().defaultBlockState().setValue(MachineBlock.FACING, Direction.EAST));
+        for (int x = 3; x <= 5; x++) {
+            var cable = ModBlocks.ALUMINUM_CABLE.get();
+            helper.setBlock(new BlockPos(x, 1, 1), cable.defaultBlockState());
+        }
+        helper.setBlock(new BlockPos(6, 1, 1), ModBlocks.TRANSFORMER.get().defaultBlockState().setValue(MachineBlock.FACING, Direction.EAST));
+        CrusherBlockEntity crusher = placeCrusher(helper, new BlockPos(8, 1, 1));
+        placeWire(helper, new BlockPos(7, 1, 1));
+        // Cables were placed before their neighbours existed; settle their connections.
+        for (int x = 1; x <= 7; x++) {
+            BlockPos abs = helper.absolutePos(new BlockPos(x, 1, 1));
+            var state = helper.getLevel().getBlockState(abs);
+            if (state.getBlock() instanceof WireBlock w) {
+                helper.getLevel().setBlock(abs, w.withConnections(helper.getLevel(), abs, state), 3);
+            }
+        }
+        insert(helper, new BlockPos(0, 1, 1), Items.COAL, 4);
+        insert(helper, new BlockPos(8, 1, 1), Items.RAW_IRON, 8);
+        helper.runAfterDelay(RUN_TICKS + 60, () -> {
+            helper.assertTrue(crusher.motor() == com.powerfactor.machine.Drive.State.RUNNING,
+                    "crusher at the far end is " + crusher.motor() + " with " + crusher.getEnergy().getAmountAsInt() + " FE");
+            // Its EE is reflected back through both transformers (plus their magnetizing EE).
+            helper.assertTrue(turbine.lastOutput().ee() > 15, "turbine EE " + turbine.lastOutput());
+            helper.succeed();
+        });
+    }
+
+    private static void breakerSplitsGrid(GameTestHelper helper) {
+        placeTurbine(helper, new BlockPos(0, 1, 1), Direction.NORTH);
+        placeWire(helper, new BlockPos(1, 1, 1));
+        helper.setBlock(new BlockPos(2, 1, 1), ModBlocks.CIRCUIT_BREAKER.get().defaultBlockState()
+                .setValue(com.powerfactor.grid.BreakerBlock.CLOSED, false));
+        CrusherBlockEntity crusher = placeCrusher(helper, new BlockPos(4, 1, 1));
+        placeWire(helper, new BlockPos(3, 1, 1));
+        insert(helper, new BlockPos(0, 1, 1), Items.COAL, 4);
+        helper.runAfterDelay(RUN_TICKS, () -> {
+            helper.assertValueEqual(crusher.getEnergy().getAmountAsInt(), 0, "FE through an open breaker");
+            var breaker = helper.getBlockEntity(new BlockPos(2, 1, 1), com.powerfactor.grid.BreakerBlockEntity.class);
+            breaker.operate(helper.getLevel(), true, false);
+        });
+        helper.runAfterDelay(RUN_TICKS + 40, () -> {
+            helper.assertTrue(crusher.getEnergy().getAmountAsInt() > 0, "no FE after closing the breaker");
             helper.succeed();
         });
     }

@@ -47,6 +47,16 @@ public final class CommonEvents {
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.ELECTRIC_PUMP.get(), (be, side) -> be.getTank());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.ELECTRIC_PUMP.get(), (be, side) -> be.getEnergy());
 
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.ENDER_LINK.get(), (be, side) -> be.getEnergy());
+
+        for (var type : java.util.List.of(ModBlockEntities.SOLAR_PANEL.get(), ModBlockEntities.WIND_TURBINE.get(), ModBlockEntities.HYDRO_TURBINE.get())) {
+            event.registerBlockEntity(Capabilities.Energy.BLOCK, type, (be, side) -> be.getEnergy());
+        }
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.DIESEL_GENERATOR.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.DIESEL_GENERATOR.get(), (be, side) -> be.getTank());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.SYNCHRONOUS_CONDENSER.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.BATTERY_BANK.get(), (be, side) -> be.getEnergy());
+
         // Wires accept FE into their grid from any side.
         event.registerBlock(Capabilities.Energy.BLOCK, (level, pos, state, be, side) -> {
             if (level instanceof ServerLevel server) {
@@ -54,11 +64,21 @@ public final class CommonEvents {
                 return grid == null ? null : grid.handler();
             }
             return null;
-        }, ModBlocks.COPPER_WIRE.get());
+        }, ModBlocks.COPPER_WIRE.get(), ModBlocks.INSULATED_COPPER_CABLE.get(), ModBlocks.ALUMINUM_CABLE.get(), ModBlocks.HV_PYLON.get(),
+                ModBlocks.CIRCUIT_BREAKER.get());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.TRANSFORMER.get(), (be, side) -> be.primaryHandler(side));
+
+        event.registerItem(Capabilities.Energy.ITEM,
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ArcGunItem.CAPACITY, 5_000),
+                ModItems.ARC_GUN.get());
+
+        event.registerItem(Capabilities.Energy.ITEM,
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ArcSaberItem.CAPACITY, 5_000),
+                ModItems.ARC_SABER.get());
 
         // The drill charges from any mod's charger.
         event.registerItem(Capabilities.Energy.ITEM,
-                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), DrillItem.capacity(), 5_000),
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), DrillItem.capacity(stack), 5_000),
                 ModItems.ELECTRIC_DRILL.get());
     }
 
@@ -67,12 +87,69 @@ public final class CommonEvents {
         ScadaPayloads.register(event);
     }
 
-    /** A flat drill is barely better than a fist. */
+    /** An unlit saber is just a metal tube. */
+    @SubscribeEvent
+    static void onIncomingDamage(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
+        if (event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
+                && event.getSource().getDirectEntity() == attacker
+                && attacker.getMainHandItem().getItem() instanceof com.powerfactor.item.ArcSaberItem
+                && !com.powerfactor.item.ArcSaberItem.lit(attacker.getMainHandItem())) {
+            event.setAmount(Math.min(event.getAmount(), 2F));
+        }
+    }
+
+    /** A flat drill is barely better than a fist; Speed modules add 50% each. */
     @SubscribeEvent
     static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
         var stack = event.getEntity().getMainHandItem();
-        if (stack.getItem() instanceof DrillItem && !DrillItem.powered(stack)) {
-            event.setNewSpeed(Math.min(event.getNewSpeed(), DrillItem.UNPOWERED_SPEED));
+        if (stack.getItem() instanceof DrillItem) {
+            if (!DrillItem.powered(stack)) {
+                event.setNewSpeed(Math.min(event.getNewSpeed(), DrillItem.UNPOWERED_SPEED));
+            } else {
+                event.setNewSpeed(event.getNewSpeed() * (1 + 0.5F * DrillItem.modules(stack, com.powerfactor.item.DrillModule.Type.SPEED)));
+            }
+        }
+    }
+
+    private static final ThreadLocal<Boolean> AREA_MINING = ThreadLocal.withInitial(() -> false);
+
+    /** Area module: also break the 3x3 face around the block, paying FE for each. */
+    @SubscribeEvent
+    static void onBreak(net.neoforged.neoforge.event.level.block.BreakBlockEvent event) {
+        if (AREA_MINING.get() || !(event.getPlayer() instanceof net.minecraft.server.level.ServerPlayer player) || player.isShiftKeyDown()) {
+            return;
+        }
+        var stack = player.getMainHandItem();
+        if (!(stack.getItem() instanceof DrillItem) || DrillItem.modules(stack, com.powerfactor.item.DrillModule.Type.AREA) == 0) {
+            return;
+        }
+        var hit = player.pick(player.blockInteractionRange(), 0, false);
+        if (!(hit instanceof net.minecraft.world.phys.BlockHitResult bhr) || !bhr.getBlockPos().equals(event.getPos())) {
+            return;
+        }
+        net.minecraft.core.Direction.Axis axis = bhr.getDirection().getAxis();
+        AREA_MINING.set(true);
+        try {
+            for (int a = -1; a <= 1; a++) {
+                for (int b = -1; b <= 1; b++) {
+                    if (a == 0 && b == 0) {
+                        continue;
+                    }
+                    var pos = switch (axis) {
+                        case X -> event.getPos().offset(0, a, b);
+                        case Y -> event.getPos().offset(a, 0, b);
+                        case Z -> event.getPos().offset(a, b, 0);
+                    };
+                    var state = player.level().getBlockState(pos);
+                    if (!DrillItem.powered(stack) || state.isAir() || state.getDestroySpeed(player.level(), pos) < 0
+                            || !stack.isCorrectToolForDrops(state)) {
+                        continue;
+                    }
+                    player.gameMode.destroyBlock(pos);
+                }
+            }
+        } finally {
+            AREA_MINING.set(false);
         }
     }
 

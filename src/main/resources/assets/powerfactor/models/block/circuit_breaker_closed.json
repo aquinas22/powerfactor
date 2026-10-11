@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "powerfactor:block/circuit_breaker_side",
+    "side": "powerfactor:block/circuit_breaker_side",
+    "front": "powerfactor:block/circuit_breaker_front_closed"
+  }
+}

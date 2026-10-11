@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "powerfactor:block/ender_receiver_top",
+    "bottom": "powerfactor:block/ender_receiver_bottom",
+    "side": "powerfactor:block/ender_receiver_side"
+  }
+}

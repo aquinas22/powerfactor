@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powerfactor:block/scada_display"
+    },
+    "facing=east": {
+      "model": "powerfactor:block/scada_display",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "powerfactor:block/scada_display",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powerfactor:block/scada_display",
+      "y": 270
+    }
+  }
+}

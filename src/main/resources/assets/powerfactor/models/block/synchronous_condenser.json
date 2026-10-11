@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "powerfactor:block/synchronous_condenser_side",
+    "side": "powerfactor:block/synchronous_condenser_side",
+    "front": "powerfactor:block/synchronous_condenser_end"
+  }
+}

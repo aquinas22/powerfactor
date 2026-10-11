@@ -42,6 +42,22 @@
     "powerfactor:electric_pump",
     "powerfactor:fluid_tank",
     "powerfactor:item_pipe",
-    "powerfactor:fluid_pipe"
+    "powerfactor:fluid_pipe",
+    "powerfactor:scada_display",
+    "powerfactor:ender_transmitter",
+    "powerfactor:ender_receiver",
+    "powerfactor:circuit_breaker",
+    "powerfactor:transformer",
+    "powerfactor:hv_pylon",
+    "powerfactor:insulated_copper_cable",
+    "powerfactor:aluminum_cable",
+    "powerfactor:wind_turbine_tower",
+    "powerfactor:solar_panel",
+    "powerfactor:wind_turbine",
+    "powerfactor:hydro_turbine",
+    "powerfactor:diesel_generator",
+    "powerfactor:synchronous_condenser",
+    "powerfactor:battery_bank",
+    "powerfactor:power_meter"
   ]
 }

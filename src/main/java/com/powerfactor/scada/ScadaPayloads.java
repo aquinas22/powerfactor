@@ -43,13 +43,51 @@ public final class ScadaPayloads {
         }
     }
 
-    /** Client-side receiver, set by the client entry point so this class stays server-safe. */
+    /** Server to client: readings for a display wall, keyed by its master panel. */
+    public record DisplaySnapshot(BlockPos master, List<ScadaReading> readings) implements CustomPacketPayload {
+        public static final Type<DisplaySnapshot> TYPE = new Type<>(PowerFactor.id("display_snapshot"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, DisplaySnapshot> STREAM_CODEC = StreamCodec.composite(
+                BlockPos.STREAM_CODEC, DisplaySnapshot::master,
+                ScadaReading.STREAM_CODEC.apply(ByteBufCodecs.list(512)), DisplaySnapshot::readings,
+                DisplaySnapshot::new);
+
+        @Override
+        public Type<DisplaySnapshot> type() {
+            return TYPE;
+        }
+    }
+
+    /** Client to server: new Arc Saber settings for the saber in a hand. */
+    public record SaberConfig(boolean mainHand, com.powerfactor.item.SaberSettings settings) implements CustomPacketPayload {
+        public static final Type<SaberConfig> TYPE = new Type<>(PowerFactor.id("saber_config"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, SaberConfig> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.BOOL, SaberConfig::mainHand,
+                com.powerfactor.item.SaberSettings.STREAM_CODEC, SaberConfig::settings,
+                SaberConfig::new);
+
+        @Override
+        public Type<SaberConfig> type() {
+            return TYPE;
+        }
+    }
+
+    /** Client-side receivers, set by the client entry point so this class stays server-safe. */
     public static java.util.function.Consumer<Snapshot> clientHandler = s -> {};
+    public static java.util.function.Consumer<DisplaySnapshot> displayHandler = s -> {};
 
     public static void register(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
         registrar.playToClient(Snapshot.TYPE, Snapshot.STREAM_CODEC, (payload, context) -> clientHandler.accept(payload));
         registrar.playToServer(Command.TYPE, Command.STREAM_CODEC, ScadaPayloads::handleCommand);
+        registrar.playToServer(SaberConfig.TYPE, SaberConfig.STREAM_CODEC, (payload, context) -> {
+            var stack = context.player().getItemInHand(payload.mainHand() ? net.minecraft.world.InteractionHand.MAIN_HAND
+                    : net.minecraft.world.InteractionHand.OFF_HAND);
+            if (stack.getItem() instanceof com.powerfactor.item.ArcSaberItem) {
+                stack.set(com.powerfactor.registry.ModComponents.SABER.get(), payload.settings());
+                com.powerfactor.item.ArcSaberItem.refreshModel(stack);
+            }
+        });
+        registrar.playToClient(DisplaySnapshot.TYPE, DisplaySnapshot.STREAM_CODEC, (payload, context) -> displayHandler.accept(payload));
     }
 
     private static void handleCommand(Command command, IPayloadContext context) {

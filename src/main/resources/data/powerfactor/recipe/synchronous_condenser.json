@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PCP",
+    "CMC",
+    "PKP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "C": "powerfactor:copper_coil",
+    "M": "powerfactor:electric_motor",
+    "K": "powerfactor:advanced_circuit"
+  },
+  "result": {
+    "id": "powerfactor:synchronous_condenser",
+    "count": 1
+  }
+}

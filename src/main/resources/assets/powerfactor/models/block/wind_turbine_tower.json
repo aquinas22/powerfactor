@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "powerfactor:block/wind_turbine_base",
+    "side": "powerfactor:block/wind_turbine_base"
+  }
+}

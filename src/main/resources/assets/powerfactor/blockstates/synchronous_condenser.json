@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,running=false": {
+      "model": "powerfactor:block/synchronous_condenser"
+    },
+    "facing=north,running=true": {
+      "model": "powerfactor:block/synchronous_condenser"
+    },
+    "facing=east,running=false": {
+      "model": "powerfactor:block/synchronous_condenser",
+      "y": 90
+    },
+    "facing=east,running=true": {
+      "model": "powerfactor:block/synchronous_condenser",
+      "y": 90
+    },
+    "facing=south,running=false": {
+      "model": "powerfactor:block/synchronous_condenser",
+      "y": 180
+    },
+    "facing=south,running=true": {
+      "model": "powerfactor:block/synchronous_condenser",
+      "y": 180
+    },
+    "facing=west,running=false": {
+      "model": "powerfactor:block/synchronous_condenser",
+      "y": 270
+    },
+    "facing=west,running=true": {
+      "model": "powerfactor:block/synchronous_condenser",
+      "y": 270
+    }
+  }
+}

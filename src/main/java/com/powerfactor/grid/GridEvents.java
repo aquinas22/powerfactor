@@ -27,6 +27,7 @@ public final class GridEvents {
     @SubscribeEvent
     static void onServerStopped(ServerStoppedEvent event) {
         GridManager.clearAll();
+        com.powerfactor.ender.EnderNetwork.clear();
     }
 
     private GridEvents() {}

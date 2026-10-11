@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " D ",
+    "KCK",
+    " P "
+  ],
+  "key": {
+    "D": "#c:gems/diamond",
+    "K": "powerfactor:capacitor",
+    "C": "powerfactor:advanced_circuit",
+    "P": "#c:plates/steel"
+  },
+  "result": {
+    "id": "powerfactor:arc_saber",
+    "count": 1
+  }
+}

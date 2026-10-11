@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "RRR",
+    "WWW",
+    "RRR"
+  ],
+  "key": {
+    "R": "powerfactor:rubber",
+    "W": "powerfactor:copper_wire"
+  },
+  "result": {
+    "id": "powerfactor:insulated_copper_cable",
+    "count": 6
+  }
+}

@@ -1,0 +1,210 @@
+{
+  "textures": {
+    "blade": "powerfactor:block/arc_saber_blade_arc",
+    "particle": "powerfactor:block/arc_saber_blade_arc"
+  },
+  "gui_light": "front",
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        -90,
+        55
+      ],
+      "translation": [
+        0,
+        4.0,
+        0.5
+      ],
+      "scale": [
+        0.85,
+        0.85,
+        0.85
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        -55
+      ],
+      "translation": [
+        0,
+        4.0,
+        0.5
+      ],
+      "scale": [
+        0.85,
+        0.85,
+        0.85
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -90,
+        25
+      ],
+      "translation": [
+        1.13,
+        3.2,
+        1.13
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        -25
+      ],
+      "translation": [
+        1.13,
+        3.2,
+        1.13
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        13,
+        7
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "elements": [
+    {
+      "from": [
+        7.25,
+        9,
+        7.25
+      ],
+      "to": [
+        8.75,
+        31.5,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#blade",
+          "uv": [
+            5,
+            0,
+            11,
+            16
+          ],
+          "tintindex": 0
+        },
+        "east": {
+          "texture": "#blade",
+          "uv": [
+            5,
+            0,
+            11,
+            16
+          ],
+          "tintindex": 0
+        },
+        "south": {
+          "texture": "#blade",
+          "uv": [
+            5,
+            0,
+            11,
+            16
+          ],
+          "tintindex": 0
+        },
+        "west": {
+          "texture": "#blade",
+          "uv": [
+            5,
+            0,
+            11,
+            16
+          ],
+          "tintindex": 0
+        },
+        "up": {
+          "texture": "#blade",
+          "uv": [
+            5,
+            0,
+            11,
+            16
+          ],
+          "tintindex": 0
+        },
+        "down": {
+          "texture": "#blade",
+          "uv": [
+            5,
+            0,
+            11,
+            16
+          ],
+          "tintindex": 0
+        }
+      },
+      "light_emission": 15,
+      "shade": false,
+      "rotation": {
+        "angle": -45,
+        "axis": "z",
+        "origin": [
+          8,
+          9,
+          8
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    " G ",
+    "PKP",
+    " W "
+  ],
+  "key": {
+    "G": "#c:glass_panes",
+    "P": "#c:plates/iron",
+    "K": "powerfactor:control_circuit",
+    "W": "powerfactor:copper_wire"
+  },
+  "result": {
+    "id": "powerfactor:power_meter",
+    "count": 1
+  }
+}

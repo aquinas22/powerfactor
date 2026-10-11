@@ -39,6 +39,34 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ScadaTerminalBlockEntity>> SCADA_TERMINAL = BLOCK_ENTITIES.register("scada_terminal",
             () -> new BlockEntityType<>(ScadaTerminalBlockEntity::new, ModBlocks.SCADA_TERMINAL.get()));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.scada.ScadaDisplayBlockEntity>> SCADA_DISPLAY =
+            BLOCK_ENTITIES.register("scada_display",
+                    () -> new BlockEntityType<>(com.powerfactor.scada.ScadaDisplayBlockEntity::new, ModBlocks.SCADA_DISPLAY.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.ender.EnderLinkBlockEntity>> ENDER_LINK =
+            BLOCK_ENTITIES.register("ender_link", () -> new BlockEntityType<>(com.powerfactor.ender.EnderLinkBlockEntity::new,
+                    ModBlocks.ENDER_TRANSMITTER.get(), ModBlocks.ENDER_RECEIVER.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.grid.BreakerBlockEntity>> BREAKER =
+            BLOCK_ENTITIES.register("circuit_breaker", () -> new BlockEntityType<>(com.powerfactor.grid.BreakerBlockEntity::new,
+                    ModBlocks.CIRCUIT_BREAKER.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.grid.TransformerBlockEntity>> TRANSFORMER =
+            BLOCK_ENTITIES.register("transformer", () -> new BlockEntityType<>(com.powerfactor.grid.TransformerBlockEntity::new,
+                    ModBlocks.TRANSFORMER.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.grid.PylonBlockEntity>> PYLON =
+            BLOCK_ENTITIES.register("hv_pylon", () -> new BlockEntityType<>(com.powerfactor.grid.PylonBlockEntity::new, ModBlocks.HV_PYLON.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.SolarPanelBlockEntity>> SOLAR_PANEL =
+            BLOCK_ENTITIES.register("solar_panel", () -> new BlockEntityType<>(com.powerfactor.generator.SolarPanelBlockEntity::new, ModBlocks.SOLAR_PANEL.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.WindTurbineBlockEntity>> WIND_TURBINE =
+            BLOCK_ENTITIES.register("wind_turbine", () -> new BlockEntityType<>(com.powerfactor.generator.WindTurbineBlockEntity::new, ModBlocks.WIND_TURBINE.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.HydroTurbineBlockEntity>> HYDRO_TURBINE =
+            BLOCK_ENTITIES.register("hydro_turbine", () -> new BlockEntityType<>(com.powerfactor.generator.HydroTurbineBlockEntity::new, ModBlocks.HYDRO_TURBINE.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.DieselGeneratorBlockEntity>> DIESEL_GENERATOR =
+            BLOCK_ENTITIES.register("diesel_generator", () -> new BlockEntityType<>(com.powerfactor.generator.DieselGeneratorBlockEntity::new, ModBlocks.DIESEL_GENERATOR.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.SynchronousCondenserBlockEntity>> SYNCHRONOUS_CONDENSER =
+            BLOCK_ENTITIES.register("synchronous_condenser", () -> new BlockEntityType<>(com.powerfactor.generator.SynchronousCondenserBlockEntity::new, ModBlocks.SYNCHRONOUS_CONDENSER.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.BatteryBankBlockEntity>> BATTERY_BANK =
+            BLOCK_ENTITIES.register("battery_bank", () -> new BlockEntityType<>(com.powerfactor.generator.BatteryBankBlockEntity::new, ModBlocks.BATTERY_BANK.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.PowerMeterBlockEntity>> POWER_METER =
+            BLOCK_ENTITIES.register("power_meter", () -> new BlockEntityType<>(com.powerfactor.generator.PowerMeterBlockEntity::new, ModBlocks.POWER_METER.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FluidTankBlockEntity>> FLUID_TANK = BLOCK_ENTITIES.register("fluid_tank",
             () -> new BlockEntityType<>(FluidTankBlockEntity::new, ModBlocks.FLUID_TANK.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PumpBlockEntity>> ELECTRIC_PUMP = BLOCK_ENTITIES.register("electric_pump",

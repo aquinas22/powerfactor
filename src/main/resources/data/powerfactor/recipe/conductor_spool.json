@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    " A ",
+    "AWA",
+    " A "
+  ],
+  "key": {
+    "A": "powerfactor:fine_aluminum_wire",
+    "W": "#minecraft:planks"
+  },
+  "result": {
+    "id": "powerfactor:conductor_spool",
+    "count": 4
+  }
+}

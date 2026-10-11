@@ -9,8 +9,13 @@ seeds, so the output is deterministic. Loops are built to wrap seamlessly:
   * discrete events (crackles, thumps, ticks) are mixed into a circular buffer, so an event that
     starts near the end wraps around to the beginning.
 Loops are normalized by RMS (quiet, they play continuously); one-shots are peak-normalized to -1 dBFS.
+Every loop must pass check_loop() (seam continuity) before it is encoded.
+
+Run with sound names (or event names) as arguments to regenerate only those files, e.g.
+  python3 tools/gen_sounds.py sword_hum sword_swing
+sounds.json is always rewritten from the full tables.
 """
-import json, math, os, random, struct, subprocess, tempfile, wave
+import json, math, os, random, struct, subprocess, sys, tempfile, wave
 
 SR = 44100
 ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "assets", "powerfactor")
@@ -71,8 +76,9 @@ def write_ogg(name, samples):
     os.close(fd)
     with wave.open(path, "wb") as w:
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes(data)
+    # +bitexact: fixed Ogg stream serial, so re-running produces byte-identical files
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", path, "-c:a", "libvorbis", "-q:a", "4",
-                    os.path.join(OUT, name + ".ogg")], check=True)
+                    "-fflags", "+bitexact", os.path.join(OUT, name + ".ogg")], check=True)
     os.remove(path)
 
 
@@ -492,6 +498,671 @@ def arc_zap(seconds=0.5):
     return fade_edges(out, fin=0.0003, fout=0.04)
 
 
+# ---------------------------------------------------------------- batch 2: helpers
+
+def check_loop(name, s, win=512):
+    """Seam test: the wrap step (last sample -> first) must look like its neighbourhood, both in slope
+    (first difference) and curvature (second difference). A click or a phase jump at the seam shows up
+    as a step several times larger than anything around it."""
+    n = len(s)
+    d1 = lambda i: abs(s[i % n] - s[(i - 1) % n])
+    d2 = lambda i: abs(s[i % n] - 2 * s[(i - 1) % n] + s[(i - 2) % n])
+    seam1 = max(d1(0), d1(1))
+    seam2 = max(d2(0), d2(1), d2(2))
+    near = [i for i in range(-win, win) if i not in (-1, 0, 1, 2, 3)]
+    lim1 = max(d1(i) for i in near)
+    lim2 = max(d2(i) for i in near)
+    pre = rms([s[i] for i in range(n - 2048, n)])
+    post = rms(s[:2048])
+    jump_db = abs(db(pre) - db(post))
+    ok = seam1 <= 1.5 * lim1 and seam2 <= 1.5 * lim2 and jump_db < 6.0
+    if not ok:
+        raise SystemExit(f"{name}: loop seam check FAILED (step {seam1:.4f} vs {lim1:.4f}, "
+                         f"curv {seam2:.4f} vs {lim2:.4f}, level jump {jump_db:.1f} dB)")
+    return seam1 / max(1e-9, lim1)
+
+
+def loop_env(n, r, points, lo, hi):
+    """Smooth random envelope that wraps: `points` random levels, cosine-interpolated circularly."""
+    vals = [r.uniform(lo, hi) for _ in range(points)]
+    out = []
+    for i in range(n):
+        u = i * points / n
+        k = int(u)
+        w = (1 - math.cos(math.pi * (u - k))) / 2
+        a, b = vals[k % points], vals[(k + 1) % points]
+        out.append(a + (b - a) * w)
+    return out
+
+
+def phase_track(n, f0, mods=()):
+    """Phase (in cycles) of f(t) = f0 + sum d*cos(2pi*m*t + p), in closed form: it wraps exactly when
+    f0*T and every m*T are whole numbers."""
+    out = []
+    for i in range(n):
+        t = i / SR
+        p = f0 * t
+        for d, m, ph in mods:
+            p += d / (TAU * m) * math.sin(TAU * m * t + ph)
+        out.append(p)
+    return out
+
+
+def phase_accum(freqs):
+    """Phase (in cycles) of an arbitrary per-sample frequency trajectory (one-shots)."""
+    out, p = [], 0.0
+    for f in freqs:
+        out.append(p)
+        p += f / SR
+    return out
+
+
+def harm(ph, amps):
+    """Harmonic series on a phase track: sum amps[k-1] * sin(k * theta), via the Chebyshev recurrence."""
+    out = []
+    for p in ph:
+        th = TAU * p
+        c2 = 2 * math.cos(th)
+        s0, s1, x = 0.0, math.sin(th), 0.0
+        for a in amps:
+            x += a * s1
+            s0, s1 = s1, c2 * s1 - s0
+        out.append(x)
+    return out
+
+
+def filt_sweep(sig, kind, f_fn, q=0.707, block=32):
+    """Biquad whose centre/cutoff follows f_fn(t) (coefficients refreshed every `block` samples)."""
+    f = Biquad(kind, 1000.0, q)
+    out = []
+    for i, x in enumerate(sig):
+        if i % block == 0:
+            g = Biquad(kind, max(20.0, min(SR * 0.45, f_fn(i / SR))), q)
+            f.b0, f.b1, f.b2, f.a1, f.a2 = g.b0, g.b1, g.b2, g.a1, g.a2
+        out.append(f(x))
+    return out
+
+
+def bubble(f0, decay, rise=1.6):
+    """Water bubble: a damped sine whose pitch rises as it decays."""
+    n = int(decay * 6 * SR)
+    out, ph = [], 0.0
+    for i in range(n):
+        t = i / SR
+        ph += f0 * (1 + (rise - 1) * t / (decay * 6)) / SR
+        out.append(math.sin(TAU * ph) * math.exp(-t / decay) * min(1.0, i / 30))
+    return out
+
+
+def squeal(r, dur, modes, glide, decay):
+    """Stick-slip metal squeal: inharmonic partials sagging in pitch, with a little roughness."""
+    n = int(dur * SR)
+    phs = [r.random() for _ in modes]
+    out = []
+    for i in range(n):
+        t = i / SR
+        sag = 1.0 - glide * t / dur
+        x = 0.0
+        for k, (f, a) in enumerate(modes):
+            phs[k] += f * sag / SR
+            x += a * math.sin(TAU * phs[k])
+        out.append(x * min(1.0, t / 0.02) * math.exp(-t / decay) * (0.8 + 0.2 * math.sin(TAU * 31 * t)))
+    return out
+
+
+def reverb(s, rt60=1.0, wet=0.35, damp=3500):
+    """Small Schroeder reverb (4 parallel combs + 2 allpasses), wet path darkened."""
+    n = len(s)
+    acc = [0.0] * n
+    for d_ms in (29.7, 37.1, 41.1, 43.7):
+        D = int(d_ms * SR / 1000)
+        g = 10 ** (-3 * D / (rt60 * SR))
+        y = [0.0] * n
+        for i in range(n):
+            y[i] = s[i] + (g * y[i - D] if i >= D else 0.0)
+        for i in range(n):
+            acc[i] += 0.25 * y[i]
+    for d_ms, g in ((5.0, 0.7), (1.7, 0.7)):
+        D = int(d_ms * SR / 1000)
+        y = [0.0] * n
+        for i in range(n):
+            xd = acc[i - D] if i >= D else 0.0
+            yd = y[i - D] if i >= D else 0.0
+            y[i] = -g * acc[i] + xd + g * yd
+        acc = y
+    acc = filt(acc, ("lp", damp, 0.7))
+    return [a * (1 - wet) + b * wet for a, b in zip(s, acc)]
+
+
+def scatter_bursts(buf, r, count, place, dur, decay, stages, gain, circular=True):
+    """Mix `count` small noise bursts into buf. place() -> sample index; decay/gain: (lo, hi);
+    stages(r) -> filter chain for each burst."""
+    for _ in range(count):
+        start = place()
+        if start is None:
+            continue
+        g = burst(int(dur * SR), r, r.uniform(*decay), stages(r))
+        add_at(buf, g, start, r.uniform(*gain), circular=circular)
+
+
+SABER_AMPS = [1 / k ** 1.15 for k in range(1, 37)]
+SABER_DETUNE = 92.5 / 90.0
+
+
+def saber_voice(pa, pb, ps):
+    """Energy-blade voice: two detuned buzzy (saw-like) tones plus a sine subharmonic, lightly saturated.
+    pa/pb/ps: phase tracks (cycles) of the main tone, the detuned twin and the subharmonic."""
+    a, b = harm(pa, SABER_AMPS), harm(pb, SABER_AMPS)
+    sub = [math.sin(TAU * p) for p in ps]
+    x = soft_clip([0.35 * u + 0.30 * v for u, v in zip(a, b)], 1.4)
+    return [u + 0.3 * w for u, w in zip(x, sub)]
+
+
+# ---------------------------------------------------------------- batch 2: loops
+
+def alloy_furnace_run(seconds=2.0):
+    n = int(SR * seconds)
+    r = random.Random(1201)
+    hum = tone(n, [(120.0, 1.0, 0.0), (240.0, 0.45, 0.7), (360.0, 0.2, 1.9), (480.0, 0.08, 0.4)],
+               lfo=lambda t: 1.0 + 0.03 * math.sin(TAU * 0.5 * t))
+    hum = filt_periodic(soft_clip(hum, 1.3), ("lp", 1200, 0.7))
+    # induction coil whine: ~3.6 kHz with a slow wobble and a detuned twin (beats 1.5 Hz)
+    coil = harm(phase_track(n, 3600.0, [(6.0, 3.0, 0.0)]), [1.0, 0.12])
+    coil2 = tone(n, [(3601.5, 1.0, 1.0)])
+    sizzle = loop_noise(n, r, ("bp", 3600, 4.0))
+    return mix((hum, 0.5), (coil, 0.045), (coil2, 0.025), (sizzle, 0.06))
+
+
+def arc_furnace_run(seconds=3.0):
+    n = int(SR * seconds)
+    r = random.Random(1202)
+    env = loop_env(n, r, 24, 0.35, 1.0)                 # irregular roar level
+    buzz = tone(n, [(100.0, 1.0, 0.0), (200.0, 0.5, 0.3), (300.0, 0.4, 1.1), (400.0, 0.25, 2.0),
+                    (500.0, 0.2, 0.5), (120.0, 0.8, 1.3), (240.0, 0.4, 0.2), (360.0, 0.35, 2.4),
+                    (480.0, 0.2, 0.8), (600.0, 0.15, 1.7)])
+    buzz = filt_periodic(soft_clip(buzz, 2.5), ("lp", 3000, 0.7))
+    flick = loop_env(n, r, 150, 0.4, 1.0)               # fast arc-length flicker
+    buzz = [x * e * f for x, e, f in zip(buzz, env, flick)]
+    roar = loop_noise(n, r, ("bp", 700, 0.5), ("lp", 4000, 0.7))
+    roar = [x * (0.4 + 0.6 * e) for x, e in zip(roar, env)]
+    crack = [0.0] * n
+    hiband = lambda r: [("hp", r.uniform(1500, 5000), 0.7)]
+    scatter_bursts(crack, r, 650, lambda: r.randrange(n), 0.01, (0.0003, 0.002), hiband, (0.2, 1.0))
+    for _ in range(9):                                  # sputters: dense bursts of crackle + a pop
+        c = r.randrange(n)
+        add_at(crack, thump(int(0.08 * SR), 160, 70, 0.02, drop=0.01), c, r.uniform(0.6, 1.0), circular=True)
+        scatter_bursts(crack, r, r.randint(15, 35), lambda: c + int(r.uniform(0, 0.09) * SR), 0.012,
+                       (0.0005, 0.003), lambda r: [("bp", r.uniform(700, 3500), 0.9)], (0.6, 1.5))
+    crack = [x * (0.5 + 0.5 * e) for x, e in zip(crack, env)]
+    out = mix((buzz, 0.35), (roar, 0.6), (crack, 0.45))
+    return soft_clip(normalize_peak(out, 1.0), 1.8)     # keep the crest factor down so it can be loud
+
+
+def pump_run(seconds=2.0):
+    n = int(SR * seconds)
+    r = random.Random(1203)
+    hum = motor_hum(n, r, bright=0.8)
+    strokes = [0.0] * n
+    for k in range(4):                                  # 2 strokes/s
+        s0 = int((k / 4 + r.uniform(-0.005, 0.005)) * n)
+        add_at(strokes, thump(int(0.2 * SR), 80, 45, 0.05), s0, 0.6, circular=True)
+        add_at(strokes, burst(int(0.4 * SR), r, 0.12, [("lp", 900, 0.7), ("hp", 150, 0.7)], attack=0.05),
+               s0, 0.9, circular=True)
+        for _ in range(r.randint(6, 10)):
+            add_at(strokes, bubble(r.uniform(250, 800), r.uniform(0.01, 0.03)),
+                   s0 + int(r.uniform(0.02, 0.3) * SR), r.uniform(0.3, 0.7), circular=True)
+        add_at(strokes, burst(int(0.03 * SR), r, 0.003, [("bp", 2200, 1.5)]), s0 + int(0.24 * SR), 0.3,
+               circular=True)                           # check-valve tick
+    flow = loop_noise(n, r, ("lp", 600, 0.7), ("hp", 80, 0.7))
+    flow = [x * (0.7 + 0.3 * math.cos(TAU * 2 * i / SR)) for i, x in enumerate(flow)]
+    return mix((hum, 0.45), (strokes, 0.8), (flow, 0.4))
+
+
+def ore_washer_run(seconds=3.0):
+    n = int(SR * seconds)
+    r = random.Random(1204)
+    rot = 2 / 3                                         # drum turns twice per loop
+    hum = motor_hum(n, r, bright=0.7)
+    slosh = loop_noise(n, r, ("lp", 900, 0.7), ("hp", 120, 0.7))
+    slosh = [x * (0.55 + 0.45 * math.sin(TAU * rot * i / SR) ** 2) for i, x in enumerate(slosh)]
+    splash = loop_noise(n, r, ("bp", 1800, 1.0))
+    splash = [x * e for x, e in zip(splash, loop_env(n, r, 30, 0.15, 1.0))]
+    gravel = [0.0] * n
+
+    def cascade():                                      # rocks tumble mostly as the load cascades
+        while True:
+            i = r.randrange(n)
+            if r.random() < 0.25 + 0.75 * math.sin(math.pi * rot * i / SR) ** 4:
+                return i
+    scatter_bursts(gravel, r, 750, cascade, 0.012, (0.0008, 0.003),
+                   lambda r: [("bp", r.uniform(1200, 4500), 1.5)], (0.2, 1.0))
+    for _ in range(14):                                 # bigger stones knocking the shell
+        i = cascade()
+        add_at(gravel, thump(int(0.06 * SR), 320, 160, 0.015, drop=0.01), i, r.uniform(0.3, 0.6), circular=True)
+        add_at(gravel, burst(int(0.03 * SR), r, 0.004, [("bp", r.uniform(600, 1200), 1.2)]), i,
+               r.uniform(0.5, 1.0), circular=True)
+    bub = [0.0] * n
+    for _ in range(30):
+        add_at(bub, bubble(r.uniform(300, 1100), r.uniform(0.008, 0.02)), r.randrange(n),
+               r.uniform(0.3, 1.0), circular=True)
+    return mix((hum, 0.3), (slosh, 0.55), (splash, 0.15), (gravel, 0.5), (bub, 0.2))
+
+
+def rolling_mill_run(seconds=2.0):
+    n = int(SR * seconds)
+    r = random.Random(1205)
+    rumble = loop_noise(n, r, ("lp", 110, 0.7), ("lp", 110, 0.7))
+    drone = tone(n, [(37.5, 1.0, 0.0), (75.0, 0.6, 0.7), (112.5, 0.25, 1.9)],
+                 lfo=lambda t: 1.0 + 0.3 * math.sin(TAU * 1.5 * t))
+    hum = motor_hum(n, r, bright=0.5)
+    hits = [0.0] * n
+    for k in range(3):                                  # 1.5 Hz: squeal as the slab bites, then the thunk
+        s0 = int((k / 3 + r.uniform(-0.01, 0.01)) * n)
+        sq = squeal(r, 0.3, [(1730, 1.0), (2590, 0.5), (3920, 0.25)], 0.07, 0.12)
+        add_at(hits, sq, s0, 0.22, circular=True)
+        t0 = s0 + int(0.27 * SR)
+        add_at(hits, thump(int(0.3 * SR), 90, 40, 0.09), t0, 1.0, circular=True)
+        add_at(hits, burst(int(0.1 * SR), r, 0.015, [("bp", 500, 0.8)]), t0, 0.7, circular=True)
+        add_at(hits, ring(int(0.35 * SR), [(410, 0.3, 0.12), (870, 0.25, 0.09), (1460, 0.12, 0.06)], r),
+               t0, 0.35, circular=True)
+    hits = filt_periodic(hits, ("lp", 5000, 0.7))
+    return mix((rumble, 3.0), (drone, 0.15), (hum, 0.25), (hits, 0.55))
+
+
+def wire_drawer_run(seconds=2.0):
+    n = int(SR * seconds)
+    r = random.Random(1206)
+    # spool whir: rises and falls by ~3% once per loop
+    whir = harm(phase_track(n, 1100.0, [(30.0, 0.5, 0.0)]), [1.0, 0.35, 0.2, 0.08])
+    whir2 = harm(phase_track(n, 550.0, [(15.0, 0.5, 0.0)]), [0.5, 0.0, 0.15])
+    whir = filt_periodic([(a + b) * (1 + 0.1 * math.cos(TAU * 0.5 * i / SR))
+                          for i, (a, b) in enumerate(zip(whir, whir2))], ("lp", 5000, 0.7))
+    hiss = loop_noise(n, r, ("hp", 4500, 0.7), ("lp", 11000, 0.7))
+    hiss = [x * (0.8 + 0.2 * math.cos(TAU * 0.5 * i / SR)) for i, x in enumerate(hiss)]
+    rasp = loop_noise(n, r, ("bp", 7000, 3.0))
+    motor = motor_hum(n, r, bright=0.6)
+    return mix((whir, 0.16), (hiss, 0.25), (rasp, 0.12), (motor, 0.3))
+
+
+def sword_hum(seconds=2.0):
+    n = int(SR * seconds)
+    r = random.Random(1207)
+    # 90 / 92.5 Hz twins beat at 2.5 Hz; tiny vibratos at 1.5 and 2 Hz; all whole cycles in 2 s
+    voice = saber_voice(phase_track(n, 90.0, [(0.6, 1.5, 0.0)]),
+                        phase_track(n, 92.5, [(0.5, 2.0, 1.0)]),
+                        phase_track(n, 45.0, [(0.3, 1.5, 0.0)]))
+    voice = filt_periodic(voice, ("lp", 2800, 0.7), ("hp", 35, 0.7))
+    voice = [x * (1 + 0.05 * math.sin(TAU * 4 * i / SR)) for i, x in enumerate(voice)]
+    shimmer = loop_noise(n, r, ("bp", 4200, 2.0))
+    shimmer = [x * (0.6 + 0.4 * math.sin(TAU * 3.5 * i / SR)) for i, x in enumerate(shimmer)]
+    glint = tone(n, [(2430.0, 1.0, 0.0), (2433.5, 0.7, 1.0)])   # faint high partial pair, slow shimmer
+    return mix((voice, 1.0), (shimmer, 0.05), (glint, 0.012))
+
+
+def drill_run(seconds=2.0):
+    n = int(SR * seconds)
+    r = random.Random(1208)
+    motor = harm(phase_track(n, 400.0, [(4.0, 3.0, 0.0)]), [1.0, 0.6, 0.45, 0.3, 0.2, 0.12, 0.08, 0.05])
+    motor = filt_periodic(motor, ("lp", 4500, 0.7))
+    brush = loop_noise(n, r, ("hp", 3000, 0.7))
+    brush = [x * (0.5 + 0.5 * math.sin(TAU * 400 * i / SR)) ** 2 for i, x in enumerate(brush)]
+    # gear mesh chatter: 267 tooth contacts per loop (133.5 Hz), uneven
+    clicks = [burst(int(0.004 * SR), r, 0.0006, [("bp", r.uniform(2200, 3200), 2.0)]) for _ in range(8)]
+    chatter = [0.0] * n
+    count = 267
+    for k in range(count):
+        s0 = int(k * n / count) + r.randint(-6, 6)
+        a = r.uniform(0.3, 1.0) * (0.7 + 0.3 * math.sin(TAU * 3 * k / count))
+        add_at(chatter, clicks[r.randrange(8)], s0, a, circular=True)
+    return mix((motor, 0.35), (brush, 0.12), (chatter, 0.3))
+
+
+def wireless_hum(seconds=2.0):
+    n = int(SR * seconds)
+    r = random.Random(1209)
+    drone = tone(n, [(110.0, 1.0, 0.0), (110.5, 0.8, 1.3), (165.0, 0.5, 0.4), (165.5, 0.4, 2.2),
+                     (220.0, 0.35, 0.9), (277.5, 0.18, 1.7), (278.0, 0.15, 0.2), (440.5, 0.1, 2.9),
+                     (659.5, 0.06, 0.6)])
+    # phasing: mix with a slowly sweeping delayed copy (circular, so it stays periodic)
+    ph = []
+    for i in range(n):
+        d = (1.0 + 1.5 * (1 - math.cos(TAU * 0.5 * i / SR))) * SR / 1000
+        j = i - d
+        k = math.floor(j)
+        fr = j - k
+        ph.append(0.6 * drone[i] + 0.5 * (drone[k % n] * (1 - fr) + drone[(k + 1) % n] * fr))
+    sparkle = [0.0] * n
+    for _ in range(70):
+        f = r.uniform(3000, 8000)
+        d = r.uniform(0.03, 0.09)
+        g = [math.sin(TAU * f * (1 + 0.1 * i / (d * 4 * SR)) * i / SR) * min(1.0, i / (0.005 * SR))
+             * math.exp(-i / (d * SR)) for i in range(int(d * 4 * SR))]
+        add_at(sparkle, g, r.randrange(n), r.uniform(0.3, 1.0), circular=True)
+    air = loop_noise(n, r, ("bp", 2500, 0.7))
+    air = [x * (0.6 + 0.4 * math.cos(TAU * 0.5 * i / SR)) for i, x in enumerate(air)]
+    return mix((ph, 0.5), (sparkle, 0.08), (air, 0.06))
+
+
+def transformer_hum(seconds=2.0):
+    n = int(SR * seconds)
+    r = random.Random(1210)
+    hum = tone(n, [(120.0, 1.0, 0.0), (240.0, 0.55, 0.5), (360.0, 0.4, 1.4), (480.0, 0.15, 0.9),
+                   (600.0, 0.08, 2.2), (720.0, 0.05, 0.3), (60.0, 0.05, 0.0)])
+    hum = filt_periodic(soft_clip(hum, 1.2), ("lp", 1500, 0.7))
+    bed = loop_noise(n, r, ("lp", 400, 0.7))
+    return mix((hum, 1.0), (bed, 0.04))
+
+
+def wind_turbine_run(seconds=2.5):
+    n = int(SR * seconds)                               # 0.8 Hz blade pass -> 2 swishes; tones on 0.4 Hz grid
+    r = random.Random(1211)
+    sw = lambda t, lead=0.0: (0.5 + 0.5 * math.cos(TAU * (0.8 * t + lead))) ** 3
+    whoosh = loop_noise(n, r, ("bp", 600, 0.6), ("lp", 2500, 0.7))
+    whoosh = [x * (0.25 + 0.75 * sw(i / SR)) for i, x in enumerate(whoosh)]
+    swish = loop_noise(n, r, ("bp", 1500, 1.0))         # brighter edge leads the swish (approaching blade)
+    swish = [x * sw(i / SR, 0.06) for i, x in enumerate(swish)]
+    gear = harm(phase_track(n, 480.0, [(3.0, 0.4, 0.0)]), [1.0, 0.3, 0.15])
+    gear = filt_periodic(gear, ("lp", 2500, 0.7))
+    rumble = loop_noise(n, r, ("lp", 80, 0.7), ("lp", 80, 0.7))
+    drone = tone(n, [(32.0, 1.0, 0.0), (64.0, 0.4, 1.0)])
+    return mix((whoosh, 0.6), (swish, 0.25), (gear, 0.05), (rumble, 2.5), (drone, 0.1))
+
+
+def hydro_turbine_run(seconds=2.0):
+    n = int(SR * seconds)
+    r = random.Random(1212)
+    water = loop_noise(n, r, ("hp", 250, 0.7), ("lp", 3500, 0.6))
+    water = [x * e for x, e in zip(water, loop_env(n, r, 20, 0.75, 1.0))]
+    spray = loop_noise(n, r, ("hp", 3000, 0.7), ("lp", 9000, 0.7))
+    drone = tone(n, [(50.0, 1.0, 0.0), (100.0, 0.5, 0.6), (150.0, 0.4, 1.2), (300.0, 0.15, 2.0)],
+                 lfo=lambda t: 1.0 + 0.06 * math.sin(TAU * 1.5 * t))
+    drone = filt_periodic(drone, ("lp", 600, 0.7))
+    rumble = loop_noise(n, r, ("lp", 100, 0.7), ("lp", 100, 0.7))
+    bub = [0.0] * n
+    for _ in range(40):
+        add_at(bub, bubble(r.uniform(400, 1400), r.uniform(0.005, 0.015)), r.randrange(n),
+               r.uniform(0.3, 1.0), circular=True)
+    return mix((water, 0.55), (spray, 0.12), (drone, 0.3), (rumble, 3.0), (bub, 0.1))
+
+
+def diesel_run(seconds=2.0):
+    n = int(SR * seconds)
+    r = random.Random(1213)
+    accent = [1.0, 0.65, 0.85, 0.7]                    # four-stroke, four-cylinder unevenness
+    swing = [0.0, 0.0015, -0.001, 0.0005]
+    pulses, rattle = [0.0] * n, [0.0] * n
+    for k in range(50):                                 # 25 Hz firing
+        s0 = int((k / 25 + swing[k % 4] + r.uniform(-0.0003, 0.0003)) * SR)
+        a = accent[k % 4] * r.uniform(0.9, 1.1)
+        add_at(pulses, thump(int(0.06 * SR), 75, 38, 0.018, drop=0.008), s0, a, circular=True)
+        add_at(pulses, burst(int(0.05 * SR), r, 0.012, [("lp", 700, 0.7)], attack=0.001), s0, 0.8 * a,
+               circular=True)
+        add_at(rattle, burst(int(0.03 * SR), r, 0.004, [("bp", r.uniform(2000, 3200), 1.2)]),
+               s0 + int(0.004 * SR), a, circular=True)
+    crank = tone(n, [(12.5, 0.3, 0.0), (25.0, 1.0, 0.5), (50.0, 0.5, 1.1), (75.0, 0.3, 2.0)])
+    crank = filt_periodic(crank, ("lp", 300, 0.7))
+    tin = loop_noise(n, r, ("hp", 1800, 0.7), ("lp", 6000, 0.7))
+    tin = [x * (0.3 + 0.7 * max(0.0, math.sin(TAU * 25 * i / SR)) ** 4) for i, x in enumerate(tin)]
+    return mix((pulses, 0.8), (rattle, 0.25), (crank, 0.25), (tin, 0.12))
+
+
+def condenser_run(seconds=3.0):
+    n = int(SR * seconds)
+    r = random.Random(1214)
+    whine = tone(n, [(540.0, 1.0, 0.0), (540 + 1 / 3, 0.4, 1.0), (1080.0, 0.25, 0.5), (810.0, 0.1, 2.0)],
+                 lfo=lambda t: 1.0 + 0.08 * math.sin(TAU * t / 3))
+    whine = filt_periodic(whine, ("lp", 2000, 0.7))
+    deep = tone(n, [(30.0, 0.5, 0.0), (60.0, 1.0, 0.4), (120.0, 0.7, 1.0), (180.0, 0.2, 2.1), (240.0, 0.25, 0.3)])
+    deep = filt_periodic(deep, ("lp", 800, 0.7))
+    wind = loop_noise(n, r, ("bp", 300, 0.5))
+    wind = [x * (0.85 + 0.15 * math.sin(TAU * (2 / 3) * i / SR)) for i, x in enumerate(wind)]
+    rumble = loop_noise(n, r, ("lp", 90, 0.7), ("lp", 90, 0.7))
+    return mix((whine, 0.12), (deep, 0.45), (wind, 0.25), (rumble, 2.0))
+
+
+# ---------------------------------------------------------------- batch 2: one-shots
+
+def saber_from_freqs(freqs):
+    return saber_voice(phase_accum(freqs), phase_accum([f * SABER_DETUNE for f in freqs]),
+                       phase_accum([f * 0.5 for f in freqs]))
+
+
+def sword_ignite(seconds=0.8):
+    n = int(SR * seconds)
+    r = random.Random(1301)
+    T = [i / SR for i in range(n)]
+    freqs = [90 * (0.3 + 0.7 * (1 - math.exp(-t / 0.06))) * (1 + 0.2 * math.exp(-((t - 0.15) / 0.07) ** 2))
+             for t in T]
+    amp = [min(1.0, t / 0.01) * (0.8 + 0.5 * math.exp(-((t - 0.14) / 0.08) ** 2)) for t in T]
+    voice = filt([x * a for x, a in zip(saber_from_freqs(freqs), amp)], ("lp", 3200, 0.7))
+    snap = burst(n, r, 0.006, [("hp", 1500, 0.7)])
+    hiss = filt_sweep(noise(n, r), "bp", lambda t: 1500 + 5000 * min(1.0, t / 0.2), 1.2)
+    hiss = [x * min(1.0, t / 0.005) * math.exp(-t / 0.18) for x, t in zip(hiss, T)]
+    crack = [0.0] * n
+    scatter_bursts(crack, r, 30, lambda: int(r.uniform(0, 0.25) * SR), 0.008, (0.0004, 0.0015),
+                   lambda r: [("hp", r.uniform(2000, 5000), 0.7)], (0.2, 0.7), circular=False)
+    return fade_edges(mix((voice, 1.0), (snap, 0.7), (hiss, 0.8), (crack, 0.4)), fin=0.0005, fout=0.12)
+
+
+def sword_retract(seconds=0.7):
+    n = int(SR * seconds)
+    r = random.Random(1302)
+    T = [i / SR for i in range(n)]
+    freqs = [max(12.0, 92 * (1 + 0.12 * math.exp(-t / 0.03)) * math.exp(-(t / 0.4) ** 1.5)) for t in T]
+    amp = [min(1.0, t / 0.005) * max(0.0, 1 - t / seconds) ** 1.3 for t in T]
+    voice = filt([x * a for x, a in zip(saber_from_freqs(freqs), amp)], ("lp", 3000, 0.7))
+    hiss = filt_sweep(noise(n, r), "bp", lambda t: 800 + 4500 * math.exp(-t / 0.15), 1.2)
+    hiss = [x * min(1.0, t / 0.01) * math.exp(-t / 0.15) for x, t in zip(hiss, T)]
+    return fade_edges(mix((voice, 1.0), (hiss, 0.5)), fin=0.002, fout=0.05)
+
+
+def sword_swing(seed, seconds=0.45, centre=0.2, width=0.08, up=0.3):
+    n = int(SR * seconds)
+    r = random.Random(seed)
+    T = [i / SR for i in range(n)]
+    bell = lambda t: math.exp(-((t - centre) / width) ** 2)
+    # pitch peaks slightly before the loudness peak (approaching blade), then falls past it (doppler)
+    freqs = [90 * (0.92 + up * bell(t + 0.3 * width) - 0.08 * math.tanh((t - centre) / width)) for t in T]
+    amp = [0.25 + 0.75 * bell(t) for t in T]
+    voice = filt([x * a for x, a in zip(saber_from_freqs(freqs), amp)], ("lp", 3500, 0.7))
+    whoosh = filt_sweep(noise(n, r), "bp", lambda t: 400 + 2600 * bell(t + 0.2 * width), 1.2)
+    whoosh = [x * bell(t) ** 1.5 for x, t in zip(whoosh, T)]
+    return fade_edges(mix((voice, 1.0), (whoosh, 0.35)), fin=0.02, fout=0.08)
+
+
+def sword_hit(seconds=0.4):
+    n = int(SR * seconds)
+    r = random.Random(1321)
+    T = [i / SR for i in range(n)]
+    crack = [0.0] * n
+    scatter_bursts(crack, r, 70, lambda: min(n - 1, int(r.expovariate(1 / 0.05) * SR)), 0.01,
+                   (0.0004, 0.002), lambda r: [("hp", r.uniform(1500, 5000), 0.7)], (0.3, 1.0), circular=False)
+    freqs = [90 * r.uniform(0.85, 1.4) if i % 300 == 0 else 0.0 for i in range(n)]
+    f = 120.0
+    for i in range(n):                                  # jittery, briefly raised pitch while the blades bind
+        if freqs[i]:
+            f = freqs[i] * (1 + 0.6 * math.exp(-T[i] / 0.05))
+        freqs[i] = f
+    clash = saber_from_freqs(freqs)
+    clash = soft_clip([x * 2.0 * min(1.0, t / 0.002) * math.exp(-t / 0.12) for x, t in zip(clash, T)], 3.0)
+    clash = filt(clash, ("lp", 4000, 0.7))
+    snap = thump(n, 160, 60, 0.05)
+    metal = ring(n, [(1510, 0.3, 0.08), (2270, 0.25, 0.06), (3390, 0.2, 0.05)], r)
+    hiss = burst(n, r, 0.15, [("hp", 3000, 0.7)])
+    out = mix((crack, 1.0), (clash, 0.6), (snap, 0.6), (metal, 0.3), (hiss, 0.25))
+    return fade_edges(soft_clip(normalize_peak(out, 1.0), 2.0), fin=0.0003, fout=0.05)
+
+
+def arc_gun_charge(seconds=0.6):
+    n = int(SR * seconds)
+    r = random.Random(1331)
+    T = [i / SR for i in range(n)]
+    freqs = [300 * 2 ** (3.3 * (t / seconds) ** 1.3) for t in T]
+    whine = harm(phase_accum(freqs), [1.0, 0.4, 0.25, 0.12])
+    whine = [x * (0.85 + 0.15 * math.sin(TAU * (30 + 40 * t / seconds) * t)) for x, t in zip(whine, T)]
+    buzz = harm(phase_accum([100 + 150 * t / seconds for t in T]), [1.0, 0.5, 0.33, 0.25, 0.2])
+    hiss = filt(noise(n, r), ("hp", 3000, 0.7))
+    u = [t / seconds for t in T]
+    env = [min(1.0, t / 0.03) * (0.35 + 0.65 * v) for t, v in zip(T, u)]
+    out = [e * (0.6 * w + 0.15 * b + 0.15 * v * h) for e, w, b, h, v in zip(env, whine, buzz, hiss, u)]
+    return fade_edges(filt(out, ("lp", 9000, 0.7)), fin=0.001, fout=0.015)
+
+
+def arc_gun_fire(seconds=0.7):
+    n = int(SR * seconds)
+    r = random.Random(1341)
+    T = [i / SR for i in range(n)]
+    boom = thump(n, 140, 40, 0.18, drop=0.03)
+    snap = burst(n, r, 0.004)
+    body = burst(n, r, 0.03, [("lp", 1200, 0.7)])
+    crack = [0.0] * n
+
+    def when():
+        t = r.expovariate(1 / 0.09)
+        return int(t * SR) if t < seconds - 0.03 else None
+    scatter_bursts(crack, r, 220, when, 0.012, (0.0004, 0.003),
+                   lambda r: [("hp", r.uniform(800, 5000), 0.7)], (0.4, 1.0), circular=False)
+    scatter_bursts(crack, r, 40, when, 0.02, (0.002, 0.006),
+                   lambda r: [("bp", r.uniform(400, 1200), 0.9)], (0.5, 1.2), circular=False)
+    crack = [x * math.exp(-t / 0.2) for x, t in zip(crack, T)]
+    tail, ph, f, gate = [], 0.0, 120.0, 1.0
+    for i, t in enumerate(T):                           # heavy, unstable arc buzz
+        if i % 180 == 0:
+            f = 120.0 * r.uniform(0.85, 1.15)
+            gate = r.uniform(0.2, 1.0)
+        ph += f / SR
+        saw = 2.0 * (ph - math.floor(ph + 0.5))
+        tail.append(saw * gate * min(1.0, t / 0.008) * math.exp(-t / 0.25))
+    tail = filt(tail, ("lp", 3000, 0.7), ("hp", 90, 0.7))
+    thunder = filt(noise(n, r), ("lp", 300, 0.7), ("lp", 300, 0.7))
+    thunder = [x * min(1.0, t / 0.02) * math.exp(-t / 0.25) for x, t in zip(thunder, T)]
+    hiss = burst(n, r, 0.2, [("hp", 4000, 0.7)])
+    out = mix((boom, 0.9), (snap, 0.7), (body, 0.7), (crack, 1.0), (tail, 0.5), (thunder, 4.0), (hiss, 0.2))
+    return fade_edges(soft_clip(normalize_peak(out, 1.0), 3.0), fin=0.0003, fout=0.06)
+
+
+def drill_start(seconds=0.4):
+    n = int(SR * seconds)
+    r = random.Random(1351)
+    T = [i / SR for i in range(n)]
+    speed = [1 - math.exp(-t / 0.12) for t in T]
+    motor = harm(phase_accum([400 * s for s in speed]), [1.0, 0.6, 0.45, 0.3, 0.2, 0.12, 0.08, 0.05])
+    motor = filt([x * (0.3 + 0.7 * s) * min(1.0, t / 0.01) for x, s, t in zip(motor, speed, T)], ("lp", 4500, 0.7))
+    clicks = [burst(int(0.004 * SR), r, 0.0006, [("bp", r.uniform(2200, 3200), 2.0)]) for _ in range(8)]
+    chatter = [0.0] * n
+    p = 0.0
+    for i, s in enumerate(speed):                       # tooth contacts at 133.5 Hz x speed
+        p += 133.5 * s / SR
+        if p >= 1.0:
+            p -= 1.0
+            add_at(chatter, clicks[r.randrange(8)], i, r.uniform(0.3, 1.0) * (0.5 + 0.5 * s))
+    trigger = burst(n, r, 0.002, [("hp", 2500, 0.7)])
+    return fade_edges(mix((motor, 0.35), (chatter, 0.3), (trigger, 0.3)), fin=0.0005, fout=0.02)
+
+
+def breaker_trip(seconds=1.0):
+    n = int(SR * seconds)
+    r = random.Random(1361)
+    T = [i / SR for i in range(n)]
+    body = thump(n, 130, 45, 0.12, drop=0.03)
+    impact = burst(n, r, 0.015, [("bp", 800, 0.8)])
+    hit = burst(n, r, 0.005, [("hp", 2000, 0.7)])
+    metal = ring(n, [(480, 0.3, 0.25), (1093, 0.35, 0.3), (1720, 0.25, 0.22), (2650, 0.18, 0.18),
+                     (3980, 0.1, 0.1)], r)
+    latch = [0.0] * n
+    add_at(latch, burst(int(0.05 * SR), r, 0.004, [("hp", 1500, 0.7)]), int(0.06 * SR), 0.6)
+    for _ in range(6):                                  # spring / linkage rattle
+        add_at(latch, burst(int(0.02 * SR), r, 0.002, [("bp", r.uniform(1500, 3500), 1.5)]),
+               int(r.uniform(0.12, 0.4) * SR), r.uniform(0.15, 0.4))
+    a0 = int(0.01 * SR)                                 # arc flash as the contacts part
+    hiss = filt(noise(n, r), ("hp", 2500, 0.7))
+    flash = filt(noise(n, r), ("lp", 1500, 0.7))
+    arc = [0.0] * n
+    for i in range(a0, n):
+        t = (i - a0) / SR
+        env = math.exp(-t / 0.18) * min(1.0, t / 0.002)
+        buzz = math.sin(TAU * 120 * t) * (0.5 + 0.5 * math.sin(TAU * 240 * t))
+        arc[i] += env * (0.6 * hiss[i] + 0.3 * buzz) + 0.8 * flash[i] * math.exp(-t / 0.05) * min(1.0, t / 0.002)
+        if r.random() < 0.06 * math.exp(-t / 0.2):
+            add_at(arc, burst(int(0.006 * SR), r, 0.0008, [("hp", 1500, 0.7)]), i, r.uniform(0.6, 1.4))
+    out = mix((body, 1.0), (impact, 1.0), (hit, 0.6), (metal, 0.25), (latch, 0.6), (arc, 0.7))
+    return fade_edges(out, fin=0.0005, fout=0.1)
+
+
+def wireless_surge(seconds=1.2):
+    n = int(SR * seconds)
+    r = random.Random(1371)
+    T = [i / SR for i in range(n)]
+    dry_len = 0.7
+    freqs = [600 * 2 ** (-1.0 * min(1.0, t / dry_len) + 0.5 * math.sin(TAU * 7 * t) * max(0.0, 1 - t / dry_len)
+                         + 0.8 * math.exp(-t / 0.05)) for t in T]
+    v1 = harm(phase_accum(freqs), [1.0, 0.5, 0.33, 0.25, 0.2])
+    v2 = harm(phase_accum([f * 1.498 for f in freqs]), [1.0, 0.3, 0.15])
+    env = [min(1.0, t / 0.005) * max(0.0, 1 - t / dry_len) ** 1.5 for t in T]
+    dry = [e * (0.6 * a + 0.35 * b) * (0.7 + 0.3 * math.sin(TAU * 37 * t))
+           for e, a, b, t in zip(env, v1, v2, T)]
+    crack = [0.0] * n
+    scatter_bursts(crack, r, 45, lambda: int(r.uniform(0, 0.5) * SR), 0.01, (0.0004, 0.002),
+                   lambda r: [("hp", r.uniform(2000, 6000), 0.7)], (0.3, 1.0), circular=False)
+    dry = filt(mix((dry, 1.0), (crack, 0.5)), ("lp", 7000, 0.7))
+    return fade_edges(reverb(dry, rt60=1.0, wet=0.45), fin=0.0005, fout=0.15)
+
+
+def transformer_buzz_overload(seconds=1.5):
+    n = int(SR * seconds)
+    r = random.Random(1381)
+    T = [i / SR for i in range(n)]
+    hum = tone(n, [(120.0, 1.0, 0.0), (240.0, 0.55, 0.5), (360.0, 0.4, 1.4), (480.0, 0.15, 0.9),
+                   (60.0, 0.1, 0.0), (600.0, 0.1, 2.2)])
+    out = []
+    for x, t in zip(hum, T):
+        u = t / seconds
+        swell = 0.3 + 0.7 * math.sin(0.5 * math.pi * min(1.0, t / 1.1)) ** 2
+        d = 1 + 4 * u                                   # drive rises: the core saturates, buzz goes ragged
+        out.append(math.tanh(x * swell * d) * (0.6 + 0.4 * swell))
+    rattle = filt(noise(n, r), ("bp", 1800, 1.0))      # loose laminations chattering at 120 Hz
+    rattle = [x * max(0.0, math.sin(TAU * 120 * t)) ** 6 * (t / seconds) ** 1.5 for x, t in zip(rattle, T)]
+    crack = [0.0] * n
+
+    def when():
+        i = r.randrange(n)
+        return i if r.random() < (i / n) ** 2 else None
+    scatter_bursts(crack, r, 160, when, 0.01, (0.0004, 0.002),
+                   lambda r: [("hp", r.uniform(1500, 5000), 0.7)], (0.3, 1.0), circular=False)
+    out = filt(mix((out, 0.8), (rattle, 1.2), (crack, 0.5)), ("lp", 4500, 0.7))
+    return fade_edges(out, fin=0.05, fout=0.3)
+
+
+def pipe_click(seconds=0.15):
+    n = int(SR * seconds)
+    r = random.Random(1391)
+    tick = burst(n, r, 0.0012, [("hp", 3000, 0.7)])
+    metal = ring(n, [(3820, 0.4, 0.025), (5310, 0.3, 0.018), (7170, 0.15, 0.012)], r)
+    body = thump(n, 600, 300, 0.006, drop=0.003)
+    out = mix((tick, 1.0), (metal, 0.3), (body, 0.3))
+    add_at(out, burst(int(0.02 * SR), r, 0.0008, [("hp", 3000, 0.7)]), int(0.006 * SR), 0.3)
+    return fade_edges(out, fin=0.0002, fout=0.02)
+
+
+def tank_slosh(seconds=0.6):
+    n = int(SR * seconds)
+    r = random.Random(1392)
+    T = [i / SR for i in range(n)]
+    bump = lambda t, c, w: math.exp(-((t - c) / w) ** 2)
+    env = [bump(t, 0.13, 0.08) + 0.6 * bump(t, 0.36, 0.1) for t in T]
+    wash = filt_sweep(noise(n, r), "bp", lambda t: 300 + 600 * bump(t, 0.15, 0.1) + 250 * bump(t, 0.38, 0.1), 1.5)
+    body = filt(noise(n, r), ("lp", 500, 0.7))
+    liquid = [e * (w + 0.6 * b) for e, w, b in zip(env, wash, body)]
+    bub = [0.0] * n
+    for _ in range(14):
+        c = r.choice([0.13, 0.36])
+        add_at(bub, bubble(r.uniform(250, 900), r.uniform(0.008, 0.025)),
+               int(max(0.0, r.gauss(c, 0.06)) * SR), r.uniform(0.3, 1.0))
+    mass = [0.0] * n
+    add_at(mass, thump(int(0.3 * SR), 70, 50, 0.08, drop=0.05), int(0.06 * SR))
+    return fade_edges(mix((liquid, 1.0), (bub, 0.35), (mass, 0.3)), fin=0.01, fout=0.06)
+
+
 # ---------------------------------------------------------------- main
 
 LOOPS = {
@@ -516,18 +1187,71 @@ ONESHOTS = {
     "arc_zap": arc_zap,
 }
 
+# batch 2: processing machines, generators, tools and weapons
+LOOPS_2 = {
+    "alloy_furnace_run": (alloy_furnace_run, -15.0),
+    "arc_furnace_run": (arc_furnace_run, -13.0),
+    "pump_run": (pump_run, -14.0),
+    "ore_washer_run": (ore_washer_run, -14.0),
+    "rolling_mill_run": (rolling_mill_run, -13.0),
+    "wire_drawer_run": (wire_drawer_run, -15.0),
+    "sword_hum": (sword_hum, -15.0),
+    "drill_run": (drill_run, -14.0),
+    "wireless_hum": (wireless_hum, -16.0),
+    "transformer_hum": (transformer_hum, -16.0),
+    "wind_turbine_run": (wind_turbine_run, -14.0),
+    "hydro_turbine_run": (hydro_turbine_run, -13.0),
+    "diesel_run": (diesel_run, -13.0),
+    "condenser_run": (condenser_run, -15.0),
+}
+
+ONESHOTS_2 = {
+    "sword_ignite": sword_ignite,
+    "sword_retract": sword_retract,
+    "sword_swing1": lambda: sword_swing(1311, centre=0.2, width=0.08, up=0.3),
+    "sword_swing2": lambda: sword_swing(1312, centre=0.17, width=0.07, up=0.4),
+    "sword_swing3": lambda: sword_swing(1313, centre=0.23, width=0.09, up=0.22),
+    "sword_hit": sword_hit,
+    "arc_gun_charge": arc_gun_charge,
+    "arc_gun_fire": arc_gun_fire,
+    "drill_start": drill_start,
+    "breaker_trip": breaker_trip,
+    "wireless_surge": wireless_surge,
+    "transformer_buzz_overload": transformer_buzz_overload,
+    "pipe_click": pipe_click,
+    "tank_slosh": tank_slosh,
+}
+
+# events whose sounds list holds several files (Minecraft picks one at random)
+VARIANTS = {"sword_swing": ["sword_swing1", "sword_swing2", "sword_swing3"]}
+
+ALL_LOOPS = {**LOOPS, **LOOPS_2}
+ALL_ONESHOTS = {**ONESHOTS, **ONESHOTS_2}
 
 # a near-continuous square-ish tone is far louder than a transient at the same peak; keep the alarm civil
-ONESHOT_PEAK = {"scada_alarm": 10 ** (-6 / 20)}
+ONESHOT_PEAK = {"scada_alarm": 10 ** (-6 / 20),
+                # sustained tones: same reasoning
+                "arc_gun_charge": 10 ** (-4 / 20),
+                "transformer_buzz_overload": 10 ** (-4 / 20),
+                "drill_start": 10 ** (-6 / 20),     # ends at roughly drill_run's level, which it hands over to
+                "sword_swing1": 10 ** (-3 / 20), "sword_swing2": 10 ** (-3 / 20), "sword_swing3": 10 ** (-3 / 20)}
+
+
+def event_of(name):
+    for ev, files in VARIANTS.items():
+        if name in files:
+            return ev
+    return name
 
 
 def write_sounds_json():
     events = {}
-    for name in list(LOOPS) + list(ONESHOTS):
+    for name in list(LOOPS) + list(ONESHOTS) + list(LOOPS_2) + list(ONESHOTS_2):
         entry = {"name": "powerfactor:" + name}
-        if name in LOOPS:
+        if name in ALL_LOOPS:
             entry["stream"] = False
-        events[name] = {"sounds": [entry], "subtitle": "subtitles.powerfactor." + name}
+        ev = event_of(name)
+        events.setdefault(ev, {"sounds": [], "subtitle": "subtitles.powerfactor." + ev})["sounds"].append(entry)
     with open(os.path.join(ASSETS, "sounds.json"), "w") as f:
         json.dump(events, f, indent=2)
         f.write("\n")
@@ -535,13 +1259,28 @@ def write_sounds_json():
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    for name, (gen, target) in LOOPS.items():
-        s = rotate_to_quiet(normalize_rms(gen(), target))
-        print(f"{name:24s} loop     {len(s) / SR:5.2f}s  rms {db(rms(s)):6.1f} dBFS  peak {db(max(abs(x) for x in s)):5.1f}")
+    want = set()
+    for a in sys.argv[1:]:
+        want.update(VARIANTS.get(a, [a]))
+    unknown = want - set(ALL_LOOPS) - set(ALL_ONESHOTS)
+    if unknown:
+        raise SystemExit("unknown sound(s): " + ", ".join(sorted(unknown)))
+    pick = lambda name: not want or name in want
+    for name, (gen, target) in ALL_LOOPS.items():
+        if not pick(name):
+            continue
+        s = normalize_rms(gen(), target)
+        seam = check_loop(name, s)           # the generator's own wrap point
+        s = rotate_to_quiet(s)
+        check_loop(name, s)                  # and the (rotated) file edges
+        print(f"{name:26s} loop     {len(s) / SR:5.2f}s  rms {db(rms(s)):6.1f} dBFS  peak "
+              f"{db(max(abs(x) for x in s)):5.1f}  seam {seam:4.2f}")
         write_ogg(name, s)
-    for name, gen in ONESHOTS.items():
+    for name, gen in ALL_ONESHOTS.items():
+        if not pick(name):
+            continue
         s = normalize_peak(gen(), ONESHOT_PEAK.get(name, PEAK_ONESHOT))
-        print(f"{name:24s} one-shot {len(s) / SR:5.2f}s  rms {db(rms(s)):6.1f} dBFS  peak {db(max(abs(x) for x in s)):5.1f}")
+        print(f"{name:26s} one-shot {len(s) / SR:5.2f}s  rms {db(rms(s)):6.1f} dBFS  peak {db(max(abs(x) for x in s)):5.1f}")
         write_ogg(name, s)
     write_sounds_json()
     print("sounds written to", os.path.abspath(OUT))

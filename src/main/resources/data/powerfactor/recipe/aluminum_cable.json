@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "RRR",
+    "AAA",
+    "RRR"
+  ],
+  "key": {
+    "R": "powerfactor:rubber",
+    "A": "powerfactor:fine_aluminum_wire"
+  },
+  "result": {
+    "id": "powerfactor:aluminum_cable",
+    "count": 6
+  }
+}

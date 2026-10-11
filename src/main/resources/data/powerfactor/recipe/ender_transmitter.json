@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "EPE",
+    "OKO",
+    "OCO"
+  ],
+  "key": {
+    "E": "minecraft:ender_pearl",
+    "P": "minecraft:ender_eye",
+    "O": "minecraft:obsidian",
+    "K": "powerfactor:advanced_circuit",
+    "C": "powerfactor:copper_coil"
+  },
+  "result": {
+    "id": "powerfactor:ender_transmitter",
+    "count": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PDP",
+    "DKD",
+    "PDP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:advanced_circuit",
+    "D": "#c:gems/diamond"
+  },
+  "result": {
+    "id": "powerfactor:drill_area_module",
+    "count": 1
+  }
+}

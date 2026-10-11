@@ -65,7 +65,7 @@ public class PumpBlockEntity extends ProcessingBlockEntity {
 
     @Override
     public SoundEvent loopSound() {
-        return ModSounds.CRUSHER_IDLE.get();
+        return ModSounds.PUMP_RUN.get();
     }
 
     @Override

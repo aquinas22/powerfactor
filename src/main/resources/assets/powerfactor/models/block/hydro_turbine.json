@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "powerfactor:block/hydro_turbine_top",
+    "side": "powerfactor:block/hydro_turbine_side",
+    "front": "powerfactor:block/hydro_turbine_front"
+  }
+}

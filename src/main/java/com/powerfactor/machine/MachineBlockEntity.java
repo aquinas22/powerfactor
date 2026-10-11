@@ -1,6 +1,7 @@
 package com.powerfactor.machine;
 
 import com.powerfactor.api.ScadaDevice;
+import com.powerfactor.scada.ScadaReading;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -119,6 +120,16 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     @Override
     public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
         return null;
+    }
+
+    /** False for machines that answer right-clicks with {@link #describe()} instead of a GUI. */
+    public boolean hasMenu() {
+        return true;
+    }
+
+    public Component describe() {
+        ScadaReading r = scadaReading();
+        return Component.empty().append(r.name()).append(": ").append(Component.literal(r.fe() + " FE/t  " + r.ee() + " EE/t  ")).append(r.detail());
     }
 
     @Override

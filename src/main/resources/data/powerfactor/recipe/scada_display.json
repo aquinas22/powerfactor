@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "GGG",
+    "GCG",
+    "IFI"
+  ],
+  "key": {
+    "G": "#c:glass_panes",
+    "C": "powerfactor:control_circuit",
+    "I": "#c:ingots/iron",
+    "F": "powerfactor:optical_fiber"
+  },
+  "result": {
+    "id": "powerfactor:scada_display",
+    "count": 4
+  }
+}

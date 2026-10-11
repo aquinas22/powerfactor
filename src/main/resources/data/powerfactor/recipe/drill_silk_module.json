@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PSP",
+    "EKE",
+    "PSP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:advanced_circuit",
+    "S": "minecraft:string",
+    "E": "#c:gems/emerald"
+  },
+  "result": {
+    "id": "powerfactor:drill_silk_module",
+    "count": 1
+  }
+}

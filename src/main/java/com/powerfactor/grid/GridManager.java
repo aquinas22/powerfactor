@@ -47,16 +47,52 @@ public final class GridManager {
         MANAGERS.clear();
     }
 
-    /** The grid this wire belongs to, building it if needed; null if there's no wire here. */
+    /** The grid this wire, closed breaker or pylon belongs to, building it if needed; null if none. */
     public @Nullable PowerGrid gridAt(BlockPos pos) {
         PowerGrid grid = byPos.get(pos);
         if (grid != null) {
             return grid;
         }
-        if (!level.isLoaded(pos) || !(level.getBlockState(pos).getBlock() instanceof WireBlock wire)) {
+        if (!level.isLoaded(pos)) {
             return null;
         }
-        return build(pos.immutable(), wire);
+        CableTier tier = tierAt(pos);
+        return tier == null ? null : build(pos.immutable(), tier);
+    }
+
+    /** What tier of grid a node here belongs to. A breaker takes the tier of an adjacent wire. */
+    private @Nullable CableTier tierAt(BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof WireBlock wire) {
+            return wire.tier();
+        }
+        if (state.getBlock() instanceof PylonBlock) {
+            return CableTier.HV;
+        }
+        if (state.getBlock() instanceof BreakerBlock && state.getValue(BreakerBlock.CLOSED)) {
+            for (Direction d : Direction.values()) {
+                if (level.getBlockState(pos.relative(d)).getBlock() instanceof WireBlock wire) {
+                    return wire.tier();
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean isNode(BlockState state, CableTier tier) {
+        return state.getBlock() instanceof WireBlock w && w.tier() == tier
+                || state.getBlock() instanceof PylonBlock && tier == CableTier.HV
+                || state.getBlock() instanceof BreakerBlock && state.getValue(BreakerBlock.CLOSED);
+    }
+
+    /** Something worth delivering to or hearing from: an FE handler or an EE device. */
+    private boolean isEndpoint(BlockPos pos, Direction side) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof ConnectorBlock || state.getBlock() instanceof PylonBlock || state.getBlock() instanceof BreakerBlock) {
+            return false;
+        }
+        return level.getBlockEntity(pos) instanceof com.powerfactor.api.ReactiveLoad
+                || level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Energy.BLOCK, pos, side) != null;
     }
 
     public void invalidate(BlockPos pos) {
@@ -96,9 +132,9 @@ public final class GridManager {
         }
     }
 
-    private PowerGrid build(BlockPos start, WireBlock type) {
+    private PowerGrid build(BlockPos start, CableTier tier) {
         Set<BlockPos> wires = new HashSet<>();
-        List<PowerGrid.Endpoint> endpoints = new ArrayList<>();
+        Set<PowerGrid.Endpoint> endpoints = new java.util.LinkedHashSet<>();
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
         wires.add(start);
         queue.add(start);
@@ -106,23 +142,33 @@ public final class GridManager {
             BlockPos pos = queue.poll();
             BlockState state = level.getBlockState(pos);
             for (Direction d : Direction.values()) {
-                if (!state.getValue(ConnectorBlock.CONNECTIONS.get(d))) {
+                // Wires only reach along their connected arms; breakers and pylons along any face.
+                if (state.getBlock() instanceof WireBlock && !state.getValue(ConnectorBlock.CONNECTIONS.get(d))) {
                     continue;
                 }
                 BlockPos next = pos.relative(d);
                 if (!level.isLoaded(next)) {
                     continue;
                 }
-                if (level.getBlockState(next).getBlock() == type) {
+                BlockState nextState = level.getBlockState(next);
+                if (isNode(nextState, tier)) {
                     if (wires.add(next)) {
                         queue.add(next);
                     }
-                } else {
+                } else if (isEndpoint(next, d.getOpposite())) {
                     endpoints.add(new PowerGrid.Endpoint(next, d.getOpposite()));
                 }
             }
+            // Conductors strung between pylons.
+            if (state.getBlock() instanceof PylonBlock && level.getBlockEntity(pos) instanceof PylonBlockEntity pylon) {
+                for (BlockPos link : pylon.links()) {
+                    if (level.isLoaded(link) && level.getBlockState(link).getBlock() instanceof PylonBlock && wires.add(link)) {
+                        queue.add(link);
+                    }
+                }
+            }
         }
-        PowerGrid grid = new PowerGrid(wires, endpoints, type.ratingCe());
+        PowerGrid grid = new PowerGrid(wires, new ArrayList<>(endpoints), tier);
         for (BlockPos p : wires) {
             drop(byPos.get(p));
             byPos.put(p, grid);

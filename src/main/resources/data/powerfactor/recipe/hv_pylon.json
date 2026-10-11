@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "S S",
+    "SPS",
+    "S S"
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "P": "#c:plates/steel"
+  },
+  "result": {
+    "id": "powerfactor:hv_pylon",
+    "count": 2
+  }
+}
