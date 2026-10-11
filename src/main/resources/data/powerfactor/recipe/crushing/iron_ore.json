@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ores/iron",
+  "result": {
+    "item": "powerfactor:iron_dust",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "item": "powerfactor:iron_dust",
+      "chance": 0.25
+    }
+  ]
+}

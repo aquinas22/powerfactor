@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BQB",
+    "MKM",
+    "BQB"
+  ],
+  "key": {
+    "K": "powerfactor:control_circuit",
+    "B": "#c:ingots/brass",
+    "Q": "#c:gems/quartz",
+    "M": "powerfactor:electric_motor"
+  },
+  "result": {
+    "id": "powerfactor:vfd_upgrade",
+    "count": 1
+  }
+}

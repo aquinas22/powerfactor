@@ -1,0 +1,8 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:raw_materials/copper",
+  "result": {
+    "item": "powerfactor:copper_dust",
+    "count": 2
+  }
+}

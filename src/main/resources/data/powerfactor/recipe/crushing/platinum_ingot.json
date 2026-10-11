@@ -1,0 +1,23 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ingots/platinum",
+  "result": {
+    "tag": "c:dusts/platinum"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:ingots/platinum"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:dusts/platinum"
+      }
+    }
+  ]
+}

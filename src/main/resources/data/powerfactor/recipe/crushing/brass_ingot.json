@@ -1,0 +1,7 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ingots/brass",
+  "result": {
+    "item": "powerfactor:brass_dust"
+  }
+}

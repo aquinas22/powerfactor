@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "powerfactor:block/electric_furnace_top",
+    "bottom": "powerfactor:block/electric_furnace_side",
+    "side": "powerfactor:block/electric_furnace_side",
+    "front": "powerfactor:block/electric_furnace_front"
+  }
+}

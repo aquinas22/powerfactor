@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "IGI",
+    "CDC",
+    "IFI"
+  ],
+  "key": {
+    "I": "#c:ingots/iron",
+    "G": "#c:glass_panes",
+    "C": "powerfactor:control_circuit",
+    "D": "#c:dusts/glowstone",
+    "F": "powerfactor:optical_fiber"
+  },
+  "result": {
+    "id": "powerfactor:scada_terminal",
+    "count": 1
+  }
+}

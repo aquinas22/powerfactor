@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": "powerfactor:raw_zinc"
+  },
+  "result": {
+    "id": "powerfactor:raw_zinc_block",
+    "count": 1
+  }
+}

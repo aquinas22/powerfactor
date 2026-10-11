@@ -1,0 +1,8 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "minecraft:stone",
+  "result": {
+    "item": "minecraft:cobblestone"
+  },
+  "time": 60
+}

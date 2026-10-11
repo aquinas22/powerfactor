@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ores/coal",
+  "result": {
+    "item": "minecraft:coal",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "item": "powerfactor:coal_dust",
+      "chance": 0.5
+    }
+  ]
+}

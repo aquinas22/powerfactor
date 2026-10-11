@@ -1,0 +1,9 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#minecraft:wool",
+  "result": {
+    "item": "minecraft:string",
+    "count": 4
+  },
+  "time": 60
+}

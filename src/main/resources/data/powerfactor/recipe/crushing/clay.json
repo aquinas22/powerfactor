@@ -1,0 +1,9 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "minecraft:clay",
+  "result": {
+    "item": "minecraft:clay_ball",
+    "count": 4
+  },
+  "time": 60
+}

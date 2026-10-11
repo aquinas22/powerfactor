@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ores/zinc",
+  "result": {
+    "item": "powerfactor:zinc_dust",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "item": "powerfactor:zinc_dust",
+      "chance": 0.25
+    }
+  ]
+}

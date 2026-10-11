@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WZW",
+    "ZKZ",
+    "WZW"
+  ],
+  "key": {
+    "K": "powerfactor:control_circuit",
+    "W": "powerfactor:copper_wire",
+    "Z": "#c:ingots/zinc"
+  },
+  "result": {
+    "id": "powerfactor:surge_upgrade",
+    "count": 1
+  }
+}

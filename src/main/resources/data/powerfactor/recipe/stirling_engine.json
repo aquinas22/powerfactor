@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "CCC",
+    " G ",
+    "IXI"
+  ],
+  "key": {
+    "C": "#c:cobblestones",
+    "G": "#c:glass_blocks",
+    "I": "#c:gears/iron",
+    "X": "minecraft:piston"
+  },
+  "result": {
+    "id": "powerfactor:stirling_engine",
+    "count": 1
+  }
+}

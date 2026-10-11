@@ -1,0 +1,15 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ores/redstone",
+  "result": {
+    "item": "minecraft:redstone",
+    "count": 6
+  },
+  "bonus": [
+    {
+      "item": "minecraft:redstone",
+      "count": 2,
+      "chance": 0.5
+    }
+  ]
+}

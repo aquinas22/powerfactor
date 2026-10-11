@@ -1,0 +1,23 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ingots/uranium",
+  "result": {
+    "tag": "c:dusts/uranium"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:ingots/uranium"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:dusts/uranium"
+      }
+    }
+  ]
+}

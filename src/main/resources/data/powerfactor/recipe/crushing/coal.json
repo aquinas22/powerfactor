@@ -1,0 +1,7 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "minecraft:coal",
+  "result": {
+    "item": "powerfactor:coal_dust"
+  }
+}

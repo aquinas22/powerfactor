@@ -1,0 +1,9 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:storage_blocks/raw_copper",
+  "result": {
+    "item": "powerfactor:copper_dust",
+    "count": 18
+  },
+  "time": 400
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "BKB",
+    "RXR",
+    "BKB"
+  ],
+  "key": {
+    "B": "#c:ingots/brass",
+    "K": "powerfactor:control_circuit",
+    "R": "#c:dusts/redstone",
+    "X": "powerfactor:capacitor_bank"
+  },
+  "result": {
+    "id": "powerfactor:auto_capacitor_bank",
+    "count": 1
+  }
+}

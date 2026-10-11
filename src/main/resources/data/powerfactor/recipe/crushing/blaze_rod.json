@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:rods/blaze",
+  "result": {
+    "item": "minecraft:blaze_powder",
+    "count": 4
+  },
+  "bonus": [
+    {
+      "item": "minecraft:blaze_powder",
+      "chance": 0.5
+    }
+  ]
+}

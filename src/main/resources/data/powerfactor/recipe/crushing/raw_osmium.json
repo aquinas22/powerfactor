@@ -1,0 +1,24 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:raw_materials/osmium",
+  "result": {
+    "tag": "c:dusts/osmium",
+    "count": 2
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:raw_materials/osmium"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:dusts/osmium"
+      }
+    }
+  ]
+}

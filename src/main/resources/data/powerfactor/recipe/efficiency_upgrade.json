@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LZL",
+    "ZKZ",
+    "LZL"
+  ],
+  "key": {
+    "K": "powerfactor:control_circuit",
+    "L": "#c:gems/lapis",
+    "Z": "#c:ingots/zinc"
+  },
+  "result": {
+    "id": "powerfactor:efficiency_upgrade",
+    "count": 1
+  }
+}

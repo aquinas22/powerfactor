@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:dusts/copper",
+    "#c:dusts/copper",
+    "#c:dusts/copper",
+    "#c:dusts/zinc"
+  ],
+  "result": {
+    "id": "powerfactor:brass_dust",
+    "count": 4
+  }
+}

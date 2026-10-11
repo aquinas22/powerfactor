@@ -1,0 +1,8 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:cobblestones/normal",
+  "result": {
+    "item": "minecraft:gravel"
+  },
+  "time": 80
+}

@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:zinc_ore",
+    "powerfactor:deepslate_zinc_ore",
+    "powerfactor:raw_zinc_block",
+    "powerfactor:zinc_block",
+    "powerfactor:brass_block"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " H ",
+    "BMB",
+    "BCB"
+  ],
+  "key": {
+    "H": "powerfactor:drill_head",
+    "M": "powerfactor:electric_motor",
+    "B": "#c:ingots/brass",
+    "C": "powerfactor:capacitor"
+  },
+  "result": {
+    "id": "powerfactor:electric_drill",
+    "count": 1
+  }
+}

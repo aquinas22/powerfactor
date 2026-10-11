@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "powerfactor:block/scada_terminal_side",
+    "bottom": "powerfactor:block/scada_terminal_side",
+    "side": "powerfactor:block/scada_terminal_side",
+    "front": "powerfactor:block/scada_terminal_front_on"
+  }
+}

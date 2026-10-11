@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=up": {
+      "model": "powerfactor:block/stirling_engine"
+    },
+    "facing=down": {
+      "model": "powerfactor:block/stirling_engine",
+      "x": 180
+    },
+    "facing=north": {
+      "model": "powerfactor:block/stirling_engine",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "powerfactor:block/stirling_engine",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powerfactor:block/stirling_engine",
+      "x": 90,
+      "y": 270
+    },
+    "facing=east": {
+      "model": "powerfactor:block/stirling_engine",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

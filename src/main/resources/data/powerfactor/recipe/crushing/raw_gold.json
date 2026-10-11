@@ -1,0 +1,8 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:raw_materials/gold",
+  "result": {
+    "item": "powerfactor:gold_dust",
+    "count": 2
+  }
+}

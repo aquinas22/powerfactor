@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:gravels",
+  "result": {
+    "item": "minecraft:sand"
+  },
+  "bonus": [
+    {
+      "item": "minecraft:flint",
+      "chance": 0.1
+    }
+  ],
+  "time": 80
+}

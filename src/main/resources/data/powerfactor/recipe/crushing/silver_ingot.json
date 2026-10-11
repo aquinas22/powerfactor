@@ -1,0 +1,23 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ingots/silver",
+  "result": {
+    "tag": "c:dusts/silver"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:ingots/silver"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:dusts/silver"
+      }
+    }
+  ]
+}

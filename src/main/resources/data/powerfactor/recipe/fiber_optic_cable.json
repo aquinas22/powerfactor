@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "KKK",
+    "FFF",
+    "KKK"
+  ],
+  "key": {
+    "K": "minecraft:dried_kelp",
+    "F": "powerfactor:optical_fiber"
+  },
+  "result": {
+    "id": "powerfactor:fiber_optic_cable",
+    "count": 6
+  }
+}

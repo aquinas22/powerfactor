@@ -1,0 +1,9 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:sandstone/uncolored_blocks",
+  "result": {
+    "item": "minecraft:sand",
+    "count": 2
+  },
+  "time": 60
+}

@@ -1,0 +1,8 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:glass_blocks/colorless",
+  "result": {
+    "item": "minecraft:sand"
+  },
+  "time": 60
+}

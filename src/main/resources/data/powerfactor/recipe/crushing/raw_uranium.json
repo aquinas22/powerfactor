@@ -1,0 +1,24 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:raw_materials/uranium",
+  "result": {
+    "tag": "c:dusts/uranium",
+    "count": 2
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:raw_materials/uranium"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:dusts/uranium"
+      }
+    }
+  ]
+}

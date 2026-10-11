@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#c:dusts/iron",
+    "#c:dusts/gold",
+    "#c:dusts/copper",
+    "#c:dusts/zinc",
+    "#c:dusts/brass",
+    "#c:dusts/coal"
+  ]
+}

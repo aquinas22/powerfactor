@@ -1,0 +1,8 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:raw_materials/zinc",
+  "result": {
+    "item": "powerfactor:zinc_dust",
+    "count": 2
+  }
+}

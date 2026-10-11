@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ZCZ",
+    "CKC",
+    "ZCZ"
+  ],
+  "key": {
+    "K": "powerfactor:control_circuit",
+    "Z": "#c:ingots/zinc",
+    "C": "#c:ingots/copper"
+  },
+  "result": {
+    "id": "powerfactor:capacity_upgrade",
+    "count": 1
+  }
+}

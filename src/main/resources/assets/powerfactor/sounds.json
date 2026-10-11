@@ -1,0 +1,127 @@
+{
+  "turbine_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:turbine_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.turbine_run"
+  },
+  "crusher_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:crusher_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.crusher_run"
+  },
+  "crusher_idle": {
+    "sounds": [
+      {
+        "name": "powerfactor:crusher_idle",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.crusher_idle"
+  },
+  "electric_furnace_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:electric_furnace_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.electric_furnace_run"
+  },
+  "charger_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:charger_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.charger_run"
+  },
+  "turbine_breaker_close": {
+    "sounds": [
+      {
+        "name": "powerfactor:turbine_breaker_close"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.turbine_breaker_close"
+  },
+  "turbine_breaker_open": {
+    "sounds": [
+      {
+        "name": "powerfactor:turbine_breaker_open"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.turbine_breaker_open"
+  },
+  "motor_trip": {
+    "sounds": [
+      {
+        "name": "powerfactor:motor_trip"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.motor_trip"
+  },
+  "engine_chuff": {
+    "sounds": [
+      {
+        "name": "powerfactor:engine_chuff"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.engine_chuff"
+  },
+  "engine_seize": {
+    "sounds": [
+      {
+        "name": "powerfactor:engine_seize"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.engine_seize"
+  },
+  "capacitor_step_in": {
+    "sounds": [
+      {
+        "name": "powerfactor:capacitor_step_in"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.capacitor_step_in"
+  },
+  "capacitor_step_out": {
+    "sounds": [
+      {
+        "name": "powerfactor:capacitor_step_out"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.capacitor_step_out"
+  },
+  "scada_click": {
+    "sounds": [
+      {
+        "name": "powerfactor:scada_click"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.scada_click"
+  },
+  "scada_alarm": {
+    "sounds": [
+      {
+        "name": "powerfactor:scada_alarm"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.scada_alarm"
+  },
+  "arc_zap": {
+    "sounds": [
+      {
+        "name": "powerfactor:arc_zap"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.arc_zap"
+  }
+}

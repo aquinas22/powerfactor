@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PPP",
+    " G ",
+    "IXI"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "G": "#c:glass_blocks",
+    "I": "#c:gears/iron",
+    "X": "minecraft:piston"
+  },
+  "result": {
+    "id": "powerfactor:redstone_engine",
+    "count": 1
+  }
+}

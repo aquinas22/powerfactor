@@ -1,0 +1,30 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ores/nickel",
+  "result": {
+    "tag": "c:dusts/nickel",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "tag": "c:dusts/nickel",
+      "chance": 0.25
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:ores/nickel"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:dusts/nickel"
+      }
+    }
+  ]
+}

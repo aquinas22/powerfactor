@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " B ",
+    "BGB",
+    " B "
+  ],
+  "key": {
+    "B": "#c:ingots/brass",
+    "G": "#c:gears/iron"
+  },
+  "result": {
+    "id": "powerfactor:brass_gear",
+    "count": 1
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "powerfactor:block/crusher_top",
+    "bottom": "powerfactor:block/crusher_side",
+    "side": "powerfactor:block/crusher_side",
+    "front": "powerfactor:block/crusher_front_on"
+  }
+}

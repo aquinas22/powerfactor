@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "RGR",
+    "GKG",
+    "RGR"
+  ],
+  "key": {
+    "K": "powerfactor:control_circuit",
+    "R": "#c:dusts/redstone",
+    "G": "#c:ingots/gold"
+  },
+  "result": {
+    "id": "powerfactor:speed_upgrade",
+    "count": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " I ",
+    "IDI",
+    "BIB"
+  ],
+  "key": {
+    "I": "#c:ingots/iron",
+    "D": "#c:gems/diamond",
+    "B": "#c:ingots/brass"
+  },
+  "result": {
+    "id": "powerfactor:drill_head",
+    "count": 1
+  }
+}

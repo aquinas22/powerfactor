@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " C ",
+    "CKC",
+    " C "
+  ],
+  "key": {
+    "K": "powerfactor:control_circuit",
+    "C": "powerfactor:capacitor"
+  },
+  "result": {
+    "id": "powerfactor:capacitor_upgrade",
+    "count": 1
+  }
+}

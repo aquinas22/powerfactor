@@ -1,0 +1,214 @@
+{
+  "variants": {
+    "facing=north,running=false,steps=0": {
+      "model": "powerfactor:block/auto_capacitor_bank_0"
+    },
+    "facing=north,running=false,steps=1": {
+      "model": "powerfactor:block/auto_capacitor_bank_1"
+    },
+    "facing=north,running=false,steps=2": {
+      "model": "powerfactor:block/auto_capacitor_bank_2"
+    },
+    "facing=north,running=false,steps=3": {
+      "model": "powerfactor:block/auto_capacitor_bank_3"
+    },
+    "facing=north,running=false,steps=4": {
+      "model": "powerfactor:block/auto_capacitor_bank_4"
+    },
+    "facing=north,running=false,steps=5": {
+      "model": "powerfactor:block/auto_capacitor_bank_5"
+    },
+    "facing=north,running=false,steps=6": {
+      "model": "powerfactor:block/auto_capacitor_bank_6"
+    },
+    "facing=north,running=true,steps=0": {
+      "model": "powerfactor:block/auto_capacitor_bank_0"
+    },
+    "facing=north,running=true,steps=1": {
+      "model": "powerfactor:block/auto_capacitor_bank_1"
+    },
+    "facing=north,running=true,steps=2": {
+      "model": "powerfactor:block/auto_capacitor_bank_2"
+    },
+    "facing=north,running=true,steps=3": {
+      "model": "powerfactor:block/auto_capacitor_bank_3"
+    },
+    "facing=north,running=true,steps=4": {
+      "model": "powerfactor:block/auto_capacitor_bank_4"
+    },
+    "facing=north,running=true,steps=5": {
+      "model": "powerfactor:block/auto_capacitor_bank_5"
+    },
+    "facing=north,running=true,steps=6": {
+      "model": "powerfactor:block/auto_capacitor_bank_6"
+    },
+    "facing=east,running=false,steps=0": {
+      "model": "powerfactor:block/auto_capacitor_bank_0",
+      "y": 90
+    },
+    "facing=east,running=false,steps=1": {
+      "model": "powerfactor:block/auto_capacitor_bank_1",
+      "y": 90
+    },
+    "facing=east,running=false,steps=2": {
+      "model": "powerfactor:block/auto_capacitor_bank_2",
+      "y": 90
+    },
+    "facing=east,running=false,steps=3": {
+      "model": "powerfactor:block/auto_capacitor_bank_3",
+      "y": 90
+    },
+    "facing=east,running=false,steps=4": {
+      "model": "powerfactor:block/auto_capacitor_bank_4",
+      "y": 90
+    },
+    "facing=east,running=false,steps=5": {
+      "model": "powerfactor:block/auto_capacitor_bank_5",
+      "y": 90
+    },
+    "facing=east,running=false,steps=6": {
+      "model": "powerfactor:block/auto_capacitor_bank_6",
+      "y": 90
+    },
+    "facing=east,running=true,steps=0": {
+      "model": "powerfactor:block/auto_capacitor_bank_0",
+      "y": 90
+    },
+    "facing=east,running=true,steps=1": {
+      "model": "powerfactor:block/auto_capacitor_bank_1",
+      "y": 90
+    },
+    "facing=east,running=true,steps=2": {
+      "model": "powerfactor:block/auto_capacitor_bank_2",
+      "y": 90
+    },
+    "facing=east,running=true,steps=3": {
+      "model": "powerfactor:block/auto_capacitor_bank_3",
+      "y": 90
+    },
+    "facing=east,running=true,steps=4": {
+      "model": "powerfactor:block/auto_capacitor_bank_4",
+      "y": 90
+    },
+    "facing=east,running=true,steps=5": {
+      "model": "powerfactor:block/auto_capacitor_bank_5",
+      "y": 90
+    },
+    "facing=east,running=true,steps=6": {
+      "model": "powerfactor:block/auto_capacitor_bank_6",
+      "y": 90
+    },
+    "facing=south,running=false,steps=0": {
+      "model": "powerfactor:block/auto_capacitor_bank_0",
+      "y": 180
+    },
+    "facing=south,running=false,steps=1": {
+      "model": "powerfactor:block/auto_capacitor_bank_1",
+      "y": 180
+    },
+    "facing=south,running=false,steps=2": {
+      "model": "powerfactor:block/auto_capacitor_bank_2",
+      "y": 180
+    },
+    "facing=south,running=false,steps=3": {
+      "model": "powerfactor:block/auto_capacitor_bank_3",
+      "y": 180
+    },
+    "facing=south,running=false,steps=4": {
+      "model": "powerfactor:block/auto_capacitor_bank_4",
+      "y": 180
+    },
+    "facing=south,running=false,steps=5": {
+      "model": "powerfactor:block/auto_capacitor_bank_5",
+      "y": 180
+    },
+    "facing=south,running=false,steps=6": {
+      "model": "powerfactor:block/auto_capacitor_bank_6",
+      "y": 180
+    },
+    "facing=south,running=true,steps=0": {
+      "model": "powerfactor:block/auto_capacitor_bank_0",
+      "y": 180
+    },
+    "facing=south,running=true,steps=1": {
+      "model": "powerfactor:block/auto_capacitor_bank_1",
+      "y": 180
+    },
+    "facing=south,running=true,steps=2": {
+      "model": "powerfactor:block/auto_capacitor_bank_2",
+      "y": 180
+    },
+    "facing=south,running=true,steps=3": {
+      "model": "powerfactor:block/auto_capacitor_bank_3",
+      "y": 180
+    },
+    "facing=south,running=true,steps=4": {
+      "model": "powerfactor:block/auto_capacitor_bank_4",
+      "y": 180
+    },
+    "facing=south,running=true,steps=5": {
+      "model": "powerfactor:block/auto_capacitor_bank_5",
+      "y": 180
+    },
+    "facing=south,running=true,steps=6": {
+      "model": "powerfactor:block/auto_capacitor_bank_6",
+      "y": 180
+    },
+    "facing=west,running=false,steps=0": {
+      "model": "powerfactor:block/auto_capacitor_bank_0",
+      "y": 270
+    },
+    "facing=west,running=false,steps=1": {
+      "model": "powerfactor:block/auto_capacitor_bank_1",
+      "y": 270
+    },
+    "facing=west,running=false,steps=2": {
+      "model": "powerfactor:block/auto_capacitor_bank_2",
+      "y": 270
+    },
+    "facing=west,running=false,steps=3": {
+      "model": "powerfactor:block/auto_capacitor_bank_3",
+      "y": 270
+    },
+    "facing=west,running=false,steps=4": {
+      "model": "powerfactor:block/auto_capacitor_bank_4",
+      "y": 270
+    },
+    "facing=west,running=false,steps=5": {
+      "model": "powerfactor:block/auto_capacitor_bank_5",
+      "y": 270
+    },
+    "facing=west,running=false,steps=6": {
+      "model": "powerfactor:block/auto_capacitor_bank_6",
+      "y": 270
+    },
+    "facing=west,running=true,steps=0": {
+      "model": "powerfactor:block/auto_capacitor_bank_0",
+      "y": 270
+    },
+    "facing=west,running=true,steps=1": {
+      "model": "powerfactor:block/auto_capacitor_bank_1",
+      "y": 270
+    },
+    "facing=west,running=true,steps=2": {
+      "model": "powerfactor:block/auto_capacitor_bank_2",
+      "y": 270
+    },
+    "facing=west,running=true,steps=3": {
+      "model": "powerfactor:block/auto_capacitor_bank_3",
+      "y": 270
+    },
+    "facing=west,running=true,steps=4": {
+      "model": "powerfactor:block/auto_capacitor_bank_4",
+      "y": 270
+    },
+    "facing=west,running=true,steps=5": {
+      "model": "powerfactor:block/auto_capacitor_bank_5",
+      "y": 270
+    },
+    "facing=west,running=true,steps=6": {
+      "model": "powerfactor:block/auto_capacitor_bank_6",
+      "y": 270
+    }
+  }
+}

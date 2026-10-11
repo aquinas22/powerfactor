@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:raw_zinc_block"
+  ],
+  "result": {
+    "id": "powerfactor:raw_zinc",
+    "count": 9
+  }
+}

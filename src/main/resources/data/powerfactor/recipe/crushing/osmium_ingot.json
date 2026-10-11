@@ -1,0 +1,23 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ingots/osmium",
+  "result": {
+    "tag": "c:dusts/osmium"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:ingots/osmium"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:dusts/osmium"
+      }
+    }
+  ]
+}

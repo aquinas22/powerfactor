@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ores/copper",
+  "result": {
+    "item": "powerfactor:copper_dust",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "item": "powerfactor:copper_dust",
+      "chance": 0.25
+    }
+  ]
+}

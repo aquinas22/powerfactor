@@ -1,0 +1,23 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ingots/nickel",
+  "result": {
+    "tag": "c:dusts/nickel"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:ingots/nickel"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:dusts/nickel"
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:zinc_block",
+    "powerfactor:brass_block"
+  ]
+}

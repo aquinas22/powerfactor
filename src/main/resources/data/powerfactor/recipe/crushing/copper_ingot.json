@@ -1,0 +1,7 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ingots/copper",
+  "result": {
+    "item": "powerfactor:copper_dust"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ZPZ",
+    "ZPZ",
+    "W W"
+  ],
+  "key": {
+    "Z": "#c:ingots/zinc",
+    "P": "minecraft:paper",
+    "W": "powerfactor:copper_wire"
+  },
+  "result": {
+    "id": "powerfactor:capacitor",
+    "count": 2
+  }
+}

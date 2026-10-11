@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " K ",
+    "IGI",
+    "IRI"
+  ],
+  "key": {
+    "K": "powerfactor:copper_coil",
+    "I": "#c:ingots/iron",
+    "G": "#c:gears/iron",
+    "R": "#c:dusts/redstone"
+  },
+  "result": {
+    "id": "powerfactor:electric_motor",
+    "count": 1
+  }
+}

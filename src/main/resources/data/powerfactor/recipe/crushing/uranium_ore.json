@@ -1,0 +1,30 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ores/uranium",
+  "result": {
+    "tag": "c:dusts/uranium",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "tag": "c:dusts/uranium",
+      "chance": 0.25
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:ores/uranium"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:dusts/uranium"
+      }
+    }
+  ]
+}

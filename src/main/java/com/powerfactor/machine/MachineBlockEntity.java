@@ -1,0 +1,137 @@
+package com.powerfactor.machine;
+
+import com.powerfactor.api.ScadaDevice;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
+import net.minecraft.world.Containers;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Shared machine plumbing: SCADA remote enable, redstone shutdown, the RUNNING block state,
+ * dropping inventory when broken, and a GUI title.
+ */
+public abstract class MachineBlockEntity extends BlockEntity implements MenuProvider, ScadaDevice {
+    /** When a redstone signal lets the machine run. */
+    public enum RedstoneMode {
+        /** Runs unless powered (the default: a lever is an off switch). */
+        LOW,
+        /** Runs only while powered. */
+        HIGH,
+        IGNORE;
+
+        public RedstoneMode next() {
+            return values()[(ordinal() + 1) % values().length];
+        }
+    }
+
+    private boolean remoteEnabled = true;
+    private RedstoneMode redstoneMode = RedstoneMode.LOW;
+
+    protected MachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
+
+    public abstract void serverTick(ServerLevel level, BlockPos pos, BlockState state);
+
+    /** Client-side animation and sound. */
+    public void clientTick() {
+        com.powerfactor.api.MachineAudio.tick(this);
+    }
+
+    /** Inventory to drop when broken, if any. */
+    protected @Nullable Container inventory() {
+        return null;
+    }
+
+    public int comparatorSignal() {
+        return 0;
+    }
+
+    /** Allowed to run: SCADA hasn't stopped it and redstone agrees. */
+    protected boolean enabled(ServerLevel level, BlockPos pos) {
+        if (!remoteEnabled) {
+            return false;
+        }
+        return switch (redstoneMode) {
+            case LOW -> !level.hasNeighborSignal(pos);
+            case HIGH -> level.hasNeighborSignal(pos);
+            case IGNORE -> true;
+        };
+    }
+
+    public RedstoneMode redstoneMode() {
+        return redstoneMode;
+    }
+
+    public void cycleRedstoneMode() {
+        redstoneMode = redstoneMode.next();
+        setChanged();
+    }
+
+    protected void setRunning(ServerLevel level, BlockPos pos, BlockState state, boolean running) {
+        if (state.getValue(MachineBlock.RUNNING) != running) {
+            level.setBlock(pos, state.setValue(MachineBlock.RUNNING, running), Block.UPDATE_ALL);
+        }
+    }
+
+    protected boolean isRunning() {
+        return getBlockState().getValue(MachineBlock.RUNNING);
+    }
+
+    @Override
+    public boolean remoteEnabled() {
+        return remoteEnabled;
+    }
+
+    @Override
+    public void setRemoteEnabled(boolean enabled) {
+        if (remoteEnabled != enabled) {
+            remoteEnabled = enabled;
+            setChanged();
+        }
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        Container inv = inventory();
+        if (inv != null && level != null) {
+            Containers.dropContents(level, pos, inv);
+        }
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return getBlockState().getBlock().getName();
+    }
+
+    @Override
+    public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return null;
+    }
+
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        remoteEnabled = input.getBooleanOr("remote_enabled", true);
+        redstoneMode = RedstoneMode.values()[Math.clamp(input.getIntOr("redstone_mode", 0), 0, 2)];
+    }
+
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putBoolean("remote_enabled", remoteEnabled);
+        output.putInt("redstone_mode", redstoneMode.ordinal());
+    }
+}

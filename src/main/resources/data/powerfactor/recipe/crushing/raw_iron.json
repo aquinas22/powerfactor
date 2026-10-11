@@ -1,0 +1,8 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:raw_materials/iron",
+  "result": {
+    "item": "powerfactor:iron_dust",
+    "count": 2
+  }
+}

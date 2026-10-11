@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": "#c:ingots/zinc"
+  },
+  "result": {
+    "id": "powerfactor:zinc_block",
+    "count": 1
+  }
+}

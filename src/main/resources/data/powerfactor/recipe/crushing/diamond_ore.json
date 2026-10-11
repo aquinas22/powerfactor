@@ -1,0 +1,9 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ores/diamond",
+  "result": {
+    "item": "minecraft:diamond",
+    "count": 2
+  },
+  "time": 200
+}

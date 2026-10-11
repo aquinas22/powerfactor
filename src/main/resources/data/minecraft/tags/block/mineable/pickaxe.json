@@ -1,0 +1,19 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:zinc_ore",
+    "powerfactor:deepslate_zinc_ore",
+    "powerfactor:zinc_block",
+    "powerfactor:brass_block",
+    "powerfactor:raw_zinc_block",
+    "powerfactor:coal_turbine",
+    "powerfactor:crusher",
+    "powerfactor:electric_furnace",
+    "powerfactor:charger",
+    "powerfactor:capacitor_bank",
+    "powerfactor:auto_capacitor_bank",
+    "powerfactor:copper_wire",
+    "powerfactor:scada_terminal",
+    "powerfactor:stirling_engine"
+  ]
+}

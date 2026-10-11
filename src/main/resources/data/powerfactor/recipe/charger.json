@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "IKI",
+    "WCW",
+    "IRI"
+  ],
+  "key": {
+    "I": "#c:ingots/iron",
+    "K": "powerfactor:copper_coil",
+    "W": "powerfactor:copper_wire",
+    "C": "powerfactor:capacitor",
+    "R": "#c:dusts/redstone"
+  },
+  "result": {
+    "id": "powerfactor:charger",
+    "count": 1
+  }
+}

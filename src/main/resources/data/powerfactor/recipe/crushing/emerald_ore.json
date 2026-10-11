@@ -1,0 +1,9 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ores/emerald",
+  "result": {
+    "item": "minecraft:emerald",
+    "count": 2
+  },
+  "time": 200
+}

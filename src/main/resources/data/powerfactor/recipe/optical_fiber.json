@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "QDQ",
+    "PPP"
+  ],
+  "key": {
+    "P": "#c:glass_panes",
+    "Q": "#c:gems/quartz",
+    "D": "#c:dusts/glowstone"
+  },
+  "result": {
+    "id": "powerfactor:optical_fiber",
+    "count": 6
+  }
+}

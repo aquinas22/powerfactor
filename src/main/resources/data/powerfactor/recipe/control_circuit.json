@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WRW",
+    "QBQ",
+    "WRW"
+  ],
+  "key": {
+    "W": "powerfactor:copper_wire",
+    "R": "#c:dusts/redstone",
+    "Q": "#c:gems/quartz",
+    "B": "#c:ingots/brass"
+  },
+  "result": {
+    "id": "powerfactor:control_circuit",
+    "count": 2
+  }
+}

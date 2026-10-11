@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ores/quartz",
+  "result": {
+    "item": "minecraft:quartz",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "item": "minecraft:quartz",
+      "chance": 0.5
+    }
+  ]
+}
