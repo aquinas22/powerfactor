@@ -1,6 +1,18 @@
 package com.powerfactor.registry;
 
 import com.powerfactor.PowerFactor;
+import com.powerfactor.logistics.FluidTankBlock;
+import com.powerfactor.logistics.PipeBlock;
+import com.powerfactor.logistics.PipeKind;
+import com.powerfactor.logistics.PumpBlock;
+import com.powerfactor.world.RubberLogBlock;
+import java.util.Optional;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.SaplingBlock;
+import net.minecraft.world.level.block.UntintedParticleLeavesBlock;
+import net.minecraft.world.level.block.grower.TreeGrower;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import com.powerfactor.engine.EngineBlock;
 import com.powerfactor.engine.EngineKind;
 import com.powerfactor.grid.WireBlock;
@@ -11,6 +23,8 @@ import com.powerfactor.machine.CoalTurbineBlock;
 import com.powerfactor.machine.CrusherBlock;
 import com.powerfactor.machine.ElectricFurnaceBlock;
 import com.powerfactor.machine.MachineBlock;
+import com.powerfactor.machine.RecipeMachine;
+import com.powerfactor.machine.RecipeMachineBlock;
 import com.powerfactor.scada.FiberCableBlock;
 import com.powerfactor.scada.ScadaTerminalBlock;
 import net.minecraft.util.valueproviders.ConstantInt;
@@ -70,6 +84,44 @@ public final class ModBlocks {
             () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SoundType.WOOL).noOcclusion());
     public static final DeferredBlock<ScadaTerminalBlock> SCADA_TERMINAL = BLOCKS.registerBlock("scada_terminal", ScadaTerminalBlock::new,
             () -> machine().lightLevel(s -> 7));
+
+    public static final java.util.Map<RecipeMachine, DeferredBlock<RecipeMachineBlock>> RECIPE_MACHINES = new java.util.EnumMap<>(RecipeMachine.class);
+
+    static {
+        for (RecipeMachine m : RecipeMachine.values()) {
+            RECIPE_MACHINES.put(m, BLOCKS.registerBlock(m.id, p -> new RecipeMachineBlock(m, p),
+                    () -> machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) && m.heater ? 11 : 0)));
+        }
+    }
+
+    // ---------------------------------------------------------------- logistics
+    public static final DeferredBlock<FluidTankBlock> FLUID_TANK = BLOCKS.registerBlock("fluid_tank", FluidTankBlock::new,
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(2.5F, 6.0F).sound(SoundType.GLASS).noOcclusion()
+                    .requiresCorrectToolForDrops());
+    public static final DeferredBlock<PumpBlock> ELECTRIC_PUMP = BLOCKS.registerBlock("electric_pump", PumpBlock::new, ModBlocks::machine);
+    public static final DeferredBlock<PipeBlock> FLUID_PIPE = BLOCKS.registerBlock("fluid_pipe", p -> new PipeBlock(PipeKind.FLUID, p),
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.8F).sound(SoundType.COPPER).noOcclusion());
+    public static final DeferredBlock<PipeBlock> ITEM_PIPE = BLOCKS.registerBlock("item_pipe", p -> new PipeBlock(PipeKind.ITEM, p),
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.8F).sound(SoundType.METAL).noOcclusion());
+
+    // ---------------------------------------------------------------- rubber tree
+    public static final ResourceKey<ConfiguredFeature<?, ?>> RUBBER_TREE_FEATURE = ResourceKey.create(Registries.CONFIGURED_FEATURE,
+            PowerFactor.id("rubber_tree"));
+    public static final DeferredBlock<RubberLogBlock> RUBBER_LOG = BLOCKS.registerBlock("rubber_log", RubberLogBlock::new,
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_LIGHT_GRAY).instrument(NoteBlockInstrument.BASS).strength(2.0F)
+                    .sound(SoundType.WOOD).ignitedByLava());
+    public static final DeferredBlock<Block> RUBBER_PLANKS = BLOCKS.registerSimpleBlock("rubber_planks",
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.SAND).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F)
+                    .sound(SoundType.WOOD).ignitedByLava());
+    public static final DeferredBlock<UntintedParticleLeavesBlock> RUBBER_LEAVES = BLOCKS.registerBlock("rubber_leaves",
+            p -> new UntintedParticleLeavesBlock(0.01F, net.minecraft.core.particles.ParticleTypes.CHERRY_LEAVES, p),
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).strength(0.2F).randomTicks().sound(SoundType.GRASS).noOcclusion()
+                    .isValidSpawn((s, l, pos, e) -> false).isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false)
+                    .ignitedByLava().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY));
+    public static final DeferredBlock<SaplingBlock> RUBBER_SAPLING = BLOCKS.registerBlock("rubber_sapling",
+            p -> new SaplingBlock(new TreeGrower("powerfactor_rubber", Optional.empty(), Optional.of(RUBBER_TREE_FEATURE), Optional.empty()), p),
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().randomTicks().instabreak().sound(SoundType.GRASS)
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY));
 
     private static BlockBehaviour.Properties metal() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).instrument(NoteBlockInstrument.IRON_XYLOPHONE)

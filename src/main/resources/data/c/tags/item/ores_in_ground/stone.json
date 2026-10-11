@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "powerfactor:zinc_ore"
+    "powerfactor:zinc_ore",
+    "powerfactor:tin_ore",
+    "powerfactor:lead_ore",
+    "powerfactor:silver_ore",
+    "powerfactor:bauxite_ore"
   ]
 }

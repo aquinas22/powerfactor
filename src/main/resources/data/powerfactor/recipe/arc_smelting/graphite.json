@@ -1,0 +1,15 @@
+{
+  "type": "powerfactor:arc_smelting",
+  "inputs": [
+    {
+      "ingredient": "#c:dusts/coal",
+      "count": 4
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:graphite"
+    }
+  ],
+  "time": 200
+}

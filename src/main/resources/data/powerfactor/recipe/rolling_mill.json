@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PSP",
+    "GMG",
+    "PKP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "S": "#c:storage_blocks/iron",
+    "G": "#c:gears/brass",
+    "M": "powerfactor:electric_motor",
+    "K": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:rolling_mill",
+    "count": 1
+  }
+}

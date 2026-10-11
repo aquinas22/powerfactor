@@ -33,6 +33,7 @@ public final class PowerFactorClient {
     static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.ENGINE.get(), EngineRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.COAL_TURBINE.get(), TurbineRotorRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.FLUID_TANK.get(), FluidTankRenderer::new);
     }
 
     @SubscribeEvent
@@ -47,6 +48,11 @@ public final class PowerFactorClient {
         event.register(ModMenus.ENGINE.get(), EngineScreen::new);
         event.register(ModMenus.CHARGER.get(), ChargerScreen::new);
         event.register(ModMenus.SCADA_TERMINAL.get(), ScadaTerminalScreen::new);
+        for (var m : com.powerfactor.machine.RecipeMachine.values()) {
+            event.register(ModMenus.RECIPE_MACHINES.get(m).get(), (com.powerfactor.machine.RecipeMachineMenu menu, Inventory inv, Component t) ->
+                    new RecipeMachineScreen(menu, inv, t));
+        }
         event.register(ModMenus.AUTO_CAPACITOR_BANK.get(), AutoCapacitorScreen::new);
+        event.register(ModMenus.ELECTRIC_PUMP.get(), PumpScreen::new);
     }
 }

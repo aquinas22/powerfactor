@@ -6,6 +6,8 @@ import com.powerfactor.registry.ModBlockEntities;
 import com.powerfactor.registry.ModBlocks;
 import com.powerfactor.registry.ModComponents;
 import com.powerfactor.registry.ModItems;
+import com.powerfactor.registry.ModConditions;
+import com.powerfactor.registry.ModMaterials;
 import com.powerfactor.registry.ModMenus;
 import com.powerfactor.registry.ModRecipes;
 import com.powerfactor.registry.ModSounds;
@@ -23,6 +25,9 @@ public class PowerFactor {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public PowerFactor(IEventBus modBus, ModContainer container) {
+        ModMaterials.register();
+        ModConditions.CONDITIONS.register(modBus);
+        container.registerConfig(ModConfig.Type.COMMON, PowerFactorCommonConfig.SPEC);
         ModComponents.COMPONENTS.register(modBus);
         ModSounds.SOUNDS.register(modBus);
         ModBlocks.BLOCKS.register(modBus);

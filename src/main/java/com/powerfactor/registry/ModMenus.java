@@ -6,6 +6,8 @@ import com.powerfactor.machine.AutoCapacitorMenu;
 import com.powerfactor.machine.ChargerMenu;
 import com.powerfactor.machine.CoalTurbineMenu;
 import com.powerfactor.machine.CrusherMenu;
+import com.powerfactor.machine.RecipeMachine;
+import com.powerfactor.machine.RecipeMachineMenu;
 import com.powerfactor.machine.ElectricFurnaceMenu;
 import com.powerfactor.scada.ScadaTerminalMenu;
 import net.minecraft.core.registries.Registries;
@@ -31,6 +33,19 @@ public final class ModMenus {
             () -> IMenuTypeExtension.create(AutoCapacitorMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<ScadaTerminalMenu>> SCADA_TERMINAL = MENUS.register("scada_terminal",
             () -> IMenuTypeExtension.create(ScadaTerminalMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.logistics.PumpMenu>> ELECTRIC_PUMP = MENUS.register("electric_pump",
+            () -> IMenuTypeExtension.create(com.powerfactor.logistics.PumpMenu::new));
+
+    public static final java.util.Map<RecipeMachine, DeferredHolder<MenuType<?>, MenuType<RecipeMachineMenu>>> RECIPE_MACHINES =
+            new java.util.EnumMap<>(RecipeMachine.class);
+
+    static {
+        for (RecipeMachine m : RecipeMachine.values()) {
+            RECIPE_MACHINES.put(m, MENUS.register(m.id,
+                    () -> IMenuTypeExtension.create((id, inv, buf) -> new RecipeMachineMenu(m, id, inv, buf))));
+        }
+    }
 
     private ModMenus() {}
 }

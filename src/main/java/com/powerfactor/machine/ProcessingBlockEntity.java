@@ -42,7 +42,7 @@ import org.jspecify.annotations.Nullable;
  */
 public abstract class ProcessingBlockEntity extends MachineBlockEntity implements ReactiveLoad, com.powerfactor.api.MachineAudio.Looping {
     /** A ready-to-run job: how long it takes at speed 1.0, and what finishing it does. */
-    protected record Job(int duration, Component description, Runnable complete) {}
+    public record Job(int duration, Component description, Runnable complete) {}
 
     private static final int EJECT_INTERVAL = 10;
 
@@ -80,6 +80,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
                 case ProcessingMenu.DATA_SPEED -> (int) Math.round(drive.speed() * 1000);
                 case ProcessingMenu.DATA_FLAGS -> (autoEject ? 1 : 0) | redstoneMode().ordinal() << 1 | (autoInput ? 8 : 0);
                 case ProcessingMenu.DATA_SIDES -> sides.pack();
+                case ProcessingMenu.DATA_TANK -> tankAmount();
                 default -> 0;
             };
         }
@@ -116,6 +117,11 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
     protected abstract @Nullable Job findJob(ServerLevel level);
 
     protected abstract boolean isValidInput(int slot, ItemStack stack);
+
+    /** Fluid in the machine's tank, mB, for the GUI. */
+    protected int tankAmount() {
+        return 0;
+    }
 
     @Override
     public void serverTick(ServerLevel level, BlockPos pos, BlockState state) {

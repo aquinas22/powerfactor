@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WWW",
+    "WMW",
+    "WWW"
+  ],
+  "key": {
+    "W": "powerfactor:fine_copper_wire",
+    "M": "powerfactor:mica"
+  },
+  "result": {
+    "id": "powerfactor:heating_coil",
+    "count": 1
+  }
+}

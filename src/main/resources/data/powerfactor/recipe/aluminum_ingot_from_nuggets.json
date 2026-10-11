@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": "#c:nuggets/aluminum"
+  },
+  "result": {
+    "id": "powerfactor:aluminum_ingot",
+    "count": 1
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PGP",
+    "G G",
+    "PGP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "G": "#c:glass_blocks"
+  },
+  "result": {
+    "id": "powerfactor:fluid_tank",
+    "count": 1
+  }
+}

@@ -2,6 +2,7 @@ package com.powerfactor.registry;
 
 import com.powerfactor.PowerFactor;
 import com.powerfactor.item.DrillItem;
+import com.powerfactor.item.TreeTapItem;
 import com.powerfactor.upgrade.UpgradeItem;
 import com.powerfactor.upgrade.UpgradeType;
 import net.minecraft.world.item.BlockItem;
@@ -20,6 +21,16 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> STIRLING_ENGINE = ITEMS.registerSimpleBlockItem("stirling_engine", ModBlocks.STIRLING_ENGINE);
     public static final DeferredItem<BlockItem> CRUSHER = ITEMS.registerSimpleBlockItem("crusher", ModBlocks.CRUSHER);
     public static final DeferredItem<BlockItem> ELECTRIC_FURNACE = ITEMS.registerSimpleBlockItem("electric_furnace", ModBlocks.ELECTRIC_FURNACE);
+    static {
+        for (var block : ModBlocks.RECIPE_MACHINES.values()) {
+            ITEMS.registerSimpleBlockItem(block);
+        }
+    }
+
+    public static final DeferredItem<BlockItem> FLUID_TANK = ITEMS.registerSimpleBlockItem("fluid_tank", ModBlocks.FLUID_TANK);
+    public static final DeferredItem<BlockItem> ELECTRIC_PUMP = ITEMS.registerSimpleBlockItem("electric_pump", ModBlocks.ELECTRIC_PUMP);
+    public static final DeferredItem<BlockItem> FLUID_PIPE = ITEMS.registerSimpleBlockItem("fluid_pipe", ModBlocks.FLUID_PIPE);
+    public static final DeferredItem<BlockItem> ITEM_PIPE = ITEMS.registerSimpleBlockItem("item_pipe", ModBlocks.ITEM_PIPE);
     public static final DeferredItem<BlockItem> CHARGER = ITEMS.registerSimpleBlockItem("charger", ModBlocks.CHARGER);
     public static final DeferredItem<BlockItem> CAPACITOR_BANK = ITEMS.registerSimpleBlockItem("capacitor_bank", ModBlocks.CAPACITOR_BANK);
     public static final DeferredItem<BlockItem> AUTO_CAPACITOR_BANK = ITEMS.registerSimpleBlockItem("auto_capacitor_bank", ModBlocks.AUTO_CAPACITOR_BANK);
@@ -49,6 +60,25 @@ public final class ModItems {
     public static final DeferredItem<Item> OPTICAL_FIBER = ITEMS.registerSimpleItem("optical_fiber");
     public static final DeferredItem<Item> CONTROL_CIRCUIT = ITEMS.registerSimpleItem("control_circuit");
     public static final DeferredItem<Item> DRILL_HEAD = ITEMS.registerSimpleItem("drill_head");
+
+    // ---------------------------------------------------------------- Phase B intermediates
+    public static final DeferredItem<Item> GRAPHITE = ITEMS.registerSimpleItem("graphite");
+    public static final DeferredItem<Item> GRAPHITE_ELECTRODE = ITEMS.registerItem("graphite_electrode", Item::new, p -> p.durability(64));
+    public static final DeferredItem<Item> SILICON = ITEMS.registerSimpleItem("silicon");
+    public static final DeferredItem<Item> MICA = ITEMS.registerSimpleItem("mica");
+    public static final DeferredItem<Item> LATEX = ITEMS.registerSimpleItem("latex");
+    public static final DeferredItem<Item> RUBBER = ITEMS.registerSimpleItem("rubber");
+    public static final DeferredItem<TreeTapItem> TREE_TAP = ITEMS.registerItem("tree_tap", TreeTapItem::new, p -> p.durability(128));
+    public static final DeferredItem<Item> ADVANCED_CIRCUIT = ITEMS.registerSimpleItem("advanced_circuit");
+    public static final DeferredItem<Item> STEEL_GEAR = ITEMS.registerSimpleItem("steel_gear");
+    public static final DeferredItem<Item> HEATING_COIL = ITEMS.registerSimpleItem("heating_coil");
+    public static final DeferredItem<Item> FINE_COPPER_WIRE = ITEMS.registerSimpleItem("fine_copper_wire");
+    public static final DeferredItem<Item> FINE_SILVER_WIRE = ITEMS.registerSimpleItem("fine_silver_wire");
+    public static final DeferredItem<Item> FINE_ALUMINUM_WIRE = ITEMS.registerSimpleItem("fine_aluminum_wire");
+    public static final DeferredItem<BlockItem> RUBBER_LOG = ITEMS.registerSimpleBlockItem("rubber_log", ModBlocks.RUBBER_LOG);
+    public static final DeferredItem<BlockItem> RUBBER_PLANKS = ITEMS.registerSimpleBlockItem("rubber_planks", ModBlocks.RUBBER_PLANKS);
+    public static final DeferredItem<BlockItem> RUBBER_LEAVES = ITEMS.registerSimpleBlockItem("rubber_leaves", ModBlocks.RUBBER_LEAVES);
+    public static final DeferredItem<BlockItem> RUBBER_SAPLING = ITEMS.registerSimpleBlockItem("rubber_sapling", ModBlocks.RUBBER_SAPLING);
 
     // ---------------------------------------------------------------- materials
     public static final DeferredItem<BlockItem> ZINC_ORE = ITEMS.registerSimpleBlockItem("zinc_ore", ModBlocks.ZINC_ORE);

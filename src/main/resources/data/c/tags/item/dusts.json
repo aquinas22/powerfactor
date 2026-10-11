@@ -6,6 +6,13 @@
     "#c:dusts/copper",
     "#c:dusts/zinc",
     "#c:dusts/brass",
-    "#c:dusts/coal"
+    "#c:dusts/coal",
+    "#c:dusts/tin",
+    "#c:dusts/lead",
+    "#c:dusts/silver",
+    "#c:dusts/aluminum",
+    "#c:dusts/steel",
+    "#c:dusts/bronze",
+    "#c:dusts/electrum"
   ]
 }

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:raw_silver_block"
+  ],
+  "result": {
+    "id": "powerfactor:raw_silver",
+    "count": 9
+  }
+}

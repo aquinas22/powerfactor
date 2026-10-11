@@ -2,6 +2,8 @@ package com.powerfactor.registry;
 
 import com.powerfactor.PowerFactor;
 import com.powerfactor.recipe.CrushingRecipe;
+import com.powerfactor.recipe.MachineRecipe;
+import com.powerfactor.recipe.MachineRecipeKind;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeBookCategory;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -20,6 +22,19 @@ public final class ModRecipes {
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<CrushingRecipe>> CRUSHING_SERIALIZER = SERIALIZERS.register("crushing",
             () -> CrushingRecipe.SERIALIZER);
     public static final DeferredHolder<RecipeBookCategory, RecipeBookCategory> CRUSHING_CATEGORY = CATEGORIES.register("crushing", RecipeBookCategory::new);
+
+    public static final java.util.Map<MachineRecipeKind, DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>>> MACHINE_TYPES =
+            new java.util.EnumMap<>(MachineRecipeKind.class);
+    public static final java.util.Map<MachineRecipeKind, DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>>> MACHINE_SERIALIZERS =
+            new java.util.EnumMap<>(MachineRecipeKind.class);
+
+    static {
+        for (MachineRecipeKind kind : MachineRecipeKind.values()) {
+            MACHINE_TYPES.put(kind, TYPES.register(kind.id, () -> RecipeType.simple(PowerFactor.id(kind.id))));
+            MACHINE_SERIALIZERS.put(kind, SERIALIZERS.register(kind.id,
+                    () -> new RecipeSerializer<>(MachineRecipe.codec(kind), MachineRecipe.streamCodec(kind))));
+        }
+    }
 
     public static void register(IEventBus modBus) {
         TYPES.register(modBus);

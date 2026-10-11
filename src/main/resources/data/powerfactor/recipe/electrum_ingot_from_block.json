@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:electrum_block"
+  ],
+  "result": {
+    "id": "powerfactor:electrum_ingot",
+    "count": 9
+  }
+}

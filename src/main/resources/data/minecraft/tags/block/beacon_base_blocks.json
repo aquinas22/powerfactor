@@ -2,6 +2,13 @@
   "replace": false,
   "values": [
     "powerfactor:zinc_block",
-    "powerfactor:brass_block"
+    "powerfactor:brass_block",
+    "powerfactor:tin_block",
+    "powerfactor:lead_block",
+    "powerfactor:silver_block",
+    "powerfactor:aluminum_block",
+    "powerfactor:steel_block",
+    "powerfactor:bronze_block",
+    "powerfactor:electrum_block"
   ]
 }

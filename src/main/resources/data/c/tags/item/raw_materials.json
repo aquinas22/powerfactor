@@ -1,6 +1,9 @@
 {
   "replace": false,
   "values": [
-    "#c:raw_materials/zinc"
+    "#c:raw_materials/zinc",
+    "#c:raw_materials/tin",
+    "#c:raw_materials/lead",
+    "#c:raw_materials/silver"
   ]
 }

@@ -1,0 +1,9 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:storage_blocks/raw_silver",
+  "result": {
+    "item": "powerfactor:silver_dust",
+    "count": 18
+  },
+  "time": 400
+}

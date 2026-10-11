@@ -1,0 +1,186 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "powerfactor:block/item_pipe_core"
+      }
+    },
+    {
+      "when": {
+        "north": "pipe"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_arm",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "north": "insert"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_insert",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "north": "extract"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_extract",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "east": "pipe"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_arm",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "east": "insert"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_insert",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "east": "extract"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_extract",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "pipe"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_arm",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "south": "insert"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_insert",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "south": "extract"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_extract",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "pipe"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_arm",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": "insert"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_insert",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": "extract"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_extract",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "up": "pipe"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_arm",
+        "uvlock": true,
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "up": "insert"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_insert",
+        "uvlock": true,
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "up": "extract"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_extract",
+        "uvlock": true,
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "down": "pipe"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_arm",
+        "uvlock": true,
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "down": "insert"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_insert",
+        "uvlock": true,
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "down": "extract"
+      },
+      "apply": {
+        "model": "powerfactor:block/item_pipe_extract",
+        "uvlock": true,
+        "x": 90
+      }
+    }
+  ]
+}

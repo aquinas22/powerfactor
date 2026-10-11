@@ -34,8 +34,18 @@ public final class CommonEvents {
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.ELECTRIC_FURNACE.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.ELECTRIC_FURNACE.get(), (be, side) -> be.getItemHandler(side));
 
+        for (var type : ModBlockEntities.RECIPE_MACHINES.values()) {
+            event.registerBlockEntity(Capabilities.Energy.BLOCK, type.get(), (be, side) -> be.getEnergy());
+            event.registerBlockEntity(Capabilities.Item.BLOCK, type.get(), (be, side) -> be.getItemHandler(side));
+            event.registerBlockEntity(Capabilities.Fluid.BLOCK, type.get(), (be, side) -> be.getTank());
+        }
+
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CHARGER.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.CHARGER.get(), (be, side) -> be.getItemHandler());
+
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.FLUID_TANK.get(), (be, side) -> be.getTank());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.ELECTRIC_PUMP.get(), (be, side) -> be.getTank());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.ELECTRIC_PUMP.get(), (be, side) -> be.getEnergy());
 
         // Wires accept FE into their grid from any side.
         event.registerBlock(Capabilities.Energy.BLOCK, (level, pos, state, be, side) -> {

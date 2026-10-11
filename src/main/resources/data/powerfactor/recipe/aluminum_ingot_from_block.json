@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:aluminum_block"
+  ],
+  "result": {
+    "id": "powerfactor:aluminum_ingot",
+    "count": 9
+  }
+}

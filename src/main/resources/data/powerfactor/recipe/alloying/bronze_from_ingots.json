@@ -1,0 +1,19 @@
+{
+  "type": "powerfactor:alloying",
+  "inputs": [
+    {
+      "ingredient": "#c:ingots/copper",
+      "count": 3
+    },
+    {
+      "ingredient": "#c:ingots/tin",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:bronze_ingot",
+      "count": 4
+    }
+  ]
+}

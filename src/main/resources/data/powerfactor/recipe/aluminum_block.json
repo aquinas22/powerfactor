@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": "#c:ingots/aluminum"
+  },
+  "result": {
+    "id": "powerfactor:aluminum_block",
+    "count": 1
+  }
+}

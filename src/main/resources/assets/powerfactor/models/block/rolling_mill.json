@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "powerfactor:block/rolling_mill_top",
+    "bottom": "powerfactor:block/rolling_mill_side",
+    "side": "powerfactor:block/rolling_mill_side",
+    "front": "powerfactor:block/rolling_mill_front"
+  }
+}

@@ -2,6 +2,13 @@
   "replace": false,
   "values": [
     "#c:ingots/zinc",
-    "#c:ingots/brass"
+    "#c:ingots/brass",
+    "#c:ingots/tin",
+    "#c:ingots/lead",
+    "#c:ingots/silver",
+    "#c:ingots/aluminum",
+    "#c:ingots/steel",
+    "#c:ingots/bronze",
+    "#c:ingots/electrum"
   ]
 }

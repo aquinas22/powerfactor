@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": "#c:ingots/lead"
+  },
+  "result": {
+    "id": "powerfactor:lead_plate",
+    "count": 1
+  }
+}

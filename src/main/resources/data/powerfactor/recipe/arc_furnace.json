@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "EGE",
+    "SFS",
+    "SKS"
+  ],
+  "key": {
+    "E": "powerfactor:graphite_electrode",
+    "G": "#c:glass_blocks",
+    "S": "#c:plates/steel",
+    "F": "powerfactor:alloy_furnace",
+    "K": "powerfactor:advanced_circuit"
+  },
+  "result": {
+    "id": "powerfactor:arc_furnace",
+    "count": 1
+  }
+}

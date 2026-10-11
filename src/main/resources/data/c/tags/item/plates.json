@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "#c:plates/iron",
+    "#c:plates/copper",
+    "#c:plates/gold",
+    "#c:plates/zinc",
+    "#c:plates/brass",
+    "#c:plates/tin",
+    "#c:plates/lead",
+    "#c:plates/silver",
+    "#c:plates/aluminum",
+    "#c:plates/steel",
+    "#c:plates/bronze",
+    "#c:plates/electrum"
+  ]
+}

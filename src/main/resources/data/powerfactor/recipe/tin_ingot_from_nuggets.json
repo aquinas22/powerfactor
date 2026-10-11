@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": "#c:nuggets/tin"
+  },
+  "result": {
+    "id": "powerfactor:tin_ingot",
+    "count": 1
+  }
+}

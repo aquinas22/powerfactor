@@ -48,6 +48,11 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("electric_furnace_smelts", () -> PowerFactorGameTests::electricFurnaceSmelts);
         FUNCTIONS.register("capacitor_upgrades_correct_motor_pf", () -> PowerFactorGameTests::capacitorUpgradesCorrectPf);
         FUNCTIONS.register("side_config_controls_faces", () -> PowerFactorGameTests::sideConfigControlsFaces);
+        FUNCTIONS.register("alloy_furnace_makes_brass", () -> PowerFactorGameTests::alloyFurnaceMakesBrass);
+        FUNCTIONS.register("arc_furnace_makes_steel", () -> PowerFactorGameTests::arcFurnaceMakesSteel);
+        FUNCTIONS.register("ore_washer_triples", () -> PowerFactorGameTests::oreWasherTriples);
+        FUNCTIONS.register("item_pipe_moves_items", () -> PowerFactorGameTests::itemPipeMovesItems);
+        FUNCTIONS.register("pump_fills_tank_through_pipe", () -> PowerFactorGameTests::pumpFillsTank);
     }
 
     public static void register(IEventBus modBus) {
@@ -278,6 +283,94 @@ public final class PowerFactorGameTests {
         helper.getBlockEntity(CENTER, CrusherBlockEntity.class).cycleSide(com.powerfactor.machine.SideConfig.Face.FRONT, 1);
         helper.assertValueEqual(tryInsert.apply(Direction.NORTH, Items.RAW_IRON), 1, "front set to input");
         helper.succeed();
+    }
+
+    // ------------------------------------------------------------------ phase B
+
+    private static com.powerfactor.machine.RecipeMachineBlockEntity placeRecipeMachine(GameTestHelper helper, BlockPos pos,
+            com.powerfactor.machine.RecipeMachine machine) {
+        helper.setBlock(pos, ModBlocks.RECIPE_MACHINES.get(machine).get().defaultBlockState());
+        var be = helper.getBlockEntity(pos, com.powerfactor.machine.RecipeMachineBlockEntity.class);
+        // Stand in for a grid: keep it topped up.
+        helper.onEachTick(() -> fillEnergy(be));
+        return be;
+    }
+
+    private static void alloyFurnaceMakesBrass(GameTestHelper helper) {
+        var be = placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.ALLOY_FURNACE);
+        insert(helper, CENTER, Items.COPPER_INGOT, 3);
+        insert(helper, CENTER, ModItems.ZINC_INGOT.get(), 1);
+        helper.runAfterDelay(230, () -> {
+            var out = be.slot(2);
+            helper.assertTrue(out.is(ModItems.BRASS_INGOT.get()) && out.getCount() == 4, "alloy furnace made " + out);
+            helper.succeed();
+        });
+    }
+
+    private static void arcFurnaceMakesSteel(GameTestHelper helper) {
+        var be = placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.ARC_FURNACE);
+        insert(helper, CENTER, Items.IRON_INGOT, 1);
+        insert(helper, CENTER, ModItems.COAL_DUST.get(), 1);
+        insert(helper, CENTER, ModItems.GRAPHITE_ELECTRODE.get(), 1);
+        helper.runAfterDelay(330, () -> {
+            var out = be.slot(2);
+            helper.assertTrue(out.is(com.powerfactor.registry.ModMaterials.INGOTS.get("steel").get()), "arc furnace made " + out);
+            helper.assertValueEqual(be.slot(3).getDamageValue(), 1, "electrode wear");
+            helper.succeed();
+        });
+    }
+
+    private static void oreWasherTriples(GameTestHelper helper) {
+        var be = placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.ORE_WASHER);
+        try (var tx = Transaction.openRoot()) {
+            be.getTank().insert(net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER), 1000, tx);
+            tx.commit();
+        }
+        insert(helper, CENTER, Items.RAW_IRON, 1);
+        helper.runAfterDelay(180, () -> {
+            var out = be.slot(1);
+            helper.assertTrue(out.is(ModItems.IRON_DUST.get()) && out.getCount() == 3, "washer made " + out);
+            helper.assertValueEqual(be.getTank().getAmountAsInt(0), 750, "water left");
+            helper.succeed();
+        });
+    }
+
+    /** Chest -> extract arm -> pipe -> insert arm -> crusher input. */
+    private static void itemPipeMovesItems(GameTestHelper helper) {
+        BlockPos chestPos = new BlockPos(0, 1, 1), pipePos = new BlockPos(1, 1, 1), crusherPos = new BlockPos(2, 1, 1);
+        helper.setBlock(chestPos, Blocks.CHEST);
+        helper.setBlock(crusherPos, ModBlocks.CRUSHER.get().defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
+        var chest = (net.minecraft.world.level.block.entity.ChestBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(chestPos));
+        chest.setItem(0, new net.minecraft.world.item.ItemStack(Items.RAW_IRON, 10));
+        var pipe = ModBlocks.ITEM_PIPE.get();
+        helper.setBlock(pipePos, pipe.defaultBlockState()
+                .setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(Direction.WEST), com.powerfactor.logistics.PipeSide.EXTRACT)
+                .setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(Direction.EAST), com.powerfactor.logistics.PipeSide.INSERT));
+        helper.runAfterDelay(30, () -> {
+            var crusher = helper.getBlockEntity(crusherPos, CrusherBlockEntity.class);
+            helper.assertTrue(crusher.slot(CrusherBlockEntity.INPUT).is(Items.RAW_IRON), "crusher got " + crusher.slot(CrusherBlockEntity.INPUT));
+            helper.assertTrue(chest.getItem(0).getCount() < 10, "chest still has " + chest.getItem(0));
+            helper.succeed();
+        });
+    }
+
+    /** Pump on water -> fluid pipe -> tank. */
+    private static void pumpFillsTank(GameTestHelper helper) {
+        BlockPos waterPos = new BlockPos(0, 0, 1), pumpPos = new BlockPos(0, 1, 1), pipePos = new BlockPos(1, 1, 1), tankPos = new BlockPos(2, 1, 1);
+        helper.setBlock(waterPos, Blocks.WATER);
+        helper.setBlock(pumpPos, ModBlocks.ELECTRIC_PUMP.get().defaultBlockState());
+        var pump = helper.getBlockEntity(pumpPos, com.powerfactor.logistics.PumpBlockEntity.class);
+        fillEnergy(pump);
+        helper.setBlock(tankPos, ModBlocks.FLUID_TANK.get().defaultBlockState());
+        helper.setBlock(pipePos, ModBlocks.FLUID_PIPE.get().defaultBlockState()
+                .setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(Direction.WEST), com.powerfactor.logistics.PipeSide.EXTRACT)
+                .setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(Direction.EAST), com.powerfactor.logistics.PipeSide.INSERT));
+        helper.runAfterDelay(120, () -> {
+            var tank = helper.getBlockEntity(tankPos, com.powerfactor.logistics.FluidTankBlockEntity.class);
+            helper.assertTrue(tank.fluid().is(net.minecraft.world.level.material.Fluids.WATER) && tank.fluid().getAmount() >= 500,
+                    "tank has " + tank.fluid().getAmount() + " " + tank.fluid().getFluid());
+            helper.succeed();
+        });
     }
 
     private PowerFactorGameTests() {}

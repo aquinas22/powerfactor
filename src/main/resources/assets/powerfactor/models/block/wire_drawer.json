@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "powerfactor:block/wire_drawer_top",
+    "bottom": "powerfactor:block/wire_drawer_side",
+    "side": "powerfactor:block/wire_drawer_side",
+    "front": "powerfactor:block/wire_drawer_front"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:tin_ore",
+    "powerfactor:deepslate_tin_ore"
+  ]
+}

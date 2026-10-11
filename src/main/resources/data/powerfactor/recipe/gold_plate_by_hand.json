@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": "#c:ingots/gold"
+  },
+  "result": {
+    "id": "powerfactor:gold_plate",
+    "count": 1
+  }
+}

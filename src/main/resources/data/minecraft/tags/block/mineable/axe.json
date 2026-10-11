@@ -1,6 +1,8 @@
 {
   "replace": false,
   "values": [
-    "powerfactor:redstone_engine"
+    "powerfactor:redstone_engine",
+    "powerfactor:rubber_log",
+    "powerfactor:rubber_planks"
   ]
 }

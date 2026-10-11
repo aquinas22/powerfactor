@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:raw_tin_block"
+  ],
+  "result": {
+    "id": "powerfactor:raw_tin",
+    "count": 9
+  }
+}

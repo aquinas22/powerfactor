@@ -1,0 +1,19 @@
+{
+  "type": "powerfactor:alloying",
+  "inputs": [
+    {
+      "ingredient": "#c:dusts/gold",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:dusts/silver",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:electrum_ingot",
+      "count": 2
+    }
+  ]
+}

@@ -2,6 +2,13 @@
   "replace": false,
   "values": [
     "#c:nuggets/zinc",
-    "#c:nuggets/brass"
+    "#c:nuggets/brass",
+    "#c:nuggets/tin",
+    "#c:nuggets/lead",
+    "#c:nuggets/silver",
+    "#c:nuggets/aluminum",
+    "#c:nuggets/steel",
+    "#c:nuggets/bronze",
+    "#c:nuggets/electrum"
   ]
 }

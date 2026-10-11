@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:rolling",
+  "inputs": [
+    {
+      "ingredient": "#c:ingots/zinc",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:zinc_plate"
+    }
+  ]
+}

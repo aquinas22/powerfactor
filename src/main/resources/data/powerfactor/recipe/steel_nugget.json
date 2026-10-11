@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:ingots/steel"
+  ],
+  "result": {
+    "id": "powerfactor:steel_nugget",
+    "count": 9
+  }
+}

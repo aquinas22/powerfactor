@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "powerfactor:block/ore_washer_top",
+    "bottom": "powerfactor:block/ore_washer_side",
+    "side": "powerfactor:block/ore_washer_side",
+    "front": "powerfactor:block/ore_washer_front_on"
+  }
+}

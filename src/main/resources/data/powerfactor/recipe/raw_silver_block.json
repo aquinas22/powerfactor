@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": "powerfactor:raw_silver"
+  },
+  "result": {
+    "id": "powerfactor:raw_silver_block",
+    "count": 1
+  }
+}

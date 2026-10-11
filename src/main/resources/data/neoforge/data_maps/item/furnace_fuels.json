@@ -2,6 +2,15 @@
   "values": {
     "powerfactor:coal_dust": {
       "burn_time": 1600
+    },
+    "powerfactor:rubber_log": {
+      "burn_time": 300
+    },
+    "powerfactor:rubber_planks": {
+      "burn_time": 300
+    },
+    "powerfactor:rubber_sapling": {
+      "burn_time": 100
     }
   }
 }

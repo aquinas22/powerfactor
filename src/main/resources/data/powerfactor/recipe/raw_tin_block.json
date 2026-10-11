@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": "powerfactor:raw_tin"
+  },
+  "result": {
+    "id": "powerfactor:raw_tin_block",
+    "count": 1
+  }
+}

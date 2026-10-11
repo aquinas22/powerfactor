@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PFP",
+    "GMG",
+    "PBP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "F": "powerfactor:fluid_pipe",
+    "G": "#c:gears/iron",
+    "M": "powerfactor:electric_motor",
+    "B": "minecraft:bucket"
+  },
+  "result": {
+    "id": "powerfactor:electric_pump",
+    "count": 1
+  }
+}

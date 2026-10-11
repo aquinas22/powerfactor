@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "axis=x,latex=false,natural=false": {
+      "model": "powerfactor:block/rubber_log_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=x,latex=true,natural=false": {
+      "model": "powerfactor:block/rubber_log_tapped_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=x,latex=false,natural=true": {
+      "model": "powerfactor:block/rubber_log_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=x,latex=true,natural=true": {
+      "model": "powerfactor:block/rubber_log_tapped_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,latex=false,natural=false": {
+      "model": "powerfactor:block/rubber_log"
+    },
+    "axis=y,latex=true,natural=false": {
+      "model": "powerfactor:block/rubber_log_tapped"
+    },
+    "axis=y,latex=false,natural=true": {
+      "model": "powerfactor:block/rubber_log"
+    },
+    "axis=y,latex=true,natural=true": {
+      "model": "powerfactor:block/rubber_log_tapped"
+    },
+    "axis=z,latex=false,natural=false": {
+      "model": "powerfactor:block/rubber_log_horizontal",
+      "x": 90
+    },
+    "axis=z,latex=true,natural=false": {
+      "model": "powerfactor:block/rubber_log_tapped_horizontal",
+      "x": 90
+    },
+    "axis=z,latex=false,natural=true": {
+      "model": "powerfactor:block/rubber_log_horizontal",
+      "x": 90
+    },
+    "axis=z,latex=true,natural=true": {
+      "model": "powerfactor:block/rubber_log_tapped_horizontal",
+      "x": 90
+    }
+  }
+}

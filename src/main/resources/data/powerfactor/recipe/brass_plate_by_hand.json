@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": "#c:ingots/brass"
+  },
+  "result": {
+    "id": "powerfactor:brass_plate",
+    "count": 1
+  }
+}

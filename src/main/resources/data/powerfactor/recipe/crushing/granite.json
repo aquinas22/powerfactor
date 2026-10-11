@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "minecraft:granite",
+  "result": {
+    "item": "minecraft:red_sand"
+  },
+  "bonus": [
+    {
+      "item": "powerfactor:mica",
+      "chance": 0.25
+    }
+  ],
+  "time": 80
+}

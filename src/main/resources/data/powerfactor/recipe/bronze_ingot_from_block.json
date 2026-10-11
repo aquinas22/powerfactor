@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:bronze_block"
+  ],
+  "result": {
+    "id": "powerfactor:bronze_ingot",
+    "count": 9
+  }
+}

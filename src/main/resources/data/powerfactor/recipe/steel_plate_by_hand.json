@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": "#c:ingots/steel"
+  },
+  "result": {
+    "id": "powerfactor:steel_plate",
+    "count": 1
+  }
+}

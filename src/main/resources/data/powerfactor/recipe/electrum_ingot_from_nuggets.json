@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": "#c:nuggets/electrum"
+  },
+  "result": {
+    "id": "powerfactor:electrum_ingot",
+    "count": 1
+  }
+}

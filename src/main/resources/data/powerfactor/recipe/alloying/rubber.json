@@ -1,0 +1,15 @@
+{
+  "type": "powerfactor:alloying",
+  "inputs": [
+    {
+      "ingredient": "powerfactor:latex",
+      "count": 2
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:rubber"
+    }
+  ],
+  "time": 100
+}

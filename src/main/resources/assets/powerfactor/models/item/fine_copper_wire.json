@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "powerfactor:item/fine_copper_wire"
+  }
+}

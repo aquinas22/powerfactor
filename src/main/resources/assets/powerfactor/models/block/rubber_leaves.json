@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/leaves",
+  "textures": {
+    "all": "powerfactor:block/rubber_leaves"
+  }
+}

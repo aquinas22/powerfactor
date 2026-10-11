@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WSW",
+    "KRK",
+    "WSW"
+  ],
+  "key": {
+    "W": "powerfactor:fine_silver_wire",
+    "S": "powerfactor:silicon",
+    "K": "powerfactor:control_circuit",
+    "R": "#c:dusts/redstone"
+  },
+  "result": {
+    "id": "powerfactor:advanced_circuit",
+    "count": 2
+  }
+}

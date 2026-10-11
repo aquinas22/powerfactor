@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "cookingtime": 200,
+  "experience": 0.1,
+  "ingredient": "#c:dusts/silver",
+  "result": {
+    "id": "powerfactor:silver_ingot"
+  }
+}

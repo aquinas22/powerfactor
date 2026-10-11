@@ -2,23 +2,7 @@
   "type": "powerfactor:crushing",
   "ingredient": "#c:raw_materials/lead",
   "result": {
-    "tag": "c:dusts/lead",
+    "item": "powerfactor:lead_dust",
     "count": 2
-  },
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:raw_materials/lead"
-      }
-    },
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:dusts/lead"
-      }
-    }
-  ]
+  }
 }

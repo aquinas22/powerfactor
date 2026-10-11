@@ -340,7 +340,7 @@ def not_empty(tag):
 
 
 # Other mods' metals: doubled through c: tags, only when some mod provides both the ore and the dust.
-FOREIGN_METALS = ["tin", "lead", "silver", "nickel", "aluminum", "osmium", "uranium", "platinum"]
+FOREIGN_METALS = ["nickel", "osmium", "uranium", "platinum"]
 
 
 def recipes():
@@ -447,8 +447,20 @@ def recipes():
 
 # ======================================================================== tags
 
+TAGS = {}
+
+
 def tag(registry, ns, path, values):
-    write(data(ns, "tags", registry, f"{path}.json"), {"replace": False, "values": values})
+    """Accumulates; the same tag may be added to from several places. Written by flush_tags()."""
+    entries = TAGS.setdefault((registry, ns, path), [])
+    for v in values:
+        if v not in entries:
+            entries.append(v)
+
+
+def flush_tags():
+    for (registry, ns, path), values in TAGS.items():
+        write(data(ns, "tags", registry, f"{path}.json"), {"replace": False, "values": values})
 
 
 def tags():
@@ -658,11 +670,403 @@ def lang():
     write(asset("lang", "en_us.json"), dict(sorted(LANG.items())))
 
 
+# ======================================================================== Phase B: materials, machines, logistics
+
+NEW_METALS = ["tin", "lead", "silver", "aluminum", "steel", "bronze", "electrum"]
+MINED = {"tin": "raw_tin", "lead": "raw_lead", "silver": "raw_silver", "bauxite": "bauxite"}
+RAW_BLOCK = {"tin": "raw_tin_block", "lead": "raw_lead_block", "silver": "raw_silver_block", "bauxite": "bauxite_block"}
+DUST_OF_ORE = {"tin": "tin", "lead": "lead", "silver": "silver", "bauxite": "aluminum"}
+PLATE_METALS = ["iron", "copper", "gold", "zinc", "brass"] + NEW_METALS
+INGOT_REF = {"iron": "#c:ingots/iron", "copper": "#c:ingots/copper", "gold": "#c:ingots/gold"}
+NEW_ITEMS = ["graphite", "graphite_electrode", "silicon", "mica", "latex", "rubber", "tree_tap", "advanced_circuit", "steel_gear",
+             "heating_coil", "fine_copper_wire", "fine_silver_wire", "fine_aluminum_wire"]
+RECIPE_MACHINES = ["alloy_furnace", "arc_furnace", "wire_drawer", "rolling_mill", "ore_washer"]
+
+
+def phase_b_models():
+    for ore in MINED:
+        simple_block(f"{ore}_ore")
+        simple_block(f"deepslate_{ore}_ore")
+        simple_block(RAW_BLOCK[ore])
+        flat_item(MINED[ore])
+    for m in NEW_METALS:
+        simple_block(f"{m}_block")
+        for form in ("ingot", "nugget", "dust"):
+            flat_item(f"{m}_{form}")
+    for m in PLATE_METALS:
+        flat_item(f"{m}_plate")
+    for i in NEW_ITEMS:
+        flat_item(i, "minecraft:item/handheld" if i == "tree_tap" else "minecraft:item/generated")
+    for m in RECIPE_MACHINES:
+        orientable_machine(m, bottom=f"{m}_side")
+    # Pump: intake grate underneath, no animation.
+    write(asset("models", "block", "electric_pump.json"), {"parent": "minecraft:block/orientable_with_bottom", "textures": {
+        "top": pf("block/electric_pump_top"), "bottom": pf("block/electric_pump_bottom"), "side": pf("block/electric_pump_side"),
+        "front": pf("block/electric_pump_front")}})
+    machine_states("electric_pump", pf("block/electric_pump"), pf("block/electric_pump"))
+    item_def("electric_pump")
+    rubber_tree_models()
+    tank_model()
+    pipe_models("fluid_pipe")
+    pipe_models("item_pipe")
+
+
+def rubber_tree_models():
+    for name, side in (("rubber_log", "rubber_log"), ("rubber_log_tapped", "rubber_log_tapped")):
+        write(asset("models", "block", f"{name}.json"), {"parent": "minecraft:block/cube_column",
+            "textures": {"end": pf("block/rubber_log_top"), "side": pf(f"block/{side}")}})
+        write(asset("models", "block", f"{name}_horizontal.json"), {"parent": "minecraft:block/cube_column_horizontal",
+            "textures": {"end": pf("block/rubber_log_top"), "side": pf(f"block/{side}")}})
+    variants = {}
+    for axis in ("x", "y", "z"):
+        for natural in ("false", "true"):
+            for latex in ("false", "true"):
+                base = "rubber_log_tapped" if latex == "true" else "rubber_log"
+                v = {"model": pf(f"block/{base}" + ("" if axis == "y" else "_horizontal"))}
+                if axis == "x":
+                    v.update({"x": 90, "y": 90})
+                elif axis == "z":
+                    v["x"] = 90
+                variants[f"axis={axis},latex={latex},natural={natural}"] = v
+    write(asset("blockstates", "rubber_log.json"), {"variants": variants})
+    item_def("rubber_log")
+    write(asset("models", "block", "rubber_leaves.json"), {"parent": "minecraft:block/leaves", "textures": {"all": pf("block/rubber_leaves")}})
+    write(asset("blockstates", "rubber_leaves.json"), {"variants": {"": {"model": pf("block/rubber_leaves")}}})
+    item_def("rubber_leaves")
+    write(asset("models", "block", "rubber_sapling.json"), {"parent": "minecraft:block/cross", "render_type": "minecraft:cutout",
+        "textures": {"cross": pf("block/rubber_sapling")}})
+    write(asset("blockstates", "rubber_sapling.json"), {"variants": {"": {"model": pf("block/rubber_sapling")}}})
+    write(asset("models", "item", "rubber_sapling.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": pf("block/rubber_sapling")}})
+    item_def("rubber_sapling", pf("item/rubber_sapling"))
+    simple_block("rubber_planks")
+
+
+def tank_model():
+    """Steel corner posts and caps around a glass shell; the fluid inside is drawn by FluidTankRenderer."""
+    els = []
+    f = lambda: {d: face("#side") for d in ("north", "east", "south", "west", "up", "down")}
+    els.append({"from": [1, 0, 1], "to": [15, 16, 15], "faces": {
+        "north": face("#side"), "east": face("#side"), "south": face("#side"), "west": face("#side"),
+        "up": face("#top", "up"), "down": face("#top", "down")}})
+    write(asset("models", "block", "fluid_tank.json"), {"parent": "minecraft:block/block", "render_type": "minecraft:translucent",
+        "textures": {"side": pf("block/fluid_tank_side"), "top": pf("block/fluid_tank_top"), "particle": pf("block/fluid_tank_side")},
+        "elements": els})
+    write(asset("blockstates", "fluid_tank.json"), {"variants": {"": {"model": pf("block/fluid_tank")}}})
+    item_def("fluid_tank")
+
+
+def pipe_models(block):
+    tex, ext = pf(f"block/{block}"), pf("block/pipe_extract")
+    allf = lambda t: {d: face(t) for d in ("north", "east", "south", "west", "up", "down")}
+    write(asset("models", "block", f"{block}_core.json"), {"parent": "minecraft:block/block", "textures": {"t": tex, "particle": tex},
+        "elements": [{"from": [5, 5, 5], "to": [11, 11, 11], "faces": allf("#t")}]})
+    arm = allf("#t")
+    del arm["south"]
+    arm["north"] = face("#t", "north")
+    write(asset("models", "block", f"{block}_arm.json"), {"parent": "minecraft:block/block", "textures": {"t": tex, "particle": tex},
+        "elements": [{"from": [5, 5, 0], "to": [11, 11, 5], "faces": arm}]})
+    # Endpoint arms get a flange; extract arms get orange rings.
+    flange = {"from": [4, 4, 0], "to": [12, 12, 2], "faces": allf("#t")}
+    write(asset("models", "block", f"{block}_insert.json"), {"parent": "minecraft:block/block", "textures": {"t": tex, "particle": tex},
+        "elements": [{"from": [5, 5, 2], "to": [11, 11, 5], "faces": arm}, flange]})
+    write(asset("models", "block", f"{block}_extract.json"), {"parent": "minecraft:block/block", "textures": {"t": tex, "e": ext, "particle": tex},
+        "elements": [{"from": [5, 5, 2], "to": [11, 11, 5], "faces": arm}, {"from": [3.5, 3.5, 0], "to": [12.5, 12.5, 2.5], "faces": allf("#e")}]})
+    rotations = {"north": {}, "east": {"y": 90}, "south": {"y": 180}, "west": {"y": 270}, "up": {"x": 270}, "down": {"x": 90}}
+    parts = [{"apply": {"model": pf(f"block/{block}_core")}}]
+    for d, rot in rotations.items():
+        for state, model in (("pipe", "arm"), ("insert", "insert"), ("extract", "extract")):
+            parts.append({"when": {d: state}, "apply": dict({"model": pf(f"block/{block}_{model}"), "uvlock": True}, **rot)})
+    write(asset("blockstates", f"{block}.json"), {"multipart": parts})
+    write(asset("models", "item", f"{block}.json"), {"parent": "minecraft:block/block", "textures": {"t": tex, "particle": tex},
+        "elements": [{"from": [5, 5, 0], "to": [11, 11, 16], "faces": allf("#t")}],
+        "display": {"gui": {"rotation": [30, 45, 0], "scale": [0.9, 0.9, 0.9]}}})
+    item_def(block, pf(f"item/{block}"))
+
+
+def phase_b_loot():
+    for ore, raw in MINED.items():
+        ore_loot(f"{ore}_ore", raw)
+        ore_loot(f"deepslate_{ore}_ore", raw)
+        drops_self(RAW_BLOCK[ore])
+    for m in NEW_METALS:
+        drops_self(f"{m}_block")
+    for b in RECIPE_MACHINES + ["electric_pump", "item_pipe", "fluid_pipe", "rubber_planks", "rubber_sapling"]:
+        drops_self(b)
+    # Logs drop as the plain item; leaves need shears/silk, otherwise saplings and sticks.
+    drops_self("rubber_log")
+    silk_or_shears = {"condition": "minecraft:any_of", "terms": [
+        {"condition": "minecraft:match_tool", "predicate": {"items": "minecraft:shears"}},
+        {"condition": "minecraft:match_tool", "predicate": {"predicates": {"minecraft:enchantments": [
+            {"enchantments": "minecraft:silk_touch", "levels": {"min": 1}}]}}}]}
+    write(data(NS, "loot_table", "blocks", "rubber_leaves.json"), {"type": "minecraft:block", "random_sequence": pf("blocks/rubber_leaves"),
+        "pools": [{"rolls": 1.0, "bonus_rolls": 0.0, "entries": [{"type": "minecraft:alternatives", "children": [
+            {"type": "minecraft:item", "name": pf("rubber_leaves"), "conditions": [silk_or_shears]},
+            {"type": "minecraft:item", "name": pf("rubber_sapling"), "conditions": [
+                {"condition": "minecraft:survives_explosion"},
+                {"condition": "minecraft:table_bonus", "enchantment": "minecraft:fortune", "chances": [0.05, 0.0625, 0.083333336, 0.1]}]}]}]}]})
+    # The tank keeps its fluid.
+    write(data(NS, "loot_table", "blocks", "fluid_tank.json"), {"type": "minecraft:block", "random_sequence": pf("blocks/fluid_tank"),
+        "pools": [{"rolls": 1.0, "bonus_rolls": 0.0, "conditions": [{"condition": "minecraft:survives_explosion"}],
+                   "entries": [{"type": "minecraft:item", "name": pf("fluid_tank"), "functions": [
+                       {"function": "minecraft:copy_components", "source": "block_entity", "include": [pf("fluid")]}]}]}]})
+
+
+def machine_recipe(kind, file, inputs, results, fluid=None, time=None, conditions=None):
+    r = {"type": pf(kind), "inputs": [{"ingredient": i[0], "count": i[1]} for i in inputs], "results": results}
+    if fluid:
+        r["fluid"] = {"ingredient": fluid[0], "amount": fluid[1]}
+    if time:
+        r["time"] = time
+    if conditions:
+        r["neoforge:conditions"] = conditions
+    write(data(NS, "recipe", kind, f"{file}.json"), r)
+
+
+def phase_b_recipes():
+    for m in NEW_METALS:
+        shaped(f"{m}_block", ["###", "###", "###"], {"#": f"#c:ingots/{m}"}, category="building")
+        shapeless(f"{m}_ingot", [pf(f"{m}_block")], 9, file=f"{m}_ingot_from_block")
+        shaped(f"{m}_ingot", ["###", "###", "###"], {"#": f"#c:nuggets/{m}"}, file=f"{m}_ingot_from_nuggets")
+        shapeless(f"{m}_nugget", [f"#c:ingots/{m}"], 9)
+        cooking(pf(f"{m}_ingot"), f"#c:dusts/{m}", f"{m}_ingot_from_dust", xp=0.1) if m not in ("aluminum", "steel") else None
+    for ore, raw in MINED.items():
+        shaped(RAW_BLOCK[ore], ["###", "###", "###"], {"#": pf(raw)}, category="building")
+        shapeless(raw, [pf(RAW_BLOCK[ore])], 9, file=f"{raw}_from_block")
+        metal = DUST_OF_ORE[ore]
+        if ore != "bauxite":
+            cooking(pf(f"{metal}_ingot"), f"#c:raw_materials/{metal}", f"{metal}_ingot_from_raw")
+            cooking(pf(f"{metal}_ingot"), f"#c:ores/{metal}", f"{metal}_ingot_from_ore")
+        # Crusher doubles, washer triples.
+        dust = f"{metal}_dust"
+        crushing(f"{ore}_ore", f"#c:ores/{ore}", out(dust, 2), [out(dust, 1, 0.25)])
+        crushing(f"{raw}", pf(raw) if ore == "bauxite" else f"#c:raw_materials/{metal}", out(dust, 2))
+        crushing(f"{RAW_BLOCK[ore]}", pf(RAW_BLOCK[ore]) if ore == "bauxite" else f"#c:storage_blocks/raw_{metal}", out(dust, 18), time=400)
+    for m in ["tin", "lead", "silver", "aluminum", "steel", "bronze", "electrum"]:
+        crushing(f"{m}_ingot", f"#c:ingots/{m}", out(f"{m}_dust"))
+
+    # Ore washer: raw ore + water -> three dusts, with a chance at a byproduct.
+    byproduct = {"iron": "gold_nugget", "gold": "silver_nugget", "copper": "gold_nugget", "zinc": "lead_nugget", "tin": "silver_nugget",
+                 "lead": "silver_nugget", "silver": "lead_nugget"}
+    for metal, by in byproduct.items():
+        by_item = by if ":" in by or by.startswith(("silver", "lead")) else "minecraft:" + by
+        machine_recipe("washing", f"raw_{metal}", [(f"#c:raw_materials/{metal}", 1)],
+                       [out(f"{metal}_dust", 3), out(by_item, 1, 0.15)], fluid=("minecraft:water", 250))
+    machine_recipe("washing", "bauxite", [(pf("bauxite"), 1)], [out("aluminum_dust", 3), out("minecraft:iron_nugget", 2, 0.3)],
+                   fluid=("minecraft:water", 250))
+
+    # Alloy furnace (induction): alloys from ingots or dusts.
+    alloys = [("brass", [("copper", 3), ("zinc", 1)], 4), ("bronze", [("copper", 3), ("tin", 1)], 4), ("electrum", [("gold", 1), ("silver", 1)], 2)]
+    for name, parts, count in alloys:
+        for form in ("ingots", "dusts"):
+            machine_recipe("alloying", f"{name}_from_{form}", [(f"#c:{form}/{m}", n) for m, n in parts], [out(f"{name}_ingot", count)])
+    machine_recipe("alloying", "rubber", [(pf("latex"), 2)], [out("rubber", 1)], time=100)
+
+    # Arc furnace: steel, aluminum, silicon, graphite.
+    machine_recipe("arc_smelting", "steel_from_ingot", [("#c:ingots/iron", 1), ("#c:dusts/coal", 1)], [out("steel_ingot")])
+    machine_recipe("arc_smelting", "steel_from_dust", [("#c:dusts/iron", 1), ("#c:dusts/coal", 1)], [out("steel_ingot")])
+    machine_recipe("arc_smelting", "aluminum", [("#c:dusts/aluminum", 1)], [out("aluminum_ingot")], time=240)
+    machine_recipe("arc_smelting", "silicon", [("#c:gems/quartz", 1), ("#c:dusts/coal", 1)], [out("silicon")])
+    machine_recipe("arc_smelting", "graphite", [("#c:dusts/coal", 4)], [out("graphite")], time=200)
+
+    # Wire drawer and rolling mill.
+    for metal in ("copper", "silver", "aluminum"):
+        machine_recipe("wire_drawing", f"fine_{metal}_wire", [(f"#c:ingots/{metal}", 1)], [out(f"fine_{metal}_wire", 3)])
+    for m in PLATE_METALS:
+        machine_recipe("rolling", f"{m}_plate", [(f"#c:ingots/{m}", 1)], [out(f"{m}_plate")])
+        # Early game: a hammer-free 2-ingot crafting route so plates aren't gated on the mill.
+        shaped(f"{m}_plate", ["##"], {"#": f"#c:ingots/{m}"}, file=f"{m}_plate_by_hand")
+
+    cooking(pf("rubber"), pf("latex"), "rubber", xp=0.1)
+    crushing("granite", "minecraft:granite", out("minecraft:red_sand"), [out("mica", 1, 0.25)], time=80)
+    shapeless("rubber_planks", [pf("rubber_log")], 4, category="building")
+
+    # Tools, parts and machines.
+    shaped("tree_tap", [" P ", "PPP", "P  "], {"P": "#minecraft:planks"}, category="equipment")
+    shaped("graphite_electrode", ["G", "G", "G"], {"G": pf("graphite")})
+    shaped("steel_gear", [" S ", "SGS", " S "], {"S": "#c:ingots/steel", "G": "#c:gears/iron"})
+    shaped("heating_coil", ["WWW", "WMW", "WWW"], {"W": pf("fine_copper_wire"), "M": pf("mica")})
+    shaped("advanced_circuit", ["WSW", "KRK", "WSW"], {"W": pf("fine_silver_wire"), "S": pf("silicon"), "K": pf("control_circuit"),
+                                                       "R": "#c:dusts/redstone"}, 2)
+    shaped("alloy_furnace", ["PCP", "HFH", "PKP"], {"P": "#c:plates/iron", "C": pf("copper_coil"), "H": pf("heating_coil"),
+                                                    "F": pf("electric_furnace"), "K": pf("control_circuit")}, category="redstone")
+    shaped("arc_furnace", ["EGE", "SFS", "SKS"], {"E": pf("graphite_electrode"), "G": "#c:glass_blocks", "S": "#c:plates/steel",
+                                                  "F": pf("alloy_furnace"), "K": pf("advanced_circuit")}, category="redstone")
+    shaped("wire_drawer", ["PDP", "GMG", "PKP"], {"P": "#c:plates/iron", "D": "#c:gems/diamond", "G": "#c:gears/iron",
+                                                  "M": pf("electric_motor"), "K": pf("control_circuit")}, category="redstone")
+    shaped("rolling_mill", ["PSP", "GMG", "PKP"], {"P": "#c:plates/iron", "S": "#c:storage_blocks/iron", "G": "#c:gears/brass",
+                                                   "M": pf("electric_motor"), "K": pf("control_circuit")}, category="redstone")
+    shaped("ore_washer", ["PBP", "GMG", "PKP"], {"P": "#c:plates/tin", "B": "minecraft:bucket", "G": "#c:gears/iron",
+                                                 "M": pf("electric_motor"), "K": pf("control_circuit")}, category="redstone")
+    shaped("electric_pump", ["PFP", "GMG", "PBP"], {"P": "#c:plates/iron", "F": pf("fluid_pipe"), "G": "#c:gears/iron",
+                                                    "M": pf("electric_motor"), "B": "minecraft:bucket"}, category="redstone")
+    shaped("fluid_tank", ["PGP", "G G", "PGP"], {"P": "#c:plates/iron", "G": "#c:glass_blocks"}, category="redstone")
+    shaped("fluid_pipe", ["PGP"], {"P": "#c:plates/bronze", "G": "#c:glass_blocks"}, 8, category="redstone")
+    shaped("item_pipe", ["PGP"], {"P": "#c:plates/tin", "G": "#c:glass_blocks"}, 8, category="redstone")
+
+
+def phase_b_tags():
+    for reg in ("block", "item"):
+        for ore in MINED:
+            tag(reg, "c", f"ores/{ore}", [pf(f"{ore}_ore"), pf(f"deepslate_{ore}_ore")])
+            tag(reg, "c", "ores_in_ground/stone", [pf(f"{ore}_ore")])
+            tag(reg, "c", "ores_in_ground/deepslate", [pf(f"deepslate_{ore}_ore")])
+            tag(reg, "c", "ore_rates/singular", [pf(f"{ore}_ore"), pf(f"deepslate_{ore}_ore")])
+        tag(reg, "c", "ores", [f"#c:ores/{o}" for o in MINED])
+        # Aluminum ore is bauxite.
+        tag(reg, "c", "ores/aluminum", ["#c:ores/bauxite"])
+        for ore in ("tin", "lead", "silver"):
+            tag(reg, "c", f"storage_blocks/raw_{ore}", [pf(RAW_BLOCK[ore])])
+        tag(reg, "c", "storage_blocks/bauxite", [pf("bauxite_block")])
+        for m in NEW_METALS:
+            tag(reg, "c", f"storage_blocks/{m}", [pf(f"{m}_block")])
+        tag(reg, "c", "storage_blocks", [f"#c:storage_blocks/{m}" for m in NEW_METALS] + [f"#c:storage_blocks/raw_{o}" for o in ("tin", "lead", "silver")])
+        tag(reg, "minecraft", "logs_that_burn", [pf("rubber_log")])
+        tag(reg, "minecraft", "logs", [pf("rubber_log")])
+        tag(reg, "minecraft", "planks", [pf("rubber_planks")])
+        tag(reg, "minecraft", "leaves", [pf("rubber_leaves")])
+        tag(reg, "minecraft", "saplings", [pf("rubber_sapling")])
+    for ore in ("tin", "lead", "silver"):
+        tag("item", "c", f"raw_materials/{ore}", [pf(f"raw_{ore}")])
+    tag("item", "c", "raw_materials", [f"#c:raw_materials/{o}" for o in ("tin", "lead", "silver")])
+    for m in NEW_METALS:
+        for form, suffix in (("ingots", "ingot"), ("nuggets", "nugget"), ("dusts", "dust")):
+            tag("item", "c", f"{form}/{m}", [pf(f"{m}_{suffix}")])
+        tag("item", "c", "ingots", [f"#c:ingots/{m}"])
+        tag("item", "c", "nuggets", [f"#c:nuggets/{m}"])
+        tag("item", "c", "dusts", [f"#c:dusts/{m}"])
+    for m in PLATE_METALS:
+        tag("item", "c", f"plates/{m}", [pf(f"{m}_plate")])
+    tag("item", "c", "plates", [f"#c:plates/{m}" for m in PLATE_METALS])
+    tag("item", "c", "gears/steel", [pf("steel_gear")])
+    tag("item", "c", "gears", ["#c:gears/steel"])
+    tag("item", "c", "silicon", [pf("silicon")])
+    tag("item", "c", "rubbers", [pf("rubber")])
+    tag("item", "c", "gems/graphite", [pf("graphite")])
+    tag("item", "c", "wires/copper", [pf("fine_copper_wire")])
+    tag("item", "c", "wires/silver", [pf("fine_silver_wire")])
+    tag("item", "c", "wires/aluminum", [pf("fine_aluminum_wire")])
+    ores = [pf(f"{o}_ore") for o in MINED] + [pf(f"deepslate_{o}_ore") for o in MINED]
+    metal_blocks = [pf(f"{m}_block") for m in NEW_METALS] + [pf(RAW_BLOCK[o]) for o in MINED]
+    machines = [pf(b) for b in RECIPE_MACHINES + ["electric_pump", "fluid_tank", "item_pipe", "fluid_pipe"]]
+    tag("block", "minecraft", "mineable/pickaxe", ores + metal_blocks + machines)
+    tag("block", "minecraft", "mineable/axe", [pf("rubber_log"), pf("rubber_planks")])
+    tag("block", "minecraft", "mineable/hoe", [pf("rubber_leaves")])
+    tag("block", "minecraft", "needs_stone_tool", [pf(f"{o}_ore") for o in ("tin", "lead", "bauxite")]
+        + [pf(f"deepslate_{o}_ore") for o in ("tin", "lead", "bauxite")] + metal_blocks)
+    tag("block", "minecraft", "needs_iron_tool", [pf("silver_ore"), pf("deepslate_silver_ore")])
+    tag("block", "minecraft", "beacon_base_blocks", [pf(f"{m}_block") for m in NEW_METALS])
+    tag("item", "minecraft", "beacon_payment_items", [pf(f"{m}_ingot") for m in ("tin", "lead", "silver", "aluminum", "steel", "bronze", "electrum")])
+    write(data("neoforge", "data_maps", "item", "furnace_fuels.json"), {"values": {pf("coal_dust"): {"burn_time": 1600},
+                                                                                   pf("rubber_log"): {"burn_time": 300},
+                                                                                   pf("rubber_planks"): {"burn_time": 300},
+                                                                                   pf("rubber_sapling"): {"burn_time": 100}}})
+
+
+ORE_GEN = {
+    # ore: (vein size, veins per chunk, min y, max y, shape)
+    "zinc": (9, 10, -32, 80, "trapezoid"),
+    "tin": (9, 12, -16, 96, "trapezoid"),
+    "lead": (8, 8, -48, 48, "trapezoid"),
+    "silver": (6, 5, -64, 32, "uniform"),
+    "bauxite": (12, 6, 40, 128, "uniform"),
+}
+
+
+def phase_b_worldgen():
+    for ore, (size, count, lo, hi, shape) in ORE_GEN.items():
+        write(data(NS, "worldgen", "configured_feature", f"ore_{ore}.json"), {"type": "minecraft:ore", "config": {
+            "discard_chance_on_air_exposure": 0.0, "size": size, "targets": [
+                {"state": {"Name": pf(f"{ore}_ore")}, "target": {"predicate_type": "minecraft:tag_match", "tag": "minecraft:stone_ore_replaceables"}},
+                {"state": {"Name": pf(f"deepslate_{ore}_ore")}, "target": {"predicate_type": "minecraft:tag_match",
+                                                                           "tag": "minecraft:deepslate_ore_replaceables"}}]}})
+        write(data(NS, "worldgen", "placed_feature", f"ore_{ore}.json"), {"feature": pf(f"ore_{ore}"), "placement": [
+            {"type": "minecraft:count", "count": count}, {"type": "minecraft:in_square"},
+            {"type": "minecraft:height_range", "height": {"type": f"minecraft:{shape}", "min_inclusive": {"absolute": lo},
+                                                          "max_inclusive": {"absolute": hi}}},
+            {"type": "minecraft:biome"}]})
+        write(data(NS, "neoforge", "biome_modifier", f"add_{ore}_ore.json"), {"type": "neoforge:add_features",
+            "biomes": "#minecraft:is_overworld", "features": pf(f"ore_{ore}"), "step": "underground_ores",
+            "neoforge:conditions": [{"type": pf("worldgen_enabled"), "feature": ore}]})
+    # Rubber trees: a tall straight trunk, a narrow crown, some logs weeping latex.
+    log = lambda latex: {"Name": pf("rubber_log"), "Properties": {"axis": "y", "natural": "true", "latex": latex}}
+    write(data(NS, "worldgen", "configured_feature", "rubber_tree.json"), {"type": "minecraft:tree", "config": {
+        "ignore_vines": True, "force_dirt": False,
+        "dirt_provider": {"type": "minecraft:simple_state_provider", "state": {"Name": "minecraft:dirt"}},
+        "below_trunk_provider": {"type": "minecraft:rule_based_state_provider", "fallback": {"type": "minecraft:simple_state_provider",
+                                 "state": {"Name": "minecraft:dirt"}}, "rules": []},
+        "trunk_provider": {"type": "minecraft:weighted_state_provider", "entries": [
+            {"data": log("false"), "weight": 3}, {"data": log("true"), "weight": 1}]},
+        "trunk_placer": {"type": "minecraft:straight_trunk_placer", "base_height": 6, "height_rand_a": 3, "height_rand_b": 1},
+        "foliage_provider": {"type": "minecraft:simple_state_provider", "state": {"Name": pf("rubber_leaves"),
+                             "Properties": {"distance": "7", "persistent": "false", "waterlogged": "false"}}},
+        "foliage_placer": {"type": "minecraft:spruce_foliage_placer", "radius": 2, "offset": 0, "trunk_height": {"type": "minecraft:uniform",
+                           "min_inclusive": 1, "max_inclusive": 2}},
+        "minimum_size": {"type": "minecraft:two_layers_feature_size", "limit": 1, "lower_size": 0, "upper_size": 1},
+        "decorators": []}})
+    write(data(NS, "worldgen", "placed_feature", "rubber_tree.json"), {"feature": pf("rubber_tree"), "placement": [
+        {"type": "minecraft:rarity_filter", "chance": 6}, {"type": "minecraft:in_square"},
+        {"type": "minecraft:surface_water_depth_filter", "max_water_depth": 0},
+        {"type": "minecraft:heightmap", "heightmap": "OCEAN_FLOOR"},
+        {"type": "minecraft:biome"},
+        {"type": "minecraft:block_predicate_filter", "predicate": {"type": "minecraft:would_survive", "state": {"Name": pf("rubber_sapling"),
+                                                                                                             "Properties": {"stage": "0"}}}}]})
+    write(data(NS, "neoforge", "biome_modifier", "add_rubber_trees.json"), {"type": "neoforge:add_features",
+        "biomes": {"type": "neoforge:or", "values": ["#c:is_jungle", "#c:is_swamp",
+                                                     ["minecraft:forest", "minecraft:birch_forest", "minecraft:river"]]},
+        "features": pf("rubber_tree"), "step": "vegetal_decoration",
+        "neoforge:conditions": [{"type": pf("worldgen_enabled"), "feature": "rubber_trees"}]})
+
+
+def phase_b_lang():
+    pretty = lambda s: " ".join(w.capitalize() for w in s.split("_"))
+    for ore in MINED:
+        name(f"block.{NS}.{ore}_ore", f"{pretty(ore)} Ore")
+        name(f"block.{NS}.deepslate_{ore}_ore", f"Deepslate {pretty(ore)} Ore")
+    name(f"block.{NS}.raw_tin_block", "Block of Raw Tin")
+    name(f"block.{NS}.raw_lead_block", "Block of Raw Lead")
+    name(f"block.{NS}.raw_silver_block", "Block of Raw Silver")
+    name(f"block.{NS}.bauxite_block", "Block of Bauxite")
+    for raw in ("raw_tin", "raw_lead", "raw_silver", "bauxite"):
+        name(f"item.{NS}.{raw}", pretty(raw))
+    for m in NEW_METALS:
+        name(f"block.{NS}.{m}_block", f"Block of {pretty(m)}")
+        for form in ("ingot", "nugget", "dust"):
+            name(f"item.{NS}.{m}_{form}", f"{pretty(m)} {form.capitalize()}")
+    for m in PLATE_METALS:
+        name(f"item.{NS}.{m}_plate", f"{pretty(m)} Plate")
+    for i in NEW_ITEMS:
+        name(f"item.{NS}.{i}", pretty(i))
+    for b in RECIPE_MACHINES + ["electric_pump", "fluid_tank", "fluid_pipe", "item_pipe", "rubber_log", "rubber_planks", "rubber_leaves",
+                                "rubber_sapling"]:
+        name(f"block.{NS}.{b}", pretty(b))
+    LANG.update({
+        "gui.powerfactor.water": "Water: %s / %s mB",
+        "message.powerfactor.tank": "%s: %s / %s mB",
+        "message.powerfactor.tank.empty": "Empty tank",
+        "message.powerfactor.pipe.extract": "%s arm: EXTRACT (pulls into the pipe)",
+        "message.powerfactor.pipe.disabled": "%s arm: disabled",
+        "message.powerfactor.pipe.enabled": "%s arm: reconnected",
+        "direction.powerfactor.north": "North", "direction.powerfactor.south": "South", "direction.powerfactor.east": "East",
+        "direction.powerfactor.west": "West", "direction.powerfactor.up": "Top", "direction.powerfactor.down": "Bottom",
+    })
+
+
+def phase_b():
+    phase_b_models()
+    phase_b_loot()
+    phase_b_recipes()
+    phase_b_tags()
+    phase_b_worldgen()
+    phase_b_lang()
+
+
 if __name__ == "__main__":
     models()
     loot()
     recipes()
     tags()
     worldgen()
+    phase_b()
+    flush_tags()
     lang()
     print("data written to", os.path.normpath(ROOT))

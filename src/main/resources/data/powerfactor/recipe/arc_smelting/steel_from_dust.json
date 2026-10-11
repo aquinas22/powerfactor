@@ -1,0 +1,18 @@
+{
+  "type": "powerfactor:arc_smelting",
+  "inputs": [
+    {
+      "ingredient": "#c:dusts/iron",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:dusts/coal",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:steel_ingot"
+    }
+  ]
+}

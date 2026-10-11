@@ -22,6 +22,26 @@ public final class GuiUtil {
         graphics.fillGradient(x + 1, bottom - filled, x + w - 1, bottom, FE_COLOR, FE_DARK);
     }
 
+    /** A liquid gauge: fills from the bottom with a wavy surface. */
+    public static void fluidGauge(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int amount, int capacity, int color) {
+        if (capacity <= 0 || amount <= 0) {
+            return;
+        }
+        int filled = (int) ((long) (h - 2) * Math.min(amount, capacity) / capacity);
+        int bottom = y + h - 1;
+        graphics.fillGradient(x + 1, bottom - filled, x + w - 1, bottom, color, darker(color));
+        long t = System.currentTimeMillis() / 120;
+        for (int i = x + 1; i < x + w - 1; i++) {
+            if ((i + t) % 4 == 0) {
+                graphics.fill(i, bottom - filled, i + 1, bottom - filled + 1, 0xFFFFFFFF);
+            }
+        }
+    }
+
+    private static int darker(int argb) {
+        return 0xFF000000 | ((argb >> 17) & 0x7F) << 16 | ((argb >> 9) & 0x7F) << 8 | ((argb >> 1) & 0x7F);
+    }
+
     public static void energyTooltip(GuiGraphicsExtractor graphics, Font font, int stored, int capacity, int mouseX, int mouseY) {
         graphics.setComponentTooltipForNextFrame(font, List.of(
                 Component.translatable("gui.powerfactor.buffer", String.format("%,d", stored), String.format("%,d", capacity))), mouseX, mouseY);

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "powerfactor:block/lead_block"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ingots/electrum",
+  "result": {
+    "item": "powerfactor:electrum_dust"
+  }
+}

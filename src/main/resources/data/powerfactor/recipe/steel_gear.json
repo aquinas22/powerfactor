@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "SGS",
+    " S "
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "G": "#c:gears/iron"
+  },
+  "result": {
+    "id": "powerfactor:steel_gear",
+    "count": 1
+  }
+}

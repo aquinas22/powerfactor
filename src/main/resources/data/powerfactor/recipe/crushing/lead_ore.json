@@ -2,29 +2,13 @@
   "type": "powerfactor:crushing",
   "ingredient": "#c:ores/lead",
   "result": {
-    "tag": "c:dusts/lead",
+    "item": "powerfactor:lead_dust",
     "count": 2
   },
   "bonus": [
     {
-      "tag": "c:dusts/lead",
+      "item": "powerfactor:lead_dust",
       "chance": 0.25
-    }
-  ],
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:ores/lead"
-      }
-    },
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:dusts/lead"
-      }
     }
   ]
 }

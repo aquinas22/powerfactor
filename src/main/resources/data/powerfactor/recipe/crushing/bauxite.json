@@ -1,0 +1,8 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "powerfactor:bauxite",
+  "result": {
+    "item": "powerfactor:aluminum_dust",
+    "count": 2
+  }
+}

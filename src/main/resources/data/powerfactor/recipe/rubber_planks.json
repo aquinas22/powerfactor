@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "powerfactor:rubber_log"
+  ],
+  "result": {
+    "id": "powerfactor:rubber_planks",
+    "count": 4
+  }
+}

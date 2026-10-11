@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": {
+    "type": "neoforge:or",
+    "values": [
+      "#c:is_jungle",
+      "#c:is_swamp",
+      [
+        "minecraft:forest",
+        "minecraft:birch_forest",
+        "minecraft:river"
+      ]
+    ]
+  },
+  "features": "powerfactor:rubber_tree",
+  "step": "vegetal_decoration",
+  "neoforge:conditions": [
+    {
+      "type": "powerfactor:worldgen_enabled",
+      "feature": "rubber_trees"
+    }
+  ]
+}

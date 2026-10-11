@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "#c:gears/iron",
-    "#c:gears/brass"
+    "#c:gears/brass",
+    "#c:gears/steel"
   ]
 }

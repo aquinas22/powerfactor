@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PCP",
+    "HFH",
+    "PKP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "C": "powerfactor:copper_coil",
+    "H": "powerfactor:heating_coil",
+    "F": "powerfactor:electric_furnace",
+    "K": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:alloy_furnace",
+    "count": 1
+  }
+}

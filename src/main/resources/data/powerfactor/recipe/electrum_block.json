@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": "#c:ingots/electrum"
+  },
+  "result": {
+    "id": "powerfactor:electrum_block",
+    "count": 1
+  }
+}

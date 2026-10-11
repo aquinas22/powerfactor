@@ -1,0 +1,23 @@
+{
+  "type": "powerfactor:washing",
+  "inputs": [
+    {
+      "ingredient": "#c:raw_materials/lead",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:lead_dust",
+      "count": 3
+    },
+    {
+      "item": "powerfactor:silver_nugget",
+      "chance": 0.15
+    }
+  ],
+  "fluid": {
+    "ingredient": "minecraft:water",
+    "amount": 250
+  }
+}

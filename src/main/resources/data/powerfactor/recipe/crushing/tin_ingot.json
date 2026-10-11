@@ -2,22 +2,6 @@
   "type": "powerfactor:crushing",
   "ingredient": "#c:ingots/tin",
   "result": {
-    "tag": "c:dusts/tin"
-  },
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:ingots/tin"
-      }
-    },
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:dusts/tin"
-      }
-    }
-  ]
+    "item": "powerfactor:tin_dust"
+  }
 }

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column_horizontal",
+  "textures": {
+    "end": "powerfactor:block/rubber_log_top",
+    "side": "powerfactor:block/rubber_log"
+  }
+}

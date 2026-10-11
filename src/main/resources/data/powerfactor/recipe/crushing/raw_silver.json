@@ -2,23 +2,7 @@
   "type": "powerfactor:crushing",
   "ingredient": "#c:raw_materials/silver",
   "result": {
-    "tag": "c:dusts/silver",
+    "item": "powerfactor:silver_dust",
     "count": 2
-  },
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:raw_materials/silver"
-      }
-    },
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:dusts/silver"
-      }
-    }
-  ]
+  }
 }

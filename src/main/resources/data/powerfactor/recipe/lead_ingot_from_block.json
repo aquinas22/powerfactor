@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:lead_block"
+  ],
+  "result": {
+    "id": "powerfactor:lead_ingot",
+    "count": 9
+  }
+}

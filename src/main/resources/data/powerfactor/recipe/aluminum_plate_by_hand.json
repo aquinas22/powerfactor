@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": "#c:ingots/aluminum"
+  },
+  "result": {
+    "id": "powerfactor:aluminum_plate",
+    "count": 1
+  }
+}

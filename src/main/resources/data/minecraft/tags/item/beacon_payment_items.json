@@ -2,6 +2,13 @@
   "replace": false,
   "values": [
     "powerfactor:zinc_ingot",
-    "powerfactor:brass_ingot"
+    "powerfactor:brass_ingot",
+    "powerfactor:tin_ingot",
+    "powerfactor:lead_ingot",
+    "powerfactor:silver_ingot",
+    "powerfactor:aluminum_ingot",
+    "powerfactor:steel_ingot",
+    "powerfactor:bronze_ingot",
+    "powerfactor:electrum_ingot"
   ]
 }

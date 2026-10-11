@@ -2,6 +2,14 @@
   "replace": false,
   "values": [
     "powerfactor:zinc_ore",
-    "powerfactor:deepslate_zinc_ore"
+    "powerfactor:deepslate_zinc_ore",
+    "powerfactor:tin_ore",
+    "powerfactor:deepslate_tin_ore",
+    "powerfactor:lead_ore",
+    "powerfactor:deepslate_lead_ore",
+    "powerfactor:silver_ore",
+    "powerfactor:deepslate_silver_ore",
+    "powerfactor:bauxite_ore",
+    "powerfactor:deepslate_bauxite_ore"
   ]
 }

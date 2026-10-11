@@ -1,0 +1,7 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:ingots/bronze",
+  "result": {
+    "item": "powerfactor:bronze_dust"
+  }
+}

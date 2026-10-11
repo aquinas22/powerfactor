@@ -1,0 +1,72 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "t": "powerfactor:block/item_pipe",
+    "e": "powerfactor:block/pipe_extract",
+    "particle": "powerfactor:block/item_pipe"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        5,
+        2
+      ],
+      "to": [
+        11,
+        11,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t",
+          "cullface": "north"
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        3.5,
+        0
+      ],
+      "to": [
+        12.5,
+        12.5,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e"
+        },
+        "east": {
+          "texture": "#e"
+        },
+        "south": {
+          "texture": "#e"
+        },
+        "west": {
+          "texture": "#e"
+        },
+        "up": {
+          "texture": "#e"
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "G",
+    "G",
+    "G"
+  ],
+  "key": {
+    "G": "powerfactor:graphite"
+  },
+  "result": {
+    "id": "powerfactor:graphite_electrode",
+    "count": 1
+  }
+}

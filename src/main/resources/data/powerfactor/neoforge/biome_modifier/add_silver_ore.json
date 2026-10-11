@@ -1,0 +1,12 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": "powerfactor:ore_silver",
+  "step": "underground_ores",
+  "neoforge:conditions": [
+    {
+      "type": "powerfactor:worldgen_enabled",
+      "feature": "silver"
+    }
+  ]
+}

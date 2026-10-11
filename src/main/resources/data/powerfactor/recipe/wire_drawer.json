@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PDP",
+    "GMG",
+    "PKP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "D": "#c:gems/diamond",
+    "G": "#c:gears/iron",
+    "M": "powerfactor:electric_motor",
+    "K": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:wire_drawer",
+    "count": 1
+  }
+}

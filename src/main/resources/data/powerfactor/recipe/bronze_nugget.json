@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:ingots/bronze"
+  ],
+  "result": {
+    "id": "powerfactor:bronze_nugget",
+    "count": 9
+  }
+}

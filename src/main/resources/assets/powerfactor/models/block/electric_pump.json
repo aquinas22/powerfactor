@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "powerfactor:block/electric_pump_top",
+    "bottom": "powerfactor:block/electric_pump_bottom",
+    "side": "powerfactor:block/electric_pump_side",
+    "front": "powerfactor:block/electric_pump_front"
+  }
+}

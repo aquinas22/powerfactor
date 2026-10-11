@@ -2,22 +2,6 @@
   "type": "powerfactor:crushing",
   "ingredient": "#c:ingots/aluminum",
   "result": {
-    "tag": "c:dusts/aluminum"
-  },
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:ingots/aluminum"
-      }
-    },
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:dusts/aluminum"
-      }
-    }
-  ]
+    "item": "powerfactor:aluminum_dust"
+  }
 }
