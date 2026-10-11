@@ -9,7 +9,8 @@ public enum MachineRecipeKind {
     ARC_SMELTING("arc_smelting", 300),
     WIRE_DRAWING("wire_drawing", 100),
     ROLLING("rolling", 100),
-    WASHING("washing", 160);
+    WASHING("washing", 160),
+    LASER_ENGRAVING("laser_engraving", 200);
 
     public final String id;
     public final int defaultTime;

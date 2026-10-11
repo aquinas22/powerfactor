@@ -5,11 +5,11 @@
     "index": 0,
     "on_true": {
       "type": "minecraft:model",
-      "model": "powerfactor:item/electric_chainsaw_running"
+      "model": "powerfactor:item/electric_chainsaw_3d_running"
     },
     "on_false": {
       "type": "minecraft:model",
-      "model": "powerfactor:item/electric_chainsaw"
+      "model": "powerfactor:item/electric_chainsaw_3d"
     }
   }
 }

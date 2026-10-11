@@ -43,6 +43,14 @@ public class ArcGunItem extends Item {
         super(properties);
     }
 
+    public static int capacity(ItemStack stack) {
+        return ToolModules.capacity(stack, CAPACITY);
+    }
+
+    public static int cost(ItemStack stack) {
+        return ToolModules.cost(stack, COST);
+    }
+
     public static int energy(ItemStack stack) {
         return stack.getOrDefault(ModComponents.ENERGY.get(), 0);
     }
@@ -51,21 +59,21 @@ public class ArcGunItem extends Item {
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         boolean creative = player.getAbilities().instabuild;
-        if (!creative && energy(stack) < COST) {
+        if (!creative && energy(stack) < cost(stack)) {
             level.playSound(player, player.blockPosition(), net.minecraft.sounds.SoundEvents.DISPENSER_FAIL, SoundSource.PLAYERS, 0.6F, 1.6F);
             return InteractionResult.FAIL;
         }
         player.getCooldowns().addCooldown(stack, COOLDOWN);
         if (level instanceof ServerLevel server) {
             if (!creative) {
-                stack.set(ModComponents.ENERGY.get(), energy(stack) - COST);
+                stack.set(ModComponents.ENERGY.get(), energy(stack) - cost(stack));
             }
-            fire(server, player);
+            fire(server, player, stack);
         }
         return InteractionResult.SUCCESS;
     }
 
-    private static void fire(ServerLevel level, Player player) {
+    private static void fire(ServerLevel level, Player player, ItemStack stack) {
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getViewVector(1F);
         Vec3 end = eye.add(look.scale(RANGE));
@@ -83,8 +91,9 @@ public class ArcGunItem extends Item {
         List<Entity> struck = new ArrayList<>();
         LivingEntity target = (LivingEntity) hit.getEntity();
         Vec3 from = muzzle;
-        float damage = DAMAGE;
-        for (int hop = 0; hop <= HOPS && target != null; hop++) {
+        float damage = DAMAGE + ToolModules.overcharge(stack, 4F);
+        int hops = HOPS + 2 * ToolModules.count(stack, DrillModule.Type.CHAIN);
+        for (int hop = 0; hop <= hops && target != null; hop++) {
             Vec3 to = target.position().add(0, target.getBbHeight() * 0.6, 0);
             bolt(level, from, to);
             target.hurtServer(level, player.damageSources().playerAttack(player), damage);
@@ -141,7 +150,7 @@ public class ArcGunItem extends Item {
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return Math.round(13F * Mth.clamp((float) energy(stack) / CAPACITY, 0, 1));
+        return Math.round(13F * Mth.clamp((float) energy(stack) / capacity(stack), 0, 1));
     }
 
     @Override
@@ -151,7 +160,7 @@ public class ArcGunItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
-        builder.accept(Component.translatable("tooltip.powerfactor.energy", String.format("%,d", energy(stack)), String.format("%,d", CAPACITY))
+        builder.accept(Component.translatable("tooltip.powerfactor.energy", String.format("%,d", energy(stack)), String.format("%,d", capacity(stack)))
                 .withColor(0xFF5A4A));
         builder.accept(Component.translatable("tooltip.powerfactor.arc_gun", COST, HOPS).withStyle(ChatFormatting.GRAY));
     }

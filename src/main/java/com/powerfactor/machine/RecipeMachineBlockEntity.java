@@ -84,7 +84,7 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
             return null;
         }
         FluidStack fluid = tank == null ? FluidStack.EMPTY : tank.copyToList().getFirst();
-        MachineRecipeInput input = new MachineRecipeInput(inputs, fluid);
+        MachineRecipeInput input = new MachineRecipeInput(inputs, fluid, machine.electrode ? items.getItem(machine.electrodeSlot()) : ItemStack.EMPTY);
         RecipeHolder<MachineRecipe> holder = recipes.getRecipeFor(input, level).orElse(null);
         if (holder == null) {
             return null;
@@ -128,8 +128,8 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
 
     @Override
     protected boolean isValidInput(int slot, ItemStack stack) {
-        boolean electrode = stack.is(ModItems.GRAPHITE_ELECTRODE.get());
-        return machine.electrode && slot == machine.electrodeSlot() ? electrode : !electrode || !machine.electrode;
+        boolean tool = machine.isTool(stack);
+        return machine.electrode && slot == machine.electrodeSlot() ? tool : !tool || !machine.electrode;
     }
 
     @Override
@@ -157,6 +157,8 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
         if (tank != null) {
             tank.deserialize(input.childOrEmpty("tank"));
         }
+        input.getString("shown_input").ifPresent(id -> clientInput = new ItemStack(
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(net.minecraft.resources.Identifier.parse(id))));
     }
 
     @Override
@@ -165,6 +167,41 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
         if (tank != null) {
             tank.serialize(output.child("tank"));
         }
+    }
+
+    // ---- the laser engraver shows its wafer and progress on the bed
+
+    private net.minecraft.world.item.Item syncedInput = net.minecraft.world.item.Items.AIR;
+    private ItemStack clientInput = ItemStack.EMPTY;
+
+    @Override
+    public void serverTick(ServerLevel level, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+        super.serverTick(level, pos, state);
+        if (machine == RecipeMachine.LASER_ENGRAVER) {
+            net.minecraft.world.item.Item now = items.getItem(0).getItem();
+            if (now != syncedInput) {
+                syncedInput = now;
+                level.sendBlockUpdated(pos, state, state, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            }
+        }
+    }
+
+    public ItemStack shownInput() {
+        return clientInput;
+    }
+
+    @Override
+    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return machine == RecipeMachine.LASER_ENGRAVER ? net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this) : null;
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        if (machine == RecipeMachine.LASER_ENGRAVER) {
+            tag.putString("shown_input", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(items.getItem(0).getItem()).toString());
+        }
+        return tag;
     }
 
     @Override

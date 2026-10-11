@@ -431,6 +431,15 @@
     ],
     "subtitle": "subtitles.powerfactor.fuel_cell_run"
   },
+  "laser_engraver_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:laser_engraver_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.laser_engraver_run"
+  },
   "tree_fall": {
     "sounds": [
       {
@@ -454,5 +463,37 @@
       }
     ],
     "subtitle": "subtitles.powerfactor.tesla_zap"
+  },
+  "upgrade_install": {
+    "sounds": [
+      {
+        "name": "powerfactor:upgrade_install"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.upgrade_install"
+  },
+  "upgrade_remove": {
+    "sounds": [
+      {
+        "name": "powerfactor:upgrade_remove"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.upgrade_remove"
+  },
+  "wire_shock": {
+    "sounds": [
+      {
+        "name": "powerfactor:wire_shock"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wire_shock"
+  },
+  "wrench": {
+    "sounds": [
+      {
+        "name": "powerfactor:wrench"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wrench"
   }
 }

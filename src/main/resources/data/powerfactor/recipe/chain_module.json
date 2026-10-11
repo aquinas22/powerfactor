@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PWP",
+    "QKQ",
+    "PWP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:advanced_circuit",
+    "W": "powerfactor:fine_silver_wire",
+    "Q": "#c:gems/quartz"
+  },
+  "result": {
+    "id": "powerfactor:chain_module",
+    "count": 1
+  }
+}

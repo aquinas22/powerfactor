@@ -3,13 +3,13 @@
   "category": "equipment",
   "pattern": [
     " W ",
-    "PKP",
+    "PSP",
     " G "
   ],
   "key": {
     "W": "powerfactor:copper_coil",
     "P": "#c:plates/iron",
-    "K": "powerfactor:control_circuit",
+    "S": "powerfactor:sensor_chip",
     "G": "#c:glass_panes"
   },
   "result": {

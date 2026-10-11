@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PGP",
+    "GKG",
+    "PGP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:advanced_circuit",
+    "G": "#c:plates/gold"
+  },
+  "result": {
+    "id": "powerfactor:efficiency_module",
+    "count": 1
+  }
+}

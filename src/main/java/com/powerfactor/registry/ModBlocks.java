@@ -154,6 +154,9 @@ public final class ModBlocks {
             p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.FUEL_CELL.get(), p),
             () -> machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 5 : 0));
 
+    public static final DeferredBlock<com.powerfactor.upgrade.UpgradeTableBlock> UPGRADE_TABLE = BLOCKS.registerBlock("upgrade_table",
+            com.powerfactor.upgrade.UpgradeTableBlock::new, () -> machine().noOcclusion().lightLevel(s -> 5));
+
     // ---------------------------------------------------------------- logistics
     public static final DeferredBlock<FluidTankBlock> FLUID_TANK = BLOCKS.registerBlock("fluid_tank", FluidTankBlock::new,
             () -> BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(2.5F, 6.0F).sound(SoundType.GLASS).noOcclusion()

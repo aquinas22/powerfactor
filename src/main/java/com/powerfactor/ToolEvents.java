@@ -21,8 +21,13 @@ public final class ToolEvents {
     @SubscribeEvent
     static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
         var stack = event.getEntity().getMainHandItem();
-        if (stack.getItem() instanceof ChainsawItem && !ChainsawItem.powered(stack)) {
-            event.setNewSpeed(Math.min(event.getNewSpeed(), ChainsawItem.UNPOWERED_SPEED));
+        if (stack.getItem() instanceof ChainsawItem) {
+            if (!ChainsawItem.powered(stack)) {
+                event.setNewSpeed(Math.min(event.getNewSpeed(), ChainsawItem.UNPOWERED_SPEED));
+            } else {
+                int speed = com.powerfactor.item.ToolModules.count(stack, com.powerfactor.item.DrillModule.Type.SPEED);
+                event.setNewSpeed(event.getNewSpeed() * (1 + 0.5F * speed));
+            }
         }
     }
 
@@ -46,9 +51,15 @@ public final class ToolEvents {
     /** A flat chainsaw is a blunt instrument. */
     @SubscribeEvent
     static void onIncomingDamage(LivingIncomingDamageEvent event) {
-        if (event.getSource().getEntity() instanceof LivingEntity attacker && event.getSource().getDirectEntity() == attacker
-                && attacker.getMainHandItem().getItem() instanceof ChainsawItem && !ChainsawItem.powered(attacker.getMainHandItem())) {
-            event.setAmount(Math.min(event.getAmount(), 2F));
+        if (!(event.getSource().getEntity() instanceof LivingEntity attacker) || event.getSource().getDirectEntity() != attacker) {
+            return;
+        }
+        var held = attacker.getMainHandItem();
+        if (held.getItem() instanceof ChainsawItem) {
+            event.setAmount(ChainsawItem.powered(held) ? event.getAmount() + com.powerfactor.item.ToolModules.overcharge(held, 3F)
+                    : Math.min(event.getAmount(), 2F));
+        } else if (held.getItem() instanceof com.powerfactor.item.ArcSaberItem && com.powerfactor.item.ArcSaberItem.lit(held)) {
+            event.setAmount(event.getAmount() + com.powerfactor.item.ToolModules.overcharge(held, 3F));
         }
     }
 
@@ -63,6 +74,7 @@ public final class ToolEvents {
     static void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             JetpackServer.tick(player);
+            com.powerfactor.grid.WireBlock.checkPlayer((ServerLevel) player.level(), player);
         }
     }
 

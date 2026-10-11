@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powerfactor:block/upgrade_table"
+    },
+    "facing=east": {
+      "model": "powerfactor:block/upgrade_table",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "powerfactor:block/upgrade_table",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powerfactor:block/upgrade_table",
+      "y": 270
+    }
+  }
+}

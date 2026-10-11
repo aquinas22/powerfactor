@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
   "textures": {
     "t": "powerfactor:block/item_pipe",
     "e": "powerfactor:block/pipe_extract",
@@ -20,19 +21,50 @@
       "faces": {
         "north": {
           "texture": "#t",
-          "cullface": "north"
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ]
         },
         "east": {
-          "texture": "#t"
+          "texture": "#t",
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ]
         },
         "west": {
-          "texture": "#t"
+          "texture": "#t",
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ]
         },
         "up": {
-          "texture": "#t"
+          "texture": "#t",
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ],
+          "rotation": 90
         },
         "down": {
-          "texture": "#t"
+          "texture": "#t",
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ],
+          "rotation": 90
         }
       }
     },
@@ -49,22 +81,58 @@
       ],
       "faces": {
         "north": {
-          "texture": "#e"
+          "texture": "#e",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "east": {
-          "texture": "#e"
+          "texture": "#e",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "south": {
-          "texture": "#e"
+          "texture": "#e",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "west": {
-          "texture": "#e"
+          "texture": "#e",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "up": {
-          "texture": "#e"
+          "texture": "#e",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#e"
+          "texture": "#e",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         }
       }
     }

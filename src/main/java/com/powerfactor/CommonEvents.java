@@ -77,18 +77,18 @@ public final class CommonEvents {
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.FUEL_CELL.get(), (be, side) -> be.getTank());
 
         event.registerItem(Capabilities.Energy.ITEM,
-                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ArcGunItem.CAPACITY, 5_000),
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ArcGunItem.capacity(stack), 5_000),
                 ModItems.ARC_GUN.get());
 
         event.registerItem(Capabilities.Energy.ITEM,
-                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ArcSaberItem.CAPACITY, 5_000),
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ArcSaberItem.capacity(stack), 5_000),
                 ModItems.ARC_SABER.get());
 
         event.registerItem(Capabilities.Energy.ITEM,
-                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ChainsawItem.CAPACITY, 5_000),
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), ModItems.ELECTRIC_CHAINSAW.get().capacity(stack), 5_000),
                 ModItems.ELECTRIC_CHAINSAW.get());
         event.registerItem(Capabilities.Energy.ITEM,
-                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.JetpackItem.CAPACITY, 8_000),
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), ModItems.ELECTRIC_JETPACK.get().capacity(stack), 8_000),
                 ModItems.ELECTRIC_JETPACK.get());
         event.registerItem(Capabilities.Energy.ITEM,
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ClampMeterItem.CAPACITY, 2_000),

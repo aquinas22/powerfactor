@@ -132,6 +132,9 @@ public final class PowerFactorCategories {
                         .setFluidRenderer(f.amount(), false, 16, 16);
                 f.ingredient().fluids().forEach(h -> slot.add(h.value(), f.amount()));
             });
+            recipe.tool().ifPresent(tool -> builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 58, 5).setStandardSlotBackground().add(tool)
+                    .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable("jei.powerfactor.tool")
+                            .withStyle(ChatFormatting.GRAY))));
             for (int i = 0; i < recipe.results().size(); i++) {
                 output(builder.addSlot(RecipeIngredientRole.OUTPUT, 108 + i * 20, 5), recipe.results().get(i));
             }

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PCP",
+    "RKR",
+    "PCP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:advanced_circuit",
+    "C": "powerfactor:capacitor",
+    "R": "#c:storage_blocks/redstone"
+  },
+  "result": {
+    "id": "powerfactor:overcharge_module",
+    "count": 1
+  }
+}

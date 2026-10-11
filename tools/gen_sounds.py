@@ -1441,6 +1441,97 @@ ONESHOTS_3 = {
 }
 
 
+def upgrade_install(seconds=0.7):
+    """Module seated: a mechanical clack, then a rising synth chirp as it links up."""
+    n = int(SR * seconds)
+    r = random.Random(1501)
+    clack = mix((burst(n, r, 0.012, [("bp", 2200, 1.2)]), 1.0), (thump(n, 300, 160, 0.03, drop=0.01), 0.5))
+    chirp = []
+    ph = 0.0
+    for i in range(n):
+        t = i / SR - 0.08
+        if t < 0:
+            chirp.append(0.0)
+            continue
+        f = 700 * 2 ** (t / 0.18)
+        ph += f / SR
+        chirp.append(math.sin(TAU * ph) * math.exp(-t / 0.16) * min(1.0, t / 0.01))
+    out = mix((clack, 0.9), (chirp, 0.35))
+    return fade_edges(reverb(out, rt60=0.6, wet=0.2), fin=0.0005, fout=0.05)
+
+
+def upgrade_remove(seconds=0.6):
+    """Module unseated: a release click and a falling chirp."""
+    n = int(SR * seconds)
+    r = random.Random(1502)
+    click = burst(n, r, 0.008, [("bp", 3000, 1.5)])
+    chirp, ph = [], 0.0
+    for i in range(n):
+        t = i / SR - 0.03
+        if t < 0:
+            chirp.append(0.0)
+            continue
+        f = 1400 * 2 ** (-t / 0.15)
+        ph += f / SR
+        chirp.append(math.sin(TAU * ph) * math.exp(-t / 0.12) * min(1.0, t / 0.01))
+    return fade_edges(reverb(mix((click, 0.8), (chirp, 0.3)), rt60=0.5, wet=0.2), fin=0.0005, fout=0.05)
+
+
+def wire_shock(seconds=0.6):
+    """Touching a live wire: a sharp snap and a short angry 60 Hz buzz."""
+    n = int(SR * seconds)
+    r = random.Random(1503)
+    snap = burst(n, r, 0.006, [("hp", 1500, 0.7)])
+    buzz, ph = [], 0.0
+    for i in range(n):
+        t = i / SR
+        ph += 120.0 / SR
+        sq = 1.0 if (ph % 1.0) < 0.5 else -1.0
+        buzz.append(sq * math.exp(-t / 0.14) * (0.6 + 0.4 * r.random()))
+    buzz = filt(buzz, ("lp", 2500, 0.7))
+    crack = [0.0] * n
+    for _ in range(40):
+        t = r.expovariate(1 / 0.05)
+        if t < seconds - 0.02:
+            add_at(crack, burst(int(0.008 * SR), r, 0.001, [("hp", 2500, 0.7)]), int(t * SR), r.uniform(0.3, 1.0))
+    out = soft_clip(normalize_peak(mix((snap, 1.0), (buzz, 0.5), (crack, 0.6)), 1.0), 1.8)
+    return fade_edges(out, fin=0.0003, fout=0.05)
+
+
+def wrench(seconds=0.35):
+    """A ratchet: a quick run of clicks off a steel pawl."""
+    n = int(SR * seconds)
+    r = random.Random(1504)
+    out = [0.0] * n
+    for k in range(5):
+        t = 0.02 + k * 0.045
+        add_at(out, burst(int(0.04 * SR), r, 0.004, [("bp", r.uniform(3500, 4500), 2.0)]), int(t * SR), 1.0 - k * 0.12)
+        add_at(out, ring(int(0.06 * SR), [(2900, 0.3, 0.02), (5100, 0.15, 0.012)], r), int(t * SR), 0.4)
+    return fade_edges(out, fin=0.0003, fout=0.03)
+
+
+ONESHOTS_3.update({"upgrade_install": upgrade_install, "upgrade_remove": upgrade_remove, "wire_shock": wire_shock, "wrench": wrench})
+
+
+def laser_engraver_run(seconds=2.0):
+    """Fibre laser at work: a pure high whine from the galvo/driver, the raster stepper ticking,
+    a soft extraction fan, and the sizzle of material ablating in short bursts."""
+    n = int(SR * seconds)
+    r = random.Random(1601)
+    whine = tone(n, [(2500.0, 1.0, 0.0), (5000.0, 0.2, 0.0)], lfo=lambda t: 0.75 + 0.25 * math.sin(TAU * 4.0 * t))
+    stepper = harm(phase_track(n, 220.0, [(6.0, 1.5, 0.0)]), [1.0, 0.6, 0.4, 0.25])
+    stepper = filt_periodic(stepper, ("bp", 1200, 1.0))
+    fan = loop_noise(n, r, ("bp", 700, 0.6))
+    sizzle = loop_noise(n, r, ("hp", 3500, 0.7))
+    sizzle = [x * e for x, e in zip(sizzle, loop_env(n, r, 16, 0.0, 1.0))]
+    ticks = [0.0] * n
+    scatter_bursts(ticks, r, 60, lambda: r.randrange(n), 0.008, (0.0006, 0.0015), lambda r: [("bp", r.uniform(3000, 6000), 2.0)], (0.2, 0.7))
+    return mix((whine, 0.03), (stepper, 0.08), (fan, 0.3), (sizzle, 0.25), (ticks, 0.3))
+
+
+LOOPS_3["laser_engraver_run"] = (laser_engraver_run, -18.0)
+
+
 # events whose sounds list holds several files (Minecraft picks one at random)
 VARIANTS = {"sword_swing": ["sword_swing1", "sword_swing2", "sword_swing3"]}
 

@@ -63,6 +63,9 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("charging_pad_charges_dropped_tool", () -> PowerFactorGameTests::chargingPadChargesDroppedTool);
         FUNCTIONS.register("chainsaw_fells_tree", () -> PowerFactorGameTests::chainsawFellsTree);
         FUNCTIONS.register("charger_charges_drill", () -> PowerFactorGameTests::chargerChargesDrill);
+        FUNCTIONS.register("bare_wire_shocks_coated_does_not", () -> PowerFactorGameTests::bareWireShocks);
+        FUNCTIONS.register("upgrade_table_installs_modules", () -> PowerFactorGameTests::upgradeTableInstalls);
+        FUNCTIONS.register("laser_engraver_needs_right_mask", () -> PowerFactorGameTests::laserEngraverMakesChips);
     }
 
     public static void register(IEventBus modBus) {
@@ -76,7 +79,8 @@ public final class PowerFactorGameTests {
 
     private static void onRegisterTests(RegisterGameTestsEvent event) {
         var env = event.registerEnvironment(PowerFactor.id("default"));
-        java.util.Set<String> wide = java.util.Set.of("long_transformer_chain", "breaker_splits_grid", "tesla_coil_zaps_zombie");
+        java.util.Set<String> wide = java.util.Set.of("long_transformer_chain", "breaker_splits_grid", "tesla_coil_zaps_zombie",
+                "bare_wire_shocks_coated_does_not");
         java.util.Set<String> tall = java.util.Set.of("chainsaw_fells_tree");
         for (var fn : FUNCTIONS.getEntries()) {
             String structure = wide.contains(fn.getId().getPath()) ? "empty_9x3x3" : tall.contains(fn.getId().getPath()) ? "empty_7x8x7"
@@ -612,6 +616,81 @@ public final class PowerFactorGameTests {
             var stack = charger.getItemHandler().getResource(0).toStack(1);
             int e = stack.getOrDefault(com.powerfactor.registry.ModComponents.ENERGY.get(), 0);
             helper.assertTrue(e > 1000, "drill in the charger has " + e + " FE");
+            helper.succeed();
+        });
+    }
+
+    private static void bareWireShocks(GameTestHelper helper) {
+        placeTurbine(helper, new BlockPos(0, 1, 1), Direction.NORTH);
+        insert(helper, new BlockPos(0, 1, 1), Items.COAL, 8);
+        for (int x = 1; x <= 8; x++) {
+            helper.setBlock(new BlockPos(x, 1, 1), ModBlocks.COPPER_WIRE.get().defaultBlockState());
+        }
+        // Coat the far half with rubber, as a player would.
+        for (int x = 5; x <= 8; x++) {
+            BlockPos abs = helper.absolutePos(new BlockPos(x, 1, 1));
+            var st = helper.getLevel().getBlockState(abs);
+            helper.getLevel().setBlock(abs, st.setValue(WireBlock.COATED, true), 3);
+        }
+        helper.runAfterDelay(RUN_TICKS, () -> {
+            // Husks: zombies would burn in the test world's daylight and spoil the comparison.
+            var bare = helper.spawn(net.minecraft.world.entity.EntityTypes.HUSK, new BlockPos(3, 1, 1));
+            var safe = helper.spawn(net.minecraft.world.entity.EntityTypes.HUSK, new BlockPos(7, 1, 1));
+            bare.setNoAi(true);
+            safe.setNoAi(true);
+            float full = bare.getHealth();
+            helper.runAfterDelay(30, () -> {
+                helper.assertTrue(bare.getHealth() < full || !bare.isAlive(), "zombie on bare live wire wasn't shocked");
+                helper.assertValueEqual(safe.getHealth(), full, "zombie on coated wire health");
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void upgradeTableInstalls(GameTestHelper helper) {
+        var saw = new net.minecraft.world.item.ItemStack(ModItems.ELECTRIC_CHAINSAW.get());
+        int base = ModItems.ELECTRIC_CHAINSAW.get().capacity(saw);
+        var modules = net.minecraft.core.NonNullList.withSize(com.powerfactor.item.ToolModules.SLOTS, net.minecraft.world.item.ItemStack.EMPTY);
+        modules.set(0, new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.BATTERY).get(), 2));
+        modules.set(1, new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.EFFICIENCY).get(), 1));
+        com.powerfactor.item.ToolModules.install(saw, modules, helper.getLevel().registryAccess());
+        helper.assertValueEqual(ModItems.ELECTRIC_CHAINSAW.get().capacity(saw), base * 3, "capacity with two batteries");
+        helper.assertValueEqual(com.powerfactor.item.ChainsawItem.perLog(saw), 48, "cost per log with one efficiency module");
+        // A jetpack gains armour from plating.
+        var pack = new net.minecraft.world.item.ItemStack(ModItems.ELECTRIC_JETPACK.get());
+        var plating = net.minecraft.core.NonNullList.withSize(com.powerfactor.item.ToolModules.SLOTS, net.minecraft.world.item.ItemStack.EMPTY);
+        plating.set(0, new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.PLATING).get(), 3));
+        com.powerfactor.item.ToolModules.install(pack, plating, helper.getLevel().registryAccess());
+        double armor = pack.get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS).modifiers().stream()
+                .filter(m -> m.attribute().is(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR)).mapToDouble(m -> m.modifier().amount()).sum();
+        helper.assertValueEqual(armor, 9.0, "jetpack armour with three plates");
+        // And the menu refuses a module that doesn't fit the tool.
+        helper.setBlock(CENTER, ModBlocks.UPGRADE_TABLE.get().defaultBlockState());
+        var table = helper.getBlockEntity(CENTER, com.powerfactor.upgrade.UpgradeTableBlockEntity.class);
+        table.tool().setItem(0, saw);
+        var menu = new com.powerfactor.upgrade.UpgradeTableMenu(0, helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL).getInventory(), table);
+        helper.assertFalse(menu.accepts(new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.THRUSTER).get()), 2),
+                "a thruster fitted a chainsaw");
+        helper.assertTrue(menu.accepts(new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.SPEED).get()), 2),
+                "a speed module didn't fit a chainsaw");
+        helper.assertFalse(menu.accepts(new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.BATTERY).get()), 2),
+                "a second battery stack was allowed alongside the first");
+        helper.succeed();
+    }
+
+    private static void laserEngraverMakesChips(GameTestHelper helper) {
+        var be = placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.LASER_ENGRAVER);
+        insert(helper, CENTER, ModItems.SILICON_WAFER.get(), 2);
+        insert(helper, CENTER, Items.GOLD_NUGGET, 4);
+        // The wrong mask first: nothing should happen.
+        insert(helper, CENTER, ModItems.PHOTOMASKS.get("memory").get(), 1);
+        helper.runAfterDelay(120, () -> {
+            helper.assertTrue(be.slot(2).isEmpty(), "engraved with the wrong mask: " + be.slot(2));
+            be.setSlot(3, new net.minecraft.world.item.ItemStack(ModItems.PHOTOMASKS.get("logic").get()));
+        });
+        helper.runAfterDelay(120 + 330, () -> {
+            helper.assertTrue(be.slot(2).is(ModItems.MICROPROCESSOR.get()), "engraver made " + be.slot(2));
+            helper.assertValueEqual(be.slot(3).getDamageValue(), 1, "mask wear");
             helper.succeed();
         });
     }

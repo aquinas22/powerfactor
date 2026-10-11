@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:logic_photomask",
+    "powerfactor:memory_photomask",
+    "powerfactor:power_photomask",
+    "powerfactor:sensor_photomask"
+  ]
+}

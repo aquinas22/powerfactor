@@ -1,0 +1,21 @@
+{
+  "type": "powerfactor:laser_engraving",
+  "inputs": [
+    {
+      "ingredient": "powerfactor:silicon_wafer",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:dusts/copper",
+      "count": 1
+    }
+  ],
+  "tool": "powerfactor:power_photomask",
+  "results": [
+    {
+      "item": "powerfactor:power_transistor",
+      "count": 2
+    }
+  ],
+  "time": 160
+}

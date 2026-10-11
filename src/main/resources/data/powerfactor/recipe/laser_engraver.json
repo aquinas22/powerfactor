@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PDP",
+    "GKG",
+    "PMP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "D": "#c:gems/diamond",
+    "G": "#c:glass_panes",
+    "K": "powerfactor:control_circuit",
+    "M": "powerfactor:electric_motor"
+  },
+  "result": {
+    "id": "powerfactor:laser_engraver",
+    "count": 1
+  }
+}

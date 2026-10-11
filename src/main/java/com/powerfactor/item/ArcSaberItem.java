@@ -61,6 +61,10 @@ public class ArcSaberItem extends Item {
                         .build());
     }
 
+    public static int capacity(ItemStack stack) {
+        return ToolModules.capacity(stack, CAPACITY);
+    }
+
     public static int energy(ItemStack stack) {
         return stack.getOrDefault(ModComponents.ENERGY.get(), 0);
     }
@@ -100,7 +104,7 @@ public class ArcSaberItem extends Item {
         }
         if (!level.isClientSide()) {
             boolean lighting = !lit(stack);
-            if (lighting && energy(stack) < PER_HIT && !player.getAbilities().instabuild) {
+            if (lighting && energy(stack) < ToolModules.cost(stack, PER_HIT) && !player.getAbilities().instabuild) {
                 level.playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.DISPENSER_FAIL, SoundSource.PLAYERS, 0.6F, 1.4F);
                 return InteractionResult.FAIL;
             }
@@ -117,13 +121,13 @@ public class ArcSaberItem extends Item {
             return;
         }
         boolean held = owner instanceof LivingEntity living && (living.getMainHandItem() == stack || living.getOffhandItem() == stack);
-        if (!held || owner instanceof Player p && !p.getAbilities().instabuild && energy(stack) <= IDLE) {
+        if (!held || owner instanceof Player p && !p.getAbilities().instabuild && energy(stack) <= ToolModules.cost(stack, IDLE)) {
             setLit(stack, false);
             level.playSound(null, owner.blockPosition(), ModSounds.SWORD_RETRACT.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
             return;
         }
         if (!(owner instanceof Player p && p.getAbilities().instabuild)) {
-            stack.set(ModComponents.ENERGY.get(), energy(stack) - IDLE);
+            stack.set(ModComponents.ENERGY.get(), energy(stack) - ToolModules.cost(stack, IDLE));
         }
     }
 
@@ -142,7 +146,7 @@ public class ArcSaberItem extends Item {
             return;
         }
         if (!(attacker instanceof Player p && p.getAbilities().instabuild)) {
-            stack.set(ModComponents.ENERGY.get(), Math.max(0, energy(stack) - PER_HIT));
+            stack.set(ModComponents.ENERGY.get(), Math.max(0, energy(stack) - ToolModules.cost(stack, PER_HIT)));
         }
         SaberSettings s = settings(stack);
         int rgb = s.style() == SaberSettings.Style.RAINBOW ? Mth.hsvToRgb((level.getGameTime() % 60) / 60F, 0.8F, 1F) : s.color();
@@ -165,6 +169,20 @@ public class ArcSaberItem extends Item {
             default -> {
             }
         }
+        // Chain modules: the blade's arc jumps to that many more nearby mobs.
+        int chains = ToolModules.count(stack, DrillModule.Type.CHAIN);
+        if (chains > 0) {
+            int jumped = 0;
+            for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, target.getBoundingBox().inflate(5),
+                    e -> e != target && e != attacker && e.isAlive() && e instanceof net.minecraft.world.entity.monster.Enemy)) {
+                if (jumped++ >= chains) {
+                    break;
+                }
+                other.hurtServer(level, attacker.damageSources().mobAttack(attacker), LIT_DAMAGE * 0.5F);
+                level.sendParticles(new DustParticleOptions(rgb, 1.0F), other.getX(), other.getY(0.6), other.getZ(), 10, 0.2, 0.3, 0.2, 0);
+                level.sendParticles(ParticleTypes.ELECTRIC_SPARK, other.getX(), other.getY(0.6), other.getZ(), 12, 0.2, 0.3, 0.2, 0.3);
+            }
+        }
     }
 
     @Override
@@ -179,7 +197,7 @@ public class ArcSaberItem extends Item {
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return Math.round(13F * Mth.clamp((float) energy(stack) / CAPACITY, 0, 1));
+        return Math.round(13F * Mth.clamp((float) energy(stack) / capacity(stack), 0, 1));
     }
 
     @Override
@@ -190,7 +208,7 @@ public class ArcSaberItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
         SaberSettings s = settings(stack);
-        builder.accept(Component.translatable("tooltip.powerfactor.energy", String.format("%,d", energy(stack)), String.format("%,d", CAPACITY))
+        builder.accept(Component.translatable("tooltip.powerfactor.energy", String.format("%,d", energy(stack)), String.format("%,d", capacity(stack)))
                 .withColor(0xFF5A4A));
         builder.accept(Component.translatable("tooltip.powerfactor.saber.style",
                 Component.translatable("gui.powerfactor.saber.style." + s.style().name().toLowerCase(java.util.Locale.ROOT))).withColor(s.color()));

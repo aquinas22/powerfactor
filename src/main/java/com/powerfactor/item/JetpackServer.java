@@ -49,7 +49,7 @@ public final class JetpackServer {
             mode = OFF;
         }
         if (mode != OFF) {
-            PoweredItem.drain(chest, mode == THRUST ? JetpackItem.THRUST_FE : JetpackItem.HOVER_FE, player);
+            PoweredItem.drain(chest, ToolModules.cost(chest, mode == THRUST ? JetpackItem.THRUST_FE : JetpackItem.HOVER_FE), player);
             player.resetFallDistance();
             exhaust((ServerLevel) player.level(), player, mode);
         }

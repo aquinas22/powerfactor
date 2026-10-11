@@ -101,7 +101,7 @@ public final class TreeFeller {
                     job.logs().clear();
                     break;
                 }
-                PoweredItem.drain(job.tool(), ChainsawItem.PER_LOG, job.player());
+                PoweredItem.drain(job.tool(), ChainsawItem.perLog(job.tool()), job.player());
                 level.destroyBlock(p, true, job.player());
                 job.felled().add(p);
             }

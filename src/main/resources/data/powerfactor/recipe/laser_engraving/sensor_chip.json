@@ -1,0 +1,21 @@
+{
+  "type": "powerfactor:laser_engraving",
+  "inputs": [
+    {
+      "ingredient": "powerfactor:silicon_wafer",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:gems/quartz",
+      "count": 1
+    }
+  ],
+  "tool": "powerfactor:sensor_photomask",
+  "results": [
+    {
+      "item": "powerfactor:sensor_chip",
+      "count": 1
+    }
+  ],
+  "time": 200
+}

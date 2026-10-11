@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
   "textures": {
     "t": "powerfactor:block/fluid_pipe",
     "particle": "powerfactor:block/fluid_pipe"
@@ -18,22 +19,60 @@
       ],
       "faces": {
         "north": {
-          "texture": "#t"
+          "texture": "#t",
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ]
         },
         "east": {
-          "texture": "#t"
+          "texture": "#t",
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ]
         },
         "south": {
-          "texture": "#t"
+          "texture": "#t",
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ]
         },
         "west": {
-          "texture": "#t"
+          "texture": "#t",
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ]
         },
         "up": {
-          "texture": "#t"
+          "texture": "#t",
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ],
+          "rotation": 90
         },
         "down": {
-          "texture": "#t"
+          "texture": "#t",
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ],
+          "rotation": 90
         }
       }
     }

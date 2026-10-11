@@ -1,0 +1,21 @@
+{
+  "type": "powerfactor:laser_engraving",
+  "inputs": [
+    {
+      "ingredient": "powerfactor:silicon_wafer",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:nuggets/gold",
+      "count": 2
+    }
+  ],
+  "tool": "powerfactor:logic_photomask",
+  "results": [
+    {
+      "item": "powerfactor:microprocessor",
+      "count": 1
+    }
+  ],
+  "time": 300
+}

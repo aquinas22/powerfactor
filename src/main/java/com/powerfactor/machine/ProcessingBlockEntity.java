@@ -290,6 +290,10 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
         return drive;
     }
 
+    public void setSlot(int index, ItemStack stack) {
+        items.setItem(index, stack);
+    }
+
     public ItemStack slot(int index) {
         return items.getItem(index);
     }

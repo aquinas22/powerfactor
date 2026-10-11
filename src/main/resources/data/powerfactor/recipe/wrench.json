@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " I ",
+    " BI",
+    "B  "
+  ],
+  "key": {
+    "I": "#c:ingots/steel",
+    "B": "#c:ingots/brass"
+  },
+  "result": {
+    "id": "powerfactor:wrench",
+    "count": 1
+  }
+}

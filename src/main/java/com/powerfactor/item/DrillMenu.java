@@ -16,7 +16,7 @@ import net.minecraft.world.item.component.ItemContainerContents;
 
 /** Edits the modules inside the drill in the player's hand. */
 public class DrillMenu extends AbstractContainerMenu {
-    public static final int SLOTS = 4;
+    public static final int SLOTS = ToolModules.SLOTS;
 
     private final Player player;
     private final InteractionHand hand;
@@ -44,10 +44,10 @@ public class DrillMenu extends AbstractContainerMenu {
             modules.setItem(i, list.get(i));
         }
         for (int i = 0; i < SLOTS; i++) {
-            addSlot(new Slot(modules, i, 53 + i * 18, 35) {
+            addSlot(new Slot(modules, i, 35 + i * 18, 35) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    if (!(stack.getItem() instanceof DrillModule m)) {
+                    if (!(stack.getItem() instanceof DrillModule m) || !m.type().fits(ToolKind.DRILL)) {
                         return false;
                     }
                     for (int j = 0; j < SLOTS; j++) {
@@ -68,10 +68,7 @@ public class DrillMenu extends AbstractContainerMenu {
         if (!(drill.getItem() instanceof DrillItem)) {
             return;
         }
-        drill.set(ModComponents.DRILL_MODULES.get(), ItemContainerContents.fromItems(modules.getItems()));
-        if (!player.level().isClientSide()) {
-            DrillItem.applyModules(drill, player.level().registryAccess());
-        }
+        ToolModules.install(drill, modules.getItems(), player.level().registryAccess());
     }
 
     @Override

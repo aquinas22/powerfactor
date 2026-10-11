@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WWW",
+    "RPR"
+  ],
+  "key": {
+    "W": "powerfactor:fine_copper_wire",
+    "R": "powerfactor:rubber",
+    "P": "#c:plates/copper"
+  },
+  "result": {
+    "id": "powerfactor:printed_circuit_board",
+    "count": 2
+  }
+}

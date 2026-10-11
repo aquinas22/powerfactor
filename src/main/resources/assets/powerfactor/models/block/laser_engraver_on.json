@@ -1,0 +1,241 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "front": "powerfactor:block/laser_engraver_front_on",
+    "side": "powerfactor:block/laser_engraver_side",
+    "bed": "powerfactor:block/laser_engraver_bed",
+    "gantry": "powerfactor:block/laser_engraver_gantry",
+    "particle": "powerfactor:block/laser_engraver_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        11,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front",
+          "cullface": "north"
+        },
+        "east": {
+          "texture": "#side",
+          "cullface": "east"
+        },
+        "south": {
+          "texture": "#side",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#side",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#bed"
+        },
+        "down": {
+          "texture": "#side",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        0.5,
+        11,
+        1
+      ],
+      "to": [
+        2,
+        16,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gantry"
+        },
+        "east": {
+          "texture": "#gantry"
+        },
+        "south": {
+          "texture": "#gantry"
+        },
+        "west": {
+          "texture": "#gantry"
+        },
+        "up": {
+          "texture": "#gantry"
+        },
+        "down": {
+          "texture": "#gantry"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        11,
+        1
+      ],
+      "to": [
+        15.5,
+        16,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gantry"
+        },
+        "east": {
+          "texture": "#gantry"
+        },
+        "south": {
+          "texture": "#gantry"
+        },
+        "west": {
+          "texture": "#gantry"
+        },
+        "up": {
+          "texture": "#gantry"
+        },
+        "down": {
+          "texture": "#gantry"
+        }
+      }
+    },
+    {
+      "from": [
+        0.5,
+        11,
+        13.5
+      ],
+      "to": [
+        2,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gantry"
+        },
+        "east": {
+          "texture": "#gantry"
+        },
+        "south": {
+          "texture": "#gantry"
+        },
+        "west": {
+          "texture": "#gantry"
+        },
+        "up": {
+          "texture": "#gantry"
+        },
+        "down": {
+          "texture": "#gantry"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        11,
+        13.5
+      ],
+      "to": [
+        15.5,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gantry"
+        },
+        "east": {
+          "texture": "#gantry"
+        },
+        "south": {
+          "texture": "#gantry"
+        },
+        "west": {
+          "texture": "#gantry"
+        },
+        "up": {
+          "texture": "#gantry"
+        },
+        "down": {
+          "texture": "#gantry"
+        }
+      }
+    },
+    {
+      "from": [
+        0.5,
+        15,
+        2.5
+      ],
+      "to": [
+        2,
+        16,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gantry"
+        },
+        "east": {
+          "texture": "#gantry"
+        },
+        "south": {
+          "texture": "#gantry"
+        },
+        "west": {
+          "texture": "#gantry"
+        },
+        "up": {
+          "texture": "#gantry"
+        },
+        "down": {
+          "texture": "#gantry"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        15,
+        2.5
+      ],
+      "to": [
+        15.5,
+        16,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gantry"
+        },
+        "east": {
+          "texture": "#gantry"
+        },
+        "south": {
+          "texture": "#gantry"
+        },
+        "west": {
+          "texture": "#gantry"
+        },
+        "up": {
+          "texture": "#gantry"
+        },
+        "down": {
+          "texture": "#gantry"
+        }
+      }
+    }
+  ]
+}

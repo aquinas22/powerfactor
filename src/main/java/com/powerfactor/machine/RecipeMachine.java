@@ -17,7 +17,7 @@ public enum RecipeMachine {
             new int[][] {{38, 35}, {56, 35}}, new int[][] {{116, 35}}, null, 79, 34),
     ARC_FURNACE("arc_furnace", MachineRecipeKind.ARC_SMELTING, 2, 1, true, false, 64, true,
             () -> new HeaterDrive(64, 0.85, true), EnumSet.complementOf(EnumSet.of(UpgradeType.VFD)), ModSounds.ARC_FURNACE_RUN::get,
-            new int[][] {{38, 26}, {56, 26}}, new int[][] {{116, 35}}, new int[] {47, 52}, 79, 34),
+            new int[][] {{38, 26}, {56, 26}}, new int[][] {{116, 35}}, new int[] {17, 35}, 79, 34),
     WIRE_DRAWER("wire_drawer", MachineRecipeKind.WIRE_DRAWING, 1, 1, false, false, 12, false,
             () -> new MotorDrive(9), EnumSet.allOf(UpgradeType.class), ModSounds.WIRE_DRAWER_RUN::get,
             new int[][] {{56, 35}}, new int[][] {{116, 35}}, null, 79, 34),
@@ -26,7 +26,11 @@ public enum RecipeMachine {
             new int[][] {{56, 35}}, new int[][] {{116, 35}}, null, 79, 34),
     ORE_WASHER("ore_washer", MachineRecipeKind.WASHING, 1, 2, false, true, 12, false,
             () -> new MotorDrive(9), EnumSet.allOf(UpgradeType.class), ModSounds.ORE_WASHER_RUN::get,
-            new int[][] {{44, 35}}, new int[][] {{104, 35}, {130, 35}}, null, 70, 34);
+            new int[][] {{44, 35}}, new int[][] {{104, 35}, {130, 35}}, null, 70, 34),
+    /** Fibre laser through a photomask: the mask in the tool slot decides which chip it makes. */
+    LASER_ENGRAVER("laser_engraver", MachineRecipeKind.LASER_ENGRAVING, 2, 1, true, false, 48, false,
+            () -> new HeaterDrive(48, 0.33, false), EnumSet.complementOf(EnumSet.of(UpgradeType.VFD)), ModSounds.LASER_ENGRAVER_RUN::get,
+            new int[][] {{38, 26}, {56, 26}}, new int[][] {{116, 35}}, new int[] {17, 35}, 79, 34);
 
     public final String id;
     public final MachineRecipeKind kind;
@@ -62,6 +66,12 @@ public enum RecipeMachine {
         this.arrowY = arrowY;
     }
 
+    /** What the tool slot takes: graphite electrodes for the arc furnace, photomasks for the engraver. */
+    public boolean isTool(net.minecraft.world.item.ItemStack stack) {
+        return this == LASER_ENGRAVER ? stack.getItem() instanceof com.powerfactor.item.PhotomaskItem
+                : stack.is(com.powerfactor.registry.ModItems.GRAPHITE_ELECTRODE.get());
+    }
+
     public int slotCount() {
         return inputs + outputs + (electrode ? 1 : 0);
     }
@@ -79,6 +89,7 @@ public enum RecipeMachine {
         return PowerFactor.id(switch (this) {
             case ALLOY_FURNACE -> "textures/gui/alloy_furnace.png";
             case ARC_FURNACE -> "textures/gui/arc_furnace.png";
+            case LASER_ENGRAVER -> "textures/gui/laser_engraver.png";
             case ORE_WASHER -> "textures/gui/ore_washer.png";
             default -> "textures/gui/single_machine.png";
         });

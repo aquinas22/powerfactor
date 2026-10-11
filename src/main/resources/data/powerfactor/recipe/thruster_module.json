@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PMP",
+    "AKA",
+    "PMP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:advanced_circuit",
+    "M": "powerfactor:electric_motor",
+    "A": "#c:plates/aluminum"
+  },
+  "result": {
+    "id": "powerfactor:thruster_module",
+    "count": 1
+  }
+}

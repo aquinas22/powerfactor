@@ -1698,6 +1698,326 @@ def devices():
     devices_data()
 
 
+# ======================================================================== wires v2: bare/coated, along-the-length textures
+
+WIRE_STYLE = {
+    # block: (bare thickness or None if always coated, coated thickness, bare texture, coated texture)
+    "copper_wire": (3, 4, "copper_wire", "copper_wire_coated"),
+    "aluminum_cable": (4, 5, "aluminum_cable", "aluminum_cable_coated"),
+    "insulated_copper_cable": (None, 5, None, "insulated_copper_cable"),
+}
+
+
+def wire(block):
+    """Power wire with bare/coated states; overwrites what cable() wrote for it."""
+    bare, coated, bare_tex, coated_tex = WIRE_STYLE[block]
+    six = ("north", "east", "south", "west", "up", "down")
+
+    def faces(along_z, skip=()):
+        out = {}
+        for d in six:
+            if d in skip:
+                continue
+            f = {"texture": "#t", "uv": [0, 0, 16, 16]}
+            # Stripes run along U; turn them to follow the cable on the faces where U would run across it.
+            if along_z and d in ("up", "down"):
+                f["rotation"] = 90
+            out[d] = f
+        return out
+
+    variants = []
+    for is_coated, t, tex in ((False, bare, bare_tex), (True, coated, coated_tex)):
+        if t is None:
+            continue
+        lo, hi = 8 - t / 2, 8 + t / 2
+        texture = pf(f"block/{tex}")
+        suffix = "_coated" if is_coated and bare is not None else ""
+        write(asset("models", "block", f"{block}{suffix}_core.json"), {"parent": "minecraft:block/block",
+            "textures": {"t": texture, "particle": texture},
+            "elements": [{"from": [lo, lo, lo], "to": [hi, hi, hi], "faces": faces(False)}]})
+        write(asset("models", "block", f"{block}{suffix}_arm.json"), {"parent": "minecraft:block/block",
+            "textures": {"t": texture, "particle": texture},
+            "elements": [{"from": [lo, lo, 0], "to": [hi, hi, lo], "faces": faces(True, skip=("south",))}]})
+        variants.append((is_coated, suffix, texture, lo, hi))
+    rotations = {"north": {}, "east": {"y": 90}, "south": {"y": 180}, "west": {"y": 270}, "up": {"x": 270}, "down": {"x": 90}}
+    parts = []
+    for is_coated, suffix, texture, lo, hi in variants:
+        cond = {"coated": "true" if is_coated else "false"}
+        parts.append({"when": cond, "apply": {"model": pf(f"block/{block}{suffix}_core")}})
+        for d, rot in rotations.items():
+            parts.append({"when": dict(cond, **{d: "true"}), "apply": dict({"model": pf(f"block/{block}{suffix}_arm"), "uvlock": False}, **rot)})
+    write(asset("blockstates", f"{block}.json"), {"multipart": parts})
+    # Item: the default state's look, a short length of cable.
+    is_coated, suffix, texture, lo, hi = variants[0]
+    write(asset("models", "item", f"{block}.json"), {"parent": "minecraft:block/block", "textures": {"t": texture, "particle": texture},
+        "elements": [{"from": [lo, lo, 0], "to": [hi, hi, 16], "faces": faces(True)}],
+        "display": {"gui": {"rotation": [30, 45, 0], "scale": [0.9, 0.9, 0.9]}}})
+    item_def(block, pf(f"item/{block}"))
+
+
+# ======================================================================== glass pipes, 3D tools, wrench, upgrade table
+
+def glass_pipe(block):
+    """Glass tube: translucent so the renderer's items and fluid show through; opaque flanges on endpoints."""
+    tex, ext, fl = pf(f"block/{block}"), pf("block/pipe_extract"), pf(f"block/{block}_flange")
+    six = ("north", "east", "south", "west", "up", "down")
+    rt = "minecraft:translucent"
+    def faces(t, along_z=False, skip=(), collars=False):
+        out = {}
+        for d in six:
+            if d in skip:
+                continue
+            # Arms show clear glass only; the collars sit on the coupling at the middle of each block.
+            f = {"texture": t, "uv": [0, 0, 16, 16] if collars or t != "#t" else [3, 0, 13, 16]}
+            if along_z and d in ("up", "down"):
+                f["rotation"] = 90
+            out[d] = f
+        return out
+    write(asset("models", "block", f"{block}_core.json"), {"parent": "minecraft:block/block", "render_type": rt,
+        "textures": {"t": tex, "particle": tex}, "elements": [{"from": [5, 5, 5], "to": [11, 11, 11], "faces": faces("#t", collars=True)}]})
+    write(asset("models", "block", f"{block}_arm.json"), {"parent": "minecraft:block/block", "render_type": rt,
+        "textures": {"t": tex, "particle": tex}, "elements": [{"from": [5, 5, 0], "to": [11, 11, 5], "faces": faces("#t", True, ("south",))}]})
+    flange = {"from": [4, 4, 0], "to": [12, 12, 2], "faces": faces("#f")}
+    write(asset("models", "block", f"{block}_insert.json"), {"parent": "minecraft:block/block", "render_type": rt,
+        "textures": {"t": tex, "f": fl, "particle": tex},
+        "elements": [{"from": [5, 5, 2], "to": [11, 11, 5], "faces": faces("#t", True, ("south",))}, flange]})
+    write(asset("models", "block", f"{block}_extract.json"), {"parent": "minecraft:block/block", "render_type": rt,
+        "textures": {"t": tex, "e": ext, "particle": tex},
+        "elements": [{"from": [5, 5, 2], "to": [11, 11, 5], "faces": faces("#t", True, ("south",))},
+                     {"from": [3.5, 3.5, 0], "to": [12.5, 12.5, 2.5], "faces": faces("#e")}]})
+    write(asset("models", "item", f"{block}.json"), {"parent": "minecraft:block/block", "render_type": rt,
+        "textures": {"t": tex, "particle": tex}, "elements": [{"from": [5, 5, 0], "to": [11, 11, 16], "faces": faces("#t", True)}],
+        "display": {"gui": {"rotation": [30, 45, 0], "scale": [0.9, 0.9, 0.9]}}})
+
+
+def el(frm, to, tex, rot=None, emissive=False):
+    e = {"from": frm, "to": to, "faces": {d: {"texture": tex, "uv": [0, 0, 16, 16]} for d in ("north", "east", "south", "west", "up", "down")}}
+    if rot:
+        e["rotation"] = rot
+    if emissive:
+        e["light_emission"] = 12
+    return e
+
+
+TOOL_DISPLAY = {
+    "thirdperson_righthand": {"rotation": [0, 90, 0], "translation": [0, 2, 1], "scale": [0.85, 0.85, 0.85]},
+    "thirdperson_lefthand": {"rotation": [0, -90, 0], "translation": [0, 2, 1], "scale": [0.85, 0.85, 0.85]},
+    "firstperson_righthand": {"rotation": [0, 100, 8], "translation": [1, 3.5, -1], "scale": [0.55, 0.55, 0.55]},
+    "firstperson_lefthand": {"rotation": [0, -80, -8], "translation": [1, 3.5, -1], "scale": [0.55, 0.55, 0.55]},
+    "gui": {"rotation": [20, -130, 0], "translation": [0, 0, 0], "scale": [0.72, 0.72, 0.72]},
+    "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
+    "fixed": {"rotation": [0, 90, 0], "translation": [0, 0, 0], "scale": [0.8, 0.8, 0.8]},
+    "head": {"rotation": [0, 90, 0], "translation": [0, 10, 0], "scale": [0.8, 0.8, 0.8]},
+}
+
+
+def tool_models():
+    m = lambda n: pf(f"item/model/{n}")
+    # Cordless drill: pistol grip, battery under it, motor housing, chuck and a fluted bit pointing along +X.
+    drill = [el([2, 8, 6], [11, 12.5, 10], "#body"), el([1, 8.5, 6.5], [2, 12, 9.5], "#grip"),
+             el([11, 9, 6.75], [13.5, 11.5, 9.25], "#chrome"), el([13.5, 9.75, 7.5], [19, 10.75, 8.5], "#bit"),
+             el([4, 3, 6.5], [7.5, 8, 9.5], "#grip", {"angle": -22.5, "axis": "z", "origin": [6, 8, 8]}),
+             el([2.5, 1, 5.75], [8.5, 3.5, 10.25], "#battery"), el([7.5, 6.6, 7.4], [8.5, 7.8, 8.6], "#chrome")]
+    write(asset("models", "item", "electric_drill_3d.json"), {"textures": {"body": m("drill_body"), "grip": m("drill_grip"),
+        "chrome": m("drill_chrome"), "bit": m("drill_bit"), "battery": m("drill_battery"), "particle": m("drill_body")},
+        "gui_light": "side", "display": TOOL_DISPLAY, "elements": drill})
+    write(asset("items", "electric_drill.json"), {"model": {"type": "minecraft:model", "model": pf("item/electric_drill_3d")}})
+    # Chainsaw: motor body, rear handle, top handle loop, battery, guide bar with the chain running round it.
+    for running in (False, True):
+        chain = "#chain"
+        saw = [el([2, 6, 6], [10, 11, 10], "#body"), el([-1, 7, 7.25], [2, 9.5, 8.75], "#grip"),
+               el([3, 11, 7.4], [8.5, 12.2, 8.6], "#grip"), el([3, 12, 7.4], [4.2, 13.5, 8.6], "#grip"),
+               el([7.3, 12, 7.4], [8.5, 13.5, 8.6], "#grip"), el([3, 13.5, 7.4], [8.5, 14.6, 8.6], "#grip"),
+               el([3, 4, 6.75], [8, 6, 9.25], "#battery"), el([10, 5.5, 5.75], [10.8, 11.5, 10.25], "#grip"),
+               el([10.8, 7.5, 7.6], [22, 10, 8.4], "#bar"),
+               el([10.8, 10, 7.5], [22, 10.7, 8.5], chain), el([10.8, 6.8, 7.5], [22, 7.5, 8.5], chain),
+               el([22, 6.8, 7.5], [22.8, 10.7, 8.5], chain)]
+        name = "electric_chainsaw_3d" + ("_running" if running else "")
+        write(asset("models", "item", f"{name}.json"), {"textures": {"body": m("saw_body"), "grip": m("saw_grip"), "bar": m("saw_bar"),
+            "chain": m("saw_chain_running" if running else "saw_chain"), "battery": m("drill_battery"), "particle": m("saw_body")},
+            "gui_light": "side", "display": TOOL_DISPLAY, "elements": saw})
+    write(asset("items", "electric_chainsaw.json"), {"model": {"type": "minecraft:condition", "property": "minecraft:custom_model_data",
+        "index": 0, "on_true": {"type": "minecraft:model", "model": pf("item/electric_chainsaw_3d_running")},
+        "on_false": {"type": "minecraft:model", "model": pf("item/electric_chainsaw_3d")}}})
+    # Adjustable wrench: grip, shank, head with fixed and sliding jaws and the knurled worm.
+    wrench = [el([0, 7, 7.25], [7, 9, 8.75], "#grip"), el([-0.6, 6.8, 7.1], [0, 9.2, 8.9], "#grip"),
+              el([7, 7.25, 7.5], [12, 8.75, 8.5], "#chrome"), el([12, 6, 7.25], [15.5, 10, 8.75], "#chrome"),
+              el([14, 10, 7.25], [15.5, 13.5, 8.75], "#chrome"), el([11.5, 10, 7.4], [12.8, 12.3, 8.6], "#chrome"),
+              el([12.6, 6.6, 6.8], [14, 7.6, 9.2], "#knurl")]
+    write(asset("models", "item", "wrench_3d.json"), {"textures": {"grip": m("wrench_grip"), "chrome": m("wrench_chrome"),
+        "knurl": m("wrench_knurl"), "particle": pf("item/wrench")},
+        "gui_light": "side", "display": dict(TOOL_DISPLAY, firstperson_righthand={"rotation": [0, 100, 20], "translation": [2, 3, 0], "scale": [0.6, 0.6, 0.6]},
+            firstperson_lefthand={"rotation": [0, -80, -20], "translation": [2, 3, 0], "scale": [0.6, 0.6, 0.6]}), "elements": wrench})
+    write(asset("items", "wrench.json"), {"model": {"type": "minecraft:model", "model": pf("item/wrench_3d")}})
+
+
+def upgrade_table_model():
+    t = {"top": pf("block/upgrade_table_top"), "side": pf("block/upgrade_table_side"), "front": pf("block/upgrade_table_front"),
+         "leg": pf("block/upgrade_table_leg"), "particle": pf("block/upgrade_table_side")}
+    six = ("north", "east", "south", "west", "up", "down")
+    def box(frm, to, tex_for):
+        return {"from": frm, "to": to, "faces": {d: {"texture": tex_for(d)} for d in six}}
+    els = [box([0, 10, 0], [16, 14, 16], lambda d: "#top" if d == "up" else "#leg" if d == "down" else "#side"),
+           box([1, 0, 1], [15, 10, 15], lambda d: "#front" if d == "north" else "#leg" if d in ("up", "down") else "#side")]
+    write(asset("models", "block", "upgrade_table.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els})
+    write(asset("blockstates", "upgrade_table.json"), {"variants": {f"facing={f}": dict({"model": pf("block/upgrade_table")}, **({"y": y} if y else {}))
+                                                                    for f, y in HORIZONTAL.items()}})
+    item_def("upgrade_table")
+
+
+def phase_h():
+    glass_pipe("item_pipe")
+    glass_pipe("fluid_pipe")
+    tool_models()
+    upgrade_table_model()
+    for mod in ("efficiency_module", "thruster_module", "plating_module", "overcharge_module", "chain_module"):
+        flat_item(mod)
+    drops_self("upgrade_table")
+    tag("block", "minecraft", "mineable/pickaxe", [pf("upgrade_table")])
+    card = {"P": "#c:plates/steel", "K": pf("advanced_circuit")}
+    shaped("upgrade_table", ["GKG", "PCP", "P P"], {"G": "#c:glass_panes", "K": pf("advanced_circuit"), "C": "minecraft:crafting_table",
+                                                     "P": "#c:plates/steel"}, 1, category="redstone")
+    shaped("wrench", [" I ", " BI", "B  "], {"I": "#c:ingots/steel", "B": "#c:ingots/brass"}, 1, category="equipment")
+    shaped("efficiency_module", ["PGP", "GKG", "PGP"], {**card, "G": "#c:plates/gold"}, 1, category="equipment")
+    shaped("thruster_module", ["PMP", "AKA", "PMP"], {**card, "M": pf("electric_motor"), "A": "#c:plates/aluminum"}, 1, category="equipment")
+    shaped("plating_module", ["PSP", "SKS", "PSP"], {**card, "S": "#c:storage_blocks/steel"}, 1, category="equipment")
+    shaped("overcharge_module", ["PCP", "RKR", "PCP"], {**card, "C": pf("capacitor"), "R": "#c:storage_blocks/redstone"}, 1, category="equipment")
+    shaped("chain_module", ["PWP", "QKQ", "PWP"], {**card, "W": pf("fine_silver_wire"), "Q": "#c:gems/quartz"}, 1, category="equipment")
+    write(data(NS, "damage_type", "electrocution.json"), {"message_id": "powerfactor.electrocution", "exhaustion": 0.1, "scaling": "never",
+                                                          "effects": "burning"})
+    tag("damage_type", "minecraft", "bypasses_armor", [pf("electrocution")])
+    pretty = lambda s: " ".join(w.capitalize() for w in s.split("_"))
+    for t in ("area", "speed", "silk", "fortune", "magnet", "battery"):
+        name(f"item.{NS}.drill_{t}_module", pretty(t) + " Module")
+    name(f"item.{NS}.drill_silk_module", "Silk Touch Module")
+    for mod in ("efficiency_module", "thruster_module", "plating_module", "overcharge_module", "chain_module"):
+        name(f"item.{NS}.{mod}", pretty(mod))
+    name(f"item.{NS}.chain_module", "Chain Arc Module")
+    name(f"item.{NS}.wrench", "Wrench")
+    name(f"block.{NS}.upgrade_table", "Upgrade Table")
+    LANG.update({
+        "death.attack.powerfactor.electrocution": "%1$s was electrocuted",
+        "death.attack.powerfactor.electrocution.player": "%1$s was electrocuted while fleeing %2$s",
+        "tooltip.powerfactor.wrench.rotate": "Use: turn a machine · strip a wire's coat",
+        "tooltip.powerfactor.wrench.strip": "Pipes: use to cycle an arm",
+        "tooltip.powerfactor.wrench.dismantle": "Sneak-use: dismantle into your inventory",
+        "tooltip.powerfactor.module.fits": "Fits: %s",
+        "tooltip.powerfactor.module.max": "Up to %s per tool",
+        "tooltip.powerfactor.drill_module.install": "Install at an Upgrade Table",
+        "tooltip.powerfactor.drill_module.efficiency": "-20% energy per use, each",
+        "tooltip.powerfactor.drill_module.thruster": "+35% jetpack thrust and top speed, each",
+        "tooltip.powerfactor.drill_module.plating": "+2 armour, +1 toughness, each",
+        "tooltip.powerfactor.drill_module.overcharge": "More damage per hit, each",
+        "tooltip.powerfactor.drill_module.chain": "Arcs leap to more targets",
+        "tooltip.powerfactor.drill_module.speed": "+50% cutting speed per module",
+        "tool_kind.powerfactor.drill": "Electric Drill", "tool_kind.powerfactor.chainsaw": "Electric Chainsaw",
+        "tool_kind.powerfactor.jetpack": "Electric Jetpack", "tool_kind.powerfactor.saber": "Arc Saber",
+        "tool_kind.powerfactor.arc_gun": "Tesla Arc Gun",
+        "tool_kind.powerfactor.drill.short": "DRILL", "tool_kind.powerfactor.chainsaw.short": "CHAINSAW",
+        "tool_kind.powerfactor.jetpack.short": "JETPACK", "tool_kind.powerfactor.saber.short": "ARC SABER",
+        "tool_kind.powerfactor.arc_gun.short": "ARC GUN",
+        "gui.powerfactor.upgrade.title": "MOD BENCH",
+        "gui.powerfactor.upgrade.standby": "STANDBY", "gui.powerfactor.upgrade.linked": "LINKED",
+        "gui.powerfactor.upgrade.insert": "INSERT", "gui.powerfactor.upgrade.device": "DEVICE",
+        "gui.powerfactor.upgrade.no_device": "NO DEVICE",
+        "gui.powerfactor.upgrade.help1": "Place a powered tool in the centre bay.",
+        "gui.powerfactor.upgrade.help2": "Fit modules in the six sockets.",
+        "gui.powerfactor.upgrade.modules": "MODULES", "gui.powerfactor.upgrade.inventory": "INVENTORY",
+        "handbook.powerfactor.upgrades_tools.title": "Upgrade Table",
+        "handbook.powerfactor.upgrades_tools.text":
+            "Put a Drill, Chainsaw, Jetpack, Arc Saber or Arc Gun in the middle of an Upgrade Table and fit up to six modules round "
+            "it. Battery and Efficiency fit everything. Speed and Magnet suit the drill and chainsaw; Area, Silk Touch and Fortune "
+            "the drill; Thruster and Plating the jetpack; Overcharge the blades and the gun; Chain Arc the saber and gun. Sockets light "
+            "up for modules that fit. Modules travel inside the tool.\n\nWrench: turns machines, strips wire coating, and sneak-use "
+            "dismantles any PowerFactor block into your inventory.",
+        "handbook.powerfactor.wire_safety.title": "Wire Safety",
+        "handbook.powerfactor.wire_safety.text":
+            "Bare wire on a live grid shocks whatever touches it: copper (480 V) stings, bare MV aluminium (13.8 kV) throws you "
+            "back hard. Right-click a wire with Rubber to coat it; coated and insulated cable are safe to walk on. A wrench strips "
+            "the coat off again. Mobs that wander onto bare live wire get the same treatment.",
+    })
+
+
+# ======================================================================== laser engraving and semiconductors
+
+CHIPS = ["silicon_wafer", "printed_circuit_board", "microprocessor", "memory_chip", "power_transistor", "sensor_chip"]
+MASKS = ["logic", "memory", "power", "sensor"]
+
+
+def laser_engraver_model():
+    six = ("north", "east", "south", "west", "up", "down")
+    for suffix in ("", "_on"):
+        t = {"front": pf(f"block/laser_engraver_front{suffix}"), "side": pf("block/laser_engraver_side"), "bed": pf("block/laser_engraver_bed"),
+             "gantry": pf("block/laser_engraver_gantry"), "particle": pf("block/laser_engraver_side")}
+        body = {"from": [0, 0, 0], "to": [16, 11, 16], "faces": {d: {"texture": "#bed" if d == "up" else "#front" if d == "north" else "#side",
+                                                                     **({"cullface": d} if d != "up" else {})} for d in six}}
+        g = lambda frm, to: {"from": frm, "to": to, "faces": {d: {"texture": "#gantry"} for d in six}}
+        els = [body, g([0.5, 11, 1], [2, 16, 2.5]), g([14, 11, 1], [15.5, 16, 2.5]), g([0.5, 11, 13.5], [2, 16, 15]),
+               g([14, 11, 13.5], [15.5, 16, 15]), g([0.5, 15, 2.5], [2, 16, 13.5]), g([14, 15, 2.5], [15.5, 16, 13.5])]
+        write(asset("models", "block", f"laser_engraver{suffix}.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els})
+    machine_states("laser_engraver", pf("block/laser_engraver"), pf("block/laser_engraver_on"))
+    item_def("laser_engraver")
+
+
+def phase_i():
+    laser_engraver_model()
+    for c in CHIPS:
+        flat_item(c)
+    for m in MASKS:
+        flat_item(f"{m}_photomask")
+    drops_self("laser_engraver")
+    tag("block", "minecraft", "mineable/pickaxe", [pf("laser_engraver")])
+    tag("item", "powerfactor", "photomasks", [pf(f"{m}_photomask") for m in MASKS])
+    tag("item", "c", "silicon_wafers", [pf("silicon_wafer")])
+    shaped("laser_engraver", ["PDP", "GKG", "PMP"], {"P": "#c:plates/steel", "D": "#c:gems/diamond", "G": "#c:glass_panes",
+                                                       "K": pf("control_circuit"), "M": pf("electric_motor")}, 1, category="redstone")
+    machine_recipe("rolling", "silicon_wafer", [("#c:silicon", 1)], [{"item": pf("silicon_wafer"), "count": 2}], time=120)
+    tag("item", "c", "silicon", [pf("silicon")])
+    mask_core = {"logic": "#c:plates/gold", "memory": "#c:dusts/redstone", "power": "#c:plates/copper", "sensor": "#c:gems/amethyst"}
+    for m, core in mask_core.items():
+        shaped(f"{m}_photomask", ["QPQ", "PCP", "QPQ"], {"Q": "#c:gems/quartz", "P": "#c:glass_panes", "C": core}, 1, category="misc")
+    def engrave(out, count, dopant, mask, time=200):
+        r = {"type": pf("laser_engraving"), "inputs": [{"ingredient": pf("silicon_wafer"), "count": 1}, {"ingredient": dopant[0], "count": dopant[1]}],
+             "tool": pf(f"{mask}_photomask"), "results": [{"item": pf(out), "count": count}], "time": time}
+        write(data(NS, "recipe", "laser_engraving", f"{out}.json"), r)
+    engrave("microprocessor", 1, ("#c:nuggets/gold", 2), "logic", 300)
+    engrave("memory_chip", 2, ("#c:dusts/redstone", 2), "memory")
+    engrave("power_transistor", 2, ("#c:dusts/copper", 1), "power", 160)
+    engrave("sensor_chip", 1, ("#c:gems/quartz", 1), "sensor")
+    shaped("printed_circuit_board", ["WWW", "RPR"], {"W": pf("fine_copper_wire"), "R": pf("rubber"), "P": "#c:plates/copper"}, 2, category="misc")
+    # Chips in the higher-tech recipes.
+    shaped("advanced_circuit", ["WMW", "KBK", "WCW"], {"W": pf("fine_silver_wire"), "M": pf("microprocessor"), "K": pf("memory_chip"),
+                                                       "B": pf("printed_circuit_board"), "C": pf("control_circuit")})
+    card = {"P": "#c:ingots/zinc", "K": pf("control_circuit")}
+    shaped("vfd_upgrade", ["BTB", "MKM", "BTB"], {"K": pf("control_circuit"), "B": "#c:ingots/brass", "T": pf("power_transistor"),
+                                                   "M": pf("electric_motor")})
+    shaped("clamp_meter", [" W ", "PSP", " G "], {"W": pf("copper_coil"), "P": "#c:plates/iron", "S": pf("sensor_chip"),
+                                                  "G": "#c:glass_panes"}, 1, category="equipment")
+    shaped("upgrade_table", ["GMG", "PCP", "P P"], {"G": "#c:glass_panes", "M": pf("microprocessor"), "C": "minecraft:crafting_table",
+                                                     "P": "#c:plates/steel"}, 1, category="redstone")
+    name(f"block.{NS}.laser_engraver", "Laser Engraver")
+    for c in CHIPS:
+        name(f"item.{NS}.{c}", " ".join(w.capitalize() for w in c.split("_")))
+    for m in MASKS:
+        name(f"item.{NS}.{m}_photomask", f"{m.capitalize()} Photomask")
+    LANG.update({
+        "jei.powerfactor.laser_engraving": "Laser Engraving",
+        "jei.powerfactor.tool": "Not consumed: wears a little each use",
+        "tooltip.powerfactor.photomask": "Goes in a Laser Engraver's mask slot",
+        "tooltip.powerfactor.photomask.logic": "Patterns logic dies: microprocessors",
+        "tooltip.powerfactor.photomask.memory": "Patterns memory dies",
+        "tooltip.powerfactor.photomask.power": "Patterns power transistors",
+        "tooltip.powerfactor.photomask.sensor": "Patterns sensor dies",
+        "handbook.powerfactor.chips.title": "Chips",
+        "handbook.powerfactor.chips.text":
+            "Electronics start as silicon. Roll silicon into wafers in the Rolling Mill. The Laser Engraver patterns a wafer through a "
+            "photomask: the mask in its tool slot decides the chip. It isn't used up, but every die wears it a little.\n\n"
+            "Logic mask + 2 gold nuggets: Microprocessor. Memory mask + 2 redstone: 2 Memory Chips. Power mask + copper dust: 2 Power "
+            "Transistors. Sensor mask + quartz: Sensor Chip.\n\nAdvanced Circuits now need a microprocessor and memory on a printed "
+            "circuit board. VFD upgrades use power transistors, the clamp meter a sensor chip, the Upgrade Table a microprocessor.",
+    })
+
+
 if __name__ == "__main__":
     models()
     loot()
@@ -1708,6 +2028,10 @@ if __name__ == "__main__":
     phase_cf()
     finishing()
     devices()
+    for w in WIRE_STYLE:
+        wire(w)
+    phase_h()
+    phase_i()
     flush_tags()
     lang()
     print("data written to", os.path.normpath(ROOT))

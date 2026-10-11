@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "GMG",
+    "PCP",
+    "P P"
+  ],
+  "key": {
+    "G": "#c:glass_panes",
+    "M": "powerfactor:microprocessor",
+    "C": "minecraft:crafting_table",
+    "P": "#c:plates/steel"
+  },
+  "result": {
+    "id": "powerfactor:upgrade_table",
+    "count": 1
+  }
+}

@@ -58,14 +58,7 @@ public class DrillItem extends Item {
 
     /** How many of a module type are installed. */
     public static int modules(ItemStack stack, DrillModule.Type type) {
-        int n = 0;
-        for (ItemStack m : stack.getOrDefault(ModComponents.DRILL_MODULES.get(),
-                net.minecraft.world.item.component.ItemContainerContents.EMPTY).nonEmptyItemCopyStream().toList()) {
-            if (m.getItem() instanceof DrillModule module && module.type() == type) {
-                n += m.getCount();
-            }
-        }
-        return n;
+        return ToolModules.count(stack, type);
     }
 
     /** Silk Touch and Fortune modules become real enchantments, so every block and loot table honors them. */
@@ -104,12 +97,7 @@ public class DrillItem extends Item {
         if (level.getGameTime() % 4 != 0 || !(owner instanceof Player player) || modules(stack, DrillModule.Type.MAGNET) == 0) {
             return;
         }
-        for (var item : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, player.getBoundingBox().inflate(6))) {
-            if (!item.hasPickUpDelay()) {
-                var pull = player.position().add(0, 0.5, 0).subtract(item.position()).normalize().scale(0.35);
-                item.setDeltaMovement(item.getDeltaMovement().scale(0.6).add(pull));
-            }
-        }
+        ToolModules.magnet(level, player);
     }
 
     public static int costPerBlock() {
@@ -120,15 +108,19 @@ public class DrillItem extends Item {
         return stack.getOrDefault(ModComponents.ENERGY.get(), 0);
     }
 
+    public static int costPerBlock(ItemStack stack) {
+        return ToolModules.cost(stack, costPerBlock());
+    }
+
     public static boolean powered(ItemStack stack) {
-        return energy(stack) >= costPerBlock();
+        return energy(stack) >= costPerBlock(stack);
     }
 
     @Override
     public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity owner) {
         if (!level.isClientSide() && state.getDestroySpeed(level, pos) != 0
                 && !(owner instanceof Player player && player.getAbilities().instabuild)) {
-            stack.set(ModComponents.ENERGY.get(), Math.max(0, energy(stack) - costPerBlock()));
+            stack.set(ModComponents.ENERGY.get(), Math.max(0, energy(stack) - costPerBlock(stack)));
         }
         return true;
     }
@@ -157,14 +149,8 @@ public class DrillItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
         builder.accept(Component.translatable("tooltip.powerfactor.energy", String.format("%,d", energy(stack)), String.format("%,d", capacity(stack)))
                 .withColor(0xFF5A4A));
-        builder.accept(Component.translatable("tooltip.powerfactor.drill.cost", costPerBlock()).withStyle(ChatFormatting.GRAY));
-        for (DrillModule.Type t : DrillModule.Type.values()) {
-            int n = modules(stack, t);
-            if (n > 0) {
-                builder.accept(Component.translatable("tooltip.powerfactor.drill.module", Component.translatable("item.powerfactor.drill_"
-                        + t.name().toLowerCase(java.util.Locale.ROOT) + "_module"), n).withStyle(ChatFormatting.AQUA));
-            }
-        }
+        builder.accept(Component.translatable("tooltip.powerfactor.drill.cost", costPerBlock(stack)).withStyle(ChatFormatting.GRAY));
+        ToolModules.tooltip(stack, builder);
         builder.accept(Component.translatable("tooltip.powerfactor.drill.open").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

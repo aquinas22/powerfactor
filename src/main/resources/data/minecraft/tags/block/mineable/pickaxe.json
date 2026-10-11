@@ -63,6 +63,8 @@
     "powerfactor:grow_lamp",
     "powerfactor:charging_pad",
     "powerfactor:electrolyzer",
-    "powerfactor:fuel_cell"
+    "powerfactor:fuel_cell",
+    "powerfactor:upgrade_table",
+    "powerfactor:laser_engraver"
   ]
 }

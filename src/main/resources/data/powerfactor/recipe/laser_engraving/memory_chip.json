@@ -1,0 +1,21 @@
+{
+  "type": "powerfactor:laser_engraving",
+  "inputs": [
+    {
+      "ingredient": "powerfactor:silicon_wafer",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:dusts/redstone",
+      "count": 2
+    }
+  ],
+  "tool": "powerfactor:memory_photomask",
+  "results": [
+    {
+      "item": "powerfactor:memory_chip",
+      "count": 2
+    }
+  ],
+  "time": 200
+}

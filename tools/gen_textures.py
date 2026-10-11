@@ -711,21 +711,6 @@ def scada_side():
     return img
 
 
-def copper_wire():
-    """Twisted copper strands; any 4px slice reads as a cable."""
-    r = random.Random(21)
-    img = Image.new("RGBA", (16, 16))
-    tones = [COPPER_P["4"], COPPER_P["3"], COPPER_P["2"], COPPER_P["1"]]
-    for y in range(16):
-        for x in range(16):
-            t = (x - y) % 4
-            c = tones[t]
-            if y % 4 == 3:
-                c = shade(c, 0.8)
-            img.putpixel((x, y), shade(c, 1 + r.uniform(-0.04, 0.04)))
-    return img
-
-
 def fiber_optic_cable():
     r = random.Random(22)
     img = Image.new("RGBA", (16, 16))
@@ -3070,15 +3055,6 @@ def pipe_tile(base, light, dark, band, inner=None, rings=None):
     return img
 
 
-def fluid_pipe():
-    return pipe_tile(BRASS_P["3"], BRASS_P["1"], BRASS_P["5"], [BRASS_P["4"], BRASS_P["2"], hexc("5a4512")])
-
-
-def item_pipe():
-    return pipe_tile(hexc("7d858c"), hexc("b9c2c9"), hexc("4f565c"), [hexc("5a6168"), hexc("9aa3ab"), hexc("2b2e31")],
-                     inner=hexc("2b2e31"))
-
-
 def pipe_extract():
     orange = {2: hexc("ffb347"), 3: hexc("e8781e"), 12: hexc("ffb347"), 13: hexc("e8781e")}
     return pipe_tile(hexc("7d858c"), hexc("b9c2c9"), hexc("4f565c"), [hexc("5a6168"), hexc("9aa3ab"), hexc("2b2e31")],
@@ -3136,13 +3112,13 @@ def gui_arc_furnace():
     img, d = machine_gui()
     slot(d, 38, 26)
     slot(d, 56, 26)
-    slot(d, 47, 52)
+    slot(d, 17, 35)
     slot(d, 116, 35)
     pixmap(img, ARROW, {"#": hexc("8b8b8b")}, 79, 34)
-    # Faint electrode silhouette in the electrode slot.
-    for y in range(53, 67):
-        for x in (54, 55):
-            if y <= 56 and y % 2 == 0:
+    # Faint electrode silhouette in the electrode slot (left of the inputs, clear of the readout line).
+    for y in range(36, 50):
+        for x in (24, 25):
+            if y <= 39 and y % 2 == 0:
                 continue
             img.putpixel((x, y), SILHOUETTE)
     return img
@@ -3256,8 +3232,6 @@ def phase_b():
 
     save(fluid_tank(), "block/fluid_tank_side.png")
     save(fluid_tank(top=True), "block/fluid_tank_top.png")
-    save(fluid_pipe(), "block/fluid_pipe.png")
-    save(item_pipe(), "block/item_pipe.png")
     save(pipe_extract(), "block/pipe_extract.png")
 
     save(gui_alloy_furnace(), "gui/alloy_furnace.png")
@@ -3554,14 +3528,18 @@ MODULE_COLORS = {
 
 
 def drill_module(kind):
-    main, accent = (hexc(h) for h in MODULE_COLORS[kind])
+    return module_sprite(MODULE_EMBLEMS[kind], *(hexc(h) for h in MODULE_COLORS[kind]))
+
+
+def module_sprite(emblem, main, accent):
+    """Dark steel module cartridge: gold contacts, recessed 8x8 emblem window, LED strip in `main`."""
     pal = {"g": BRASS_P["2"], "G": BRASS_P["4"], "1": hexc("5a6168"), "2": hexc("3b4146"),
            "3": hexc("1b1d20"), "D": hexc("2b2f33"), "h": hexc("2b2f33"), "L": main}
     img = pixmap(blank(), MODULE, pal)
     for y in range(4, 12):
         for x in range(4, 12):
             img.putpixel((x, y), hexc("15171a"))
-    for y, row in enumerate(MODULE_EMBLEMS[kind]):
+    for y, row in enumerate(emblem):
         for x, ch in enumerate(row):
             if ch == "#":
                 img.putpixel((4 + x, 4 + y), main)
@@ -4150,27 +4128,6 @@ def condenser_end():
     return img
 
 
-def cable_tile(jacket, light, dark, stripe=None, band=None):
-    """Thin cable models sample a central window on either axis, so the tile is transpose-symmetric."""
-    img = Image.new("RGBA", (16, 16))
-    r = random.Random(200)
-    for y in range(16):
-        for x in range(16):
-            c = shade(jacket, 1 + r.uniform(-0.05, 0.05))
-            for p in (x, y):
-                if p in (5, 6):
-                    c = light
-                elif p in (9, 10):
-                    c = dark
-            for p in (x, y):
-                if stripe and p == 8:
-                    c = stripe
-                if band and p in (1, 2, 13, 14):
-                    c = band
-            img.putpixel((x, y), c)
-    return img
-
-
 def hv_pylon():
     img = blank()
     g = [hexc("d0d6da"), hexc("a9b0b5"), hexc("8a9298"), hexc("6d757b")]
@@ -4384,8 +4341,6 @@ def phaseC_F():
     save(hydro_front(), "block/hydro_turbine_front.png")
     save(condenser_side(), "block/synchronous_condenser_side.png")
     save(condenser_end(), "block/synchronous_condenser_end.png")
-    save(cable_tile(hexc("1c1c1e"), hexc("3a3a3e"), hexc("0c0c0d"), stripe=COPPER_P["2"]), "block/insulated_copper_cable.png")
-    save(cable_tile(hexc("a8b1b8"), hexc("d4dbe0"), hexc("7c858c"), band=hexc("f0c020")), "block/aluminum_cable.png")
     save(hv_pylon(), "block/hv_pylon.png")
     save(wind_turbine_nacelle(), "entity/wind_turbine.png")
     save(wind_tower(), "block/wind_turbine_tower.png")
@@ -4435,6 +4390,8 @@ def phaseC_F():
     write_mcmeta("block/hydrogen_flow.png", 2)
     save(gui_electrolyzer(), "gui/electrolyzer.png")
     save(gui_fuel_cell(), "gui/fuel_cell.png")
+    phase_g()
+    phase_h()
 
 
 def crusher_jaws():
@@ -5214,6 +5171,959 @@ def gui_fuel_cell():
     return img
 
 
+# ---------------------------------------------------------------- wires and cables (whole tile = one face of a thin cable,
+# ---------------------------------------------------------------- U = along the cable, so features are bold and run along x)
+AL_RAMP = [hexc("7d858c"), hexc("9aa3ab"), hexc("b4bcc2"), hexc("c9cfd4")]
+CU_RAMP = [COPPER_P["4"], COPPER_P["3"], COPPER_P["2"], COPPER_P["1"]]
+RUBBER = hexc("2e2e31")
+
+
+def stranded(ramp, seed):
+    """Bare stranded conductor: 45 degree strand bands (4px period), lit along the top, specular line at rows 3-4."""
+    r = random.Random(seed)
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        f = 1.16 - y * 0.026
+        for x in range(16):
+            c = ramp[(0, 1, 3, 2)[(x + y) % 4]]
+            if y in (3, 4) and (x + y) % 4 in (1, 2):
+                c = shade(ramp[3], 1.18)
+            img.putpixel((x, y), shade(c, f + r.uniform(-0.03, 0.03)))
+    return img
+
+
+def copper_wire():
+    return stranded(CU_RAMP, 2101)
+
+
+def aluminum_cable():
+    return stranded(AL_RAMP, 2102)
+
+
+def rubber_jacket(seed):
+    """Matte rubber: faint noise, lighter top rows, darker bottom rows."""
+    r = random.Random(seed)
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        f = 1.22 if y < 2 else 1.1 if y < 4 else 0.82 if y > 12 else 1.0
+        for x in range(16):
+            img.putpixel((x, y), shade(RUBBER, f + r.uniform(-0.04, 0.04)))
+    return img
+
+
+def copper_wire_coated():
+    img = rubber_jacket(2103)
+    for x in range(16):
+        img.putpixel((x, 7), COPPER_P["2"])
+        img.putpixel((x, 8), COPPER_P["4"])
+    return img
+
+
+def insulated_copper_cable():
+    """Heavy cable: black jacket, red phase stripe, printed ticks every 8px."""
+    img = rubber_jacket(2104)
+    for x in range(16):
+        for y in range(6, 10):
+            img.putpixel((x, y), hexc("e0402f") if y == 6 else hexc("c02a20") if y < 9 else hexc("8a1e17"))
+    for x0 in (2, 10):
+        for x in range(x0, x0 + 3):
+            img.putpixel((x, 11), hexc("5e5e64"))
+    return img
+
+
+def aluminum_cable_coated():
+    """MV cable: black jacket, yellow MV bands near each end and a yellow stripe along the length."""
+    img = rubber_jacket(2105)
+    yel, dark = hexc("e8c23a"), hexc("6a5410")
+    for x in range(16):
+        img.putpixel((x, 6), yel)
+        img.putpixel((x, 7), yel)
+        img.putpixel((x, 8), shade(yel, 0.75))
+    for y in range(16):
+        f = 1.15 if y < 3 else 0.8 if y > 12 else 1.0
+        for x in (1, 2, 13, 14):
+            img.putpixel((x, y), shade(yel, f))
+        for x in (0, 3, 12, 15):
+            img.putpixel((x, y), dark)
+    return img
+
+
+def wire_joint():
+    """Crimped junction sleeve: dark metal with two raised ribs and a brass rivet."""
+    img = Image.new("RGBA", (16, 16))
+    r = random.Random(2106)
+    for y in range(16):
+        f = 1.15 if y < 3 else 0.82 if y > 12 else 1.0
+        for x in range(16):
+            c = hexc("4a5056")
+            if x in (3, 11):
+                c = hexc("8a939a")
+            elif x in (4, 12):
+                c = hexc("6f777e")
+            elif x in (5, 13):
+                c = hexc("2a2e31")
+            elif (x + y) % 4 == 0 and 6 <= x <= 10:
+                c = hexc("40464b")                              # crimp dimples
+            img.putpixel((x, y), shade(c, f + r.uniform(-0.03, 0.03)))
+    edges(img, (0, 0, 15, 15), hexc("6f777e"), hexc("1e2124"))
+    for p, c in [((7, 7), BRASS_P["1"]), ((8, 7), BRASS_P["2"]), ((7, 8), BRASS_P["3"]), ((8, 8), BRASS_P["4"])]:
+        img.putpixel(p, c)
+    return img
+
+
+# ---------------------------------------------------------------- glass pipes (translucent render type)
+def glass_pipe(tint, band):
+    """Glass tube face: faint tint, two glint streaks, opaque metal collars at both ends along U (columns 0-1, 14-15)."""
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            a = 60 if y < 2 or y > 13 else 44
+            img.putpixel((x, y), tint[:3] + (a,))
+    for x in range(2, 14):
+        for y in range(16):
+            k = x - y
+            if k in (5, 6) or k == -3:
+                img.putpixel((x, y), hexc("ffffff", 150 if k != 6 else 110))
+    for y in range(16):
+        c = band[0] if y < 4 else band[1] if y < 12 else band[2]
+        img.putpixel((0, y), band[3])
+        img.putpixel((1, y), c)
+        img.putpixel((14, y), c)
+        img.putpixel((15, y), band[3])
+    return img
+
+
+ITEM_PIPE_BAND = [hexc("e6c56a"), hexc("c9a24a"), hexc("a8842e"), hexc("8a6a2a")]
+FLUID_PIPE_BAND = [COPPER_P["2"], COPPER_P["3"], COPPER_P["4"], hexc("5a3020")]
+
+
+def item_pipe():
+    return glass_pipe(hexc("e8f4ff"), ITEM_PIPE_BAND)
+
+
+def fluid_pipe():
+    return glass_pipe(hexc("bfdcff"), FLUID_PIPE_BAND)
+
+
+def pipe_flange(band):
+    """Opaque flange plate: metal ring, four bolts, a dark centre where the tube enters."""
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            img.putpixel((x, y), band[1] if (x + y) < 15 else band[2])
+    edges(img, (0, 0, 15, 15), band[0], band[3])
+    ImageDraw.Draw(img).rectangle((4, 4, 11, 11), fill=shade(band[3], 0.45))
+    edges(img, (3, 3, 12, 12), band[3], band[0])
+    for x, y in [(1, 1), (13, 1), (1, 13), (13, 13)]:
+        img.putpixel((x, y), hexc("d4dbe0"))
+        img.putpixel((x + 1, y), hexc("8a939a"))
+        img.putpixel((x, y + 1), hexc("8a939a"))
+        img.putpixel((x + 1, y + 1), hexc("4a5056"))
+    return img
+
+
+# ---------------------------------------------------------------- 3D tool part textures (stretched over small cuboids)
+TOOL_ORANGE = [hexc("ffaa55"), hexc("e87a1e"), hexc("c25e12"), hexc("8a400a")]
+
+
+def tool_plastic(seed, ramp):
+    """Moulded plastic: vertical light-to-dark gradient with a bevel."""
+    r = random.Random(seed)
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        base = ramp[0] if y < 2 else ramp[1] if y < 12 else ramp[2]
+        for x in range(16):
+            img.putpixel((x, y), shade(base, 1 + r.uniform(-0.025, 0.025)))
+    edges(img, (0, 0, 15, 15), ramp[0], ramp[3])
+    return img
+
+
+def drill_body():
+    img = tool_plastic(2201, TOOL_ORANGE)
+    for x in (4, 7, 10):
+        for y in range(4, 10):
+            img.putpixel((x, y), hexc("2a1a0e"))
+            img.putpixel((x + 1, y), hexc("4a2a12") if y < 9 else TOOL_ORANGE[0])
+    for x in range(2, 14):
+        img.putpixel((x, 12), hexc("8a939a"))
+        img.putpixel((x, 13), BRAND)
+    return img
+
+
+def rubber_grip(seed, ridge):
+    """Black overmould rubber; ridge(x, y) marks raised ridge pixels."""
+    img = rubber_jacket(seed)
+    for y in range(16):
+        for x in range(16):
+            if ridge(x, y):
+                img.putpixel((x, y), shade(img.getpixel((x, y)), 1.6))
+    edges(img, (0, 0, 15, 15), hexc("4a4a4e"), hexc("121214"))
+    return img
+
+
+def drill_grip():
+    return rubber_grip(2202, lambda x, y: (x + y) % 4 == 0)
+
+
+def chrome(bands, tint=None):
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        c = hexc(bands[y])
+        if tint:
+            c = mix_rgb(c, tint, 0.12)
+        for x in range(16):
+            img.putpixel((x, y), shade(c, 1.04) if x < 2 else shade(c, 0.9) if x > 13 else c)
+    return img
+
+
+def drill_chrome():
+    return chrome(["8a939a", "d4dbe0", "ffffff", "f4f7f8", "b9c2c9", "7d858c", "4a5056", "5a6167",
+                   "8a939a", "c9d1d6", "f4f7f8", "dfe5e9", "aab3ba", "7d858c", "5a6167", "3a3f44"])
+
+
+def drill_bit():
+    """HSS bit: dark steel with a bright helical flute."""
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            k = (x + y) % 6
+            c = hexc("eef2f4") if k == 0 else hexc("b9c2c9") if k == 1 else hexc("2b2f33") if k == 3 else hexc("4a5056")
+            img.putpixel((x, y), shade(c, 1.1 - y * 0.015))
+    return img
+
+
+def drill_battery():
+    img = tool_plastic(2203, [hexc("5a6066"), hexc("3a3e42"), hexc("2a2d30"), hexc("16181a")])
+    for x in range(1, 15):
+        img.putpixel((x, 5), hexc("8a2a20"))
+        for y in (6, 7, 8):
+            img.putpixel((x, y), FE_RED if y < 8 else hexc("d8352b"))
+        img.putpixel((x, 9), hexc("8a2a20"))
+    for x in (2, 5, 9, 12):
+        img.putpixel((x, 12), hexc("8affa0"))
+        img.putpixel((x + 1, 12), hexc("3fdc6a"))
+        img.putpixel((x, 13), hexc("3fdc6a"))
+        img.putpixel((x + 1, 13), hexc("1f8a3a"))
+    return img
+
+
+def saw_body():
+    img = tool_plastic(2204, TOOL_ORANGE)
+    for y in (4, 7, 10):
+        for x in range(3, 13):
+            img.putpixel((x, y), hexc("2a1a0e"))
+            img.putpixel((x, y + 1), TOOL_ORANGE[0])
+    return img
+
+
+def saw_grip():
+    return rubber_grip(2205, lambda x, y: x % 4 == 1 and 2 < y < 13)
+
+
+def saw_bar():
+    """Brushed steel guide bar with a rivet hole and a faint logo line."""
+    r = random.Random(2206)
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        streak = r.uniform(-0.05, 0.05)
+        for x in range(16):
+            img.putpixel((x, y), shade(hexc("aab3ba"), 1.08 - y * 0.012 + streak + r.uniform(-0.02, 0.02)))
+    edges(img, (0, 0, 15, 15), hexc("d4dbe0"), hexc("6f777e"))
+    for p, c in [((3, 6), "6f777e"), ((4, 6), "6f777e"), ((3, 7), "1e2124"), ((4, 7), "1e2124"),
+                 ((3, 8), "1e2124"), ((4, 8), "3a3f44"), ((5, 7), "d4dbe0"), ((5, 8), "d4dbe0")]:
+        img.putpixel(p, hexc(c))
+    for x in range(8, 14):
+        img.putpixel((x, 10), hexc("8a939a"))
+    img.putpixel((8, 10), BRAND)
+    img.putpixel((9, 10), BRAND)
+    return img
+
+
+def saw_chain(frame=0):
+    """Chain links with a bright cutter tooth every 4px along U; frame shifts it 1px."""
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            k = (x - frame) % 4
+            c = hexc("3a3f44") if y % 8 in (3, 4) else hexc("4a5056")
+            if k == 2 and y % 8 in (3, 4):
+                c = hexc("8a939a")                                   # link rivet
+            if k in (0, 1) and y < 5:
+                c = hexc("eef2f4") if (k == 0 and y < 4) or y == 0 else hexc("aab3ba")   # cutter tooth
+            if y > 13:
+                c = hexc("26292c")
+            img.putpixel((x, y), c)
+    return img
+
+
+def wrench_chrome():
+    return chrome(["9aa3ab", "eef2f4", "ffffff", "dfe5e9", "aab3ba", "7d858c", "8a939a", "b9c2c9",
+                   "dfe5e9", "f4f7f8", "c9d1d6", "9aa3ab", "7d858c", "6f777e", "5a6167", "4a5056"], hexc("6aa8ff"))
+
+
+def wrench_grip():
+    """Two-tone grip: orange rubber with black ridges."""
+    img = tool_plastic(2207, TOOL_ORANGE)
+    for y in range(16):
+        for x in range(16):
+            if x % 4 in (2, 3) and 1 < y < 14:
+                img.putpixel((x, y), hexc("2a2a2c") if x % 4 == 2 else hexc("1a1a1c"))
+    return img
+
+
+def wrench_knurl():
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            dark = (x + y) % 4 == 0 or (x - y) % 4 == 0
+            c = hexc("3a3f44") if dark else hexc("dfe5e9") if y < 5 else hexc("aab3ba") if y < 11 else hexc("7d858c")
+            img.putpixel((x, y), c)
+    return img
+
+
+WRENCH = [
+    "................",
+    "..........AB....",
+    ".........ABBC...",
+    ".........ABC..A.",
+    "........ABBC.ABC",
+    "........ABBBBBC.",
+    ".......ABBkkBC..",
+    "......ABBBBBC...",
+    ".....ABBC.......",
+    "....OOPC........",
+    "...OOPQ.........",
+    "..KKKQ..........",
+    ".OOPQ...........",
+    "KOPQ............",
+    "KKQ.............",
+    "................",
+]
+
+
+def wrench_item():
+    """Adjustable wrench, head top-right, orange grip bottom-left."""
+    pal = {"A": hexc("f4f7f8"), "B": hexc("b9c2c9"), "C": hexc("6f777e"), "k": hexc("4a5056"),
+           "O": TOOL_ORANGE[0], "P": TOOL_ORANGE[1], "Q": TOOL_ORANGE[3], "K": hexc("222224")}
+    return outline(pixmap(blank(), WRENCH, pal), hexc("1c1c1e"))
+
+
+# ---------------------------------------------------------------- upgrade table
+HOLO = hexc("3fe0ff")
+HOLO_DIM = hexc("1d5a66")
+GUNMETAL = hexc("2e353c")
+
+
+def upgrade_table_top():
+    """Gunmetal bench top with a glowing cyan circuit inlay around a projector ring."""
+    import math
+    img = painted(2301, GUNMETAL)
+    line, node = hexc("2aa8c0"), hexc("c8fbff")
+    for i in range(2, 14):
+        for p in ((i, 2), (i, 13), (2, i), (13, i)):
+            img.putpixel(p, line)
+    for i in range(3, 5):
+        for p in ((i, 7), (15 - i, 8), (8, i), (7, 15 - i)):
+            img.putpixel(p, line)
+    for y in range(16):
+        for x in range(16):
+            r = math.hypot(x + 0.5 - 8, y + 0.5 - 8)
+            if 3.3 < r < 4.4:
+                img.putpixel((x, y), HOLO)
+            elif r <= 3.3:
+                img.putpixel((x, y), hexc("0e1a20") if r > 1.2 else hexc("1d5a66"))
+    for p in [(2, 2), (13, 2), (2, 13), (13, 13), (2, 7), (13, 8), (8, 2), (7, 13)]:
+        img.putpixel(p, node)
+    return img
+
+
+def upgrade_table_panel(seed):
+    img = painted(seed, GUNMETAL)
+    for x in range(1, 15):
+        img.putpixel((x, 2), BRAND)
+        img.putpixel((x, 3), shade(BRAND, 0.7))
+    return img
+
+
+def upgrade_table_side():
+    img = upgrade_table_panel(2302)
+    for y in (7, 10):
+        for x in range(3, 13):
+            img.putpixel((x, y), hexc("101316"))
+            img.putpixel((x, y + 1), hexc("4a535b"))
+    return img
+
+
+def upgrade_table_front():
+    """Two drawers with brass pulls, a cyan status light and the teal stripe."""
+    img = upgrade_table_panel(2303)
+    for y0 in (5, 10):
+        edges(img, (2, y0, 13, y0 + 4), hexc("4a535b"), hexc("15191d"))
+        for x in range(6, 10):
+            img.putpixel((x, y0 + 2), BRASS_P["2"])
+        img.putpixel((6, y0 + 2), BRASS_P["1"])
+        img.putpixel((9, y0 + 2), BRASS_P["4"])
+    img.putpixel((13, 2), HOLO)
+    img.putpixel((12, 2), hexc("0e1a20"))
+    img.putpixel((14, 2), hexc("0e1a20"))
+    return img
+
+
+def upgrade_table_leg():
+    img = dark_steel(2304)
+    edges(img, (0, 0, 15, 15), hexc("6a737b"), hexc("1e2226"))
+    return img
+
+
+def socket_frame(img, ox, oy, fill, light, dark):
+    """20x20 socket around a 16x16 slot whose item origin is (ox, oy): chamfered corners, recessed 18x18 well."""
+    x0, y0 = ox - 2, oy - 2
+    for y in range(20):
+        for x in range(20):
+            k = min(x, y, 19 - x, 19 - y)
+            corner = min(x, 19 - x) + min(y, 19 - y)
+            if corner < 2:
+                continue
+            if k == 0 or corner == 2:
+                c = light if x + y < 19 else dark
+            else:
+                c = fill
+                if k == 1:
+                    c = hexc("04070a") if x == 1 or y == 1 else hexc("1f2c38")
+            img.putpixel((x0 + x, y0 + y), c)
+
+
+def dark_slot(img, x, y):
+    """18x18 recessed slot for an item at (x, y): dark well, black top-left, lighter bottom-right."""
+    d = ImageDraw.Draw(img)
+    bevel(d, x - 1, y - 1, 18, 18, hexc("04070a"), hexc("2a3a48"), hexc("0a1016"))
+
+
+def gui_upgrade_table():
+    """Holographic tech bench, 248x218, plus sprites below it."""
+    import math
+    W, H = 248, 218
+    img = Image.new("RGBA", (256, 256), CLEAR)
+    d = ImageDraw.Draw(img)
+    top, bot = hexc("0b1118"), hexc("111c26")
+    for y in range(H):
+        base = mix_rgb(top, bot, y / H)
+        for x in range(W):
+            c = base
+            if y > 15 and (x % 8 == 0 or y % 8 == 0):
+                c = mix_rgb(base, hexc("12303a"), 0.7)
+            img.putpixel((x, y), c)
+    # Title bar and underline.
+    d.rectangle((2, 2, W - 3, 13), fill=hexc("17222c"))
+    d.line((2, 14, W - 3, 14), fill=hexc("2a8ea0"))
+    # Gunmetal 2px bevelled frame with rounded corners.
+    edges(img, (0, 0, W - 1, H - 1), hexc("6a7682"), hexc("1a2028"))
+    edges(img, (1, 1, W - 2, H - 2), hexc("4a5562"), hexc("2a333d"))
+    for p in [(0, 0), (W - 1, 0), (0, H - 1), (W - 1, H - 1)]:
+        img.putpixel(p, CLEAR)
+    for (cx, cy, sx, sy) in [(1, 1, 1, 1), (W - 2, 1, -1, 1), (1, H - 2, 1, -1), (W - 2, H - 2, -1, -1)]:
+        for i in range(6):
+            img.putpixel((cx + i * sx, cy), HOLO)
+            img.putpixel((cx, cy + i * sy), HOLO)
+    # Central bay.
+    CX, CY = 84, 66
+    for y in range(CY - 31, CY + 32):
+        for x in range(CX - 31, CX + 32):
+            r = math.hypot(x - CX, y - CY)
+            if r <= 30.5:
+                c = hexc("070c11")
+                if abs(r - 29.5) < 0.6:
+                    c = HOLO_DIM
+                elif abs(r - 22) < 0.5:
+                    c = hexc("164650")
+                elif abs(r - 30.3) < 0.3:
+                    c = hexc("2a8ea0")
+                elif 25.5 < r < 27.5 and math.degrees(math.atan2(y - CY, x - CX)) % 15 < 3:
+                    c = hexc("164650")                          # bearing ticks
+                img.putpixel((x, y), c)
+    # Circuit traces from each socket to the bay rim.
+    traces = [[(74, 30), (64, 30), (64, 40)], [(93, 30), (104, 30), (104, 40)],
+              [(74, 118), (64, 118), (64, 90)], [(93, 118), (104, 118), (104, 90)],
+              [(120, 64), (120, 72), (100, 72)], [(120, 84), (120, 78), (100, 78)],
+              [(48, 64), (48, 72), (68, 72)], [(48, 84), (48, 78), (68, 78)]]
+    for pts in traces:
+        end = None
+        for (ax, ay), (bx, by) in zip(pts, pts[1:]):
+            n = max(abs(bx - ax), abs(by - ay))
+            for i in range(n + 1):
+                x, y = ax + (bx - ax) * i // n, ay + (by - ay) * i // n
+                if math.hypot(x - CX, y - CY) <= 30.5:
+                    break
+                img.putpixel((x, y), hexc("23707e"))
+                end = (x, y)
+            else:
+                continue
+            break
+        if end:
+            for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
+                img.putpixel((end[0] + dx - (end[0] > CX), end[1] + dy - (end[1] > CY)), HOLO)
+    sockets = [(76, 24), (112, 45), (112, 87), (76, 108), (40, 87), (40, 45)]
+    for ox, oy in sockets:
+        socket_frame(img, ox, oy, hexc("0a1016"), hexc("2f8090"), hexc("163a44"))
+        img.putpixel((ox - 1, oy - 1), HOLO_DIM)
+    dark_slot(img, 76, 58)
+    # Stats panel.
+    d.rectangle((160, 18, 240, 124), fill=hexc("070c11"), outline=HOLO_DIM)
+    for x in (160, 240):
+        for y in (18, 124):
+            img.putpixel((x, y), hexc("2a8ea0"))
+    # Player inventory in the dark style.
+    for row in range(3):
+        for col in range(9):
+            dark_slot(img, 44 + col * 18, 136 + row * 18)
+    for col in range(9):
+        dark_slot(img, 44 + col * 18, 194)
+    # Sprites: socket glow (0,224), socket locked (20,224), energy pulse (40,224).
+    glow = Image.new("RGBA", (20, 20), CLEAR)
+    locked = Image.new("RGBA", (20, 20), CLEAR)
+    for y in range(20):
+        for x in range(20):
+            k = min(x, y, 19 - x, 19 - y)
+            corner = min(x, 19 - x) + min(y, 19 - y)
+            if corner < 2:
+                continue
+            if k == 0 or corner == 2:
+                glow.putpixel((x, y), HOLO)
+                locked.putpixel((x, y), hexc("c0392b", 230))
+            elif k == 1 or corner == 3:
+                glow.putpixel((x, y), hexc("3fe0ff", 120))
+                locked.putpixel((x, y), hexc("6a1a14", 170))
+            elif k == 2:
+                glow.putpixel((x, y), hexc("3fe0ff", 40))
+            if k >= 1 and (x == y or x == 19 - y) and 2 <= x <= 17:
+                locked.putpixel((x, y), hexc("e04a3a", 200))
+    img.paste(glow, (0, 224))
+    img.paste(locked, (20, 224))
+    for y in range(7):
+        for x in range(7):
+            r = math.hypot(x - 3, y - 3)
+            if r < 3.6:
+                t = r / 3.6
+                c = mix_rgb(hexc("ffffff"), HOLO, min(1.0, t * 1.6))
+                img.putpixel((40 + x, 224 + y), c[:3] + (int(255 * (1 - t) ** 1.2),))
+    return img
+
+
+def upgrade_table_hologram():
+    """64x64 glowing cyan ring with tick marks (transparent elsewhere)."""
+    import math
+    img = Image.new("RGBA", (64, 64), CLEAR)
+    for y in range(64):
+        for x in range(64):
+            dx, dy = x + 0.5 - 32, y + 0.5 - 32
+            r = math.hypot(dx, dy)
+            a = math.degrees(math.atan2(dy, dx)) % 360
+            c = None
+            if abs(r - 27) < 0.75:
+                c = hexc("bff6ff")
+            elif abs(r - 27) < 1.8:
+                c = hexc("3fe0ff", 130)
+            elif abs(r - 27) < 2.8:
+                c = hexc("3fe0ff", 45)
+            elif 29.0 < r < 31.5 and a % 15 < 2.4:
+                c = hexc("3fe0ff", 230 if a % 45 < 2.4 else 150)
+            elif 22.5 < r < 24 and a % 30 < 12 and (a // 30) % 2 == 0:
+                c = hexc("3fe0ff", 90)
+            if c:
+                img.putpixel((x, y), c)
+    return img
+
+
+UPGRADE_MODULE_EMBLEMS = {
+    "efficiency": ("5adc3a", "c8ffb0", ["..####..", "..#++#..", "..#++#..", "###++###", ".#++++#.", "..#++#..",
+                                         "...##...", "........"]),
+    "thruster": ("3a8cff", "b0e0ff", ["...##...", "..####..", "..####..", ".######.", ".#.##.#.", "..+..+..",
+                                       "..++++..", "...++..."]),
+    "plating": ("a8b1b8", "eef2f4", [".######.", "########", "##++####", "##+#####", ".######.", ".######.",
+                                      "..####..", "...##..."]),
+    "overcharge": ("ffd02a", "fff4b0", ["....###.", "...###..", "..+##...", ".######.", "...##+..", "..###...",
+                                         ".##.....", ".#......"]),
+    "chain": ("c04aff", "f0c8ff", ["...##...", "...#....", "..##....", "..#.#...", ".#...#..", ".+...##.",
+                                    "+.....#.", "......+."]),
+}
+
+
+def phase_g():
+    save(copper_wire(), "block/copper_wire.png")
+    save(copper_wire_coated(), "block/copper_wire_coated.png")
+    save(insulated_copper_cable(), "block/insulated_copper_cable.png")
+    save(aluminum_cable(), "block/aluminum_cable.png")
+    save(aluminum_cable_coated(), "block/aluminum_cable_coated.png")
+    save(wire_joint(), "block/wire_joint.png")
+    save(item_pipe(), "block/item_pipe.png")
+    save(fluid_pipe(), "block/fluid_pipe.png")
+    save(pipe_flange(ITEM_PIPE_BAND), "block/item_pipe_flange.png")
+    save(pipe_flange(FLUID_PIPE_BAND), "block/fluid_pipe_flange.png")
+    save(drill_body(), "item/model/drill_body.png")
+    save(drill_grip(), "item/model/drill_grip.png")
+    save(drill_chrome(), "item/model/drill_chrome.png")
+    save(drill_bit(), "item/model/drill_bit.png")
+    save(drill_battery(), "item/model/drill_battery.png")
+    save(saw_body(), "item/model/saw_body.png")
+    save(saw_grip(), "item/model/saw_grip.png")
+    save(saw_bar(), "item/model/saw_bar.png")
+    save(saw_chain(), "item/model/saw_chain.png")
+    save(anim([saw_chain(f) for f in range(4)]), "item/model/saw_chain_running.png")
+    write_mcmeta("item/model/saw_chain_running.png", 1)
+    save(wrench_chrome(), "item/model/wrench_chrome.png")
+    save(wrench_grip(), "item/model/wrench_grip.png")
+    save(wrench_knurl(), "item/model/wrench_knurl.png")
+    save(wrench_item(), "item/wrench.png")
+    save(upgrade_table_top(), "block/upgrade_table_top.png")
+    save(upgrade_table_side(), "block/upgrade_table_side.png")
+    save(upgrade_table_front(), "block/upgrade_table_front.png")
+    save(upgrade_table_leg(), "block/upgrade_table_leg.png")
+    save(gui_upgrade_table(), "gui/upgrade_table.png")
+    save(upgrade_table_hologram(), "gui/upgrade_table_hologram.png")
+    for kind, (main, accent, emblem) in UPGRADE_MODULE_EMBLEMS.items():
+        save(module_sprite(emblem, hexc(main), hexc(accent)), f"item/{kind}_module.png")
+
+
+# ---------------------------------------------------------------- laser engraver
+HAZARD_YEL = hexc("e8b923")
+
+
+def engraver_plate(seed):
+    img = dark_steel(seed)
+    edges(img, (0, 0, 15, 15), hexc("5a6167"), hexc("1e2124"))
+    return img
+
+
+def laser_engraver_side():
+    """Dark cabinet: teal stripe, class-4 laser warning triangle, hazard strip."""
+    img = engraver_plate(2401)
+    for x in range(1, 15):
+        img.putpixel((x, 2), BRAND)
+        img.putpixel((x, 3), shade(BRAND, 0.7))
+    pixmap(img, ["...k...", "..kYk..", "..kKk..", ".kYKYk.", ".kYYYk.", "kYYKYYk", "kkkkkkk"],
+           {"k": hexc("15171a"), "Y": HAZARD_YEL, "K": hexc("15171a")}, 5, 5)
+    hazard(img, 1, 14, 13, 14)
+    return img
+
+
+def laser_engraver_front(on=False):
+    """Control panel: green display, red/green buttons, key switch, red viewing slit."""
+    img = engraver_plate(2402)
+    d = ImageDraw.Draw(img)
+    d.rectangle((2, 2, 8, 6), fill=hexc("0a0f0a"))
+    edges(img, (1, 1, 9, 7), hexc("1e2124"), hexc("6f777e"))
+    g = hexc("6aff7a") if on else hexc("2f8a3a")
+    g2 = hexc("3fd04f") if on else hexc("1f5a26")
+    for x, y in [(3, 3), (4, 3), (6, 3), (3, 5), (4, 4), (5, 5), (6, 4), (7, 3)]:
+        img.putpixel((x, y), g if y == 3 else g2)
+    for (x, c, lc) in [(11, "d03a2f", "ff8a80"), (13, "2fb840", "8affa0")]:
+        img.putpixel((x, 2), hexc(lc))
+        img.putpixel((x, 3), hexc(c))
+        img.putpixel((x + 1, 3), shade(hexc(c), 0.6))
+    img.putpixel((12, 5), hexc("8a939a"))                       # key switch
+    img.putpixel((12, 6), BRASS_P["2"])
+    img.putpixel((13, 6), hexc("1e2124"))
+    d.rectangle((2, 10, 13, 11), fill=hexc("ff7a3a") if on else hexc("3a1414"))
+    if on:
+        for x in range(2, 14):
+            img.putpixel((x, 10), hexc("ffd0a0") if x % 4 == 1 else hexc("ff9a5a"))
+            img.putpixel((x, 11), hexc("e04a2a"))
+    edges(img, (1, 9, 14, 12), hexc("1e2124"), hexc("6f777e"))
+    for x in range(1, 15):
+        img.putpixel((x, 14), BRAND)
+    return img
+
+
+def laser_engraver_bed():
+    """Vacuum chuck: anodised plate with a 2px hole grid, raised chuck ring and three alignment pins."""
+    import math
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            r = math.hypot(x + 0.5 - 8, y + 0.5 - 8)
+            c = hexc("2a2f35")
+            if x % 2 == 0 and y % 2 == 0:
+                c = hexc("121417")
+            if r < 4.6:
+                c = hexc("3a4148") if (x + y) % 2 else hexc("353c42")
+            elif r < 5.6:
+                c = hexc("7d858c") if y < 8 else hexc("4f565c")
+            img.putpixel((x, y), c)
+    edges(img, (0, 0, 15, 15), hexc("b9c2c9"), hexc("6f777e"))
+    for x, y in [(8, 1), (2, 12), (13, 12)]:
+        img.putpixel((x, y), hexc("f4f7f8"))
+    return img
+
+
+def laser_engraver_gantry():
+    """Brushed aluminium rail with a linear-guide groove and bolt heads."""
+    r = random.Random(2403)
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        streak = r.uniform(-0.04, 0.04)
+        for x in range(16):
+            img.putpixel((x, y), shade(hexc("c3cbd1"), 1.06 - y * 0.012 + streak + r.uniform(-0.015, 0.015)))
+    for x in range(16):
+        img.putpixel((x, 7), hexc("4a5056"))
+        img.putpixel((x, 8), hexc("8a939a"))
+    for x, y in [(2, 3), (12, 3), (2, 11), (12, 11)]:
+        img.putpixel((x, y), hexc("f4f7f8"))
+        img.putpixel((x + 1, y), hexc("8a939a"))
+        img.putpixel((x, y + 1), hexc("8a939a"))
+        img.putpixel((x + 1, y + 1), hexc("5a6167"))
+    edges(img, (0, 0, 15, 15), hexc("e4e9ec"), hexc("7d858c"))
+    return img
+
+
+def laser_head_entity():
+    """32x16: carriage 4x2x4 at (0,0), lens nozzle 2x1.5x2 at (0,8)."""
+    img = Image.new("RGBA", (32, 16), CLEAR)
+
+    def carriage(face, fw, fh):
+        if face == "top":
+            t = Image.new("RGBA", (fw, fh), hexc("5a6470"))
+            edges(t, (0, 0, fw - 1, fh - 1), hexc("7a8590"), hexc("3a4148"))
+            return t
+        t = Image.new("RGBA", (fw, fh), hexc("3a4148"))
+        if face != "bottom":
+            for x in range(fw):
+                t.putpixel((x, 0), hexc("4a535c"))
+                t.putpixel((x, fh - 1), hexc("d8352b") if fh > 1 else hexc("3a4148"))
+        return t
+
+    def nozzle(face, fw, fh):
+        t = Image.new("RGBA", (fw, fh), hexc("17181a"))
+        if face == "bottom":
+            t.putpixel((0, 0), hexc("ff6a6a"))
+            for p in [(1, 0), (0, 1), (1, 1)]:
+                t.putpixel(p, hexc("c0102a"))
+        elif face != "top":
+            for x in range(fw):
+                t.putpixel((x, 0), hexc("2c2e31"))
+        return t
+
+    box_uv(img, 0, 0, 4, 2, 4, carriage)
+    box_uv_f(img, 0, 8, 2, 1.5, 2, nozzle)
+    return img
+
+
+PHOTOMASK_SIL = [
+    "############",
+    "#..........#",
+    "#.#.#..#.#.#",
+    "#..........#",
+    "#.#.#..#.#.#",
+    "#..........#",
+    "#..........#",
+    "#.#.#..#.#.#",
+    "#..........#",
+    "#.#.#..#.#.#",
+    "#..........#",
+    "############",
+]
+
+
+def gui_laser_engraver():
+    img, d = machine_gui()
+    slot(d, 38, 26)
+    slot(d, 56, 26)
+    slot(d, 17, 35)
+    slot(d, 116, 35)
+    bevel(d, 79, 27, 28, 28, SLOT_DARK, WHITE, hexc("141618"))
+    pixmap(img, PHOTOMASK_SIL, {"#": SILHOUETTE}, 19, 37)     # ghost photomask in the tool slot
+    return img
+
+
+# ---------------------------------------------------------------- semiconductor items
+def silicon_wafer():
+    """Polished wafer: blue-grey mirror disc with a thin-film sheen streak and the flat at the bottom."""
+    import math
+    img = blank()
+    sheen = [hexc("e88ac8"), hexc("9ad8ff"), hexc("8affc8"), hexc("ffe08a")]
+    for y in range(1, 15):
+        for x in range(1, 15):
+            r = math.hypot(x + 0.5 - 8, y + 0.5 - 7.5)
+            if r > 6.6 or y > 13:
+                continue
+            t = (x + y) / 28
+            c = mix_rgb(hexc("6a7e98"), hexc("2a3446"), t)
+            k = x - y
+            if k in (1, 2, 3):
+                c = mix_rgb(c, sheen[(k + y // 3) % 4], 0.45)
+            if k == 2 and y < 6:
+                c = hexc("e8f2ff")
+            if r > 5.8:
+                c = shade(c, 0.8 if x + y > 15 else 1.15)
+            img.putpixel((x, y), c)
+    return outline(img, hexc("141a24"))
+
+
+PCB = [
+    "................",
+    "................",
+    "..############..",
+    ".#gG..o.ggGg..#.",
+    ".#.g..g.g..G..#.",
+    ".#.gggg.g.oG..#.",
+    ".#......g..g..#.",
+    ".#.o.GGGg..gg.#.",
+    ".#...g.....og.#.",
+    ".#.ggg.oGGg...#.",
+    ".#.g......g.o.#.",
+    ".#.o..GGG.g...#.",
+    ".#........o...#.",
+    "..############..",
+    "................",
+    "................",
+]
+
+
+def printed_circuit_board():
+    img = blank()
+    pal = {"#": hexc("2f8a3a"), "g": hexc("e6c56a"), "G": hexc("c9a13b"), "o": hexc("1a1c1a")}
+    for y, row in enumerate(PCB):
+        for x, ch in enumerate(row):
+            if ch == "." and 2 <= y <= 13 and 1 <= x <= 14 and (x, y) not in [(1, 2), (14, 2), (1, 13), (14, 13)]:
+                img.putpixel((x, y), hexc("3aa04a") if (x + y) % 5 else hexc("43ad52"))
+            elif ch in pal:
+                img.putpixel((x, y), pal[ch])
+    for x in range(2, 14):
+        img.putpixel((x, 2), hexc("5ac46a"))
+        img.putpixel((x, 13), hexc("1f6a2a"))
+    for y in range(3, 13):
+        img.putpixel((1, y), hexc("4ab85a"))
+        img.putpixel((14, y), hexc("1f6a2a"))
+    for x, y in [(6, 3), (3, 7), (10, 5), (7, 9), (11, 8), (3, 11), (12, 10), (10, 12)]:
+        img.putpixel((x, y), hexc("15171a"))                   # through-holes in their pads
+        for dx, dy in ((1, 0), (0, 1)):
+            if img.getpixel((x + dx, y + dy))[:3] != (21, 23, 26):
+                img.putpixel((x + dx, y + dy), hexc("c9a13b"))
+    return outline(img, hexc("0f2a14"))
+
+
+def microprocessor():
+    """CPU package: green substrate, gold edge contacts, silver lid with a tiny logo."""
+    img = blank()
+    for y in range(2, 14):
+        for x in range(2, 14):
+            c = hexc("2f7a3a")
+            if x in (2, 13) or y in (2, 13):
+                c = hexc("e6c56a") if (x + y) % 2 == 0 else hexc("1f5a26")
+            img.putpixel((x, y), c)
+    for p in [(2, 2), (13, 2), (2, 13), (13, 13)]:
+        img.putpixel(p, hexc("1f5a26"))
+    for y in range(4, 12):
+        for x in range(4, 12):
+            img.putpixel((x, y), hexc("dfe5e9") if x + y < 12 else hexc("b9c2c9") if x + y < 19 else hexc("8a939a"))
+    edges(img, (4, 4, 11, 11), hexc("f4f7f8"), hexc("6f777e"))
+    for p in [(6, 7), (7, 6), (8, 7), (9, 8), (7, 8)]:
+        img.putpixel(p, hexc("8a939a"))
+    img.putpixel((3, 3), hexc("e6c56a"))                       # pin-1 marker
+    return outline(img, hexc("10261a"))
+
+
+def memory_chip():
+    """Black DRAM package with silver legs along the top and bottom edges."""
+    img = blank()
+    for x in range(2, 14, 2):
+        for y in (3, 4, 11, 12):
+            img.putpixel((x, y), hexc("dfe5e9") if y in (3, 12) else hexc("9aa3ab"))
+    for y in range(5, 11):
+        for x in range(1, 15):
+            img.putpixel((x, y), hexc("3a3d42") if y == 5 else hexc("15161a") if y == 10 else hexc("24262a"))
+    img.putpixel((2, 7), hexc("4a4d52"))                       # pin-1 dimple
+    for x in range(6, 12):
+        img.putpixel((x, 7), hexc("5a5e64") if x % 2 else hexc("44474c"))
+    return outline(img, hexc("0c0d0f"))
+
+
+def power_transistor():
+    """TO-247: metal tab with mounting hole, black body, three legs."""
+    img = blank()
+    for y in range(1, 6):
+        for x in range(4, 12):
+            img.putpixel((x, y), hexc("eef2f4") if x == 4 or y == 1 else hexc("b9c2c9") if x < 10 else hexc("8a939a"))
+    for p in [(7, 2), (8, 2), (7, 3), (8, 3)]:
+        img.putpixel(p, CLEAR)
+    for y in range(6, 12):
+        for x in range(3, 13):
+            img.putpixel((x, y), hexc("3a3d42") if x == 3 or y == 6 else hexc("15161a") if x == 12 or y == 11 else hexc("24262a"))
+    for x, y in [(6, 8), (7, 8), (8, 8), (9, 8)]:
+        img.putpixel((x, y), hexc("44474c"))
+    for x in (5, 8, 11):
+        for y in range(12, 16):
+            img.putpixel((x - 1 if x == 11 else x, y), hexc("dfe5e9") if y < 14 else hexc("b9c2c9"))
+    return outline(img, hexc("0c0d0f"))
+
+
+def sensor_chip():
+    """Purple ceramic package with a glass window over a reflective die."""
+    img = blank()
+    for y in range(2, 14):
+        for x in range(2, 14):
+            c = hexc("7a5a9a") if x + y < 14 else hexc("63487e")
+            if x in (2, 13) or y in (2, 13):
+                c = hexc("9a7ab8") if x == 2 or y == 2 else hexc("4a3462")
+            img.putpixel((x, y), c)
+    for i in range(4, 12, 2):
+        for p in [(i, 3), (i, 12), (3, i), (12, i)]:
+            img.putpixel(p, hexc("e6c56a"))
+    for y in range(5, 11):
+        for x in range(5, 11):
+            img.putpixel((x, y), hexc("2a3a5a"))
+    for y in range(6, 10):
+        for x in range(6, 10):
+            img.putpixel((x, y), hexc("9ad8ff") if x + y < 14 else hexc("5a8ac8"))
+    img.putpixel((6, 6), hexc("ffffff"))
+    img.putpixel((7, 6), hexc("dff4ff"))
+    edges(img, (5, 5, 10, 10), hexc("1a2236"), hexc("c8d4e8"))
+    return outline(img, hexc("241a30"))
+
+
+PHOTOMASK_PATTERNS = {
+    "logic": ("e6c56a", ["##.##.##", "##.##.##", "........", "##.##.##", "##.##.##", "........", "##.##.##", "##.##.##"]),
+    "memory": ("5a8cff", ["########", "........", "########", "........", "########", "........", "########", "........"]),
+    "power": ("ff8a3a", ["###..###", "###..###", "###..###", "........", "........", "###..###", "###..###", "###..###"]),
+    "sensor": ("b06aff", ["########", "#......#", "#.####.#", "#.#..#.#", "#.#..#.#", "#.####.#", "#......#", "########"]),
+}
+
+
+def photomask(kind):
+    """Quartz photomask: chrome border, pale clear glass, a tinted pattern per type."""
+    tint, pattern = PHOTOMASK_PATTERNS[kind]
+    img = blank()
+    for y in range(1, 15):
+        for x in range(1, 15):
+            k = min(x - 1, y - 1, 14 - x, 14 - y)
+            if k < 2:
+                c = hexc("dfe5e9") if x + y < 15 else hexc("8a939a")
+                if k == 1:
+                    c = shade(c, 0.85)
+            else:
+                c = hexc("e8f6fa", 220) if (x + y) % 7 else hexc("ffffff", 230)
+            img.putpixel((x, y), c)
+    pixmap(img, pattern, {"#": hexc(tint)}, 4, 4)
+    return outline(img, hexc("3a4148"))
+
+
+def phase_h():
+    save(laser_engraver_side(), "block/laser_engraver_side.png")
+    save(laser_engraver_front(), "block/laser_engraver_front.png")
+    save(laser_engraver_front(on=True), "block/laser_engraver_front_on.png")
+    save(laser_engraver_bed(), "block/laser_engraver_bed.png")
+    save(laser_engraver_gantry(), "block/laser_engraver_gantry.png")
+    save(laser_head_entity(), "entity/laser_head.png")
+    save(gui_laser_engraver(), "gui/laser_engraver.png")
+    save(silicon_wafer(), "item/silicon_wafer.png")
+    save(printed_circuit_board(), "item/printed_circuit_board.png")
+    save(microprocessor(), "item/microprocessor.png")
+    save(memory_chip(), "item/memory_chip.png")
+    save(power_transistor(), "item/power_transistor.png")
+    save(sensor_chip(), "item/sensor_chip.png")
+    for kind in PHOTOMASK_PATTERNS:
+        save(photomask(kind), f"item/{kind}_photomask.png")
+
+
 if __name__ == "__main__":
     save(side(), "block/coal_turbine_side.png")
     save(top(), "block/coal_turbine_top.png")
@@ -5242,7 +6152,6 @@ if __name__ == "__main__":
     save(scada_front_on(), "block/scada_terminal_front_on.png")
     write_mcmeta("block/scada_terminal_front_on.png", 10)
     save(scada_side(), "block/scada_terminal_side.png")
-    save(copper_wire(), "block/copper_wire.png")
     save(fiber_optic_cable(), "block/fiber_optic_cable.png")
     save(redstone_engine_base(), "block/redstone_engine_base.png")
     save(stirling_engine_base(), "block/stirling_engine_base.png")

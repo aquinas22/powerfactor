@@ -2,14 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "BQB",
+    "BTB",
     "MKM",
-    "BQB"
+    "BTB"
   ],
   "key": {
     "K": "powerfactor:control_circuit",
     "B": "#c:ingots/brass",
-    "Q": "#c:gems/quartz",
+    "T": "powerfactor:power_transistor",
     "M": "powerfactor:electric_motor"
   },
   "result": {

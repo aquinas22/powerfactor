@@ -29,7 +29,7 @@ public class RecipeMachineMenu extends ProcessingMenu {
             addSlot(new Slot(items, i, machine.inputPos[i][0], machine.inputPos[i][1]) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return !stack.is(ModItems.GRAPHITE_ELECTRODE.get()) || !machine.electrode;
+                    return !machine.electrode || !machine.isTool(stack);
                 }
             });
         }
@@ -40,7 +40,7 @@ public class RecipeMachineMenu extends ProcessingMenu {
             addSlot(new Slot(items, machine.electrodeSlot(), machine.electrodePos[0], machine.electrodePos[1]) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return stack.is(ModItems.GRAPHITE_ELECTRODE.get());
+                    return machine.isTool(stack);
                 }
             });
         }

@@ -64,6 +64,11 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> INDUCTION_HUM = register("induction_hum");
     public static final DeferredHolder<SoundEvent, SoundEvent> ELECTROLYZER_RUN = register("electrolyzer_run");
     public static final DeferredHolder<SoundEvent, SoundEvent> FUEL_CELL_RUN = register("fuel_cell_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UPGRADE_INSTALL = register("upgrade_install");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UPGRADE_REMOVE = register("upgrade_remove");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WIRE_SHOCK = register("wire_shock");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WRENCH = register("wrench");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LASER_ENGRAVER_RUN = register("laser_engraver_run");
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(PowerFactor.id(name)));

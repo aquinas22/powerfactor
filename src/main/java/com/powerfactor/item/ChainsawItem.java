@@ -59,14 +59,18 @@ public class ChainsawItem extends PoweredItem {
         return CAPACITY;
     }
 
+    public static int perLog(ItemStack stack) {
+        return ToolModules.cost(stack, PER_LOG);
+    }
+
     public static boolean powered(ItemStack stack) {
-        return energy(stack) >= PER_LOG;
+        return energy(stack) >= perLog(stack);
     }
 
     @Override
     public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity owner) {
         if (!level.isClientSide() && state.getDestroySpeed(level, pos) != 0 && owner instanceof Player player) {
-            drain(stack, PER_LOG, player);
+            drain(stack, perLog(stack), player);
         }
         return true;
     }
@@ -74,13 +78,16 @@ public class ChainsawItem extends PoweredItem {
     @Override
     public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (attacker instanceof Player player) {
-            drain(stack, PER_HIT, player);
+            drain(stack, ToolModules.cost(stack, PER_HIT), player);
         }
     }
 
-    /** Keeps the item model's "running" flag in step with the charge, for the moving chain. */
+    /** Keeps the item model's "running" flag in step with the charge, for the moving chain; and the magnet module. */
     @Override
     public void inventoryTick(ItemStack stack, ServerLevel level, Entity owner, @Nullable EquipmentSlot slot) {
+        if (level.getGameTime() % 4 == 0 && owner instanceof Player player && ToolModules.count(stack, DrillModule.Type.MAGNET) > 0) {
+            ToolModules.magnet(level, player);
+        }
         if (level.getGameTime() % 10 != 0) {
             return;
         }
@@ -100,7 +107,7 @@ public class ChainsawItem extends PoweredItem {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
         super.appendHoverText(stack, context, display, builder, flag);
-        builder.accept(Component.translatable("tooltip.powerfactor.chainsaw", PER_LOG).withStyle(ChatFormatting.GRAY));
+        builder.accept(Component.translatable("tooltip.powerfactor.chainsaw", perLog(stack)).withStyle(ChatFormatting.GRAY));
         builder.accept(Component.translatable("tooltip.powerfactor.chainsaw.sneak").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

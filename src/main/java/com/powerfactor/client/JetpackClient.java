@@ -117,9 +117,10 @@ public final class JetpackClient {
         Vec3 v = player.getDeltaMovement();
         int mode;
         double vy = v.y;
+        float thrust = JetpackItem.thrust(chest);
         if (keys.jump()) {
             mode = JetpackServer.THRUST;
-            vy = Math.min(vy + 0.12, 0.55);
+            vy = Math.min(vy + 0.12 * thrust, 0.55 * thrust);
         } else if (JetpackItem.hover(chest) && !player.onGround()) {
             mode = JetpackServer.HOVER;
             double target = keys.shift() ? -0.35 : -0.03;
@@ -131,12 +132,12 @@ public final class JetpackClient {
         double vx = v.x, vz = v.z;
         if (keys.forward() && !player.onGround()) {
             float yaw = player.getYRot() * Mth.DEG_TO_RAD;
-            vx += -Mth.sin(yaw) * 0.035;
-            vz += Mth.cos(yaw) * 0.035;
-            double h = Math.sqrt(vx * vx + vz * vz);
-            if (h > 0.75) {
-                vx *= 0.75 / h;
-                vz *= 0.75 / h;
+            vx += -Mth.sin(yaw) * 0.035 * thrust;
+            vz += Mth.cos(yaw) * 0.035 * thrust;
+            double h = Math.sqrt(vx * vx + vz * vz), cap = 0.75 * thrust;
+            if (h > cap) {
+                vx *= cap / h;
+                vz *= cap / h;
             }
         }
         player.setDeltaMovement(vx, vy, vz);
@@ -156,11 +157,11 @@ public final class JetpackClient {
         }
         int w = g.guiWidth(), h = g.guiHeight();
         String label = localMode == JetpackServer.THRUST ? "THRUST" : JetpackItem.hover(chest) ? "HOVER" : "JETPACK";
-        String pct = Math.round(Mth.clamp((float) PoweredItem.energy(chest) / jetpack.capacity(), 0, 1) * 100) + "%";
+        String pct = Math.round(Mth.clamp((float) PoweredItem.energy(chest) / jetpack.capacity(chest), 0, 1) * 100) + "%";
         // Wide enough for the longest label and "100%" side by side, with a gap.
         int width = mc.font.width("JETPACK") + mc.font.width("100%") + 10;
         int x = w / 2 - 91 - width - 6, y = h - 21;
-        float frac = Mth.clamp((float) PoweredItem.energy(chest) / jetpack.capacity(), 0, 1);
+        float frac = Mth.clamp((float) PoweredItem.energy(chest) / jetpack.capacity(chest), 0, 1);
         g.fill(x - 1, y - 1, x + width + 1, y + 19, 0x90000000);
         g.fill(x + 1, y + 11, x + width - 1, y + 16, 0xFF1A1A1A);
         int color = frac < 0.15F ? 0xFFFF4A3A : frac < 0.4F ? 0xFFFFB020 : 0xFF4FD8FF;

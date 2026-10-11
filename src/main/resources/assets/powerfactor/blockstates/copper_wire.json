@@ -1,66 +1,148 @@
 {
   "multipart": [
     {
+      "when": {
+        "coated": "false"
+      },
       "apply": {
         "model": "powerfactor:block/copper_wire_core"
       }
     },
     {
       "when": {
+        "coated": "false",
         "north": "true"
       },
       "apply": {
         "model": "powerfactor:block/copper_wire_arm",
-        "uvlock": true
+        "uvlock": false
       }
     },
     {
       "when": {
+        "coated": "false",
         "east": "true"
       },
       "apply": {
         "model": "powerfactor:block/copper_wire_arm",
-        "uvlock": true,
+        "uvlock": false,
         "y": 90
       }
     },
     {
       "when": {
+        "coated": "false",
         "south": "true"
       },
       "apply": {
         "model": "powerfactor:block/copper_wire_arm",
-        "uvlock": true,
+        "uvlock": false,
         "y": 180
       }
     },
     {
       "when": {
+        "coated": "false",
         "west": "true"
       },
       "apply": {
         "model": "powerfactor:block/copper_wire_arm",
-        "uvlock": true,
+        "uvlock": false,
         "y": 270
       }
     },
     {
       "when": {
+        "coated": "false",
         "up": "true"
       },
       "apply": {
         "model": "powerfactor:block/copper_wire_arm",
-        "uvlock": true,
+        "uvlock": false,
         "x": 270
       }
     },
     {
       "when": {
+        "coated": "false",
         "down": "true"
       },
       "apply": {
         "model": "powerfactor:block/copper_wire_arm",
-        "uvlock": true,
+        "uvlock": false,
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "coated": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/copper_wire_coated_core"
+      }
+    },
+    {
+      "when": {
+        "coated": "true",
+        "north": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/copper_wire_coated_arm",
+        "uvlock": false
+      }
+    },
+    {
+      "when": {
+        "coated": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/copper_wire_coated_arm",
+        "uvlock": false,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "coated": "true",
+        "south": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/copper_wire_coated_arm",
+        "uvlock": false,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "coated": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/copper_wire_coated_arm",
+        "uvlock": false,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "coated": "true",
+        "up": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/copper_wire_coated_arm",
+        "uvlock": false,
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "coated": "true",
+        "down": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/copper_wire_coated_arm",
+        "uvlock": false,
         "x": 90
       }
     }

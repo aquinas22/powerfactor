@@ -26,15 +26,22 @@ import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
  * {@code powerfactor:alloying}, {@code arc_smelting}, {@code wire_drawing}, {@code rolling}, {@code washing}.
  */
 public record MachineRecipe(MachineRecipeKind kind, List<SizedIngredient> inputs, Optional<SizedFluidIngredient> fluid,
-        List<CrushingOutput> results, int time) implements Recipe<MachineRecipeInput> {
+        List<CrushingOutput> results, int time, Optional<net.minecraft.world.item.crafting.Ingredient> tool) implements Recipe<MachineRecipeInput> {
+
+    /** Without a tool (the item in the machine's tool slot that each recipe needs but only wears down). */
+    public MachineRecipe(MachineRecipeKind kind, List<SizedIngredient> inputs, Optional<SizedFluidIngredient> fluid,
+            List<CrushingOutput> results, int time) {
+        this(kind, inputs, fluid, results, time, Optional.empty());
+    }
 
     public static MapCodec<MachineRecipe> codec(MachineRecipeKind kind) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
                 SizedIngredient.NESTED_CODEC.listOf(1, 3).fieldOf("inputs").forGetter(MachineRecipe::inputs),
                 SizedFluidIngredient.CODEC.optionalFieldOf("fluid").forGetter(MachineRecipe::fluid),
                 CrushingOutput.CODEC.listOf(1, 4).fieldOf("results").forGetter(MachineRecipe::results),
-                ExtraCodecs.POSITIVE_INT.optionalFieldOf("time", kind.defaultTime).forGetter(MachineRecipe::time)
-        ).apply(i, (inputs, fluid, results, time) -> new MachineRecipe(kind, inputs, fluid, results, time)));
+                ExtraCodecs.POSITIVE_INT.optionalFieldOf("time", kind.defaultTime).forGetter(MachineRecipe::time),
+                net.minecraft.world.item.crafting.Ingredient.CODEC.optionalFieldOf("tool").forGetter(MachineRecipe::tool)
+        ).apply(i, (inputs, fluid, results, time, tool) -> new MachineRecipe(kind, inputs, fluid, results, time, tool)));
     }
 
     public static StreamCodec<RegistryFriendlyByteBuf, MachineRecipe> streamCodec(MachineRecipeKind kind) {
@@ -43,12 +50,16 @@ public record MachineRecipe(MachineRecipeKind kind, List<SizedIngredient> inputs
                 ByteBufCodecs.optional(SizedFluidIngredient.STREAM_CODEC), MachineRecipe::fluid,
                 CrushingOutput.STREAM_CODEC.apply(ByteBufCodecs.list(4)), MachineRecipe::results,
                 ByteBufCodecs.VAR_INT, MachineRecipe::time,
-                (inputs, fluid, results, time) -> new MachineRecipe(kind, inputs, fluid, results, time));
+                ByteBufCodecs.optional(net.minecraft.world.item.crafting.Ingredient.CONTENTS_STREAM_CODEC), MachineRecipe::tool,
+                (inputs, fluid, results, time, tool) -> new MachineRecipe(kind, inputs, fluid, results, time, tool));
     }
 
     @Override
     public boolean matches(MachineRecipeInput input, Level level) {
         if (fluid.isPresent() && !fluid.get().test(input.fluid())) {
+            return false;
+        }
+        if (tool.isPresent() && !tool.get().test(input.tool())) {
             return false;
         }
         return slotsFor(input) != null;

@@ -69,7 +69,7 @@ public final class ModItems {
 
     static {
         for (DrillModule.Type t : DrillModule.Type.values()) {
-            DRILL_MODULES.put(t, ITEMS.registerItem("drill_" + t.name().toLowerCase(java.util.Locale.ROOT) + "_module", p -> new DrillModule(t, p)));
+            DRILL_MODULES.put(t, ITEMS.registerItem(t.id, p -> new DrillModule(t, p)));
         }
     }
 
@@ -92,9 +92,11 @@ public final class ModItems {
             com.powerfactor.item.ChainsawItem::new, com.powerfactor.item.ChainsawItem::properties);
     public static final DeferredItem<com.powerfactor.item.JetpackItem> ELECTRIC_JETPACK = ITEMS.registerItem("electric_jetpack",
             com.powerfactor.item.JetpackItem::new, com.powerfactor.item.JetpackItem::properties);
+    public static final DeferredItem<com.powerfactor.item.WrenchItem> WRENCH = ITEMS.registerItem("wrench", com.powerfactor.item.WrenchItem::new);
     public static final DeferredItem<com.powerfactor.item.ClampMeterItem> CLAMP_METER = ITEMS.registerItem("clamp_meter",
             com.powerfactor.item.ClampMeterItem::new);
 
+    public static final DeferredItem<BlockItem> UPGRADE_TABLE = ITEMS.registerSimpleBlockItem("upgrade_table", ModBlocks.UPGRADE_TABLE);
     public static final DeferredItem<BlockItem> TESLA_COIL = ITEMS.registerSimpleBlockItem("tesla_coil", ModBlocks.TESLA_COIL);
     public static final DeferredItem<BlockItem> GROW_LAMP = ITEMS.registerSimpleBlockItem("grow_lamp", ModBlocks.GROW_LAMP);
     public static final DeferredItem<BlockItem> CHARGING_PAD = ITEMS.registerSimpleBlockItem("charging_pad", ModBlocks.CHARGING_PAD);
@@ -121,6 +123,21 @@ public final class ModItems {
     public static final DeferredItem<TreeTapItem> TREE_TAP = ITEMS.registerItem("tree_tap", TreeTapItem::new, p -> p.durability(128));
     public static final DeferredItem<Item> ADVANCED_CIRCUIT = ITEMS.registerSimpleItem("advanced_circuit");
     public static final DeferredItem<Item> STEEL_GEAR = ITEMS.registerSimpleItem("steel_gear");
+
+    // ---------------------------------------------------------------- semiconductors
+    public static final DeferredItem<Item> SILICON_WAFER = ITEMS.registerSimpleItem("silicon_wafer");
+    public static final DeferredItem<Item> PRINTED_CIRCUIT_BOARD = ITEMS.registerSimpleItem("printed_circuit_board");
+    public static final DeferredItem<Item> MICROPROCESSOR = ITEMS.registerItem("microprocessor", Item::new, p -> p.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<Item> MEMORY_CHIP = ITEMS.registerSimpleItem("memory_chip");
+    public static final DeferredItem<Item> POWER_TRANSISTOR = ITEMS.registerSimpleItem("power_transistor");
+    public static final DeferredItem<Item> SENSOR_CHIP = ITEMS.registerSimpleItem("sensor_chip");
+    public static final java.util.Map<String, DeferredItem<com.powerfactor.item.PhotomaskItem>> PHOTOMASKS = new java.util.LinkedHashMap<>();
+
+    static {
+        for (String pattern : new String[] {"logic", "memory", "power", "sensor"}) {
+            PHOTOMASKS.put(pattern, ITEMS.registerItem(pattern + "_photomask", p -> new com.powerfactor.item.PhotomaskItem(pattern, p)));
+        }
+    }
     public static final DeferredItem<Item> HEATING_COIL = ITEMS.registerSimpleItem("heating_coil");
     public static final DeferredItem<Item> FINE_COPPER_WIRE = ITEMS.registerSimpleItem("fine_copper_wire");
     public static final DeferredItem<Item> FINE_SILVER_WIRE = ITEMS.registerSimpleItem("fine_silver_wire");

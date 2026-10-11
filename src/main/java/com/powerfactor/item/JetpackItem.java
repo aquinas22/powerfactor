@@ -46,7 +46,12 @@ public class JetpackItem extends PoweredItem {
     }
 
     public static boolean powered(ItemStack stack) {
-        return energy(stack) >= THRUST_FE;
+        return energy(stack) >= ToolModules.cost(stack, THRUST_FE);
+    }
+
+    /** Thrust multiplier from thruster modules. */
+    public static float thrust(ItemStack stack) {
+        return 1 + 0.35F * ToolModules.count(stack, DrillModule.Type.THRUSTER);
     }
 
     @Override

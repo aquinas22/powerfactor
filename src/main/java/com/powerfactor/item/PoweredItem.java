@@ -16,7 +16,12 @@ public abstract class PoweredItem extends Item {
         super(properties.stacksTo(1).component(ModComponents.ENERGY.get(), 0));
     }
 
+    /** Base capacity, before battery modules. */
     public abstract int capacity();
+
+    public int capacity(ItemStack stack) {
+        return ToolModules.capacity(stack, capacity());
+    }
 
     public static int energy(ItemStack stack) {
         return stack.getOrDefault(ModComponents.ENERGY.get(), 0);
@@ -39,7 +44,7 @@ public abstract class PoweredItem extends Item {
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return Math.round(13F * Mth.clamp((float) energy(stack) / capacity(), 0, 1));
+        return Math.round(13F * Mth.clamp((float) energy(stack) / capacity(stack), 0, 1));
     }
 
     @Override
@@ -49,7 +54,8 @@ public abstract class PoweredItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
-        builder.accept(Component.translatable("tooltip.powerfactor.energy", String.format("%,d", energy(stack)), String.format("%,d", capacity()))
+        builder.accept(Component.translatable("tooltip.powerfactor.energy", String.format("%,d", energy(stack)), String.format("%,d", capacity(stack)))
                 .withColor(0xFF5A4A));
+        ToolModules.tooltip(stack, builder);
     }
 }

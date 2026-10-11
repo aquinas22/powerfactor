@@ -23,6 +23,7 @@ public final class PowerFactorClient {
         ScadaPayloads.displayHandler = ScadaDisplayRenderer::receive;
         com.powerfactor.item.ToolPayloads.meterHandler = ClampMeterHud::onReading;
         com.powerfactor.item.ToolPayloads.jetpackHandler = JetpackClient::onSync;
+        com.powerfactor.logistics.PipeTraffic.clientHandler = PipeTrafficClient::receive;
         com.powerfactor.api.MachineAudio.handler = MachineSoundLoop::update;
         com.powerfactor.item.HandbookItem.open = () -> net.minecraft.client.Minecraft.getInstance().gui.setScreen(new HandbookScreen());
         com.powerfactor.item.ArcSaberItem.openScreen = hand -> net.minecraft.client.Minecraft.getInstance().gui.setScreen(new SaberScreen(hand));
@@ -39,6 +40,7 @@ public final class PowerFactorClient {
         ChainsawSound.clientTick();
         JetpackClient.clientTick();
         ClampMeterHud.clientTick();
+        PipeTrafficClient.clientTick();
     }
 
     @SubscribeEvent
@@ -79,6 +81,7 @@ public final class PowerFactorClient {
     static void onLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(EngineRenderer.LAYER, EngineRenderer::createLayer);
         event.registerLayerDefinition(JetpackLayer.LAYER, JetpackLayer::createLayer);
+        event.registerLayerDefinition(LaserEngraverRenderer.LAYER, LaserEngraverRenderer::createLayer);
         event.registerLayerDefinition(TurbineRotorRenderer.LAYER, TurbineRotorRenderer::createLayer);
         event.registerLayerDefinition(EnderCoreRenderer.LAYER, EnderCoreRenderer::createLayer);
         event.registerLayerDefinition(WindTurbineRenderer.LAYER, WindTurbineRenderer::createLayer);
@@ -100,6 +103,10 @@ public final class PowerFactorClient {
         event.registerBlockEntityRenderer(ModBlockEntities.PYLON.get(), PylonRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.CRUSHER.get(), CrusherJawRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.TESLA_COIL.get(), TeslaCoilRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.UPGRADE_TABLE.get(), UpgradeTableRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.PIPE.get(), PipeRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.RECIPE_MACHINES.get(com.powerfactor.machine.RecipeMachine.LASER_ENGRAVER).get(),
+                LaserEngraverRenderer::new);
     }
 
     @SubscribeEvent
@@ -127,5 +134,6 @@ public final class PowerFactorClient {
         event.register(ModMenus.POWER_METER.get(), GeneratorScreens.Meter::new);
         event.register(ModMenus.ELECTROLYZER.get(), GeneratorScreens.Electrolyzer::new);
         event.register(ModMenus.FUEL_CELL.get(), GeneratorScreens.FuelCell::new);
+        event.register(ModMenus.UPGRADE_TABLE.get(), UpgradeTableScreen::new);
     }
 }
