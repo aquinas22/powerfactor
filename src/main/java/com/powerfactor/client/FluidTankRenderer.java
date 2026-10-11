@@ -27,6 +27,8 @@ public class FluidTankRenderer implements BlockEntityRenderer<FluidTankBlockEnti
         public int color = -1;
         public float level;
         public boolean glow;
+        /** Gases fill the whole tank, thicker as the pressure rises. */
+        public boolean gas;
     }
 
     public FluidTankRenderer(BlockEntityRendererProvider.Context context) {}
@@ -54,6 +56,7 @@ public class FluidTankRenderer implements BlockEntityRenderer<FluidTankBlockEnti
                         : 0xFF000000 | tint.colorAsStack(fluid);
         state.level = (float) fluid.getAmount() / FluidTankBlockEntity.CAPACITY;
         state.glow = fluid.getFluid().getFluidType().getLightLevel(fluid) > 0;
+        state.gas = fluid.getFluid().getFluidType().getDensity(fluid) < 0;
     }
 
     @Override
@@ -62,9 +65,10 @@ public class FluidTankRenderer implements BlockEntityRenderer<FluidTankBlockEnti
         if (sprite == null || state.level <= 0) {
             return;
         }
-        float top = BOTTOM + (TOP - BOTTOM) * Math.min(1, state.level);
+        float top = state.gas ? TOP : BOTTOM + (TOP - BOTTOM) * Math.min(1, state.level);
         int light = state.glow ? 0xF000F0 : state.lightCoords;
-        int color = state.color;
+        // Gas: a pale blue haze that thickens as the pressure rises.
+        int color = state.gas ? (int) (0x70 + 0x8F * Math.min(1, state.level)) << 24 | 0x9CCFFF : state.color;
         collector.submitCustomGeometry(pose, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (p, buf) -> {
             float lo = INSET, hi = 1 - INSET;
             float vTop = sprite.getV1() - (sprite.getV1() - sprite.getV0()) * (top - BOTTOM);

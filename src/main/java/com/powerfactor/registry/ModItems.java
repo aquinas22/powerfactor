@@ -88,6 +88,19 @@ public final class ModItems {
             com.powerfactor.item.ArcSaberItem::new, p -> com.powerfactor.item.ArcSaberItem.properties(p).rarity(Rarity.EPIC));
 
     // ---------------------------------------------------------------- components
+    public static final DeferredItem<com.powerfactor.item.ChainsawItem> ELECTRIC_CHAINSAW = ITEMS.registerItem("electric_chainsaw",
+            com.powerfactor.item.ChainsawItem::new, com.powerfactor.item.ChainsawItem::properties);
+    public static final DeferredItem<com.powerfactor.item.JetpackItem> ELECTRIC_JETPACK = ITEMS.registerItem("electric_jetpack",
+            com.powerfactor.item.JetpackItem::new, com.powerfactor.item.JetpackItem::properties);
+    public static final DeferredItem<com.powerfactor.item.ClampMeterItem> CLAMP_METER = ITEMS.registerItem("clamp_meter",
+            com.powerfactor.item.ClampMeterItem::new);
+
+    public static final DeferredItem<BlockItem> TESLA_COIL = ITEMS.registerSimpleBlockItem("tesla_coil", ModBlocks.TESLA_COIL);
+    public static final DeferredItem<BlockItem> GROW_LAMP = ITEMS.registerSimpleBlockItem("grow_lamp", ModBlocks.GROW_LAMP);
+    public static final DeferredItem<BlockItem> CHARGING_PAD = ITEMS.registerSimpleBlockItem("charging_pad", ModBlocks.CHARGING_PAD);
+    public static final DeferredItem<BlockItem> ELECTROLYZER = ITEMS.registerSimpleBlockItem("electrolyzer", ModBlocks.ELECTROLYZER);
+    public static final DeferredItem<BlockItem> FUEL_CELL = ITEMS.registerSimpleBlockItem("fuel_cell", ModBlocks.FUEL_CELL);
+
     public static final DeferredItem<Item> COPPER_COIL = ITEMS.registerSimpleItem("copper_coil");
     public static final DeferredItem<Item> ELECTRIC_MOTOR = ITEMS.registerSimpleItem("electric_motor");
     public static final DeferredItem<Item> BRASS_GEAR = ITEMS.registerSimpleItem("brass_gear");

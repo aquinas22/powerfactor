@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PPP",
+    "SDS",
+    " W "
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "S": "powerfactor:silicon",
+    "D": "#c:dusts/glowstone",
+    "W": "powerfactor:copper_wire"
+  },
+  "result": {
+    "id": "powerfactor:grow_lamp",
+    "count": 1
+  }
+}

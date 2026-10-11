@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PGP",
+    "EKE",
+    "PBP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "G": "#c:glass_panes",
+    "E": "#c:plates/silver",
+    "K": "powerfactor:control_circuit",
+    "B": "minecraft:bucket"
+  },
+  "result": {
+    "id": "powerfactor:electrolyzer",
+    "count": 1
+  }
+}

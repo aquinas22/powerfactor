@@ -68,6 +68,14 @@ public final class CommonEvents {
                 ModBlocks.CIRCUIT_BREAKER.get());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.TRANSFORMER.get(), (be, side) -> be.primaryHandler(side));
 
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.TESLA_COIL.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.GROW_LAMP.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CHARGING_PAD.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.ELECTROLYZER.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.ELECTROLYZER.get(), (be, side) -> be.getTanks());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.FUEL_CELL.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.FUEL_CELL.get(), (be, side) -> be.getTank());
+
         event.registerItem(Capabilities.Energy.ITEM,
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ArcGunItem.CAPACITY, 5_000),
                 ModItems.ARC_GUN.get());
@@ -75,6 +83,16 @@ public final class CommonEvents {
         event.registerItem(Capabilities.Energy.ITEM,
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ArcSaberItem.CAPACITY, 5_000),
                 ModItems.ARC_SABER.get());
+
+        event.registerItem(Capabilities.Energy.ITEM,
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ChainsawItem.CAPACITY, 5_000),
+                ModItems.ELECTRIC_CHAINSAW.get());
+        event.registerItem(Capabilities.Energy.ITEM,
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.JetpackItem.CAPACITY, 8_000),
+                ModItems.ELECTRIC_JETPACK.get());
+        event.registerItem(Capabilities.Energy.ITEM,
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ClampMeterItem.CAPACITY, 2_000),
+                ModItems.CLAMP_METER.get());
 
         // The drill charges from any mod's charger.
         event.registerItem(Capabilities.Energy.ITEM,
@@ -94,6 +112,7 @@ public final class CommonEvents {
     @SubscribeEvent
     static void onPayloads(RegisterPayloadHandlersEvent event) {
         ScadaPayloads.register(event);
+        com.powerfactor.item.ToolPayloads.register(event);
     }
 
     /** An unlit saber is just a metal tube. */

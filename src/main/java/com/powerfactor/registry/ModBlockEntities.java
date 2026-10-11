@@ -67,6 +67,16 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("battery_bank", () -> new BlockEntityType<>(com.powerfactor.generator.BatteryBankBlockEntity::new, ModBlocks.BATTERY_BANK.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.PowerMeterBlockEntity>> POWER_METER =
             BLOCK_ENTITIES.register("power_meter", () -> new BlockEntityType<>(com.powerfactor.generator.PowerMeterBlockEntity::new, ModBlocks.POWER_METER.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.device.TeslaCoilBlockEntity>> TESLA_COIL =
+            BLOCK_ENTITIES.register("tesla_coil", () -> new BlockEntityType<>(com.powerfactor.device.TeslaCoilBlockEntity::new, ModBlocks.TESLA_COIL.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.device.GrowLampBlockEntity>> GROW_LAMP =
+            BLOCK_ENTITIES.register("grow_lamp", () -> new BlockEntityType<>(com.powerfactor.device.GrowLampBlockEntity::new, ModBlocks.GROW_LAMP.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.device.ChargingPadBlockEntity>> CHARGING_PAD =
+            BLOCK_ENTITIES.register("charging_pad", () -> new BlockEntityType<>(com.powerfactor.device.ChargingPadBlockEntity::new, ModBlocks.CHARGING_PAD.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.device.ElectrolyzerBlockEntity>> ELECTROLYZER =
+            BLOCK_ENTITIES.register("electrolyzer", () -> new BlockEntityType<>(com.powerfactor.device.ElectrolyzerBlockEntity::new, ModBlocks.ELECTROLYZER.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.FuelCellBlockEntity>> FUEL_CELL =
+            BLOCK_ENTITIES.register("fuel_cell", () -> new BlockEntityType<>(com.powerfactor.generator.FuelCellBlockEntity::new, ModBlocks.FUEL_CELL.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FluidTankBlockEntity>> FLUID_TANK = BLOCK_ENTITIES.register("fluid_tank",
             () -> new BlockEntityType<>(FluidTankBlockEntity::new, ModBlocks.FLUID_TANK.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PumpBlockEntity>> ELECTRIC_PUMP = BLOCK_ENTITIES.register("electric_pump",

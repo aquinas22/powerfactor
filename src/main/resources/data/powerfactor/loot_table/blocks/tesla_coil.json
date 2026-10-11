@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "powerfactor:blocks/tesla_coil",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        },
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "powerfactor:tesla_coil",
+          "properties": {
+            "half": "lower"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:tesla_coil"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "powerfactor:block/fuel_cell_top",
+    "bottom": "powerfactor:block/fuel_cell_side",
+    "side": "powerfactor:block/fuel_cell_side",
+    "front": "powerfactor:block/fuel_cell_front_on"
+  }
+}

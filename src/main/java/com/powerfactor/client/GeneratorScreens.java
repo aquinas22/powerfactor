@@ -150,5 +150,88 @@ public final class GeneratorScreens {
         }
     }
 
+    public static class Electrolyzer extends Base<DieselMenu.Electrolyzer> {
+        public Electrolyzer(DieselMenu.Electrolyzer menu, Inventory inventory, Component title) {
+            super(menu, inventory, title, "electrolyzer");
+        }
+
+        private boolean running() {
+            return (menu.get(DieselMenu.DATA_FLAGS) & 1) != 0;
+        }
+
+        @Override
+        protected Electrical electrical() {
+            return new Electrical(1.0, 60.0, menu.get(DieselMenu.DATA_FE), menu.get(DieselMenu.DATA_EE), 110,
+                    Component.translatable(running() ? "gui.powerfactor.electrolyzer.running" : "gui.powerfactor.electrolyzer.idle"),
+                    running() ? 0xFF55FF55 : 0xFFFFB020);
+        }
+
+        @Override
+        protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+            super.extractMain(g, mouseX, mouseY);
+            int cap = com.powerfactor.device.ElectrolyzerBlockEntity.TANK;
+            GuiUtil.fluidGauge(g, leftPos + 26, topPos + 16, 16, 54, menu.unsigned(DieselMenu.DATA_TANK), cap, 0xFF3F76E4);
+            GuiUtil.fluidGauge(g, leftPos + 130, topPos + 16, 16, 54, menu.unsigned(DieselMenu.DATA_TANK2), cap, 0xFFB8E8FF);
+            GuiUtil.energyBar(g, leftPos + 156, topPos + 16, 12, 54, menu.unsigned(DieselMenu.DATA_STORED) * 10, 20_000);
+            // The cell: water between two electrodes; bubbles stream off them while it runs.
+            int cx = leftPos + 50, cy = topPos + 18, cw = 74, ch = 50;
+            g.fill(cx, cy, cx + cw, cy + ch, 0xFF20262B);
+            g.fill(cx + 1, cy + 10, cx + cw - 1, cy + ch - 1, 0xFF2D5A9A);
+            g.fill(cx + 16, cy + 4, cx + 20, cy + ch - 6, 0xFFB0B8BE);
+            g.fill(cx + cw - 20, cy + 4, cx + cw - 16, cy + ch - 6, 0xFF8A6A50);
+            g.text(font, "-", cx + 16, cy - 7, 0xFF7FB8FF, false);
+            g.text(font, "+", cx + cw - 20, cy - 7, 0xFFFF7F6A, false);
+            if (running()) {
+                long t = net.minecraft.util.Util.getMillis() / 40;
+                for (int k = 0; k < 14; k++) {
+                    boolean cathode = k % 3 != 0;   // twice as much hydrogen as oxygen
+                    int x = (cathode ? cx + 21 : cx + cw - 23) + (int) ((k * 7 + t / 3) % 3);
+                    int y = cy + ch - 8 - (int) ((t + k * 9L) % (ch - 18));
+                    g.fill(x, y, x + 2, y + 2, cathode ? 0xFFE0F4FF : 0xFFFFE0D8);
+                }
+            }
+        }
+
+    }
+
+    public static class FuelCell extends Base<DieselMenu.FuelCell> {
+        public FuelCell(DieselMenu.FuelCell menu, Inventory inventory, Component title) {
+            super(menu, inventory, title, "fuel_cell");
+        }
+
+        private boolean online() {
+            return (menu.get(DieselMenu.DATA_FLAGS) & 1) != 0;
+        }
+
+        @Override
+        protected Electrical electrical() {
+            return new Electrical(online() ? 1.0 : 0, online() ? 60.0 : 0, menu.get(DieselMenu.DATA_FE), 0, 200,
+                    Component.translatable(online() ? "gui.powerfactor.fuel_cell.online" : "gui.powerfactor.fuel_cell.offline"),
+                    online() ? 0xFF55FF55 : 0xFFFFB020);
+        }
+
+        @Override
+        protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+            super.extractMain(g, mouseX, mouseY);
+            GuiUtil.fluidGauge(g, leftPos + 44, topPos + 16, 16, 54, menu.unsigned(DieselMenu.DATA_TANK2),
+                    com.powerfactor.generator.FuelCellBlockEntity.TANK, 0xFFB8E8FF);
+            GuiUtil.energyBar(g, leftPos + 156, topPos + 16, 12, 54, menu.unsigned(DieselMenu.DATA_STORED) * 10, 4_000);
+            // Warm-up bar under the readouts.
+            int x = leftPos + 70, y = topPos + 64, w = 78;
+            g.fill(x, y, x + w, y + 4, 0xFF1A1A1A);
+            g.fill(x, y, x + w * Math.clamp(menu.get(DieselMenu.DATA_RPM), 0, 100) / 100, y + 4, online() ? 0xFF55FF55 : 0xFFFFB020);
+        }
+
+        @Override
+        protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
+            super.extractLabels(g, xm, ym);
+            g.text(font, Component.translatable(online() ? "gui.powerfactor.fuel_cell.grid_forming" : "gui.powerfactor.fuel_cell.warming"), 70, 18,
+                    online() ? 0xFF2F8A3C : 0xFFB06A10, false);
+            g.text(font, menu.get(DieselMenu.DATA_FE) + " FE/t", 70, 30, GuiUtil.FE_COLOR, false);
+            g.text(font, Component.translatable("gui.powerfactor.fuel_cell.ee", menu.get(DieselMenu.DATA_EE)), 70, 41, GuiUtil.EE_COLOR, false);
+            g.text(font, menu.unsigned(DieselMenu.DATA_TANK2) + " mB H\u2082", 70, 52, 0xFF404040, false);
+        }
+    }
+
     private GeneratorScreens() {}
 }

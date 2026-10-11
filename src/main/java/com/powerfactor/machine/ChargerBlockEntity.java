@@ -21,7 +21,6 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
@@ -98,7 +97,7 @@ public class ChargerBlockEntity extends MachineBlockEntity implements com.powerf
                 : ItemAccess.forHandlerIndex(itemHandler, 0).getCapability(Capabilities.Energy.ITEM);
         if (target != null) {
             if (enabled(level, pos)) {
-                lastFe = EnergyHandlerUtil.move(energy, target, PowerFactorConfig.CHARGER_RATE.getAsInt(), null);
+                lastFe = EnergyOut.give(energy, target, PowerFactorConfig.CHARGER_RATE.getAsInt());
             }
             // Re-read: the move replaced the stack in the slot.
             EnergyHandler after = ItemAccess.forHandlerIndex(itemHandler, 0).getCapability(Capabilities.Energy.ITEM);

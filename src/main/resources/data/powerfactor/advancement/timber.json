@@ -1,0 +1,29 @@
+{
+  "parent": "powerfactor:drill",
+  "display": {
+    "icon": {
+      "id": "powerfactor:electric_chainsaw"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.timber.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.timber.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:electric_chainsaw"
+          }
+        ]
+      }
+    }
+  }
+}

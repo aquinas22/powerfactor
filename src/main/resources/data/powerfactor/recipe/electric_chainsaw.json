@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " SS",
+    "PMS",
+    "CP "
+  ],
+  "key": {
+    "S": "#c:plates/steel",
+    "P": "#c:plates/aluminum",
+    "M": "powerfactor:electric_motor",
+    "C": "powerfactor:capacitor"
+  },
+  "result": {
+    "id": "powerfactor:electric_chainsaw",
+    "count": 1
+  }
+}

@@ -1473,15 +1473,16 @@ def crusher_model():
     item_def("crusher")
 
 
-def octagon(width, y0, y1, tex, caps=("up",)):
-    """Four elements whose union is a regular octagonal prism, `width` px flat to flat, centred in the block."""
+def octagon(width, y0, y1, tex, caps=("up",), uv=None):
+    """Four elements whose union is a regular octagonal prism, `width` px flat to flat, centred in the block.
+    Pass `uv` for prisms taller than a block (automatic UVs can't exceed the texture)."""
     side = width * (2 ** 0.5 - 1)
     h, q = width / 2, side / 2
     els = []
     for rot in (None, 45):
         for (x0, x1, z0, z1, faces) in ((8 - h, 8 + h, 8 - q, 8 + q, ("east", "west")), (8 - q, 8 + q, 8 - h, 8 + h, ("north", "south"))):
             el = {"from": [round(x0, 4), y0, round(z0, 4)], "to": [round(x1, 4), y1, round(z1, 4)],
-                  "faces": {f: face(tex) for f in faces + tuple(caps)}}
+                  "faces": {f: dict(face(tex), **({"uv": uv} if uv and f not in ("up", "down") else {})) for f in faces + tuple(caps)}}
             if rot:
                 el["rotation"] = {"angle": rot, "axis": "y", "origin": [8, 8, 8]}
             els.append(el)
@@ -1516,6 +1517,187 @@ def wind_turbine_models():
     flat_item("wind_turbine")
 
 
+# ======================================================================== power tools and devices
+
+def devices_models():
+    six = ("north", "east", "south", "west", "up", "down")
+    # Tesla coil: plinth, flat primary, tall wound secondary, rounded toroid, terminal. Lower half carries the whole model.
+    els = [{"from": [2, 0, 2], "to": [14, 3, 14], "faces": {d: face("#base", "down" if d == "down" else None) for d in six}},
+           {"from": [1, 3, 1], "to": [15, 4, 15], "faces": {d: face("#primary") for d in six}}]
+    els += octagon(5, 4, 24, "#secondary", caps=(), uv=[0, 0, 16, 16])
+    els += octagon(10, 24, 25, "#toroid", caps=("down",)) + octagon(13.5, 25, 27, "#toroid", caps=("up", "down")) \
+        + octagon(10, 27, 28, "#toroid", caps=("up",))
+    els.append({"from": [7.5, 28, 7.5], "to": [8.5, 30.5, 8.5], "faces": {d: face("#toroid") for d in six}})
+    tex = {"base": pf("block/tesla_coil_base"), "primary": pf("block/tesla_coil_primary"), "secondary": pf("block/tesla_coil_secondary"),
+           "toroid": pf("block/tesla_coil_toroid"), "particle": pf("block/tesla_coil_toroid")}
+    write(asset("models", "block", "tesla_coil.json"), {"parent": "minecraft:block/block", "textures": tex, "elements": els,
+        "display": {"gui": {"rotation": [30, 225, 0], "translation": [0, -3.5, 0], "scale": [0.42, 0.42, 0.42]},
+                    "ground": {"rotation": [0, 0, 0], "translation": [0, 3, 0], "scale": [0.18, 0.18, 0.18]},
+                    "fixed": {"rotation": [0, 0, 0], "translation": [0, -3, 0], "scale": [0.4, 0.4, 0.4]},
+                    "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.3, 0.3, 0.3]},
+                    "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, -2, 0], "scale": [0.3, 0.3, 0.3]}}})
+    write(asset("models", "block", "tesla_coil_top.json"), {"textures": {"particle": pf("block/tesla_coil_toroid")}})
+    variants = {}
+    for f, y in HORIZONTAL.items():
+        for half in ("lower", "upper"):
+            for running in ("false", "true"):
+                variants[f"facing={f},half={half},running={running}"] = {"model": pf("block/tesla_coil" if half == "lower" else "block/tesla_coil_top")}
+    write(asset("blockstates", "tesla_coil.json"), {"variants": variants})
+    item_def("tesla_coil")
+
+    # Grow lamp: a heatsinked LED panel across the top of the block, LEDs facing down.
+    for suffix, glow in (("", False), ("_on", True)):
+        led = {"from": [1.5, 12, 1.5], "to": [14.5, 13, 14.5], "faces": {
+            "down": {"texture": "#led"}, "north": face("#housing"), "south": face("#housing"), "east": face("#housing"), "west": face("#housing")}}
+        if glow:
+            led["light_emission"] = 15
+        els = [{"from": [1, 13, 1], "to": [15, 16, 15], "faces": {d: face("#housing", "up" if d == "up" else None) for d in six}}, led]
+        write(asset("models", "block", f"grow_lamp{suffix}.json"), {"parent": "minecraft:block/block", "textures": {
+            "housing": pf("block/grow_lamp_housing"), "led": pf("block/grow_lamp_led" + suffix), "particle": pf("block/grow_lamp_housing")},
+            "elements": els})
+    machine_states("grow_lamp", pf("block/grow_lamp"), pf("block/grow_lamp_on"))
+    item_def("grow_lamp")
+
+    # Charging pad: a 2px plate; the coil rings light up and pulse while charging.
+    for suffix, glow in (("", False), ("_on", True)):
+        top = {"from": [0, 0, 0], "to": [16, 2, 16], "faces": {
+            "up": {"texture": "#top"}, "down": face("#side", "down"), "north": face("#side", "north"), "south": face("#side", "south"),
+            "east": face("#side", "east"), "west": face("#side", "west")}}
+        if glow:
+            top["light_emission"] = 10
+        write(asset("models", "block", f"charging_pad{suffix}.json"), {"parent": "minecraft:block/block", "textures": {
+            "top": pf("block/charging_pad_top" + suffix), "side": pf("block/charging_pad_side"), "particle": pf("block/charging_pad_side")},
+            "elements": [top]})
+    machine_states("charging_pad", pf("block/charging_pad"), pf("block/charging_pad_on"))
+    item_def("charging_pad")
+
+    orientable_machine("electrolyzer", top="electrolyzer_top", bottom="electrolyzer_side", side="electrolyzer_side")
+    orientable_machine("fuel_cell", top="fuel_cell_top", bottom="fuel_cell_side", side="fuel_cell_side")
+
+    # Hand tools. The chainsaw swaps to an animated running chain when charged.
+    for item in ("electric_chainsaw", "electric_chainsaw_running", "clamp_meter"):
+        write(asset("models", "item", f"{item}.json"), {"parent": "minecraft:item/handheld", "textures": {"layer0": pf(f"item/{item}")}})
+    write(asset("items", "electric_chainsaw.json"), {"model": {"type": "minecraft:condition", "property": "minecraft:custom_model_data",
+        "index": 0, "on_true": {"type": "minecraft:model", "model": pf("item/electric_chainsaw_running")},
+        "on_false": {"type": "minecraft:model", "model": pf("item/electric_chainsaw")}}})
+    item_def("clamp_meter", pf("item/clamp_meter"))
+    flat_item("electric_jetpack")
+
+
+def devices_data():
+    blocks = ["tesla_coil", "grow_lamp", "charging_pad", "electrolyzer", "fuel_cell"]
+    for b in blocks[1:]:
+        drops_self(b)
+    write(data(NS, "loot_table", "blocks", "tesla_coil.json"), {"type": "minecraft:block", "random_sequence": pf("blocks/tesla_coil"),
+        "pools": [{"rolls": 1.0, "bonus_rolls": 0.0, "conditions": [{"condition": "minecraft:survives_explosion"},
+            {"condition": "minecraft:block_state_property", "block": pf("tesla_coil"), "properties": {"half": "lower"}}],
+            "entries": [{"type": "minecraft:item", "name": pf("tesla_coil")}]}]})
+    tag("block", "minecraft", "mineable/pickaxe", [pf(b) for b in blocks])
+    tag("fluid", "c", "hydrogen", [pf("hydrogen"), pf("flowing_hydrogen")])
+    tag("fluid", "c", "gaseous", [pf("hydrogen"), pf("flowing_hydrogen")])
+
+    recipes = [
+        ("electric_chainsaw", [" SS", "PMS", "CP "], {"S": "#c:plates/steel", "P": "#c:plates/aluminum", "M": pf("electric_motor"),
+                                                      "C": pf("capacitor")}, "equipment"),
+        ("electric_jetpack", ["MPM", "CAC", "M M"], {"M": pf("electric_motor"), "P": "#c:plates/aluminum", "C": pf("capacitor"),
+                                                     "A": pf("advanced_circuit")}, "equipment"),
+        ("clamp_meter", [" W ", "PKP", " G "], {"W": pf("copper_coil"), "P": "#c:plates/iron", "K": pf("control_circuit"),
+                                                "G": "#c:glass_panes"}, "equipment"),
+        ("tesla_coil", [" A ", "CWC", "PTP"], {"A": "#c:plates/aluminum", "C": pf("capacitor"), "W": pf("fine_copper_wire"),
+                                              "P": "#c:plates/steel", "T": pf("transformer")}, "redstone"),
+        ("grow_lamp", ["PPP", "SDS", " W "], {"P": "#c:plates/aluminum", "S": pf("silicon"), "D": "#c:dusts/glowstone",
+                                              "W": pf("copper_wire")}, "redstone"),
+        ("charging_pad", ["CKC", "PPP"], {"C": pf("copper_coil"), "K": pf("control_circuit"), "P": "#c:plates/steel"}, "redstone"),
+        ("electrolyzer", ["PGP", "EKE", "PBP"], {"P": "#c:plates/steel", "G": "#c:glass_panes", "E": "#c:plates/silver",
+                                                "K": pf("control_circuit"), "B": "minecraft:bucket"}, "redstone"),
+        ("fuel_cell", ["PSP", "MKM", "PCP"], {"P": "#c:plates/steel", "S": "#c:plates/silver", "M": pf("mica"),
+                                              "K": pf("advanced_circuit"), "C": pf("capacitor")}, "redstone"),
+    ]
+    for out, pattern, key, cat in recipes:
+        shaped(out, pattern, key, 1, category=cat)
+
+    for k, v in {"electric_chainsaw": "Electric Chainsaw", "electric_jetpack": "Electric Jetpack", "clamp_meter": "Clamp Meter"}.items():
+        name(f"item.{NS}.{k}", v)
+    for k, v in {"tesla_coil": "Tesla Coil", "grow_lamp": "LED Grow Lamp", "charging_pad": "Induction Charging Pad",
+                 "electrolyzer": "Electrolyzer", "fuel_cell": "Hydrogen Fuel Cell"}.items():
+        name(f"block.{NS}.{k}", v)
+    LANG.update({
+        "fluid.powerfactor.hydrogen": "Hydrogen",
+        "key.powerfactor.jetpack_hover": "Jetpack Hover",
+        "key.category.powerfactor.powerfactor": "PowerFactor",
+        "tooltip.powerfactor.chainsaw": "%s FE per log · fells the whole tree",
+        "tooltip.powerfactor.chainsaw.sneak": "Sneak to cut a single log",
+        "tooltip.powerfactor.clamp_meter": "Look at a wire or machine to measure it",
+        "tooltip.powerfactor.jetpack.hover_on": "Hover: ON",
+        "tooltip.powerfactor.jetpack.hover_off": "Hover: off",
+        "tooltip.powerfactor.jetpack.help": "Hold Jump to climb · H toggles hover · Sneak to sink",
+        "message.powerfactor.jetpack.hover_on": "Jetpack hover ON",
+        "message.powerfactor.jetpack.hover_off": "Jetpack hover off",
+        "meter.powerfactor.flat": "Battery flat: charge the meter",
+        "meter.powerfactor.grid": "%s · %s V · %s Hz",
+        "meter.powerfactor.loading": "%s%% loaded · %s FE/t line loss",
+        "meter.powerfactor.interference": "Ender interference %s%%",
+        "meter.powerfactor.supply": "Supply %s V · %s Hz",
+        "meter.powerfactor.stored": "Stored %s / %s FE",
+        "meter.powerfactor.fluid": "%s: %s / %s mB",
+        "meter.powerfactor.nothing": "No reading",
+        "scada.powerfactor.tesla_coil": "Charged %s%% · %s strikes",
+        "scada.powerfactor.grow_lamp": "%s plants · %s growth boosts",
+        "scada.powerfactor.charging_pad": "Charging %s items · %s FE/t",
+        "scada.powerfactor.charging_pad.idle": "Idle",
+        "scada.powerfactor.electrolyzer": "%s mB water · %s mB H₂",
+        "scada.powerfactor.fuel_cell": "%s mB H₂ · %s%% load",
+        "gui.powerfactor.electrolyzer.running": "ELECTROLYSING",
+        "gui.powerfactor.electrolyzer.idle": "IDLE",
+        "gui.powerfactor.fuel_cell.online": "ONLINE · GRID-FORMING",
+        "gui.powerfactor.fuel_cell.offline": "OFFLINE",
+        "gui.powerfactor.fuel_cell.grid_forming": "Grid-forming 60 Hz",
+        "gui.powerfactor.fuel_cell.warming": "Warming up...",
+        "gui.powerfactor.fuel_cell.ee": "%s EE/t available",
+        "handbook.powerfactor.power_tools.title": "Power Tools",
+        "handbook.powerfactor.power_tools.text":
+            "Electric Chainsaw: an axe on FE. Cut one log of a tree and the whole tree comes down, and its leaves drop their saplings "
+            "soon after. Sneak to cut a single log. It only fells real trees (logs with natural leaves), so your log cabin is safe.\n\n"
+            "Electric Jetpack: wear it in the chest slot. Hold Jump to climb; press H to toggle hover, which holds you in the air "
+            "while you build. Sneak to sink. Thrust costs 50 FE/t, hover 18.\n\n"
+            "Clamp Meter: hold it and look at any wire or machine for a live reading of voltage, frequency, FE, EE, CE and power "
+            "factor, with a phasor diagram.\n\nInduction Charging Pad: stand on it and everything you carry charges.",
+        "handbook.powerfactor.devices.title": "Tesla Coil & Grow Lamp",
+        "handbook.powerfactor.devices.text":
+            "Tesla Coil: charges a capacitor from the grid, then throws lightning at the nearest hostile mob it can see within 14 "
+            "blocks, arcing on to a second one. It never targets players. Each strike costs 2,500 FE and is a sharp reactive pulse "
+            "on the grid, so give it a strong grid or a capacitor bank nearby, or the lights will flicker.\n\n"
+            "LED Grow Lamp: hang it above crops. It lights them, so they grow underground, and gives every plant in a 9x9 area up "
+            "to six blocks below many extra growth ticks: several times faster farms for 24 FE/t.",
+        "handbook.powerfactor.hydrogen.title": "Hydrogen",
+        "handbook.powerfactor.hydrogen.text":
+            "Wind blows when it likes. Store it as hydrogen.\n\nThe Electrolyzer splits water into hydrogen with grid power "
+            "(100 FE per 4 mB). Pipe water in and hydrogen out to a Fluid Tank, where it shows as a gas that thickens with pressure.\n\n"
+            "The Hydrogen Fuel Cell turns it back into FE (about 11 FE per mB, so roughly 45% round trip, like real systems). Its "
+            "inverter is grid-forming: it sets 60 Hz and supplies EE like a synchronous generator, so wind plus hydrogen can run "
+            "a whole grid with nothing spinning.",
+    })
+    ADV = [
+        ("timber", "drill", "electric_chainsaw", "Timber!", "Build an Electric Chainsaw", "task"),
+        ("jetpack", "drill", "electric_jetpack", "Rocketeer", "Build an Electric Jetpack", "goal"),
+        ("tesla_coil", "capacitor_bank", "tesla_coil", "Unlimited Power", "Build a Tesla Coil", "goal"),
+        ("hydrogen", "renewables", "fuel_cell", "Hydrogen Economy", "Build a Hydrogen Fuel Cell", "challenge"),
+        ("grow_lamp", "wire", "grow_lamp", "Indoor Gardening", "Build an LED Grow Lamp", "task"),
+    ]
+    for aid, parent, item, title, desc, frame in ADV:
+        write(data(NS, "advancement", f"{aid}.json"), {"parent": pf(parent), "display": {"icon": {"id": pf(item)},
+            "title": {"translate": f"advancements.powerfactor.{aid}.title"}, "description": {"translate": f"advancements.powerfactor.{aid}.description"},
+            "frame": frame, "show_toast": True, "announce_to_chat": True},
+            "criteria": {"has": {"trigger": "minecraft:inventory_changed", "conditions": {"items": [{"items": pf(item)}]}}}})
+        LANG[f"advancements.powerfactor.{aid}.title"] = title
+        LANG[f"advancements.powerfactor.{aid}.description"] = desc
+
+
+def devices():
+    devices_models()
+    devices_data()
+
+
 if __name__ == "__main__":
     models()
     loot()
@@ -1525,6 +1707,7 @@ if __name__ == "__main__":
     phase_b()
     phase_cf()
     finishing()
+    devices()
     flush_tags()
     lang()
     print("data written to", os.path.normpath(ROOT))

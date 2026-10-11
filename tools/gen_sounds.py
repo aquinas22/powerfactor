@@ -1267,14 +1267,189 @@ ONESHOTS_2 = {
     "wind_turbine_brake": wind_turbine_brake,
 }
 
+# ---------------------------------------------------------------- batch 3: power tools and devices
+
+def chainsaw_idle(seconds=2.0):
+    """Electric chainsaw idling: brushless motor whir, chain slapping the bar, a light rattle."""
+    n = int(SR * seconds)
+    r = random.Random(1401)
+    motor = harm(phase_track(n, 186.0, [(3.0, 1.5, 0.0)]), [1.0, 0.55, 0.35, 0.2, 0.12, 0.07])
+    motor = filt_periodic(motor, ("lp", 3000, 0.7))
+    whine = tone(n, [(1488.0, 1.0, 0.0)], lfo=lambda t: 0.7 + 0.3 * math.sin(TAU * 1.5 * t))
+    chain = [0.0] * n
+    scatter_bursts(chain, r, 260, lambda: r.randrange(n), 0.006, (0.0005, 0.0015),
+                   lambda r: [("bp", r.uniform(2500, 5500), 2.0)], (0.1, 0.4))
+    air = loop_noise(n, r, ("bp", 700, 0.6))
+    return mix((motor, 0.25), (whine, 0.03), (chain, 0.35), (air, 0.12))
+
+
+def chainsaw_cut(seconds=2.0):
+    """Biting into wood: the motor drops and strains, the chain screams, chips spray."""
+    n = int(SR * seconds)
+    r = random.Random(1402)
+    motor = harm(phase_track(n, 151.0, [(9.0, 2.0, 0.0), (4.0, 1.0, 1.0)]), [1.0, 0.8, 0.6, 0.45, 0.3, 0.2, 0.12])
+    motor = filt_periodic(soft_clip(motor, 1.6), ("lp", 4000, 0.7))
+    grind = loop_noise(n, r, ("bp", 2600, 0.9), ("lp", 7000, 0.7))
+    grind = [x * e for x, e in zip(grind, loop_env(n, r, 40, 0.55, 1.0))]
+    chips = [0.0] * n
+    scatter_bursts(chips, r, 900, lambda: r.randrange(n), 0.008, (0.0006, 0.002),
+                   lambda r: [("bp", r.uniform(1500, 6000), 1.4)], (0.2, 1.0))
+    low = loop_noise(n, r, ("lp", 220, 0.7))
+    return mix((motor, 0.35), (grind, 0.5), (chips, 0.4), (low, 0.6))
+
+
+def tree_fall(seconds=3.6):
+    """Timber: fibres creak and tear, the crown rushes through the air, the trunk hits the ground."""
+    n = int(SR * seconds)
+    r = random.Random(1403)
+    creak = []
+    ph = 0.0
+    for i in range(n):
+        t = i / SR
+        f = 210 + 90 * math.sin(TAU * 0.9 * t) + 40 * math.sin(TAU * 3.1 * t)
+        ph += f / SR
+        rough = 0.6 + 0.4 * math.sin(TAU * 23 * t + 2 * math.sin(TAU * 7 * t))
+        env = min(1.0, t / 0.25) * (1.0 if t < 1.3 else math.exp(-(t - 1.3) / 0.12))
+        creak.append((2.0 * (ph - math.floor(ph + 0.5))) * rough * env)
+    creak = filt(creak, ("bp", 600, 1.2), ("lp", 2500, 0.7))
+    snaps = [0.0] * n
+    for _ in range(18):
+        t = r.uniform(0.3, 1.5)
+        add_at(snaps, burst(int(0.05 * SR), r, r.uniform(0.004, 0.012), [("bp", r.uniform(800, 3000), 1.0)]), int(t * SR),
+               r.uniform(0.3, 1.0))
+    rush = burst(n, r, 0.45, (("bp", 2400, 0.6),), attack=0.5)
+    rush = [0.0] * int(1.0 * SR) + rush[: n - int(1.0 * SR)]
+    impact = [0.0] * n
+    hit = int(2.15 * SR)
+    add_at(impact, thump(int(1.2 * SR), 90, 38, 0.35, drop=0.05), hit, 1.0)
+    add_at(impact, burst(int(0.8 * SR), r, 0.18, [("lp", 1800, 0.7)]), hit, 0.7)
+    for _ in range(40):                                   # branches snapping, leaves settling
+        add_at(impact, burst(int(0.03 * SR), r, r.uniform(0.003, 0.01), [("bp", r.uniform(1200, 5000), 1.3)]),
+               hit + int(r.expovariate(1 / 0.25) * SR), r.uniform(0.1, 0.5))
+    out = mix((creak, 0.5), (snaps, 0.45), (rush, 0.35), (impact, 1.0))
+    return fade_edges(reverb(out, rt60=1.4, wet=0.2), fin=0.01, fout=0.15)
+
+
+def jetpack_thrust(seconds=2.0):
+    """Twin ducted fans: blade-pass whine on a rushing roar, beating slightly against each other."""
+    n = int(SR * seconds)
+    r = random.Random(1404)
+    fan_a = harm(phase_track(n, 520.0, [(6.0, 0.5, 0.0)]), [1.0, 0.4, 0.15])
+    fan_b = harm(phase_track(n, 527.5, [(4.0, 1.0, 1.3)]), [1.0, 0.4, 0.15])
+    fans = filt_periodic([a + b for a, b in zip(fan_a, fan_b)], ("bp", 1100, 0.6))
+    roar = loop_noise(n, r, ("lp", 2200, 0.7), ("hp", 90, 0.7))
+    roar = [x * e for x, e in zip(roar, loop_env(n, r, 12, 0.75, 1.0))]
+    hiss = loop_noise(n, r, ("bp", 5500, 0.8))
+    motor = harm(phase_track(n, 260.0), [1.0, 0.3])
+    return mix((fans, 0.12), (roar, 0.8), (hiss, 0.12), (motor, 0.04))
+
+
+def meter_beep(seconds=0.12):
+    n = int(SR * seconds)
+    return fade_edges(tone(n, [(2400.0, 1.0, 0.0), (4800.0, 0.15, 0.0)]), fin=0.004, fout=0.03)
+
+
+def tesla_zap(seconds=0.9):
+    """A big Tesla discharge: a hard crack, a ripping buzz as the channel stays lit, and a sizzle."""
+    n = int(SR * seconds)
+    r = random.Random(1405)
+    crack = [0.0] * n
+    for _ in range(160):
+        t = r.expovariate(1 / 0.08)
+        if t >= seconds - 0.05:
+            continue
+        add_at(crack, burst(int(0.012 * SR), r, r.uniform(0.0004, 0.0018), [("hp", r.uniform(900, 5000), 0.7)]), int(t * SR),
+               r.uniform(0.4, 1.0) * math.exp(-t / 0.18))
+    snap = burst(n, r, 0.012, [("hp", 600, 0.7)])
+    boom = thump(n, 160, 50, 0.12, drop=0.02)
+    buzz, ph = [], 0.0
+    for i in range(n):
+        t = i / SR
+        f = 240.0 * (1 + 0.06 * math.sin(TAU * 17 * t))
+        ph += f / SR
+        sq = 1.0 if (ph % 1.0) < 0.5 else -1.0
+        buzz.append(sq * min(1.0, t / 0.005) * math.exp(-t / 0.22) * (0.7 + 0.3 * r.random()))
+    buzz = filt(buzz, ("lp", 3500, 0.7))
+    out = mix((crack, 1.0), (snap, 0.9), (boom, 0.6), (buzz, 0.35))
+    out = soft_clip(normalize_peak(out, 1.0), 2.2)
+    return fade_edges(reverb(out, rt60=0.8, wet=0.2), fin=0.0003, fout=0.06)
+
+
+def tesla_hum(seconds=2.0):
+    """A charged coil: harsh 120 Hz corona buzz and occasional small crackles."""
+    n = int(SR * seconds)
+    r = random.Random(1406)
+    buzz = harm(phase_track(n, 120.0, [(1.0, 1.0, 0.0)]), [1.0, 0.0, 0.45, 0.0, 0.3, 0.0, 0.2, 0.0, 0.14, 0.0, 0.1])
+    buzz = filt_periodic(buzz, ("lp", 3500, 0.7))
+    crackle = [0.0] * n
+    scatter_bursts(crackle, r, 70, lambda: r.randrange(n), 0.01, (0.0004, 0.0015),
+                   lambda r: [("hp", r.uniform(2000, 6000), 0.7)], (0.2, 1.0))
+    hiss = loop_noise(n, r, ("hp", 6000, 0.7))
+    return mix((buzz, 0.3), (crackle, 0.5), (hiss, 0.05))
+
+
+def induction_hum(seconds=2.0):
+    """Resonant inductive charger: a soft high whine over mains hum, gently beating."""
+    n = int(SR * seconds)
+    r = random.Random(1407)
+    whine = tone(n, [(3150.0, 1.0, 0.0), (3152.0, 0.8, 0.0), (6300.0, 0.15, 0.0)])
+    hum = harm(phase_track(n, 120.0), [1.0, 0.4, 0.1])
+    shimmer = loop_noise(n, r, ("bp", 3150, 3.0))
+    return mix((whine, 0.06), (hum, 0.25), (shimmer, 0.1))
+
+
+def electrolyzer_run(seconds=3.0):
+    """Gas streaming off the electrodes: a dense fizz of small bubbles, the odd big one, and the rectifier."""
+    n = int(SR * seconds)
+    r = random.Random(1408)
+    bub = [0.0] * n
+    for _ in range(420):
+        add_at(bub, bubble(r.uniform(900, 2600), r.uniform(0.002, 0.006)), r.randrange(n), r.uniform(0.2, 1.0), circular=True)
+    for _ in range(25):
+        add_at(bub, bubble(r.uniform(250, 600), r.uniform(0.01, 0.025)), r.randrange(n), r.uniform(0.5, 1.0), circular=True)
+    fizz = loop_noise(n, r, ("bp", 4500, 0.9))
+    rect = harm(phase_track(n, 360.0), [1.0, 0.5, 0.2])
+    return mix((bub, 0.45), (fizz, 0.12), (rect, 0.03))
+
+
+def fuel_cell_run(seconds=2.5):
+    """Fuel cell stack: the air blower, an inverter's faint whine, and a periodic purge hiss."""
+    n = int(SR * seconds)
+    r = random.Random(1409)
+    blower = loop_noise(n, r, ("bp", 1300, 0.7), ("lp", 4000, 0.7))
+    blade = harm(phase_track(n, 412.0, [(2.0, 0.8, 0.0)]), [1.0, 0.3])
+    inverter = tone(n, [(4000.0, 1.0, 0.0)], lfo=lambda t: 0.8 + 0.2 * math.sin(TAU * 0.4 * t))
+    purge = [0.0] * n
+    add_at(purge, burst(int(0.6 * SR), r, 0.15, [("hp", 2500, 0.7)], attack=0.03), int(1.6 * SR), 1.0, circular=True)
+    return mix((blower, 0.45), (blade, 0.05), (inverter, 0.015), (purge, 0.25))
+
+
+LOOPS_3 = {
+    "chainsaw_idle": (chainsaw_idle, -16.0),
+    "chainsaw_cut": (chainsaw_cut, -12.0),
+    "jetpack_thrust": (jetpack_thrust, -13.0),
+    "tesla_hum": (tesla_hum, -18.0),
+    "induction_hum": (induction_hum, -20.0),
+    "electrolyzer_run": (electrolyzer_run, -16.0),
+    "fuel_cell_run": (fuel_cell_run, -18.0),
+}
+
+ONESHOTS_3 = {
+    "tree_fall": tree_fall,
+    "meter_beep": meter_beep,
+    "tesla_zap": tesla_zap,
+}
+
+
 # events whose sounds list holds several files (Minecraft picks one at random)
 VARIANTS = {"sword_swing": ["sword_swing1", "sword_swing2", "sword_swing3"]}
 
-ALL_LOOPS = {**LOOPS, **LOOPS_2}
-ALL_ONESHOTS = {**ONESHOTS, **ONESHOTS_2}
+ALL_LOOPS = {**LOOPS, **LOOPS_2, **LOOPS_3}
+ALL_ONESHOTS = {**ONESHOTS, **ONESHOTS_2, **ONESHOTS_3}
 
 # a near-continuous square-ish tone is far louder than a transient at the same peak; keep the alarm civil
 ONESHOT_PEAK = {"scada_alarm": 10 ** (-6 / 20),
+                "meter_beep": 10 ** (-12 / 20),
                 # sustained tones: same reasoning
                 "arc_gun_charge": 10 ** (-4 / 20),
                 "transformer_buzz_overload": 10 ** (-4 / 20),
@@ -1291,7 +1466,7 @@ def event_of(name):
 
 def write_sounds_json():
     events = {}
-    for name in list(LOOPS) + list(ONESHOTS) + list(LOOPS_2) + list(ONESHOTS_2):
+    for name in list(LOOPS) + list(ONESHOTS) + list(LOOPS_2) + list(ONESHOTS_2) + list(LOOPS_3) + list(ONESHOTS_3):
         entry = {"name": "powerfactor:" + name}
         if name in ALL_LOOPS:
             entry["stream"] = False

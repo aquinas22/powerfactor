@@ -144,7 +144,11 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
 
         if (readings.isEmpty()) {
             Component hint = Component.translatable(live ? "gui.powerfactor.scada.empty" : "gui.powerfactor.scada.connecting");
-            g.centeredText(font, hint, W / 2, LIST_Y + 30, DIM);
+            // Wrapped to the panel, so long translations never run into the border.
+            var lines = font.split(hint, W - 24);
+            for (int i = 0; i < lines.size(); i++) {
+                g.centeredText(font, lines.get(i), W / 2, LIST_Y + 26 + i * 10, DIM);
+            }
         }
         for (int i = 0; i < ROWS && scroll + i < readings.size(); i++) {
             row(g, readings.get(scroll + i), LIST_Y + i * ROW_H, xm - leftPos, ym - topPos);

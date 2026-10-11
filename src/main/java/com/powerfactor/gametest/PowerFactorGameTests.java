@@ -56,6 +56,13 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("ender_link_beams_power", () -> PowerFactorGameTests::enderLinkBeamsPower);
         FUNCTIONS.register("long_transformer_chain", () -> PowerFactorGameTests::transformerChain);
         FUNCTIONS.register("breaker_splits_grid", () -> PowerFactorGameTests::breakerSplitsGrid);
+        FUNCTIONS.register("tesla_coil_zaps_zombie", () -> PowerFactorGameTests::teslaCoilZapsZombie);
+        FUNCTIONS.register("electrolyzer_makes_hydrogen", () -> PowerFactorGameTests::electrolyzerMakesHydrogen);
+        FUNCTIONS.register("fuel_cell_powers_crusher", () -> PowerFactorGameTests::fuelCellPowersCrusher);
+        FUNCTIONS.register("grow_lamp_boosts_crops", () -> PowerFactorGameTests::growLampBoostsCrops);
+        FUNCTIONS.register("charging_pad_charges_dropped_tool", () -> PowerFactorGameTests::chargingPadChargesDroppedTool);
+        FUNCTIONS.register("chainsaw_fells_tree", () -> PowerFactorGameTests::chainsawFellsTree);
+        FUNCTIONS.register("charger_charges_drill", () -> PowerFactorGameTests::chargerChargesDrill);
     }
 
     public static void register(IEventBus modBus) {
@@ -69,9 +76,11 @@ public final class PowerFactorGameTests {
 
     private static void onRegisterTests(RegisterGameTestsEvent event) {
         var env = event.registerEnvironment(PowerFactor.id("default"));
-        java.util.Set<String> wide = java.util.Set.of("long_transformer_chain", "breaker_splits_grid");
+        java.util.Set<String> wide = java.util.Set.of("long_transformer_chain", "breaker_splits_grid", "tesla_coil_zaps_zombie");
+        java.util.Set<String> tall = java.util.Set.of("chainsaw_fells_tree");
         for (var fn : FUNCTIONS.getEntries()) {
-            String structure = wide.contains(fn.getId().getPath()) ? "empty_9x3x3" : "empty_3x3x3";
+            String structure = wide.contains(fn.getId().getPath()) ? "empty_9x3x3" : tall.contains(fn.getId().getPath()) ? "empty_7x8x7"
+                    : "empty_3x3x3";
             event.registerTest(fn.getId(), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, fn.getId()),
                     new TestData<>(env, PowerFactor.id(structure), MAX_TICKS, 0, true)));
         }
@@ -450,6 +459,159 @@ public final class PowerFactorGameTests {
         });
         helper.runAfterDelay(RUN_TICKS + 40, () -> {
             helper.assertTrue(crusher.getEnergy().getAmountAsInt() > 0, "no FE after closing the breaker");
+            helper.succeed();
+        });
+    }
+
+    // ------------------------------------------------------------------ power tools and devices
+
+    private static void feed(GameTestHelper helper, net.neoforged.neoforge.transfer.energy.EnergyHandler energy, int perTick) {
+        helper.onEachTick(() -> {
+            try (var t = Transaction.openRoot()) {
+                energy.insert(perTick, t);
+                t.commit();
+            }
+        });
+    }
+
+    private static void teslaCoilZapsZombie(GameTestHelper helper) {
+        BlockPos coil = new BlockPos(1, 1, 1);
+        var state = ModBlocks.TESLA_COIL.get().defaultBlockState();
+        helper.setBlock(coil, state);
+        helper.setBlock(coil.above(), state.setValue(com.powerfactor.device.TeslaCoilBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+        var be = helper.getBlockEntity(coil, com.powerfactor.device.TeslaCoilBlockEntity.class);
+        feed(helper, be.getEnergy(), 600);
+        var zombie = helper.spawn(net.minecraft.world.entity.EntityTypes.ZOMBIE, new BlockPos(7, 1, 1));
+        zombie.setNoAi(true);
+        float full = zombie.getHealth();
+        helper.runAfterDelay(120, () -> {
+            helper.assertTrue(zombie.getHealth() < full || !zombie.isAlive(), "zombie took no lightning (health " + zombie.getHealth() + ")");
+            helper.succeed();
+        });
+    }
+
+    private static void electrolyzerMakesHydrogen(GameTestHelper helper) {
+        helper.setBlock(CENTER, ModBlocks.ELECTROLYZER.get().defaultBlockState());
+        var be = helper.getBlockEntity(CENTER, com.powerfactor.device.ElectrolyzerBlockEntity.class);
+        feed(helper, be.getEnergy(), 400);
+        try (var t = Transaction.openRoot()) {
+            int in = be.getTanks().insert(net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER),
+                    4000, t);
+            t.commit();
+            helper.assertValueEqual(in, 4000, "water accepted");
+        }
+        try (var t = Transaction.openRoot()) {
+            int sneaky = be.getTanks().extract(net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER),
+                    100, t);
+            helper.assertValueEqual(sneaky, 0, "water can't be pulled back out");
+        }
+        helper.runAfterDelay(80, () -> {
+            int h2 = be.getTanks().amount(com.powerfactor.device.ElectrolyzerBlockEntity.HYDROGEN);
+            helper.assertTrue(h2 > 100, "only " + h2 + " mB hydrogen");
+            helper.assertTrue(be.getTanks().amount(com.powerfactor.device.ElectrolyzerBlockEntity.WATER) < 4000, "no water used");
+            helper.succeed();
+        });
+    }
+
+    private static void fuelCellPowersCrusher(GameTestHelper helper) {
+        helper.setBlock(CENTER, ModBlocks.FUEL_CELL.get().defaultBlockState());
+        var cell = helper.getBlockEntity(CENTER, com.powerfactor.generator.FuelCellBlockEntity.class);
+        cell.getTank().add(0, 2000);
+        CrusherBlockEntity crusher = placeCrusher(helper, CENTER.east());
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(crusher.getEnergy().getAmountAsInt() > 500, "crusher got " + crusher.getEnergy().getAmountAsInt() + " FE");
+            helper.assertTrue(cell.getTank().amount(0) < 2000, "no hydrogen used");
+            helper.assertValueEqual(cell.hertz(), 60.0, "grid-forming at 60 Hz");
+            helper.succeed();
+        });
+    }
+
+    private static void growLampBoostsCrops(GameTestHelper helper) {
+        for (int x = 0; x < 3; x++) {
+            for (int z = 0; z < 3; z++) {
+                helper.setBlock(new BlockPos(x, 0, z), net.minecraft.world.level.block.Blocks.FARMLAND.defaultBlockState());
+                helper.setBlock(new BlockPos(x, 1, z), net.minecraft.world.level.block.Blocks.WHEAT.defaultBlockState());
+            }
+        }
+        BlockPos lamp = new BlockPos(1, 2, 1);
+        helper.setBlock(lamp, ModBlocks.GROW_LAMP.get().defaultBlockState());
+        var be = helper.getBlockEntity(lamp, com.powerfactor.device.GrowLampBlockEntity.class);
+        feed(helper, be.getEnergy(), 200);
+        helper.runAfterDelay(400, () -> {
+            helper.assertTrue(be.boosted() > 0, "lamp gave no growth ticks");
+            helper.assertTrue(helper.getBlockState(lamp).getValue(com.powerfactor.machine.MachineBlock.RUNNING), "lamp not lit");
+            helper.succeed();
+        });
+    }
+
+    private static void chargingPadChargesDroppedTool(GameTestHelper helper) {
+        helper.setBlock(CENTER, ModBlocks.CHARGING_PAD.get().defaultBlockState());
+        var pad = helper.getBlockEntity(CENTER, com.powerfactor.device.ChargingPadBlockEntity.class);
+        feed(helper, pad.getEnergy(), 4000);
+        var drop = helper.spawnItem(ModItems.ELECTRIC_DRILL.get(), new net.minecraft.world.phys.Vec3(1.5, 1.2, 1.5));
+        helper.runAfterDelay(40, () -> {
+            int e = drop.getItem().getOrDefault(com.powerfactor.registry.ModComponents.ENERGY.get(), 0);
+            helper.assertTrue(e > 0, "dropped drill not charged: pad " + pad.getEnergy().getAmountAsInt() + " FE, drop alive " + drop.isAlive()
+                    + " at " + drop.position() + ", pad at " + helper.absolutePos(CENTER) + ", item " + drop.getItem());
+            helper.succeed();
+        });
+    }
+
+    private static void chainsawFellsTree(GameTestHelper helper) {
+        BlockPos base = new BlockPos(3, 1, 3);
+        var log = net.minecraft.world.level.block.Blocks.OAK_LOG.defaultBlockState();
+        var leaves = net.minecraft.world.level.block.Blocks.OAK_LEAVES.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.LeavesBlock.DISTANCE, 1);
+        for (int y = 0; y < 5; y++) {
+            helper.setBlock(base.above(y), log);
+        }
+        for (BlockPos p : BlockPos.betweenClosed(base.offset(-2, 3, -2), base.offset(2, 5, 2))) {
+            if (helper.getBlockState(p).isAir()) {
+                helper.setBlock(p, leaves);
+            }
+        }
+        // A log pillar with no leaves is not a tree.
+        BlockPos post = new BlockPos(0, 1, 0);
+        helper.setBlock(post, log);
+        helper.setBlock(post.above(), log);
+        var level = helper.getLevel();
+        helper.assertTrue(com.powerfactor.item.TreeFeller.findTree(level, helper.absolutePos(post)).isEmpty(), "a bare post counted as a tree");
+        var logs = com.powerfactor.item.TreeFeller.findTree(level, helper.absolutePos(base));
+        helper.assertValueEqual(logs.size(), 5, "logs found");
+        var player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        var saw = new net.minecraft.world.item.ItemStack(ModItems.ELECTRIC_CHAINSAW.get());
+        saw.set(com.powerfactor.registry.ModComponents.ENERGY.get(), com.powerfactor.item.ChainsawItem.CAPACITY);
+        level.destroyBlock(helper.absolutePos(base), true, player);
+        com.powerfactor.item.TreeFeller.fell(level, player, saw, helper.absolutePos(base), logs);
+        helper.runAfterDelay(10, () -> {
+            for (int y = 0; y < 5; y++) {
+                helper.assertBlockNotPresent(net.minecraft.world.level.block.Blocks.OAK_LOG, base.above(y));
+            }
+            helper.assertTrue(com.powerfactor.item.PoweredItem.energy(saw) < com.powerfactor.item.ChainsawItem.CAPACITY, "felling was free");
+            helper.assertBlockPresent(net.minecraft.world.level.block.Blocks.OAK_LOG, post);
+        });
+        helper.runAfterDelay(160, () -> {
+            for (BlockPos p : BlockPos.betweenClosed(base.offset(-2, 3, -2), base.offset(2, 5, 2))) {
+                helper.assertBlockNotPresent(net.minecraft.world.level.block.Blocks.OAK_LEAVES, p.immutable());
+            }
+            helper.succeed();
+        });
+    }
+
+    private static void chargerChargesDrill(GameTestHelper helper) {
+        helper.setBlock(CENTER, ModBlocks.CHARGER.get().defaultBlockState());
+        var charger = helper.getBlockEntity(CENTER, com.powerfactor.machine.ChargerBlockEntity.class);
+        feed(helper, charger.getEnergy(), 4000);
+        try (var t = Transaction.openRoot()) {
+            charger.getItemHandler().insert(net.neoforged.neoforge.transfer.item.ItemResource.of(ModItems.ELECTRIC_DRILL.get()), 1, t);
+            t.commit();
+        }
+        helper.runAfterDelay(40, () -> {
+            var stack = charger.getItemHandler().getResource(0).toStack(1);
+            int e = stack.getOrDefault(com.powerfactor.registry.ModComponents.ENERGY.get(), 0);
+            helper.assertTrue(e > 1000, "drill in the charger has " + e + " FE");
             helper.succeed();
         });
     }

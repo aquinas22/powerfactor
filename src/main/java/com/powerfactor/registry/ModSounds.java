@@ -54,6 +54,16 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> TANK_SLOSH = register("tank_slosh");
     public static final DeferredHolder<SoundEvent, SoundEvent> WIND_TURBINE_SWOOSH = register("wind_turbine_swoosh");
     public static final DeferredHolder<SoundEvent, SoundEvent> WIND_TURBINE_BRAKE = register("wind_turbine_brake");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHAINSAW_IDLE = register("chainsaw_idle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHAINSAW_CUT = register("chainsaw_cut");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TREE_FALL = register("tree_fall");
+    public static final DeferredHolder<SoundEvent, SoundEvent> JETPACK_THRUST = register("jetpack_thrust");
+    public static final DeferredHolder<SoundEvent, SoundEvent> METER_BEEP = register("meter_beep");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TESLA_ZAP = register("tesla_zap");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TESLA_HUM = register("tesla_hum");
+    public static final DeferredHolder<SoundEvent, SoundEvent> INDUCTION_HUM = register("induction_hum");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ELECTROLYZER_RUN = register("electrolyzer_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FUEL_CELL_RUN = register("fuel_cell_run");
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(PowerFactor.id(name)));

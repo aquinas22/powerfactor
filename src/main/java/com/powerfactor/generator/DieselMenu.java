@@ -16,6 +16,8 @@ import org.jspecify.annotations.Nullable;
 /** Shared by the generator GUIs that only need data, not slots (diesel, battery, power meter). */
 public class DieselMenu extends AbstractContainerMenu {
     public static final int DATA_FE = 0, DATA_EE = 1, DATA_RPM = 2, DATA_TANK = 3, DATA_FLAGS = 4, DATA_REDSTONE = 5, DATA_STORED = 6;
+    /** A second tank, for the hydrogen machines. */
+    public static final int DATA_TANK2 = 7;
     public static final int DATA_COUNT = 10;
 
     protected final ContainerData data;
@@ -90,6 +92,28 @@ public class DieselMenu extends AbstractContainerMenu {
 
         public Meter(int id, Inventory inventory, BlockPos pos, ContainerData data, @Nullable MachineBlockEntity machine) {
             super(ModMenus.POWER_METER.get(), id, inventory, pos, data, machine);
+        }
+    }
+
+    /** Electrolyser GUI. */
+    public static class Electrolyzer extends DieselMenu {
+        public Electrolyzer(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
+            super(ModMenus.ELECTROLYZER.get(), id, inventory, buf.readBlockPos(), new SimpleContainerData(DATA_COUNT), null);
+        }
+
+        public Electrolyzer(int id, Inventory inventory, BlockPos pos, ContainerData data, @Nullable MachineBlockEntity machine) {
+            super(ModMenus.ELECTROLYZER.get(), id, inventory, pos, data, machine);
+        }
+    }
+
+    /** Fuel cell GUI. */
+    public static class FuelCell extends DieselMenu {
+        public FuelCell(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
+            super(ModMenus.FUEL_CELL.get(), id, inventory, buf.readBlockPos(), new SimpleContainerData(DATA_COUNT), null);
+        }
+
+        public FuelCell(int id, Inventory inventory, BlockPos pos, ContainerData data, @Nullable MachineBlockEntity machine) {
+            super(ModMenus.FUEL_CELL.get(), id, inventory, pos, data, machine);
         }
     }
 }

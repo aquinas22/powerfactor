@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "MPM",
+    "CAC",
+    "M M"
+  ],
+  "key": {
+    "M": "powerfactor:electric_motor",
+    "P": "#c:plates/aluminum",
+    "C": "powerfactor:capacitor",
+    "A": "powerfactor:advanced_circuit"
+  },
+  "result": {
+    "id": "powerfactor:electric_jetpack",
+    "count": 1
+  }
+}

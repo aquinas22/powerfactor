@@ -37,5 +37,9 @@ public final class ModComponents {
             COMPONENTS.registerComponentType("fluid", b -> b.persistent(net.neoforged.neoforge.fluids.SimpleFluidContent.CODEC)
                     .networkSynchronized(net.neoforged.neoforge.fluids.SimpleFluidContent.STREAM_CODEC));
 
+    /** Jetpack hover mode switched on. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> JETPACK_HOVER =
+            COMPONENTS.registerComponentType("jetpack_hover", b -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+
     private ModComponents() {}
 }

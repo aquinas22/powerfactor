@@ -29,8 +29,12 @@ public class HandbookScreen extends Screen {
             new Chapter("transmission", ModBlocks.HV_PYLON.get()),
             new Chapter("generators", ModBlocks.WIND_TURBINE.get()),
             new Chapter("ender", ModBlocks.ENDER_TRANSMITTER.get()),
-            new Chapter("tools", ModItems.ARC_SABER.get()));
+            new Chapter("tools", ModItems.ARC_SABER.get()),
+            new Chapter("power_tools", ModItems.ELECTRIC_CHAINSAW.get()),
+            new Chapter("devices", ModBlocks.TESLA_COIL.get()),
+            new Chapter("hydrogen", ModBlocks.ELECTROLYZER.get()));
 
+    private static final int ROW = 11;
     private static int selected;
     private static final int W = 340, H = 200, LIST_W = 124;
     private int left, top, scroll;
@@ -63,15 +67,15 @@ public class HandbookScreen extends Screen {
         g.text(font, Component.translatable("handbook.powerfactor.title"), left + 6, top + 6, 0xFFE0A050, false);
         for (int i = 0; i < CHAPTERS.size(); i++) {
             Chapter c = CHAPTERS.get(i);
-            int y = top + 20 + i * 13;
-            boolean hover = mouseX >= left && mouseX < left + LIST_W && mouseY >= y - 1 && mouseY < y + 12;
+            int y = top + 18 + i * ROW;
+            boolean hover = mouseX >= left && mouseX < left + LIST_W && mouseY >= y - 1 && mouseY < y + ROW - 1;
             if (i == selected) {
-                g.fill(left + 1, y - 1, left + LIST_W - 1, y + 12, 0xFF2F6B44);
+                g.fill(left + 1, y - 1, left + LIST_W - 1, y + ROW - 1, 0xFF2F6B44);
             } else if (hover) {
-                g.fill(left + 1, y - 1, left + LIST_W - 1, y + 12, 0xFF1F4A30);
+                g.fill(left + 1, y - 1, left + LIST_W - 1, y + ROW - 1, 0xFF1F4A30);
             }
             g.text(font, font.substrByWidth(Component.translatable("handbook.powerfactor." + c.id() + ".title"), LIST_W - 8).getString(),
-                    left + 5, y + 2, i == selected ? 0xFFFFFFFF : 0xFFB8F5C0, false);
+                    left + 5, y + 1, i == selected ? 0xFFFFFFFF : 0xFFB8F5C0, false);
         }
         Chapter c = CHAPTERS.get(selected);
         int x = left + LIST_W + 10;
@@ -92,8 +96,8 @@ public class HandbookScreen extends Screen {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         for (int i = 0; i < CHAPTERS.size(); i++) {
-            int y = top + 20 + i * 13;
-            if (event.x() >= left && event.x() < left + LIST_W && event.y() >= y - 1 && event.y() < y + 12) {
+            int y = top + 18 + i * ROW;
+            if (event.x() >= left && event.x() < left + LIST_W && event.y() >= y - 1 && event.y() < y + ROW - 1) {
                 selected = i;
                 layout();
                 return true;

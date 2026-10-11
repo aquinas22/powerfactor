@@ -58,6 +58,11 @@
     "powerfactor:diesel_generator",
     "powerfactor:synchronous_condenser",
     "powerfactor:battery_bank",
-    "powerfactor:power_meter"
+    "powerfactor:power_meter",
+    "powerfactor:tesla_coil",
+    "powerfactor:grow_lamp",
+    "powerfactor:charging_pad",
+    "powerfactor:electrolyzer",
+    "powerfactor:fuel_cell"
   ]
 }

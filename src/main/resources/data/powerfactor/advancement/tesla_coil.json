@@ -1,0 +1,29 @@
+{
+  "parent": "powerfactor:capacitor_bank",
+  "display": {
+    "icon": {
+      "id": "powerfactor:tesla_coil"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.tesla_coil.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.tesla_coil.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:tesla_coil"
+          }
+        ]
+      }
+    }
+  }
+}

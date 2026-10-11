@@ -30,6 +30,7 @@ public class PowerFactor {
         container.registerConfig(ModConfig.Type.COMMON, PowerFactorCommonConfig.SPEC);
         ModComponents.COMPONENTS.register(modBus);
         ModSounds.SOUNDS.register(modBus);
+        com.powerfactor.registry.ModFluids.register(modBus);
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);

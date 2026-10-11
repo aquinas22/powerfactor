@@ -138,6 +138,22 @@ public final class ModBlocks {
             () -> BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
                     .noOcclusion());
 
+    // ---------------------------------------------------------------- devices
+    public static final DeferredBlock<com.powerfactor.device.TeslaCoilBlock> TESLA_COIL = BLOCKS.registerBlock("tesla_coil",
+            com.powerfactor.device.TeslaCoilBlock::new, () -> machine().noOcclusion().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 4 : 0));
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> GROW_LAMP = BLOCKS.registerBlock("grow_lamp",
+            p -> new com.powerfactor.generator.GeneratorBlock(() -> ModBlockEntities.GROW_LAMP.get(), Block.box(1, 12, 1, 15, 16, 15), p),
+            () -> machine().noOcclusion().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 15 : 0));
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> CHARGING_PAD = BLOCKS.registerBlock("charging_pad",
+            p -> new com.powerfactor.generator.GeneratorBlock(() -> ModBlockEntities.CHARGING_PAD.get(), Block.box(0, 0, 0, 16, 2, 16), p),
+            () -> machine().noOcclusion().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 6 : 0));
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> ELECTROLYZER = BLOCKS.registerBlock("electrolyzer",
+            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.ELECTROLYZER.get(), p),
+            () -> machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 5 : 0));
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> FUEL_CELL = BLOCKS.registerBlock("fuel_cell",
+            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.FUEL_CELL.get(), p),
+            () -> machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 5 : 0));
+
     // ---------------------------------------------------------------- logistics
     public static final DeferredBlock<FluidTankBlock> FLUID_TANK = BLOCKS.registerBlock("fluid_tank", FluidTankBlock::new,
             () -> BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(2.5F, 6.0F).sound(SoundType.GLASS).noOcclusion()

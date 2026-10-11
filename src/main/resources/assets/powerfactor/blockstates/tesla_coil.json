@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "facing=north,half=lower,running=false": {
+      "model": "powerfactor:block/tesla_coil"
+    },
+    "facing=north,half=lower,running=true": {
+      "model": "powerfactor:block/tesla_coil"
+    },
+    "facing=north,half=upper,running=false": {
+      "model": "powerfactor:block/tesla_coil_top"
+    },
+    "facing=north,half=upper,running=true": {
+      "model": "powerfactor:block/tesla_coil_top"
+    },
+    "facing=east,half=lower,running=false": {
+      "model": "powerfactor:block/tesla_coil"
+    },
+    "facing=east,half=lower,running=true": {
+      "model": "powerfactor:block/tesla_coil"
+    },
+    "facing=east,half=upper,running=false": {
+      "model": "powerfactor:block/tesla_coil_top"
+    },
+    "facing=east,half=upper,running=true": {
+      "model": "powerfactor:block/tesla_coil_top"
+    },
+    "facing=south,half=lower,running=false": {
+      "model": "powerfactor:block/tesla_coil"
+    },
+    "facing=south,half=lower,running=true": {
+      "model": "powerfactor:block/tesla_coil"
+    },
+    "facing=south,half=upper,running=false": {
+      "model": "powerfactor:block/tesla_coil_top"
+    },
+    "facing=south,half=upper,running=true": {
+      "model": "powerfactor:block/tesla_coil_top"
+    },
+    "facing=west,half=lower,running=false": {
+      "model": "powerfactor:block/tesla_coil"
+    },
+    "facing=west,half=lower,running=true": {
+      "model": "powerfactor:block/tesla_coil"
+    },
+    "facing=west,half=upper,running=false": {
+      "model": "powerfactor:block/tesla_coil_top"
+    },
+    "facing=west,half=upper,running=true": {
+      "model": "powerfactor:block/tesla_coil_top"
+    }
+  }
+}

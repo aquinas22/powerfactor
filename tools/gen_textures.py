@@ -4403,6 +4403,39 @@ def phaseC_F():
     save(gui_diesel_generator(), "gui/diesel_generator.png")
     save(gui_power_meter(), "gui/power_meter.png")
 
+    save(electric_chainsaw(), "item/electric_chainsaw.png")
+    save(electric_chainsaw_running(), "item/electric_chainsaw_running.png")
+    write_mcmeta("item/electric_chainsaw_running.png", 1)
+    save(electric_jetpack(), "item/electric_jetpack.png")
+    save(clamp_meter(), "item/clamp_meter.png")
+    save(jetpack_entity(), "entity/jetpack.png")
+    save(tesla_coil_base(), "block/tesla_coil_base.png")
+    save(tesla_coil_primary(), "block/tesla_coil_primary.png")
+    save(tesla_coil_secondary(), "block/tesla_coil_secondary.png")
+    save(tesla_coil_toroid(), "block/tesla_coil_toroid.png")
+    save(grow_lamp_housing(), "block/grow_lamp_housing.png")
+    save(grow_lamp_led(), "block/grow_lamp_led.png")
+    save(grow_lamp_led(on=True), "block/grow_lamp_led_on.png")
+    save(charging_pad_side(), "block/charging_pad_side.png")
+    save(charging_pad_top(), "block/charging_pad_top.png")
+    save(anim([charging_pad_top(f) for f in range(8)]), "block/charging_pad_top_on.png")
+    write_mcmeta("block/charging_pad_top_on.png", 2)
+    save(electrolyzer_front(), "block/electrolyzer_front.png")
+    save(electrolyzer_front_on(), "block/electrolyzer_front_on.png")
+    write_mcmeta("block/electrolyzer_front_on.png", 2)
+    save(electrolyzer_side(), "block/electrolyzer_side.png")
+    save(electrolyzer_top(), "block/electrolyzer_top.png")
+    save(fuel_cell_front(), "block/fuel_cell_front.png")
+    save(fuel_cell_front(on=True), "block/fuel_cell_front_on.png")
+    save(fuel_cell_side(), "block/fuel_cell_side.png")
+    save(fuel_cell_top(), "block/fuel_cell_top.png")
+    save(hydrogen_still(), "block/hydrogen_still.png")
+    write_mcmeta_interp("block/hydrogen_still.png", 3)
+    save(hydrogen_flow(), "block/hydrogen_flow.png")
+    write_mcmeta("block/hydrogen_flow.png", 2)
+    save(gui_electrolyzer(), "gui/electrolyzer.png")
+    save(gui_fuel_cell(), "gui/fuel_cell.png")
+
 
 def crusher_jaws():
     """Jaw plate (9x4x2) at (0,0) and a tooth (1x4x1) at (0,8): manganese steel, worn bright on the crushing faces."""
@@ -4475,7 +4508,7 @@ def wind_turbine_nacelle():
         return t
 
     def body(face, fw, fh):
-        t = skin(fw, fh, hash(face) & 255)
+        t = skin(fw, fh, sum(map(ord, face)))
         d = ImageDraw.Draw(t)
         if face in ("east", "west"):                       # long sides, 44 x 18
             for x in (11, 22, 33):
@@ -4624,6 +4657,561 @@ def wind_turbine_icon():
                                                     for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
                 out.putpixel((x, y), hexc("3a4045", 200))
     return out
+
+
+# ---------------------------------------------------------------- chainsaw, jetpack, clamp meter, tesla coil, grow lamp,
+# ---------------------------------------------------------------- charging pad, electrolyzer, fuel cell, hydrogen
+BRAND = hexc("1f8a6a")
+FE_RED = hexc("ff5a4a")
+EE_TEAL = hexc("33e0b0")
+H2_CYAN = [hexc("e4fbff"), hexc("bfeaf2"), hexc("8fcbd8"), hexc("5f9aa8")]
+SAW_ORANGE = [hexc("ffb35c"), hexc("f08a24"), hexc("c8661a"), hexc("86400f")]
+CHAIN = [hexc("eef2f4"), hexc("3a3f44"), hexc("7d858c"), hexc("4a5056")]
+
+
+CHAINSAW_BODY = [
+    "...KKKk.......",
+    "..K...KOOOQ...",
+    ".KK.OOOOOOPQ..",
+    ".K.OOORROPPQ..",
+    "KK.OPPRRPPQQ..",
+    "K..PPPPPPQQ...",
+    "K..QQQQQQQ....",
+    "...kkTkkkk....",
+]
+
+
+def electric_chainsaw(frame=0):
+    """Battery chainsaw, guide bar pointing up-right; `frame` walks the chain one pixel along the bar."""
+    img = blank()
+    for y in range(2, 10):                                   # bar: chain | steel | steel | chain
+        x0 = 13 - y
+        img.putpixel((x0, y), CHAIN[(x0 - y - frame) % 4])
+        img.putpixel((x0 + 1, y), hexc("d4dbe0"))
+        img.putpixel((x0 + 2, y), hexc("98a1a8"))
+        img.putpixel((x0 + 3, y), CHAIN[(x0 + 3 - y + frame) % 4])
+    for x, y in [(12, 1), (13, 1), (14, 1)]:                 # rounded nose
+        img.putpixel((x, y), CHAIN[(x - y + frame) % 4])
+    img.putpixel((9, 5), hexc("5a6066"))                     # bar rivet
+    pal = {"K": hexc("26282a"), "k": hexc("3a3d40"), "T": EE_TEAL, "R": FE_RED,
+           "O": SAW_ORANGE[0], "P": SAW_ORANGE[1], "Q": SAW_ORANGE[2]}
+    pixmap(img, CHAINSAW_BODY, pal, 0, 7)
+    return outline(img, hexc("16120e"))
+
+
+def electric_chainsaw_running():
+    return anim([electric_chainsaw(f) for f in range(4)])
+
+
+def electric_jetpack():
+    """Seen from behind: battery pack between two ducted fans, shoulder straps over the top."""
+    img = blank()
+    d = ImageDraw.Draw(img)
+    duct = [hexc("e4e9ec"), hexc("c3cbd1"), hexc("9aa3ab"), hexc("6f777e")]
+    for x0 in (1, 11):
+        for y in range(2, 13):
+            for i, x in enumerate(range(x0, x0 + 4)):
+                c = duct[i]
+                if y in (5, 9):
+                    c = shade(c, 0.78)                      # duct bands
+                img.putpixel((x, y), c)
+        d.line((x0 + 1, 1, x0 + 2, 1), fill=hexc("3a3f44"))    # intake lip
+        img.putpixel((x0 + 1, 2), hexc("2a2e31"))
+        img.putpixel((x0 + 2, 2), hexc("2a2e31"))
+        d.rectangle((x0, 13, x0 + 3, 13), fill=hexc("3d4247"))  # nozzle
+        d.line((x0 + 1, 14, x0 + 2, 14), fill=hexc("23272a"))
+    for x in (5, 10):                                          # struts
+        img.putpixel((x, 6), hexc("6f777e"))
+        img.putpixel((x, 7), hexc("4a5056"))
+    d.rectangle((5, 3, 10, 12), fill=hexc("3a3f44"))
+    d.line((5, 3, 10, 3), fill=hexc("5a6066"))
+    d.line((5, 3, 5, 12), fill=hexc("4d5359"))
+    d.line((6, 12, 10, 12), fill=hexc("26292c"))
+    d.line((7, 5, 8, 5), fill=FE_RED)
+    for y in range(7, 11):                                     # charge light
+        img.putpixel((7, y), hexc("bff6ff") if y < 8 else CYAN)
+        img.putpixel((8, y), CYAN if y < 8 else hexc("2fb8d8"))
+    for x in (6, 9):                                           # strap loops over the top
+        img.putpixel((x, 0), hexc("2a2a2a"))
+        img.putpixel((x, 1), hexc("1e1e1e"))
+        img.putpixel((x, 2), hexc("1e1e1e"))
+    d.line((6, 0, 9, 0), fill=hexc("2a2a2a"))
+    img.putpixel((7, 1), CLEAR[:3] + (0,))
+    img.putpixel((8, 1), CLEAR[:3] + (0,))
+    return outline(img, hexc("1a1c1e"))
+
+
+CLAMP_METER = [
+    ".....12..21.....",
+    "....12....23....",
+    "...12......23...",
+    "...12......34...",
+    "...22......34...",
+    "....23....34....",
+    ".....233334.....",
+    "....YYYYYYYY....",
+    "....YKKKKKKy....",
+    "....YKLlLlKyT...",
+    "....YKlLlLKyT...",
+    "....YKKKKKKy....",
+    "....YKDDDDKy....",
+    "....YKDwrDKy....",
+    "....YKKKKKKy....",
+    "....zzzzzzzz....",
+]
+
+
+def clamp_meter():
+    """Yellow clamp meter: open copper jaw ring on top, LCD and selector dial on a black face."""
+    pal = {"1": COPPER_P["1"], "2": COPPER_P["2"], "3": COPPER_P["3"], "4": COPPER_P["4"],
+           "Y": hexc("ffe36a"), "y": hexc("c99a12"), "z": hexc("8a6a0c"), "K": hexc("26282a"),
+           "L": hexc("9fc79a"), "l": hexc("3a6a40"), "D": hexc("5a6066"), "w": hexc("f4f4f4"), "r": FE_RED,
+           "T": hexc("3a3d40")}
+    img = pixmap(blank(), CLAMP_METER, pal)
+    return outline(img, hexc("2a1e08"))
+
+
+def box_uv_f(img, u, v, w, h, d, paint):
+    """box_uv for fractional model sizes: Minecraft maps the unwrap with float edges, so each face
+    covers floor(start)..ceil(end) texels; sides are pasted after top/bottom."""
+    import math
+    faces = [
+        ("top", u + d, v, w, d), ("bottom", u + d + w, v, w, d),
+        ("east", u, v + d, d, h), ("north", u + d, v + d, w, h),
+        ("west", u + d + w, v + d, d, h), ("south", u + 2 * d + w, v + d, w, h),
+    ]
+    for name, x, y, fw, fh in faces:
+        x0, y0 = math.floor(x), math.floor(y)
+        pw, ph = math.ceil(x + fw) - x0, math.ceil(y + fh) - y0
+        if pw and ph:
+            img.paste(paint(name, pw, ph), (x0, y0))
+
+
+def jetpack_entity():
+    """64x32 sheet for JetpackLayer's boxes (float sizes, see box_uv_f)."""
+    img = Image.new("RGBA", (64, 32), CLEAR)
+    solid = lambda c: (lambda f, w, h: Image.new("RGBA", (w, h), c))
+
+    def back_plate(face, fw, fh):
+        t = painted(5201, hexc("4a5056"), fw, fh)
+        if face == "north" and fw >= 7:
+            for x in (1, fw - 2):
+                t.putpixel((x, 1), RIVET)
+                t.putpixel((x, fh - 2), RIVET)
+        return t
+
+    def battery(face, fw, fh):
+        t = painted(5202, hexc("2e3236"), fw, fh)
+        if face == "south":
+            for y in range(1, fh - 1):                        # charge LED strip
+                t.putpixel((fw // 2 - 1, y), hexc("bff6ff") if y < 3 else CYAN)
+                t.putpixel((fw // 2, y), CYAN if y < 3 else hexc("2fb8d8"))
+            t.putpixel((1, 1), FE_RED)
+            t.putpixel((fw - 2, 1), FE_RED)
+        elif face in ("east", "west"):
+            for y in range(1, fh - 1):
+                t.putpixel((fw // 2, y), FE_RED if y < 2 else shade(FE_RED, 0.6))
+        return t
+
+    def duct(face, fw, fh):
+        if face == "top":                                     # intake grille ring, open centre
+            t = Image.new("RGBA", (fw, fh), hexc("2a2e31"))
+            for x in range(1, fw - 1):
+                for y in range(1, fh - 1):
+                    t.putpixel((x, y), CLEAR)
+            t.putpixel((0, 0), hexc("50585e"))
+            return t
+        if face == "bottom":
+            return Image.new("RGBA", (fw, fh), hexc("2a2e31"))
+        t = Image.new("RGBA", (fw, fh), hexc("c3cbd1"))
+        for y in range(fh):
+            for x in range(fw):
+                c = hexc("dfe5e9") if x == 0 else hexc("c3cbd1") if x < fw - 1 else hexc("9aa3ab")
+                if y in (0, 3, fh - 3):
+                    c = shade(c, 0.72)
+                t.putpixel((x, y), c)
+        return t
+
+    def nozzle(face, fw, fh):
+        t = Image.new("RGBA", (fw, fh), hexc("3d4247"))
+        if face == "bottom":
+            t = Image.new("RGBA", (fw, fh), hexc("15171a"))
+            ImageDraw.Draw(t).rectangle((0, 0, fw - 1, fh - 1), outline=hexc("3d4247"))
+        elif face != "top":
+            ImageDraw.Draw(t).line((0, 0, fw - 1, 0), fill=hexc("5a6066"))
+        return t
+
+    def strap(face, fw, fh):
+        t = Image.new("RGBA", (fw, fh), hexc("1e1f21"))
+        if fh >= 6:
+            for y in range(1, fh, 2):
+                t.putpixel((fw // 2, y), hexc("4a4d50"))      # stitch line
+        return t
+
+    def chest(face, fw, fh):
+        t = strap(face, fw, fh)
+        if face in ("north", "south") and fw >= 5:
+            t.putpixel((fw // 2, 0), hexc("d4dbe0"))           # buckle
+            t.putpixel((fw // 2, fh - 1), hexc("9aa3ab"))
+        return t
+
+    def glow(face, fw, fh):
+        t = Image.new("RGBA", (fw, fh), hexc("4fd8ff", 200))
+        for y in range(fh):
+            for x in range(fw):
+                if 0 < x < fw - 1 and (0 < y < fh - 1 or face in ("top", "bottom")):
+                    t.putpixel((x, y), hexc("bff6ff", 210))
+        if face in ("top", "bottom"):
+            t.putpixel((fw // 2, fh // 2), hexc("ffffff", 220))
+        return t
+
+    box_uv_f(img, 0, 0, 7, 9, 1.5, back_plate)
+    box_uv_f(img, 18, 0, 4, 7, 2.5, battery)
+    box_uv_f(img, 0, 12, 3.4, 9, 3.4, duct)
+    box_uv_f(img, 14, 12, 4, 1.2, 4, nozzle)
+    box_uv_f(img, 32, 0, 0.8, 1.5, 1, solid(hexc("7d858c")))
+    box_uv_f(img, 36, 0, 1.2, 8, 0.4, strap)
+    box_uv_f(img, 40, 0, 1.2, 0.4, 4.6, strap)
+    box_uv_f(img, 36, 10, 6.8, 0.8, 0.5, chest)
+    box_uv_f(img, 30, 16, 1, 0.6, 1, solid(hexc("d4dbe0")))
+    box_uv_f(img, 30, 20, 1.2, 0.3, 0.7, solid(hexc("b9c2c9")))
+    box_uv_f(img, 48, 16, 3, 2.5, 3, glow)
+    return img
+
+
+def tesla_coil_base():
+    """Dark steel plinth with corner bolts and a copper ground strap."""
+    img = dark_steel(5301)
+    edges(img, (0, 0, 15, 15), hexc("5a6167"), hexc("202427"))
+    edges(img, (2, 2, 13, 13), hexc("2a2e31"), hexc("4d545a"))
+    for x, y in [(1, 1), (13, 1), (1, 13), (13, 13)]:
+        img.putpixel((x, y), RIVET)
+        img.putpixel((x + 1, y + 1), hexc("1e2124"))
+    for x in range(4, 12):
+        img.putpixel((x, 12), COPPER_P["2"] if x % 3 else COPPER_P["1"])
+        img.putpixel((x, 13), COPPER_P["4"])
+    return img
+
+
+def tesla_coil_primary():
+    """Flat copper spiral (seen from above) that also reads as tubing on the element edges."""
+    import math
+    img = Image.new("RGBA", (16, 16), hexc("23272a"))
+    for y in range(16):
+        for x in range(16):
+            dx, dy = x + 0.5 - 8, y + 0.5 - 8
+            r = math.hypot(dx, dy)
+            a = (math.atan2(dy, dx) / (2 * math.pi)) % 1.0
+            s = (r / 2.5 - a) % 1.0                           # Archimedean spiral, 2.5px pitch
+            if r < 7.8 and r > 1.4 and s < 0.62:
+                c = COPPER_P["1"] if s < 0.18 else COPPER_P["2"] if s < 0.42 else COPPER_P["4"]
+                img.putpixel((x, y), c)
+            elif r <= 1.4:
+                img.putpixel((x, y), hexc("3a3f44"))
+    return img
+
+
+def tesla_coil_secondary():
+    """Enamelled magnet wire: 1px turns in alternating copper tones with a vertical specular column."""
+    tones = [hexc("b4684d"), hexc("d98c5f"), hexc("8c4a35"), hexc("c97a55")]
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            c = tones[y % 4]
+            if x in (4, 5):
+                c = shade(c, 1.28)
+            elif x == 3 or x == 6:
+                c = shade(c, 1.12)
+            elif x >= 13:
+                c = shade(c, 0.82)
+            img.putpixel((x, y), c)
+    return img
+
+
+def tesla_coil_toroid():
+    """Polished spun aluminium: pale silver with soft horizontal highlight bands."""
+    rows = [hexc("c9d1d6"), hexc("dfe5e9"), hexc("f4f7f8"), hexc("ffffff"), hexc("eef2f4"), hexc("d4dbe0"),
+            hexc("c3cbd1"), hexc("b4bdc4"), hexc("aab3ba"), hexc("b4bdc4"), hexc("c9d1d6"), hexc("dfe5e9"),
+            hexc("d4dbe0"), hexc("bec7cd"), hexc("a8b1b8"), hexc("98a1a8")]
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            img.putpixel((x, y), shade(rows[y], 1.0 + (0.02 if (x * 5 + y) % 7 == 0 else 0)))
+    return img
+
+
+def grow_lamp_housing():
+    """Anodised dark aluminium heatsink with vertical fins."""
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            c = [hexc("4a4f55"), hexc("3a3e43"), hexc("26292d")][x % 3]
+            img.putpixel((x, y), c)
+    edges(img, (0, 0, 15, 15), hexc("5c6268"), hexc("1c1e21"))
+    return img
+
+
+def grow_lamp_led(on=False):
+    """4x4 grid of 2x2 LEDs on a dark board; lit mostly magenta with a few blue and white."""
+    img = Image.new("RGBA", (16, 16), hexc("1c1d22"))
+    edges(img, (0, 0, 15, 15), hexc("3a3d44"), hexc("101114"))
+    blue = {(1, 2), (3, 0), (0, 3)}
+    white = {(2, 1)}
+    for j in range(4):
+        for i in range(4):
+            x, y = 2 + i * 3 + (1 if i > 1 else 0), 2 + j * 3 + (1 if j > 1 else 0)
+            if on:
+                if (i, j) in white:
+                    cs = [hexc("ffffff"), hexc("f4ecff"), hexc("e6dcff")]
+                elif (i, j) in blue:
+                    cs = [hexc("b8c8ff"), hexc("6a8cff"), hexc("4a64d8")]
+                else:
+                    cs = [hexc("ffd2f2"), hexc("ff9be6"), hexc("ff5ad2")]
+                img.putpixel((x, y), cs[0])
+                img.putpixel((x + 1, y), cs[1])
+                img.putpixel((x, y + 1), cs[1])
+                img.putpixel((x + 1, y + 1), cs[2])
+            else:
+                c = hexc("3a2f52") if (i, j) in blue else hexc("4e4a52") if (i, j) in white else hexc("4a2a44")
+                img.putpixel((x, y), shade(c, 1.35))
+                img.putpixel((x + 1, y), c)
+                img.putpixel((x, y + 1), c)
+                img.putpixel((x + 1, y + 1), shade(c, 0.75))
+    return img
+
+
+def charging_pad_side():
+    """Dark rubber-edged plate with the teal brand stripe."""
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            img.putpixel((x, y), hexc("2e3236") if y < 13 else hexc("1a1b1c"))
+    for x in range(16):
+        img.putpixel((x, 13), BRAND)
+        img.putpixel((x, 12), hexc("4a5056"))
+        img.putpixel((x, 15), hexc("111213"))
+    return img
+
+
+def charging_pad_top(pulse=None):
+    """Matte pad with concentric copper coil rings and an FE dot; `pulse` (0..7) adds a cyan ring travelling outward."""
+    import math
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            dx, dy = x + 0.5 - 8, y + 0.5 - 8
+            r = math.hypot(dx, dy)
+            c = hexc("26292c")
+            if r < 7.0 and int(r * 1.0) % 2 == 1 and r > 1.6:
+                c = hexc("5a3a2c")                               # copper turns under the matte skin
+            if pulse is not None:
+                pr = 1.5 + pulse * 0.85
+                k = abs(r - pr)
+                fade = 1.0 - pulse / 8.0
+                if k < 0.7:
+                    c = hexc("bff6ff") if fade > 0.7 and k < 0.35 else hexc("4fe6ff")
+                    c = mix_rgb(c, hexc("26292c"), 1 - fade * 0.95)
+                elif k < 1.3:
+                    c = mix_rgb(hexc("1f6a78"), c, 1 - fade * 0.8)
+            img.putpixel((x, y), c)
+    for p in [(7, 7), (8, 7), (7, 8), (8, 8)]:
+        img.putpixel(p, FE_RED if pulse is not None else shade(FE_RED, 0.55))
+    edges(img, (0, 0, 15, 15), hexc("4a5056"), hexc("17191b"))
+    for x in (0, 15):
+        for y in (0, 15):
+            img.putpixel((x, y), hexc("1a1b1c"))
+    return img
+
+
+def mix_rgb(a, b, t):
+    """Linear blend from a (t=0) to b (t=1), opaque."""
+    t = max(0.0, min(1.0, t))
+    return tuple(int(a[i] * (1 - t) + b[i] * t) for i in range(3)) + (255,)
+
+
+def electrolyzer_front(frame=None):
+    """Steel front with a window into the water cell: grey and copper electrodes, an H2 label; `frame` (0..7) adds rising bubbles."""
+    img = steel_plate(5401)
+    d = ImageDraw.Draw(img)
+    d.rectangle((2, 1, 9, 4), fill=hexc("2b2e31"))              # label plate
+    pixmap(img, ["#.#", "###", "#.#", "#.#"], {"#": shade(EE_TEAL, 0.8)}, 3, 1)
+    pixmap(img, ["##", ".#", "#.", "##"], {"#": shade(EE_TEAL, 0.6)}, 7, 1)
+    edges(img, (2, 5, 13, 14), STEEL_DARK, STEEL_LIGHT)
+    water = [hexc("8cc4ec"), hexc("5fa8e0"), hexc("4a94d2"), hexc("3f86c8"), hexc("3576b8"), hexc("2f6aa8"),
+             hexc("2a5f9a"), hexc("24548a")]
+    for y in range(6, 14):
+        for x in range(3, 13):
+            img.putpixel((x, y), water[y - 6])
+    for x, y in [(3, 7), (3, 8), (4, 7)]:                      # glass glint
+        img.putpixel((x, y), hexc("b8def6"))
+    for y in range(5, 14):
+        img.putpixel((5, y), hexc("b9c2c9") if y > 5 else hexc("2a2e31"))
+        img.putpixel((6, y), hexc("7d858c") if y > 5 else hexc("2a2e31"))
+        img.putpixel((10, y), COPPER_P["1"] if y > 5 else hexc("2a2e31"))
+        img.putpixel((11, y), COPPER_P["3"] if y > 5 else hexc("2a2e31"))
+    if frame is not None:
+        # (column, phase): three streams off the grey cathode (H2), two off the copper anode (O2).
+        for bx, ph in [(4, 0), (7, 3), (4, 5), (7, 6), (9, 2), (12, 6)]:
+            y = 13 - (frame + ph) % 8
+            if y >= 6:
+                img.putpixel((bx, y), hexc("eef9ff") if bx < 8 else hexc("cfe9fb"))
+    return img
+
+
+def electrolyzer_front_on():
+    return anim([electrolyzer_front(f) for f in range(8)])
+
+
+PIPE_FLANGE = [
+    ".aaaaaa.",
+    "arbbbbrc",
+    "absssshc",
+    "abshhhbc",
+    "abshhhbc",
+    "abshhhbc",
+    "arbbbbrc",
+    ".cccccc.",
+]
+
+
+def electrolyzer_side():
+    """Steel side: flanged pipe port and a pale-cyan hydrogen hazard stripe."""
+    img = steel_plate(5402)
+    pixmap(img, PIPE_FLANGE, {"a": STEEL_LIGHT, "b": hexc("8a939a"), "c": STEEL_DARK, "r": RIVET,
+                              "h": hexc("17191b"), "s": hexc("33383c")}, 4, 2)
+    for x in range(1, 15):
+        for y in (12, 13):
+            img.putpixel((x, y), H2_CYAN[1] if (x + y) // 2 % 2 == 0 else hexc("2b2e31"))
+    return img
+
+
+def gas_cap(img, cx, cy, ramp):
+    """Round outlet cap seen from above (3x3 dome on a dark collar)."""
+    d = ImageDraw.Draw(img)
+    d.rectangle((cx - 2, cy - 2, cx + 2, cy + 2), fill=hexc("2a2e31"))
+    for p in [(cx - 2, cy - 2), (cx + 2, cy - 2), (cx - 2, cy + 2), (cx + 2, cy + 2)]:
+        img.putpixel(p, STEEL)
+    d.rectangle((cx - 1, cy - 1, cx + 1, cy + 1), fill=ramp[1])
+    img.putpixel((cx - 1, cy - 1), ramp[0])
+    img.putpixel((cx + 1, cy + 1), ramp[2])
+    img.putpixel((cx + 1, cy - 1), ramp[1])
+
+
+def electrolyzer_top():
+    """Two gas outlets: pale cyan H2 and steel O2."""
+    img = steel_plate(5403)
+    gas_cap(img, 4, 5, H2_CYAN)
+    gas_cap(img, 11, 5, [hexc("d4dbe0"), hexc("9aa3ab"), hexc("6f777e")])
+    for x in range(2, 14):
+        img.putpixel((x, 11), hexc("2a2e31"))
+        img.putpixel((x, 12), STEEL_LIGHT)
+    rivets(img, [(2, 13), (12, 13)])
+    return img
+
+
+def fuel_cell_front(on=False):
+    """PEM stack: thin graphite and steel plates in a steel frame, with a status lamp."""
+    img = steel_plate(5501)
+    edges(img, (2, 2, 13, 13), STEEL_DARK, STEEL_LIGHT)
+    for y in range(3, 13):
+        for x in range(3, 13):
+            if y % 2:
+                c = hexc("2a2c2f")
+                if on and 4 <= x <= 11:
+                    c = mix_rgb(hexc("2a2c2f"), hexc("ff6a20"), max(0.0, 0.34 - abs(x - 7.5) * 0.08))
+            else:
+                c = hexc("8a939a") if x > 3 else hexc("b0b8be")
+                if x == 12:
+                    c = hexc("5a6167")
+            img.putpixel((x, y), c)
+    for y in (3, 12):                                         # end plates' tie rods
+        for x in (3, 12):
+            img.putpixel((x, y), RIVET)
+    img.putpixel((13, 0), hexc("1e2124"))
+    d = ImageDraw.Draw(img)
+    d.rectangle((11, 0, 13, 1), fill=hexc("26292c"))
+    img.putpixel((12, 0), hexc("5cff6a") if on else hexc("1f3a24"))
+    img.putpixel((12, 1), hexc("2fb840") if on else hexc("17291a"))
+    for x in range(3, 9):
+        img.putpixel((x, 14), BRAND)
+    return img
+
+
+def fuel_cell_side():
+    """Steel side with a cooling fan grille and the teal stripe."""
+    import math
+    img = steel_plate(5502)
+    for y in range(1, 12):
+        for x in range(2, 13):
+            dx, dy = x - 7, y - 6
+            r = math.hypot(dx, dy)
+            if r > 5.4:
+                continue
+            c = hexc("17191b")
+            if r > 4.4:
+                c = STEEL_DARK if dx + dy > 0 else hexc("b0b8be")    # rim, lit top-left
+            elif r < 1.5:
+                c = hexc("9aa3ab")                                  # hub
+            elif dx == 0 or dy == 0:
+                c = hexc("6f777e")                                  # spokes
+            elif 2.5 < r < 3.4:
+                c = hexc("4a5056")                                  # grille ring
+            img.putpixel((x, y), c)
+    for x in range(1, 15):
+        img.putpixel((x, 13), BRAND)
+        img.putpixel((x, 14), shade(BRAND, 0.7))
+    return img
+
+
+def fuel_cell_top():
+    """H2 inlet cap and a vent grille."""
+    img = steel_plate(5503)
+    gas_cap(img, 4, 4, H2_CYAN)
+    d = ImageDraw.Draw(img)
+    for y in range(9, 14, 2):
+        d.line((3, y, 12, y), fill=hexc("1e2124"))
+        d.line((3, y + 1, 12, y + 1), fill=STEEL_LIGHT)
+    d.line((8, 2, 13, 2), fill=BRAND)
+    return img
+
+
+def hydrogen_frames(size, n, stretch, speed, seed):
+    """Pale gas wisps: two tileable noise fields drifting in different directions, alpha ~150-235."""
+    a = value_noise(size, size, seed, cell=size // 4)
+    b = value_noise(size, size, seed + 1, cell=size // 8)
+    sheet = Image.new("RGBA", (size, size * n))
+    for f in range(n):
+        for y in range(size):
+            for x in range(size):
+                ya = (y - f * speed) % size
+                v = a[ya][(x + (f * size // n) // stretch) % size] * 0.65 + b[(y - f * speed * 2) % size][(x - f * size // n) % size] * 0.35
+                t = max(0.0, min(1.0, (v - 0.35) / 0.35))
+                alpha = int(150 + 85 * t)
+                c = mix_rgb(hexc("c8ecfa"), hexc("ffffff"), t)
+                sheet.putpixel((x, f * size + y), c[:3] + (alpha,))
+    return sheet
+
+
+def hydrogen_still():
+    return hydrogen_frames(16, 16, 1, 1, 5601)
+
+
+def hydrogen_flow():
+    return hydrogen_frames(32, 16, 1, 2, 5602)
+
+
+def gui_electrolyzer():
+    img, d = machine_gui()
+    fluid_gauge(img, d, 26, 16, 16, 54)
+    fluid_gauge(img, d, 130, 16, 16, 54)
+    return img
+
+
+def gui_fuel_cell():
+    img, d = machine_gui()
+    fluid_gauge(img, d, 44, 16, 16, 54)
+    bevel(d, 69, 63, 80, 6, SLOT_DARK, WHITE, hexc("1a1a1a"))
+    return img
 
 
 if __name__ == "__main__":

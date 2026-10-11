@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " W ",
+    "PKP",
+    " G "
+  ],
+  "key": {
+    "W": "powerfactor:copper_coil",
+    "P": "#c:plates/iron",
+    "K": "powerfactor:control_circuit",
+    "G": "#c:glass_panes"
+  },
+  "result": {
+    "id": "powerfactor:clamp_meter",
+    "count": 1
+  }
+}

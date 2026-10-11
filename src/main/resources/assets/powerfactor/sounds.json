@@ -367,5 +367,92 @@
       }
     ],
     "subtitle": "subtitles.powerfactor.wind_turbine_brake"
+  },
+  "chainsaw_idle": {
+    "sounds": [
+      {
+        "name": "powerfactor:chainsaw_idle",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.chainsaw_idle"
+  },
+  "chainsaw_cut": {
+    "sounds": [
+      {
+        "name": "powerfactor:chainsaw_cut",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.chainsaw_cut"
+  },
+  "jetpack_thrust": {
+    "sounds": [
+      {
+        "name": "powerfactor:jetpack_thrust",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.jetpack_thrust"
+  },
+  "tesla_hum": {
+    "sounds": [
+      {
+        "name": "powerfactor:tesla_hum",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.tesla_hum"
+  },
+  "induction_hum": {
+    "sounds": [
+      {
+        "name": "powerfactor:induction_hum",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.induction_hum"
+  },
+  "electrolyzer_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:electrolyzer_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.electrolyzer_run"
+  },
+  "fuel_cell_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:fuel_cell_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.fuel_cell_run"
+  },
+  "tree_fall": {
+    "sounds": [
+      {
+        "name": "powerfactor:tree_fall"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.tree_fall"
+  },
+  "meter_beep": {
+    "sounds": [
+      {
+        "name": "powerfactor:meter_beep"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.meter_beep"
+  },
+  "tesla_zap": {
+    "sounds": [
+      {
+        "name": "powerfactor:tesla_zap"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.tesla_zap"
   }
 }
