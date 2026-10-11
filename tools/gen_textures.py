@@ -4393,6 +4393,7 @@ def phaseC_F():
     phase_g()
     phase_h()
 
+    phase_drill_big()
 
 def crusher_jaws():
     """Jaw plate (9x4x2) at (0,0) and a tooth (1x4x1) at (0,8): manganese steel, worn bright on the crushing faces."""
@@ -6122,6 +6123,62 @@ def phase_h():
     save(sensor_chip(), "item/sensor_chip.png")
     for kind in PHOTOMASK_PATTERNS:
         save(photomask(kind), f"item/{kind}_photomask.png")
+
+
+# ---------------------------------------------------------------- big mining drill bit
+
+def mining_drill_bit(frames=1, shift=0):
+    """Conical auger bit: hardened steel with two bright helical flutes and carbide edges. Each frame
+    slides the flutes along U so a strip of frames reads as the bit spinning."""
+    img = Image.new("RGBA", (16, 16 * frames))
+    steel = [hexc("2b3035"), hexc("3d444b"), hexc("58616a"), hexc("7d8790"), hexc("aab4bc"), hexc("dfe6ea")]
+    for f in range(frames):
+        off = f * shift
+        for y in range(16):
+            for x in range(16):
+                # Helix: bands at 45 degrees with period 8 (two flutes per face).
+                p = (x + y + off) % 8
+                c = steel[1]
+                if p in (0, 1):
+                    c = steel[5] if p == 0 else steel[4]      # bright cutting edge
+                elif p in (2, 3):
+                    c = steel[3]
+                elif p == 4:
+                    c = steel[2]
+                elif p == 7:
+                    c = steel[0]                              # deep flute shadow
+                # Light from the top of the face.
+                c = shade(c, 1.08 - y * 0.015)
+                img.putpixel((x, f * 16 + y), c)
+    return img
+
+
+def mining_drill_body():
+    """Heavy industrial housing: safety-orange cast shell with deep cooling fins and a black hazard band."""
+    img = Image.new("RGBA", (16, 16))
+    base = [hexc("8a3f0c"), hexc("b85a14"), hexc("e07a1e"), hexc("f29a3c"), hexc("ffc070")]
+    for y in range(16):
+        for x in range(16):
+            c = base[2]
+            if y in (0, 15) or x in (0, 15):
+                c = base[1]
+            if y == 1 or x == 1:
+                c = base[3]
+            if 4 <= y <= 10 and x % 3 == 0 and 2 <= x <= 13:
+                c = hexc("2a2420")                            # cooling fin gaps
+            elif 4 <= y <= 10 and x % 3 == 1 and 2 <= x <= 13:
+                c = base[3]
+            if y in (12, 13):
+                c = hexc("f2c230") if (x // 2) % 2 == 0 else hexc("202020")   # hazard band
+            img.putpixel((x, y), c)
+    return img
+
+
+def phase_drill_big():
+    save(mining_drill_bit(), "item/model/mining_drill_bit.png")
+    save(mining_drill_bit(8, 1), "item/model/mining_drill_bit_running.png")
+    write_mcmeta("item/model/mining_drill_bit_running.png", 1)
+    save(mining_drill_body(), "item/model/mining_drill_body.png")
 
 
 if __name__ == "__main__":

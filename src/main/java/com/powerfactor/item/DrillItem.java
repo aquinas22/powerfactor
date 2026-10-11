@@ -29,7 +29,10 @@ import net.minecraft.world.level.block.state.BlockState;
  * durability. Flat, it's barely faster than a fist.
  */
 public class DrillItem extends Item {
-    public static final float SPEED = 10F;
+    /** Pickaxe blocks. */
+    public static final float SPEED = 12F;
+    /** Shovel blocks: fast enough to break dirt, sand and grass instantly (speed >= 30 x hardness). */
+    public static final float DIG_SPEED = 30F;
     public static final float UNPOWERED_SPEED = 0.5F;
 
     public DrillItem(Properties properties) {
@@ -43,7 +46,7 @@ public class DrillItem extends Item {
                 .component(DataComponents.TOOL, new Tool(List.of(
                         Tool.Rule.deniesDrops(blocks.getOrThrow(BlockTags.INCORRECT_FOR_DIAMOND_TOOL)),
                         Tool.Rule.minesAndDrops(blocks.getOrThrow(BlockTags.MINEABLE_WITH_PICKAXE), SPEED),
-                        Tool.Rule.minesAndDrops(blocks.getOrThrow(BlockTags.MINEABLE_WITH_SHOVEL), SPEED)),
+                        Tool.Rule.minesAndDrops(blocks.getOrThrow(BlockTags.MINEABLE_WITH_SHOVEL), DIG_SPEED)),
                         1.0F, 0, true));
     }
 
@@ -94,6 +97,16 @@ public class DrillItem extends Item {
     @Override
     public void inventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level, net.minecraft.world.entity.Entity owner,
             net.minecraft.world.entity.@Nullable EquipmentSlot slot) {
+        // Keep the item model's "running" flag in step with the charge: a charged drill's bit spins.
+        if (level.getGameTime() % 10 == 0) {
+            boolean on = powered(stack);
+            var cmd = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA);
+            boolean shown = cmd != null && !cmd.flags().isEmpty() && cmd.flags().getFirst();
+            if (on != shown) {
+                stack.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
+                        new net.minecraft.world.item.component.CustomModelData(List.of(), List.of(on), List.of(), List.of()));
+            }
+        }
         if (level.getGameTime() % 4 != 0 || !(owner instanceof Player player) || modules(stack, DrillModule.Type.MAGNET) == 0) {
             return;
         }

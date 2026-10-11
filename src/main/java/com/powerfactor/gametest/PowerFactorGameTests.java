@@ -66,6 +66,7 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("bare_wire_shocks_coated_does_not", () -> PowerFactorGameTests::bareWireShocks);
         FUNCTIONS.register("upgrade_table_installs_modules", () -> PowerFactorGameTests::upgradeTableInstalls);
         FUNCTIONS.register("laser_engraver_needs_right_mask", () -> PowerFactorGameTests::laserEngraverMakesChips);
+        FUNCTIONS.register("mining_drill_instamines_dirt", () -> PowerFactorGameTests::drillInstaminesDirt);
     }
 
     public static void register(IEventBus modBus) {
@@ -693,6 +694,22 @@ public final class PowerFactorGameTests {
             helper.assertValueEqual(be.slot(3).getDamageValue(), 1, "mask wear");
             helper.succeed();
         });
+    }
+
+    private static void drillInstaminesDirt(GameTestHelper helper) {
+        helper.setBlock(CENTER, net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState());
+        helper.setBlock(CENTER.east(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var drill = new net.minecraft.world.item.ItemStack(ModItems.ELECTRIC_DRILL.get());
+        drill.set(com.powerfactor.registry.ModComponents.ENERGY.get(), 50_000);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, drill);
+        player.setOnGround(true);   // miners in mid-air dig five times slower
+        BlockPos dirt = helper.absolutePos(CENTER), stone = helper.absolutePos(CENTER.east());
+        float dirtProgress = helper.getLevel().getBlockState(dirt).getDestroyProgress(player, helper.getLevel(), dirt);
+        float stoneProgress = helper.getLevel().getBlockState(stone).getDestroyProgress(player, helper.getLevel(), stone);
+        helper.assertTrue(dirtProgress >= 1F, "dirt should break instantly, progress/tick " + dirtProgress);
+        helper.assertTrue(stoneProgress > 0.1F, "stone should still be fast, progress/tick " + stoneProgress);
+        helper.succeed();
     }
 
     private PowerFactorGameTests() {}

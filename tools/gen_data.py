@@ -539,7 +539,7 @@ def lang():
              "capacitor": "Capacitor", "optical_fiber": "Optical Fiber", "control_circuit": "Control Circuit", "drill_head": "Drill Head", "speed_upgrade": "Speed Upgrade", "efficiency_upgrade": "Efficiency Upgrade",
              "capacitor_upgrade": "Built-in Capacitor Upgrade", "vfd_upgrade": "VFD Upgrade", "surge_upgrade": "Surge Protector Upgrade",
              "capacity_upgrade": "Capacity Upgrade",
-             "electric_drill": "Electric Drill"}
+             "electric_drill": "Electric Mining Drill"}
     for k, v in items.items():
         name(f"item.{NS}.{k}", v)
     LANG.update({
@@ -1813,15 +1813,41 @@ TOOL_DISPLAY = {
 
 def tool_models():
     m = lambda n: pf(f"item/model/{n}")
-    # Cordless drill: pistol grip, battery under it, motor housing, chuck and a fluted bit pointing along +X.
-    drill = [el([2, 8, 6], [11, 12.5, 10], "#body"), el([1, 8.5, 6.5], [2, 12, 9.5], "#grip"),
-             el([11, 9, 6.75], [13.5, 11.5, 9.25], "#chrome"), el([13.5, 9.75, 7.5], [19, 10.75, 8.5], "#bit"),
-             el([4, 3, 6.5], [7.5, 8, 9.5], "#grip", {"angle": -22.5, "axis": "z", "origin": [6, 8, 8]}),
-             el([2.5, 1, 5.75], [8.5, 3.5, 10.25], "#battery"), el([7.5, 6.6, 7.4], [8.5, 7.8, 8.6], "#chrome")]
-    write(asset("models", "item", "electric_drill_3d.json"), {"textures": {"body": m("drill_body"), "grip": m("drill_grip"),
-        "chrome": m("drill_chrome"), "bit": m("drill_bit"), "battery": m("drill_battery"), "particle": m("drill_body")},
-        "gui_light": "side", "display": TOOL_DISPLAY, "elements": drill})
-    write(asset("items", "electric_drill.json"), {"model": {"type": "minecraft:model", "model": pf("item/electric_drill_3d")}})
+    # Big mining drill: heavy motor housing with a carry handle and pistol grip, battery under the
+    # nose, a geared neck and a long conical auger bit along +X. The bit spins when charged.
+    for running in (False, True):
+        bit = "#bit"
+        drill = [el([-5, 4.5, 3.5], [6, 13.5, 12.5], "#body"),                     # motor housing
+                 el([-6, 5.5, 4.5], [-5, 12.5, 11.5], "#grip"),                     # rear cap
+                 el([-3.5, 13.5, 7.25], [-2, 16.5, 8.75], "#grip"),                 # carry handle
+                 el([3, 13.5, 7.25], [4.5, 16.5, 8.75], "#grip"),
+                 el([-3.5, 16.5, 7.1], [4.5, 18, 8.9], "#grip"),
+                 el([-3, 0, 6.25], [0.5, 4.5, 9.75], "#grip", {"angle": -22.5, "axis": "z", "origin": [-1, 4.5, 8]}),   # pistol grip
+                 el([0.5, 1.5, 5.25], [6, 4.5, 10.75], "#battery"),                 # battery pack
+                 el([6, 5.5, 4.5], [8.5, 12.5, 11.5], "#chrome"),                   # gearbox neck
+                 el([8.5, 4.75, 3.75], [9.5, 13.25, 12.25], "#chrome"),            # chuck collar
+                 el([9.5, 5.25, 4.25], [13, 12.75, 11.75], bit),                    # auger, tapering in steps
+                 el([13, 6.25, 5.25], [16.5, 11.75, 10.75], bit),
+                 el([16.5, 7.25, 6.25], [20, 10.75, 9.75], bit),
+                 el([20, 8, 7], [23, 10, 9], bit),
+                 el([23, 8.6, 7.6], [25, 9.4, 8.4], bit)]
+        name = "electric_drill_3d" + ("_running" if running else "")
+        display = dict(TOOL_DISPLAY,
+                       # Tuned in game: carried at the hip, auger reaching toward the crosshair.
+                       firstperson_righthand={"rotation": [15, -15, 0], "translation": [1, 4, -9], "scale": [0.55, 0.55, 0.55]},
+                       firstperson_lefthand={"rotation": [15, 15, 0], "translation": [1, 4, -9], "scale": [0.55, 0.55, 0.55]},
+                       thirdperson_righthand={"rotation": [0, 180, 0], "translation": [0, 3, -2], "scale": [0.7, 0.7, 0.7]},
+                       thirdperson_lefthand={"rotation": [0, 180, 0], "translation": [0, 3, -2], "scale": [0.7, 0.7, 0.7]},
+                       gui={"rotation": [20, -135, 0], "translation": [0, -1, 0], "scale": [0.52, 0.52, 0.52]},
+                       ground={"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.4, 0.4, 0.4]},
+                       fixed={"rotation": [0, 90, 0], "translation": [0, 0, 0], "scale": [0.6, 0.6, 0.6]})
+        write(asset("models", "item", f"{name}.json"), {"textures": {"body": m("mining_drill_body"), "grip": m("drill_grip"),
+            "chrome": m("drill_chrome"), "bit": m("mining_drill_bit_running" if running else "mining_drill_bit"),
+            "battery": m("drill_battery"), "particle": m("mining_drill_body")},
+            "gui_light": "side", "display": display, "elements": drill})
+    write(asset("items", "electric_drill.json"), {"model": {"type": "minecraft:condition", "property": "minecraft:custom_model_data",
+        "index": 0, "on_true": {"type": "minecraft:model", "model": pf("item/electric_drill_3d_running")},
+        "on_false": {"type": "minecraft:model", "model": pf("item/electric_drill_3d")}}})
     # Chainsaw: motor body, rear handle, top handle loop, battery, guide bar with the chain running round it.
     for running in (False, True):
         chain = "#chain"
@@ -1910,7 +1936,7 @@ def phase_h():
         "tooltip.powerfactor.drill_module.overcharge": "More damage per hit, each",
         "tooltip.powerfactor.drill_module.chain": "Arcs leap to more targets",
         "tooltip.powerfactor.drill_module.speed": "+50% cutting speed per module",
-        "tool_kind.powerfactor.drill": "Electric Drill", "tool_kind.powerfactor.chainsaw": "Electric Chainsaw",
+        "tool_kind.powerfactor.drill": "Electric Mining Drill", "tool_kind.powerfactor.chainsaw": "Electric Chainsaw",
         "tool_kind.powerfactor.jetpack": "Electric Jetpack", "tool_kind.powerfactor.saber": "Arc Saber",
         "tool_kind.powerfactor.arc_gun": "Tesla Arc Gun",
         "tool_kind.powerfactor.drill.short": "DRILL", "tool_kind.powerfactor.chainsaw.short": "CHAINSAW",
