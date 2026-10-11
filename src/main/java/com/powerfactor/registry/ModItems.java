@@ -16,6 +16,9 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(PowerFactor.MODID);
 
+    public static final DeferredItem<com.powerfactor.item.HandbookItem> HANDBOOK = ITEMS.registerItem("powerfactor_handbook",
+            com.powerfactor.item.HandbookItem::new);
+
     // ---------------------------------------------------------------- machines and wiring
     public static final DeferredItem<BlockItem> COAL_TURBINE = ITEMS.registerSimpleBlockItem("coal_turbine", ModBlocks.COAL_TURBINE);
     public static final DeferredItem<BlockItem> REDSTONE_ENGINE = ITEMS.registerSimpleBlockItem("redstone_engine", ModBlocks.REDSTONE_ENGINE);

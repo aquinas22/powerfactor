@@ -1,0 +1,34 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:coal_turbine"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.root.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.root.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "background": "minecraft:block/stone"
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:coal_turbine"
+          }
+        ]
+      }
+    }
+  },
+  "rewards": {
+    "loot": [
+      "powerfactor:grant/handbook"
+    ]
+  }
+}

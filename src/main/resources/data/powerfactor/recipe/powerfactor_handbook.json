@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:book",
+    "#c:ingots/copper"
+  ],
+  "result": {
+    "id": "powerfactor:powerfactor_handbook",
+    "count": 1
+  }
+}

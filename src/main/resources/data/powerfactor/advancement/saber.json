@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:arc_saber"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.saber.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.saber.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:arc_saber"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "powerfactor:steel"
+}

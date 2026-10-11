@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:electric_drill"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.drill.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.drill.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:electric_drill"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "powerfactor:crusher"
+}

@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:scada_terminal"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.scada.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.scada.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:scada_terminal"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "powerfactor:wire"
+}

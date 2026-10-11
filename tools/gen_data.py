@@ -1321,6 +1321,125 @@ def phase_cf():
     phase_cf_data()
 
 
+# ======================================================================== handbook, JEI labels, advancements
+
+HANDBOOK = {
+    "start": ("Getting Started",
+        "Welcome to PowerFactor: AC power the way real grids work.\n\nBuild a Coal Turbine (iron, copper coils, turbine blades, a furnace) and feed it coal. "
+        "It takes about ten seconds to spin up to 3,600 RPM. Its breaker closes at 57 Hz and it starts pushing FE out of every face except the "
+        "front. Run Copper Wire from it to your machines.\n\nRight-click any machine for its GUI. The tabs on the right edge hold the "
+        "Electrical analyzer, Upgrades and Configuration."),
+    "units": ("FE, EE and CE",
+        "PowerFactor measures three kinds of power.\n\nFE (Forge Energy) is real power: it does the work, and every FE machine from any mod "
+        "runs on it.\n\nEE (Ender Energy) is reactive power. Motors need it to magnetize, but it does no work. It still has to be generated "
+        "and carried.\n\nCE (Creative Energy) is apparent power, the total the wires and generators actually see: CE = sqrt(FE^2 + EE^2).\n\n"
+        "Power factor is FE / CE. At 1.00 every bit of capacity does work."),
+    "grid": ("Wires and Grids",
+        "Connected wire of one kind forms a grid, solved every tick like a real AC bus.\n\nVoltage sags as the grid loads up, and EE sags it "
+        "three times harder than FE. Line loss goes with current squared, and current follows CE, so a poor power factor wastes FE as heat in "
+        "the wires.\n\nTurbines set the frequency and droop slightly under load (60 Hz down to about 58). They also supply the grid's EE. "
+        "Solar, wind and batteries can't, so a grid of those plus motors needs capacitors or a synchronous condenser."),
+    "power_factor": ("Power Factor Correction",
+        "Motors draw EE, and lightly loaded motors draw it worst: a crusher idling between jobs runs at about PF 0.25.\n\nCapacitor Banks "
+        "supply EE locally so the generator doesn't have to, which brings voltage back up and cuts losses. Their output goes with V^2, and "
+        "too many push the grid to a leading PF and raise the voltage. Above 1.12 pu they trip out.\n\nThe Automatic Capacitor Bank switches "
+        "six 20 EE steps in and out every two seconds to hold the grid near PF 1.0. Watch its cans light up."),
+    "machines": ("Machines",
+        "Crusher: ore to two dusts, plus gravel, sand and more. Electric Furnace: smelts 25% faster on resistive elements, PF 1.0. Alloy "
+        "Furnace: induction heating (PF 0.6), makes brass, bronze, electrum and rubber. Arc Furnace: steel, aluminum, silicon and graphite; "
+        "it needs graphite electrodes and its arc makes the grid flicker. Wire Drawer, Rolling Mill: fine wire and plates. Ore Washer: three "
+        "dusts per ore with water.\n\nMotor-driven machines slow down on low voltage or frequency and trip below 0.75 pu."),
+    "upgrades": ("Upgrade Cards",
+        "Upgrades go in the Upgrades tab.\n\nSpeed: +50% per card, but a bigger motor uses more FE and EE. Efficiency: -15% FE per job. "
+        "Built-in Capacitor: cancels 5 EE of the machine's own motor each; three fix a stock crusher. VFD: the motor ignores frequency and "
+        "voltage sag, uses a quarter of the EE and stops instead of idling. Surge Protector: rides through dips down to 0.6 pu. Capacity: "
+        "a bigger FE buffer.\n\nThe Configuration tab sets redstone behavior, each face's role (input, output, both, closed) and auto-input "
+        "and auto-eject."),
+    "ores": ("Ores and Materials",
+        "New ores: zinc, tin, lead, silver and bauxite (aluminum). Each can be turned off in the common config if another mod provides it. "
+        "PowerFactor uses the shared c: tags, so other mods' ores work in every machine.\n\nSmelting gives one ingot per ore, the crusher two "
+        "dusts, and the ore washer three. Alloys: brass (3 copper + zinc), bronze (3 copper + tin), electrum (gold + silver). Steel and "
+        "aluminum come from the arc furnace.\n\nRubber trees grow in jungles, swamps and forests. Tap weeping logs with a Tree Tap for latex, "
+        "then smelt or alloy it into rubber."),
+    "logistics": ("Pipes and Tanks",
+        "Item Pipes and Fluid Pipes link up automatically. Arms into inventories insert by default. Right-click an arm with an empty hand "
+        "to make it extract (orange rings); right-click again to disable it.\n\nFluid Tanks hold 32 buckets and keep their contents when "
+        "broken. The Electric Pump draws water from a source block below it without using it up."),
+    "scada": ("SCADA",
+        "SCADA is the control room. Run Fiber Optic Cable from a SCADA Terminal to your machines: it lists every device live with ON/OFF "
+        "switches, system totals and 60-second frequency and voltage trends. Alarms sound on faults.\n\nSCADA Displays placed side by side "
+        "form one wall screen that lays itself out by size, from a single readout up to a full HMI with an automatic one-line diagram of your "
+        "grid. Connect any panel to fiber; right-click to change page."),
+    "transmission": ("Transmission",
+        "Low voltage loses a lot over distance. Step up.\n\nWire tiers: Copper Wire (512 CE), Insulated Cable (1,024), MV Aluminum Cable "
+        "(4,096), and HV pylons (16,384) with far lower loss. Transformers join two grids: power enters the red primary face and leaves the "
+        "blue secondary face, and they carry EE back upstream. Overload one and it trips; right-click to reset.\n\nString HV conductors "
+        "between pylons with a Conductor Spool, up to 32 blocks per span. Circuit Breakers split a grid when open and trip on overcurrent."),
+    "generators": ("Generators and Storage",
+        "Coal Turbine and Diesel Generator: synchronous, so they supply EE. The diesel starts in two seconds and burns modded diesel or "
+        "fuel, or lava at a worse rate. Hydro Turbine: flowing water around it; also synchronous. Solar Panel and Wind Turbine: FE only. "
+        "Wind needs clear air for its blades and likes height and storms.\n\nSynchronous Condenser: a spinning machine that only makes EE. "
+        "Battery Bank: stores 2M FE and automatically holds the grid up when frequency or voltage sags."),
+    "ender": ("Ender Energy",
+        "Ender Transmitters turn FE into an EE carrier and beam it to Ender Receivers on the same channel, even across dimensions. The "
+        "receiver rectifies it back to FE at 85%.\n\nThere's a catch. Sending makes the transmitter a big reactive load on its own grid, and "
+        "busy links radiate interference: every grid within about 48 blocks sees flickering voltage and jittering frequency, so motors slow "
+        "and trip. Keep wireless away from your factory, or support those grids with capacitors and condensers."),
+    "tools": ("Tools and Weapons",
+        "Electric Drill: pickaxe and shovel on FE. Sneak-use to install modules: 3x3 Area, Speed, Silk Touch, Fortune, Magnet, Battery.\n\n"
+        "Tesla Arc Gun: lightning that arcs between up to five targets.\n\nArc Saber: use to ignite, sneak-use to pick any RGB color, blade "
+        "style (solid, plasma, crackling arc, rainbow) and hit effect (stun, ignite, chain arc, drain). Charge everything in a Charger."),
+}
+
+ADVANCEMENTS = [
+    ("root", None, "coal_turbine", "PowerFactor", "Build a Coal Turbine", "task", "minecraft:block/stone"),
+    ("crusher", "root", "crusher", "Double Trouble", "Crush ore into two dusts", "task", None),
+    ("wire", "root", "copper_wire", "On the Grid", "Make some Copper Wire", "task", None),
+    ("capacitor_bank", "wire", "capacitor_bank", "Power Factor", "Correct your power factor with a Capacitor Bank", "task", None),
+    ("auto_capacitor_bank", "capacitor_bank", "auto_capacitor_bank", "Hold It at Unity", "Build an Automatic Capacitor Bank", "goal", None),
+    ("scada", "wire", "scada_terminal", "Control Room", "Build a SCADA Terminal", "task", None),
+    ("display", "scada", "scada_display", "Big Board", "Build SCADA Displays", "goal", None),
+    ("alloy", "crusher", "brass_ingot", "Brass Tacks", "Alloy brass", "task", None),
+    ("steel", "alloy", "steel_ingot", "Arc Light", "Make steel in an Arc Furnace", "goal", None),
+    ("transformer", "steel", "transformer", "Step It Up", "Build a Transformer", "task", None),
+    ("pylon", "transformer", "hv_pylon", "High Voltage", "Raise an HV Transmission Pylon", "challenge", None),
+    ("ender", "scada", "ender_transmitter", "Spooky Action", "Beam power with Ender Energy", "challenge", None),
+    ("saber", "steel", "arc_saber", "An Elegant Weapon", "Build an Arc Saber", "challenge", None),
+    ("drill", "crusher", "electric_drill", "Cordless", "Build an Electric Drill", "task", None),
+    ("renewables", "transformer", "wind_turbine", "Catch the Wind", "Build a Wind Turbine", "goal", None),
+]
+
+
+def finishing():
+    flat_item("powerfactor_handbook")
+    name(f"item.{NS}.powerfactor_handbook", "PowerFactor Handbook")
+    shapeless("powerfactor_handbook", ["minecraft:book", "#c:ingots/copper"], category="misc")
+    LANG["handbook.powerfactor.title"] = "PowerFactor Handbook"
+    for cid, (title, text) in HANDBOOK.items():
+        LANG[f"handbook.powerfactor.{cid}.title"] = title
+        LANG[f"handbook.powerfactor.{cid}.text"] = text
+    LANG.update({"jei.powerfactor.crushing": "Crushing", "jei.powerfactor.alloying": "Alloying", "jei.powerfactor.arc_smelting": "Arc Smelting",
+                 "jei.powerfactor.wire_drawing": "Wire Drawing", "jei.powerfactor.rolling": "Rolling", "jei.powerfactor.washing": "Ore Washing",
+                 "jei.powerfactor.chance": "%s%% chance"})
+    for aid, parent, item, title, desc, frame, bg in ADVANCEMENTS:
+        adv = {"display": {"icon": {"id": pf(item) if ":" not in item else item},
+                           "title": {"translate": f"advancements.powerfactor.{aid}.title"},
+                           "description": {"translate": f"advancements.powerfactor.{aid}.description"},
+                           "frame": frame, "show_toast": True, "announce_to_chat": aid != "root"},
+               "criteria": {"has": {"trigger": "minecraft:inventory_changed", "conditions": {"items": [{"items": pf(item)}]}}}}
+        if bg:
+            adv["display"]["background"] = bg
+            # Hand out the handbook with the first turbine.
+            adv["rewards"] = {"loot": [pf("grant/handbook")]}
+        if parent:
+            adv["parent"] = pf(parent)
+        write(data(NS, "advancement", f"{aid}.json"), adv)
+        LANG[f"advancements.powerfactor.{aid}.title"] = title
+        LANG[f"advancements.powerfactor.{aid}.description"] = desc
+    write(data(NS, "loot_table", "grant", "handbook.json"), {"type": "minecraft:advancement_reward", "pools": [{"rolls": 1.0,
+        "entries": [{"type": "minecraft:item", "name": pf("powerfactor_handbook")}]}]})
+
+
 if __name__ == "__main__":
     models()
     loot()
@@ -1329,6 +1448,7 @@ if __name__ == "__main__":
     worldgen()
     phase_b()
     phase_cf()
+    finishing()
     flush_tags()
     lang()
     print("data written to", os.path.normpath(ROOT))

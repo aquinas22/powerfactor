@@ -82,6 +82,15 @@ public final class CommonEvents {
                 ModItems.ELECTRIC_DRILL.get());
     }
 
+    /** Our recipe types aren't synced by vanilla; JEI on a dedicated-server client needs them. */
+    @SubscribeEvent
+    static void onDatapackSync(net.neoforged.neoforge.event.OnDatapackSyncEvent event) {
+        event.sendRecipes(com.powerfactor.registry.ModRecipes.CRUSHING.get());
+        for (var kind : com.powerfactor.recipe.MachineRecipeKind.values()) {
+            event.sendRecipes(kind.type());
+        }
+    }
+
     @SubscribeEvent
     static void onPayloads(RegisterPayloadHandlersEvent event) {
         ScadaPayloads.register(event);

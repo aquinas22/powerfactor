@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:crusher"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.crusher.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.crusher.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:crusher"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "powerfactor:root"
+}

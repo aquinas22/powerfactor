@@ -22,7 +22,13 @@ public final class PowerFactorClient {
         ScadaPayloads.clientHandler = ScadaTerminalScreen::receive;
         ScadaPayloads.displayHandler = ScadaDisplayRenderer::receive;
         com.powerfactor.api.MachineAudio.handler = MachineSoundLoop::update;
+        com.powerfactor.item.HandbookItem.open = () -> net.minecraft.client.Minecraft.getInstance().gui.setScreen(new HandbookScreen());
         com.powerfactor.item.ArcSaberItem.openScreen = hand -> net.minecraft.client.Minecraft.getInstance().gui.setScreen(new SaberScreen(hand));
+    }
+
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGHEST)
+    static void onRecipes(net.neoforged.neoforge.client.event.RecipesReceivedEvent event) {
+        com.powerfactor.compat.jei.ClientRecipes.map = event.getRecipeMap();
     }
 
     @SubscribeEvent

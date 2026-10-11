@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:transformer"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.transformer.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.transformer.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:transformer"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "powerfactor:steel"
+}

@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:capacitor_bank"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.capacitor_bank.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.capacitor_bank.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:capacitor_bank"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "powerfactor:wire"
+}

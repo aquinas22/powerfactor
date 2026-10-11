@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:hv_pylon"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.pylon.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.pylon.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:hv_pylon"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "powerfactor:transformer"
+}

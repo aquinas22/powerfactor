@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:copper_wire"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.wire.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.wire.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:copper_wire"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "powerfactor:root"
+}

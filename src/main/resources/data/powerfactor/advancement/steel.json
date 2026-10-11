@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:steel_ingot"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.steel.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.steel.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:steel_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "powerfactor:alloy"
+}

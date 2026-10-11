@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "id": "powerfactor:ender_transmitter"
+    },
+    "title": {
+      "translate": "advancements.powerfactor.ender.title"
+    },
+    "description": {
+      "translate": "advancements.powerfactor.ender.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "powerfactor:ender_transmitter"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "powerfactor:scada"
+}
