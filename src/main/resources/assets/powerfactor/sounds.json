@@ -351,5 +351,21 @@
       }
     ],
     "subtitle": "subtitles.powerfactor.tank_slosh"
+  },
+  "wind_turbine_swoosh": {
+    "sounds": [
+      {
+        "name": "powerfactor:wind_turbine_swoosh"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wind_turbine_swoosh"
+  },
+  "wind_turbine_brake": {
+    "sounds": [
+      {
+        "name": "powerfactor:wind_turbine_brake"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wind_turbine_brake"
   }
 }

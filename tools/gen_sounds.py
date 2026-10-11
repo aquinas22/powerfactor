@@ -854,18 +854,61 @@ def transformer_hum(seconds=2.0):
 
 
 def wind_turbine_run(seconds=2.5):
-    n = int(SR * seconds)                               # 0.8 Hz blade pass -> 2 swishes; tones on 0.4 Hz grid
+    """Steady nacelle bed heard near the tower: gearbox mesh whine, generator hum, cooling fan, wind on the
+    tower. No blade swish here; the game plays wind_turbine_swoosh in step with the visible blades.
+    Tones sit on a 0.4 Hz grid so the loop wraps."""
+    n = int(SR * seconds)
     r = random.Random(1211)
-    sw = lambda t, lead=0.0: (0.5 + 0.5 * math.cos(TAU * (0.8 * t + lead))) ** 3
-    whoosh = loop_noise(n, r, ("bp", 600, 0.6), ("lp", 2500, 0.7))
-    whoosh = [x * (0.25 + 0.75 * sw(i / SR)) for i, x in enumerate(whoosh)]
-    swish = loop_noise(n, r, ("bp", 1500, 1.0))         # brighter edge leads the swish (approaching blade)
-    swish = [x * sw(i / SR, 0.06) for i, x in enumerate(swish)]
-    gear = harm(phase_track(n, 480.0, [(3.0, 0.4, 0.0)]), [1.0, 0.3, 0.15])
-    gear = filt_periodic(gear, ("lp", 2500, 0.7))
-    rumble = loop_noise(n, r, ("lp", 80, 0.7), ("lp", 80, 0.7))
-    drone = tone(n, [(32.0, 1.0, 0.0), (64.0, 0.4, 1.0)])
-    return mix((whoosh, 0.6), (swish, 0.25), (gear, 0.05), (rumble, 2.5), (drone, 0.1))
+    gear = harm(phase_track(n, 412.0, [(2.0, 0.4, 0.0)]), [1.0, 0.35, 0.12, 0.05])
+    gear = filt_periodic(gear, ("bp", 900, 0.8))
+    gen = tone(n, [(120.0, 1.0, 0.0), (240.0, 0.35, 0.7), (360.0, 0.12, 1.3)])
+    fan = loop_noise(n, r, ("bp", 2400, 1.4), ("lp", 5000, 0.7))
+    fan = [x * (0.8 + 0.2 * math.sin(TAU * 12.0 * i / SR)) for i, x in enumerate(fan)]
+    air = loop_noise(n, r, ("bp", 260, 0.5), ("lp", 900, 0.7))
+    air = [x * (0.8 + 0.2 * math.sin(TAU * 0.4 * i / SR)) for i, x in enumerate(air)]
+    rumble = loop_noise(n, r, ("lp", 70, 0.7), ("lp", 70, 0.7))
+    return mix((gear, 0.06), (gen, 0.05), (fan, 0.12), (air, 0.55), (rumble, 2.2))
+
+
+def wind_turbine_swoosh(seconds=1.6):
+    """One blade sweeping down past the tower: a deep 'whoomph'. Band-passed noise whose centre falls
+    as the blade passes (a doppler-ish sweep), a low pressure pulse under it, and a thin tip hiss that
+    leads slightly."""
+    n = int(SR * seconds)
+    r = random.Random(1271)
+    def env(t, peak=0.55, rise=2.2, fall=0.32):
+        return (t / peak) ** rise if t < peak else math.exp(-(t - peak) / fall)
+    body = filt_sweep(noise(n, r), "bp", lambda t: 760 - 430 * min(1.0, t / 1.0), q=1.1)
+    body = filt(body, ("lp", 1800, 0.7))
+    body = [x * env(i / SR) for i, x in enumerate(body)]
+    hiss = filt_sweep(noise(n, r), "bp", lambda t: 2600 - 900 * min(1.0, t / 0.8), q=1.6)
+    hiss = [x * env(i / SR, peak=0.47, rise=3.0, fall=0.18) for i, x in enumerate(hiss)]
+    pulse = [math.sin(TAU * (48 * i / SR + 6 * (i / SR) ** 2)) * env(i / SR, peak=0.58, rise=2.0, fall=0.25)
+             for i in range(n)]
+    out = mix((body, 1.0), (hiss, 0.22), (pulse, 0.55))
+    return fade_edges(reverb(out, rt60=1.2, wet=0.25, damp=2500), fin=0.01, fout=0.1)
+
+
+def wind_turbine_brake(seconds=3.6):
+    """Storm shutdown: pitch motors whirr the blades to feather, the rotor brake bites and squeals,
+    and the rotor lock clunks home."""
+    n = int(SR * seconds)
+    r = random.Random(1281)
+    servo_f = [180 + 140 * min(1.0, (i / SR) / 1.2) for i in range(n)]
+    servo = harm(phase_accum(servo_f), [1.0, 0.5, 0.3, 0.15, 0.08])
+    servo = [x * min(1.0, (i / SR) / 0.05) * (1.0 if i / SR < 1.5 else math.exp(-((i / SR) - 1.5) / 0.08))
+             for i, x in enumerate(servo)]
+    servo = filt(servo, ("lp", 2500, 0.7))
+    hiss = burst(n, r, 0.9, (("bp", 3200, 0.8),), attack=0.2)
+    sq = squeal(r, 2.0, [(1870, 1.0), (2915, 0.45), (4310, 0.2)], 0.12, 0.9)
+    clunk = mix((thump(int(0.6 * SR), 120, 55, 0.18), 1.0),
+                (burst(int(0.4 * SR), r, 0.05, (("bp", 900, 1.0),)), 0.6))
+    out = [0.0] * n
+    add_at(out, servo, 0, 0.35)
+    add_at(out, hiss, int(0.1 * SR), 0.08)
+    add_at(out, sq, int(1.2 * SR), 0.22)
+    add_at(out, clunk, int(3.0 * SR), 0.9)
+    return fade_edges(reverb(out, rt60=0.9, wet=0.2), fin=0.005, fout=0.08)
 
 
 def hydro_turbine_run(seconds=2.0):
@@ -1220,6 +1263,8 @@ ONESHOTS_2 = {
     "transformer_buzz_overload": transformer_buzz_overload,
     "pipe_click": pipe_click,
     "tank_slosh": tank_slosh,
+    "wind_turbine_swoosh": wind_turbine_swoosh,
+    "wind_turbine_brake": wind_turbine_brake,
 }
 
 # events whose sounds list holds several files (Minecraft picks one at random)

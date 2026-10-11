@@ -1,0 +1,186 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "tube": "powerfactor:block/wind_turbine_tower",
+    "footing": "powerfactor:block/wind_turbine_foundation",
+    "door": "powerfactor:block/wind_turbine_door",
+    "particle": "powerfactor:block/wind_turbine_tower"
+  },
+  "elements": [
+    {
+      "from": [
+        3.5,
+        0,
+        6.136
+      ],
+      "to": [
+        12.5,
+        16,
+        9.864
+      ],
+      "faces": {
+        "east": {
+          "texture": "#tube"
+        },
+        "west": {
+          "texture": "#tube"
+        },
+        "up": {
+          "texture": "#tube"
+        }
+      }
+    },
+    {
+      "from": [
+        6.136,
+        0,
+        3.5
+      ],
+      "to": [
+        9.864,
+        16,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tube"
+        },
+        "south": {
+          "texture": "#tube"
+        },
+        "up": {
+          "texture": "#tube"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        0,
+        6.136
+      ],
+      "to": [
+        12.5,
+        16,
+        9.864
+      ],
+      "faces": {
+        "east": {
+          "texture": "#tube"
+        },
+        "west": {
+          "texture": "#tube"
+        },
+        "up": {
+          "texture": "#tube"
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        6.136,
+        0,
+        3.5
+      ],
+      "to": [
+        9.864,
+        16,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tube"
+        },
+        "south": {
+          "texture": "#tube"
+        },
+        "up": {
+          "texture": "#tube"
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        2,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#footing"
+        },
+        "east": {
+          "texture": "#footing"
+        },
+        "south": {
+          "texture": "#footing"
+        },
+        "west": {
+          "texture": "#footing"
+        },
+        "up": {
+          "texture": "#footing"
+        },
+        "down": {
+          "texture": "#footing",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        6.75,
+        2,
+        3.1
+      ],
+      "to": [
+        9.25,
+        9.5,
+        3.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#door",
+          "uv": [
+            2,
+            0,
+            14,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#tube"
+        },
+        "west": {
+          "texture": "#tube"
+        },
+        "up": {
+          "texture": "#tube"
+        }
+      }
+    }
+  ]
+}

@@ -1168,13 +1168,7 @@ def phase_cf_models():
             "north": face("#side", "north"), "south": face("#side", "south"), "east": face("#side", "east"), "west": face("#side", "west")}}]})
     machine_states("solar_panel", pf("block/solar_panel"), pf("block/solar_panel"))
     item_def("solar_panel")
-    write(asset("models", "block", "wind_turbine.json"), {"parent": "minecraft:block/cube_all", "textures": {"all": pf("block/wind_turbine_nacelle")}})
-    machine_states("wind_turbine", pf("block/wind_turbine"), pf("block/wind_turbine"))
-    item_def("wind_turbine")
-    write(asset("models", "block", "wind_turbine_tower.json"), {"parent": "minecraft:block/cube_column", "textures": {
-        "end": pf("block/wind_turbine_base"), "side": pf("block/wind_turbine_base")}})
-    write(asset("blockstates", "wind_turbine_tower.json"), {"variants": {"": {"model": pf("block/wind_turbine_tower")}}})
-    item_def("wind_turbine_tower")
+    wind_turbine_models()
     for b, front, side, top in (("hydro_turbine", "hydro_turbine_front", "hydro_turbine_side", "hydro_turbine_top"),
                                 ("synchronous_condenser", "synchronous_condenser_end", "synchronous_condenser_side", "synchronous_condenser_side"),
                                 ("power_meter", "power_meter_front", "power_meter_side", "power_meter_side")):
@@ -1235,8 +1229,8 @@ def phase_cf_data():
         ("hv_pylon", ["S S", "SPS", "S S"], {"S": "#c:ingots/steel", "P": "#c:plates/steel"}, 2),
         ("conductor_spool", [" A ", "AWA", " A "], {"A": pf("fine_aluminum_wire"), "W": "#minecraft:planks"}, 4),
         ("solar_panel", ["GGG", "SSS", "PWP"], {"G": "#c:glass_blocks", "S": pf("silicon"), "P": "#c:plates/aluminum", "W": pf("copper_wire")}, 1),
-        ("wind_turbine", [" B ", "BMB", "PKP"], {"B": pf("turbine_blade"), "M": pf("electric_motor"), "P": "#c:plates/steel",
-                                                 "K": pf("control_circuit")}, 1),
+        ("wind_turbine", ["PBP", "BMB", "GKG"], {"B": pf("turbine_blade"), "M": pf("electric_motor"), "P": "#c:plates/steel",
+                                                 "G": pf("steel_gear"), "K": pf("advanced_circuit")}, 1),
         ("wind_turbine_tower", ["P P", "PSP", "P P"], {"P": "#c:plates/steel", "S": "#c:ingots/steel"}, 4),
         ("hydro_turbine", ["PBP", "BMB", "PKP"], {"P": "#c:plates/bronze", "B": pf("turbine_blade"), "M": pf("electric_motor"),
                                                   "K": pf("control_circuit")}, 1),
@@ -1308,7 +1302,9 @@ def phase_cf_data():
         "message.powerfactor.spool.start": "Conductor starts at %s", "message.powerfactor.spool.linked": "Strung a %s-block span",
         "message.powerfactor.spool.too_far": "Too far: spans are at most %s blocks", "message.powerfactor.spool.full": "Pylon has no free arms",
         "message.powerfactor.spool.cut": "Conductors cut",
-        "scada.powerfactor.solar": "%s%% of peak", "scada.powerfactor.wind": "Wind %s%%", "scada.powerfactor.wind.blocked": "BLADES OBSTRUCTED",
+        "scada.powerfactor.solar": "%s%% of peak", "scada.powerfactor.wind": "%s m/s · %s RPM · pitch %s°", "scada.powerfactor.wind.blocked": "ROTOR OBSTRUCTED: needs a clear 13-block disc",
+        "scada.powerfactor.wind.low": "Waiting for wind · %s m/s", "scada.powerfactor.wind.cut_out": "STORM CUT-OUT · %s m/s · feathered",
+        "scada.powerfactor.wind.stopped": "Stopped · blades feathered",
         "scada.powerfactor.hydro": "%s faces of flowing water", "scada.powerfactor.diesel": "%s Hz · %s mB fuel",
         "scada.powerfactor.condenser.synced": "Synchronized · %s RPM", "scada.powerfactor.condenser.spinning": "Spinning up · %s RPM",
         "scada.powerfactor.battery": "%s%% charged", "scada.powerfactor.battery.support": "SUPPORTING GRID · %s%%",
@@ -1382,8 +1378,11 @@ HANDBOOK = {
         "between pylons with a Conductor Spool, up to 32 blocks per span. Circuit Breakers split a grid when open and trip on overcurrent."),
     "generators": ("Generators & Storage",
         "Coal Turbine and Diesel Generator: synchronous, so they supply EE. The diesel starts in two seconds and burns modded diesel or "
-        "fuel, or lava at a worse rate. Hydro Turbine: flowing water around it; also synchronous. Solar Panel and Wind Turbine: FE only. "
-        "Wind needs clear air for its blades and likes height and storms.\n\nSynchronous Condenser: a spinning machine that only makes EE. "
+        "fuel, or lava at a worse rate. Hydro Turbine: flowing water around it; also synchronous. Solar Panel and Wind Turbine: FE only.\n\n"
+        "Wind Turbine: stack Wind Turbine Tower sections (they taper as they rise) and put the turbine on top. "
+        "The 13-block rotor needs clear air in front, so build at least 6 sections high; taller towers catch "
+        "stronger wind. It starts at 3 m/s, reaches full output at 12 m/s and pitches its blades to hold it there. "
+        "Above 25 m/s, in a storm, it feathers and brakes until the wind drops. Cable it at the foot of the tower.\n\nSynchronous Condenser: a spinning machine that only makes EE. "
         "Battery Bank: stores 2M FE and automatically holds the grid up when frequency or voltage sags."),
     "ender": ("Ender Energy",
         "Ender Transmitters turn FE into an EE carrier and beam it to Ender Receivers on the same channel, even across dimensions. The "
@@ -1472,6 +1471,49 @@ def crusher_model():
         write(asset("models", "block", f"crusher{suffix}.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els})
     machine_states("crusher", pf("block/crusher"), pf("block/crusher_on"))
     item_def("crusher")
+
+
+def octagon(width, y0, y1, tex, caps=("up",)):
+    """Four elements whose union is a regular octagonal prism, `width` px flat to flat, centred in the block."""
+    side = width * (2 ** 0.5 - 1)
+    h, q = width / 2, side / 2
+    els = []
+    for rot in (None, 45):
+        for (x0, x1, z0, z1, faces) in ((8 - h, 8 + h, 8 - q, 8 + q, ("east", "west")), (8 - q, 8 + q, 8 - h, 8 + h, ("north", "south"))):
+            el = {"from": [round(x0, 4), y0, round(z0, 4)], "to": [round(x1, 4), y1, round(z1, 4)],
+                  "faces": {f: face(tex) for f in faces + tuple(caps)}}
+            if rot:
+                el["rotation"] = {"angle": rot, "axis": "y", "origin": [8, 8, 8]}
+            els.append(el)
+    return els
+
+
+def wind_turbine_models():
+    tower_tex = {"tube": pf("block/wind_turbine_tower"), "footing": pf("block/wind_turbine_foundation"),
+                 "door": pf("block/wind_turbine_door"), "particle": pf("block/wind_turbine_tower")}
+    variants = {}
+    for taper in range(8):
+        width = 7 + taper * 0.5
+        for base in (False, True):
+            els = octagon(width, 0, 16, "#tube")
+            if base:
+                els.append({"from": [1, 0, 1], "to": [15, 2, 15], "faces": {d: face("#footing", "down" if d == "down" else None)
+                                                                            for d in ("north", "east", "south", "west", "up", "down")}})
+                z = 8 - width / 2
+                els.append({"from": [6.75, 2, round(z - 0.4, 4)], "to": [9.25, 9.5, z], "faces": {
+                    "north": {"texture": "#door", "uv": [2, 0, 14, 16]}, "east": face("#tube"), "west": face("#tube"), "up": face("#tube")}})
+            name = f"wind_turbine_tower_{taper}" + ("_base" if base else "")
+            write(asset("models", "block", f"{name}.json"), {"parent": "minecraft:block/block", "textures": tower_tex, "elements": els})
+            variants[f"base={'true' if base else 'false'},taper={taper}"] = {"model": pf(f"block/{name}")}
+    write(asset("blockstates", "wind_turbine_tower.json"), {"variants": variants})
+    item_def("wind_turbine_tower", pf("block/wind_turbine_tower_3_base"))
+    # Nacelle block: the top of the tower and the yaw bearing; the nacelle and rotor are drawn by WindTurbineRenderer.
+    els = octagon(7, 0, 12, "#tube", caps=()) + octagon(10, 12, 16, "#bearing", caps=("up", "down"))
+    write(asset("models", "block", "wind_turbine.json"), {"parent": "minecraft:block/block", "textures": {
+        "tube": pf("block/wind_turbine_tower"), "bearing": pf("block/wind_turbine_bearing"), "particle": pf("block/wind_turbine_tower")},
+        "elements": els})
+    machine_states("wind_turbine", pf("block/wind_turbine"), pf("block/wind_turbine"))
+    flat_item("wind_turbine")
 
 
 if __name__ == "__main__":

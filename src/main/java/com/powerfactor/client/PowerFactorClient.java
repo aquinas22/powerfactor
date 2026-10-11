@@ -41,7 +41,7 @@ public final class PowerFactorClient {
         event.registerLayerDefinition(EngineRenderer.LAYER, EngineRenderer::createLayer);
         event.registerLayerDefinition(TurbineRotorRenderer.LAYER, TurbineRotorRenderer::createLayer);
         event.registerLayerDefinition(EnderCoreRenderer.LAYER, EnderCoreRenderer::createLayer);
-        event.registerLayerDefinition(SpinningRenderers.WIND, SpinningRenderers::windLayer);
+        event.registerLayerDefinition(WindTurbineRenderer.LAYER, WindTurbineRenderer::createLayer);
         event.registerLayerDefinition(CrusherJawRenderer.LAYER, CrusherJawRenderer::createLayer);
         event.registerLayerDefinition(SpinningRenderers.HYDRO, SpinningRenderers::hydroLayer);
         event.registerLayerDefinition(SpinningRenderers.CONDENSER, SpinningRenderers::condenserLayer);
@@ -54,7 +54,7 @@ public final class PowerFactorClient {
         event.registerBlockEntityRenderer(ModBlockEntities.FLUID_TANK.get(), FluidTankRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.SCADA_DISPLAY.get(), ScadaDisplayRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ENDER_LINK.get(), EnderCoreRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.WIND_TURBINE.get(), SpinningRenderers::wind);
+        event.registerBlockEntityRenderer(ModBlockEntities.WIND_TURBINE.get(), WindTurbineRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.HYDRO_TURBINE.get(), SpinningRenderers::hydro);
         event.registerBlockEntityRenderer(ModBlockEntities.SYNCHRONOUS_CONDENSER.get(), SpinningRenderers::condenser);
         event.registerBlockEntityRenderer(ModBlockEntities.PYLON.get(), PylonRenderer::new);

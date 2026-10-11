@@ -121,7 +121,8 @@ public final class ModBlocks {
     public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> SOLAR_PANEL = BLOCKS.registerBlock("solar_panel",
             p -> com.powerfactor.generator.GeneratorBlock.slab(() -> ModBlockEntities.SOLAR_PANEL.get(), p), () -> machine().noOcclusion());
     public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> WIND_TURBINE = BLOCKS.registerBlock("wind_turbine",
-            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.WIND_TURBINE.get(), p), () -> machine().noOcclusion());
+            p -> new com.powerfactor.generator.GeneratorBlock(() -> ModBlockEntities.WIND_TURBINE.get(), Block.box(3, 0, 3, 13, 16, 13), p),
+            () -> machine().noOcclusion());
     public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> HYDRO_TURBINE = BLOCKS.registerBlock("hydro_turbine",
             p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.HYDRO_TURBINE.get(), p), () -> machine().noOcclusion());
     public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> DIESEL_GENERATOR = BLOCKS.registerBlock("diesel_generator",
@@ -132,8 +133,10 @@ public final class ModBlocks {
             p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.BATTERY_BANK.get(), p), ModBlocks::machine);
     public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> POWER_METER = BLOCKS.registerBlock("power_meter",
             p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.POWER_METER.get(), p), ModBlocks::machine);
-    public static final DeferredBlock<Block> WIND_TURBINE_TOWER = BLOCKS.registerSimpleBlock("wind_turbine_tower",
-            () -> BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final DeferredBlock<com.powerfactor.generator.WindTowerBlock> WIND_TURBINE_TOWER = BLOCKS.registerBlock("wind_turbine_tower",
+            com.powerfactor.generator.WindTowerBlock::new,
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .noOcclusion());
 
     // ---------------------------------------------------------------- logistics
     public static final DeferredBlock<FluidTankBlock> FLUID_TANK = BLOCKS.registerBlock("fluid_tank", FluidTankBlock::new,

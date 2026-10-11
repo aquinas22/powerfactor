@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "powerfactor:block/wind_turbine"
+    "model": "powerfactor:item/wind_turbine"
   }
 }

@@ -5,7 +5,6 @@ import com.mojang.math.Axis;
 import com.powerfactor.PowerFactor;
 import com.powerfactor.generator.HydroTurbineBlockEntity;
 import com.powerfactor.generator.SynchronousCondenserBlockEntity;
-import com.powerfactor.generator.WindTurbineBlockEntity;
 import com.powerfactor.machine.MachineBlock;
 import java.util.function.BiFunction;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -31,11 +30,10 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Rotors on the front face of a machine: the wind turbine's three big blades, the hydro turbine's
- * runner and the synchronous condenser's flywheel. One renderer, configured per machine.
+ * Rotors on the front face of a machine: the hydro turbine's runner and the synchronous condenser's
+ * flywheel. One renderer, configured per machine.
  */
 public class SpinningRenderers<T extends BlockEntity> implements BlockEntityRenderer<T, SpinningRenderers.State> {
-    public static final ModelLayerLocation WIND = new ModelLayerLocation(PowerFactor.id("wind_rotor"), "main");
     public static final ModelLayerLocation HYDRO = new ModelLayerLocation(PowerFactor.id("hydro_runner"), "main");
     public static final ModelLayerLocation CONDENSER = new ModelLayerLocation(PowerFactor.id("condenser_rotor"), "main");
 
@@ -59,11 +57,6 @@ public class SpinningRenderers<T extends BlockEntity> implements BlockEntityRend
         this.inflate = inflate;
     }
 
-    public static SpinningRenderers<WindTurbineBlockEntity> wind(BlockEntityRendererProvider.Context c) {
-        return new SpinningRenderers<>(c.bakeLayer(WIND).getChild("rotor"), PowerFactor.id("textures/entity/wind_turbine_blades.png"),
-                WindTurbineBlockEntity::angle, 0.62F, 1.25F, 3);
-    }
-
     public static SpinningRenderers<HydroTurbineBlockEntity> hydro(BlockEntityRendererProvider.Context c) {
         return new SpinningRenderers<>(c.bakeLayer(HYDRO).getChild("rotor"), PowerFactor.id("textures/entity/hydro_runner.png"),
                 HydroTurbineBlockEntity::angle, 0.4F, 1F, 0.5F);
@@ -72,18 +65,6 @@ public class SpinningRenderers<T extends BlockEntity> implements BlockEntityRend
     public static SpinningRenderers<SynchronousCondenserBlockEntity> condenser(BlockEntityRendererProvider.Context c) {
         return new SpinningRenderers<>(c.bakeLayer(CONDENSER).getChild("rotor"), PowerFactor.id("textures/entity/condenser_rotor.png"),
                 SynchronousCondenserBlockEntity::angle, 0.53F, 1F, 0.5F);
-    }
-
-    /** Hub plus three blades pointing out along +Y, tip at max Y. */
-    public static LayerDefinition windLayer() {
-        MeshDefinition mesh = new MeshDefinition();
-        PartDefinition rotor = mesh.getRoot().addOrReplaceChild("rotor",
-                CubeListBuilder.create().texOffs(0, 0).addBox(-3, -3, -2, 6, 6, 4), PartPose.ZERO);
-        for (int i = 0; i < 3; i++) {
-            rotor.addOrReplaceChild("blade" + i, CubeListBuilder.create().texOffs(0, 16).addBox(-2, 2, -0.5F, 4, 30, 1),
-                    PartPose.rotation(0, 0.25F, i * (float) (Math.PI * 2 / 3)));
-        }
-        return LayerDefinition.create(mesh, 64, 64);
     }
 
     public static LayerDefinition hydroLayer() {

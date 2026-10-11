@@ -52,6 +52,8 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> TRANSFORMER_OVERLOAD = register("transformer_buzz_overload");
     public static final DeferredHolder<SoundEvent, SoundEvent> PIPE_CLICK = register("pipe_click");
     public static final DeferredHolder<SoundEvent, SoundEvent> TANK_SLOSH = register("tank_slosh");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WIND_TURBINE_SWOOSH = register("wind_turbine_swoosh");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WIND_TURBINE_BRAKE = register("wind_turbine_brake");
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(PowerFactor.id(name)));

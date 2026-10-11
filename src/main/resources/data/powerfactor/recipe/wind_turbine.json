@@ -2,15 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "pattern": [
-    " B ",
+    "PBP",
     "BMB",
-    "PKP"
+    "GKG"
   ],
   "key": {
     "B": "powerfactor:turbine_blade",
     "M": "powerfactor:electric_motor",
     "P": "#c:plates/steel",
-    "K": "powerfactor:control_circuit"
+    "G": "powerfactor:steel_gear",
+    "K": "powerfactor:advanced_circuit"
   },
   "result": {
     "id": "powerfactor:wind_turbine",

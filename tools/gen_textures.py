@@ -4107,30 +4107,6 @@ def hydro_front():
     return img
 
 
-def wind_base():
-    img = Image.new("RGBA", (16, 16))
-    prof = [0.86, 0.94, 0.98, 1.0, 1.0, 0.99, 0.97, 0.95, 0.93, 0.91, 0.89, 0.87, 0.85, 0.83, 0.8, 0.74]
-    for y in range(16):
-        for x in range(16):
-            img.putpixel((x, y), shade(hexc("f2f4f4"), prof[x]))
-    for x in range(16):
-        img.putpixel((x, 15), shade(hexc("f2f4f4"), prof[x] * 0.88))
-    for x in (2, 6, 10, 14):
-        img.putpixel((x, 14), hexc("b9c2c9"))
-    return img
-
-
-def wind_nacelle():
-    img = painted(180, hexc("eef0f0"))
-    for x in range(1, 15):
-        img.putpixel((x, 5), hexc("c3c8ca"))
-        img.putpixel((x, 11), hexc("c3c8ca"))
-    for y in range(7, 10):
-        for x in range(10, 14):
-            img.putpixel((x, y), hexc("5a6168") if y % 2 else hexc("a8b1b8"))
-    for x in range(2, 7):
-        img.putpixel((x, 8), hexc("2a7ad0"))
-    return img
 
 
 CONDENSER = [hexc("4f6fa8"), hexc("3a5590"), hexc("2c4373"), hexc("1f3157"), hexc("141f38")]
@@ -4214,35 +4190,6 @@ def hv_pylon():
         img.putpixel((x, y), hexc("eef2f4"))
     return img
 
-
-def wind_turbine_blades():
-    img = Image.new("RGBA", (64, 64), CLEAR)
-
-    def hub(face, fw, fh):
-        t = Image.new("RGBA", (fw, fh), hexc("eef0f0"))
-        face_edges(t, hexc("b9c2c9"))
-        if face == "north":
-            for y in range(fh):
-                for x in range(fw):
-                    if abs(x + 0.5 - fw / 2) + abs(y + 0.5 - fh / 2) <= 2.2:
-                        t.putpixel((x, y), hexc("d03a2f") if x + y < fw else hexc("9a2a20"))
-        return t
-
-    def blade(face, fw, fh):
-        t = Image.new("RGBA", (fw, fh))
-        for y in range(fh):
-            for x in range(fw):
-                c = hexc("f4f6f6") if face in ("north", "south", "top", "bottom") else hexc("c3c8ca")
-                if face == "east":
-                    c = hexc("9aa3ab")          # leading edge
-                if face in ("north", "south", "east", "west") and y in (1, 2, 4, 5):
-                    c = hexc("d03a2f")          # tip stripes (max-Y end of the box)
-                t.putpixel((x, y), c)
-        return t
-
-    box_uv(img, 0, 0, 6, 6, 4, hub)
-    box_uv(img, 0, 16, 4, 30, 1, blade)
-    return img
 
 
 BRONZE_STOPS = ["3a220e", "663d1a", "8f5a26", "b07634", "cc9348", "e3b46b"]
@@ -4435,14 +4382,17 @@ def phaseC_F():
     save(hydro_side(), "block/hydro_turbine_side.png")
     save(hydro_top(), "block/hydro_turbine_top.png")
     save(hydro_front(), "block/hydro_turbine_front.png")
-    save(wind_base(), "block/wind_turbine_base.png")
-    save(wind_nacelle(), "block/wind_turbine_nacelle.png")
     save(condenser_side(), "block/synchronous_condenser_side.png")
     save(condenser_end(), "block/synchronous_condenser_end.png")
     save(cable_tile(hexc("1c1c1e"), hexc("3a3a3e"), hexc("0c0c0d"), stripe=COPPER_P["2"]), "block/insulated_copper_cable.png")
     save(cable_tile(hexc("a8b1b8"), hexc("d4dbe0"), hexc("7c858c"), band=hexc("f0c020")), "block/aluminum_cable.png")
     save(hv_pylon(), "block/hv_pylon.png")
-    save(wind_turbine_blades(), "entity/wind_turbine_blades.png")
+    save(wind_turbine_nacelle(), "entity/wind_turbine.png")
+    save(wind_tower(), "block/wind_turbine_tower.png")
+    save(wind_foundation(), "block/wind_turbine_foundation.png")
+    save(wind_door(), "block/wind_turbine_door.png")
+    save(wind_bearing(), "block/wind_turbine_bearing.png")
+    save(wind_turbine_icon(), "item/wind_turbine.png")
     save(crusher_jaws(), "entity/crusher_jaws.png")
     save(crusher_inner(), "block/crusher_inner.png")
     save(hydro_runner(), "entity/hydro_runner.png")
@@ -4500,6 +4450,180 @@ def crusher_inner():
     for x in range(16):
         img.putpixel((x, 15), hexc("1d2023"))
     return img
+
+
+# ---------------------------------------------------------------- utility wind turbine
+
+GRP = hexc("eef1f1")          # nacelle glass-fibre skin
+GRP_SEAM = hexc("c8cfd2")
+GRP_SHADE = hexc("dde2e4")
+WIND_TEAL = hexc("1f8a6a")
+
+
+def wind_turbine_nacelle():
+    """Nacelle (20x18x44 box at 0,0), bearing housing, roof cooler, masts, wind vane, cup anemometer,
+    and a pure white patch at (120,120) that the generated blades and spinner tint by vertex colour."""
+    img = Image.new("RGBA", (128, 128), CLEAR)
+    r = random.Random(4401)
+
+    def skin(fw, fh, seed):
+        rr = random.Random(seed)
+        t = Image.new("RGBA", (fw, fh))
+        for y in range(fh):
+            for x in range(fw):
+                t.putpixel((x, y), shade(GRP, 1 + rr.uniform(-0.012, 0.012)))
+        return t
+
+    def body(face, fw, fh):
+        t = skin(fw, fh, hash(face) & 255)
+        d = ImageDraw.Draw(t)
+        if face in ("east", "west"):                       # long sides, 44 x 18
+            for x in (11, 22, 33):
+                d.line((x, 0, x, fh - 1), fill=GRP_SEAM)
+            d.line((0, 4, fw - 1, 4), fill=GRP_SEAM)
+            d.rectangle((0, 12, fw - 1, 13), fill=WIND_TEAL)  # brand stripe
+            d.line((0, 14, fw - 1, 14), fill=shade(WIND_TEAL, 0.7))
+            for x0 in (3, 36):                              # cooling louvres toward each end
+                for y in range(6, 11):
+                    d.line((x0, y, x0 + 5, y), fill=hexc("9aa3a9") if y % 2 == 0 else hexc("5c646a"))
+            d.line((0, fh - 1, fw - 1, fh - 1), fill=GRP_SHADE)
+        elif face == "top":                                 # roof, 20 x 44
+            d.rectangle((0, 0, fw - 1, fh - 1), outline=GRP_SEAM)
+            for y in range(2, fh - 2, 3):                   # grip strip walkway
+                d.line((8, y, 11, y), fill=hexc("b3bbbf"))
+            d.rectangle((3, 18, 16, 25), outline=hexc("a9b2b7"))   # service hatch
+            d.line((4, 19, 15, 19), fill=hexc("ffffff"))
+            for y in range(1, fh - 1, 4):                   # handrail stanchions
+                t.putpixel((1, y), hexc("8f989e"))
+                t.putpixel((fw - 2, y), hexc("8f989e"))
+        elif face == "bottom":
+            t = skin(fw, fh, 77)
+            d = ImageDraw.Draw(t)
+            for y in range(fh):
+                for x in range(fw):
+                    t.putpixel((x, y), shade(t.getpixel((x, y)), 0.86))
+            d.ellipse((4, 14, 15, 25), fill=hexc("3c4247"), outline=hexc("6d757b"))
+        elif face == "south":                              # rear: louvred grille and door
+            d.rectangle((0, 0, fw - 1, fh - 1), outline=GRP_SEAM)
+            for y in range(3, 13):
+                d.line((3, y, 11, y), fill=hexc("8d969c") if y % 2 else hexc("4a5157"))
+            d.rectangle((13, 4, 17, 15), fill=hexc("d9dfe1"), outline=hexc("a9b2b7"))
+            t.putpixel((16, 10), hexc("6d757b"))
+        else:                                               # front, behind the bearing housing
+            d.rectangle((0, 0, fw - 1, fh - 1), outline=GRP_SEAM)
+        return t
+
+    box_uv(img, 0, 0, 20, 18, 44, body)
+
+    def housing(face, fw, fh):
+        t = Image.new("RGBA", (fw, fh), hexc("d6dcdf"))
+        ImageDraw.Draw(t).rectangle((0, 0, fw - 1, fh - 1), outline=hexc("a9b2b7"))
+        return t
+
+    box_uv(img, 0, 62, 14, 14, 2, housing)
+
+    def cooler(face, fw, fh):
+        t = Image.new("RGBA", (fw, fh), hexc("c3cacd"))
+        d = ImageDraw.Draw(t)
+        if face == "top":
+            for y in range(fh):
+                d.line((1, y, fw - 2, y), fill=hexc("7e878d") if y % 2 else hexc("b9c1c5"))
+        else:
+            for x in range(1, fw - 1, 2):
+                d.line((x, 0, x, fh - 1), fill=hexc("7e878d"))
+        d.rectangle((0, 0, fw - 1, fh - 1), outline=hexc("9aa3a9"))
+        return t
+
+    box_uv(img, 32, 62, 14, 4, 10, cooler)
+    box_uv(img, 80, 62, 1, 9, 1, lambda f, w, h: Image.new("RGBA", (w, h), hexc("9da6ab")))
+    box_uv(img, 84, 62, 1, 3, 6, lambda f, w, h: Image.new("RGBA", (w, h), hexc("e8ecec")))
+    box_uv(img, 100, 62, 2, 2, 2, lambda f, w, h: Image.new("RGBA", (w, h), hexc("50585e")))
+    box_uv(img, 100, 66, 4, 1, 1, lambda f, w, h: Image.new("RGBA", (w, h), hexc("8a9399")))
+    box_uv(img, 110, 62, 2, 2, 2, lambda f, w, h: Image.new("RGBA", (w, h), hexc("2a2e31")))
+    ImageDraw.Draw(img).rectangle((120, 120, 127, 127), fill=(255, 255, 255, 255))
+    return img
+
+
+def wind_tower():
+    """Tubular tower steel: off-white with a faint weathering streak."""
+    r = random.Random(4411)
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            c = shade(hexc("f1f3f3"), 1 + r.uniform(-0.01, 0.01) - (0.025 if x in (5, 11) and y > 8 else 0))
+            img.putpixel((x, y), c)
+    return img
+
+
+def wind_foundation():
+    """Poured concrete footing."""
+    r = random.Random(4412)
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            img.putpixel((x, y), shade(hexc("a7aaa8"), 1 + r.uniform(-0.06, 0.06)))
+    for _ in range(10):
+        img.putpixel((r.randrange(16), r.randrange(16)), hexc("8d908e"))
+    ImageDraw.Draw(img).rectangle((0, 0, 15, 15), outline=hexc("8b8e8c"))
+    return img
+
+
+def wind_door():
+    """Steel service door at the foot of the tower: porthole, handle, warning label."""
+    img = Image.new("RGBA", (16, 16), hexc("dfe3e4"))
+    d = ImageDraw.Draw(img)
+    d.rectangle((0, 0, 15, 15), outline=hexc("8f989e"))
+    d.rectangle((5, 2, 10, 5), fill=hexc("4d6f86"), outline=hexc("8f989e"))
+    d.rectangle((11, 8, 12, 9), fill=hexc("50585e"))
+    d.rectangle((4, 11, 11, 13), fill=hexc("f2c230"))
+    for x in range(4, 12, 2):
+        img.putpixel((x, 12), hexc("222222"))
+    return img
+
+
+def wind_bearing():
+    """Yaw bearing ring under the nacelle: dark steel with a bolt circle."""
+    img = Image.new("RGBA", (16, 16), hexc("5a6167"))
+    for y in range(16):
+        for x in range(16):
+            img.putpixel((x, y), shade(hexc("5a6167"), 1.08 if y < 2 else 0.9 if y > 13 else 1.0))
+    for x in range(1, 16, 3):
+        img.putpixel((x, 7), hexc("b9c2c9"))
+        img.putpixel((x, 8), hexc("3a4045"))
+    return img
+
+
+def wind_turbine_icon():
+    """Inventory icon: the turbine seen from upwind."""
+    img = blank()
+    hub = (7.5, 6.5)
+    import math
+    for k, ang in enumerate((90, 210, 330)):
+        a = math.radians(ang)
+        for i in range(2, 26):
+            t = i / 4
+            x, y = hub[0] + math.cos(a) * t, hub[1] - math.sin(a) * t
+            px, py = int(round(x - 0.5)), int(round(y - 0.5))
+            if 0 <= px < 16 and 0 <= py < 16:
+                img.putpixel((px, py), hexc("d2352b") if t > 5.1 else hexc("f3f5f5") if k == 0 else hexc("e3e8ea"))
+    for y in range(8, 15):
+        img.putpixel((7, y), hexc("f3f5f5"))
+        img.putpixel((8, y), hexc("c4cbcf"))
+        if y > 11:
+            img.putpixel((6, y), hexc("e7ebec"))
+            img.putpixel((9, y), hexc("b3bbbf"))
+    for x in range(4, 12):
+        img.putpixel((x, 15), hexc("8b8e8c"))
+    for x, y, c in ((7, 6, "ffffff"), (8, 6, "d5dbde"), (7, 7, "d5dbde"), (8, 7, "a9b2b7")):
+        img.putpixel((x, y), hexc(c))
+    # Dark outline so it reads on any background.
+    out = img.copy()
+    for x in range(16):
+        for y in range(16):
+            if img.getpixel((x, y))[3] == 0 and any(0 <= x + dx < 16 and 0 <= y + dy < 16 and img.getpixel((x + dx, y + dy))[3]
+                                                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                out.putpixel((x, y), hexc("3a4045", 200))
+    return out
 
 
 if __name__ == "__main__":

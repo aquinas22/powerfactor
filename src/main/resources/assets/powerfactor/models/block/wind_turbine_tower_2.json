@@ -1,0 +1,121 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "tube": "powerfactor:block/wind_turbine_tower",
+    "footing": "powerfactor:block/wind_turbine_foundation",
+    "door": "powerfactor:block/wind_turbine_door",
+    "particle": "powerfactor:block/wind_turbine_tower"
+  },
+  "elements": [
+    {
+      "from": [
+        4.0,
+        0,
+        6.3431
+      ],
+      "to": [
+        12.0,
+        16,
+        9.6569
+      ],
+      "faces": {
+        "east": {
+          "texture": "#tube"
+        },
+        "west": {
+          "texture": "#tube"
+        },
+        "up": {
+          "texture": "#tube"
+        }
+      }
+    },
+    {
+      "from": [
+        6.3431,
+        0,
+        4.0
+      ],
+      "to": [
+        9.6569,
+        16,
+        12.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tube"
+        },
+        "south": {
+          "texture": "#tube"
+        },
+        "up": {
+          "texture": "#tube"
+        }
+      }
+    },
+    {
+      "from": [
+        4.0,
+        0,
+        6.3431
+      ],
+      "to": [
+        12.0,
+        16,
+        9.6569
+      ],
+      "faces": {
+        "east": {
+          "texture": "#tube"
+        },
+        "west": {
+          "texture": "#tube"
+        },
+        "up": {
+          "texture": "#tube"
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        6.3431,
+        0,
+        4.0
+      ],
+      "to": [
+        9.6569,
+        16,
+        12.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tube"
+        },
+        "south": {
+          "texture": "#tube"
+        },
+        "up": {
+          "texture": "#tube"
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    }
+  ]
+}
