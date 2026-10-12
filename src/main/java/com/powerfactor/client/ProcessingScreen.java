@@ -60,14 +60,10 @@ public class ProcessingScreen<M extends ProcessingMenu> extends MachineScreen<M>
         int color = driveColor(menu.driveState(), menu.speed());
         Skin.lamp(g, x + MAIN_W - 14, y + 6, color);
 
-        Skin.well(g, x + VIEW_X, y + VIEW_Y, VIEW_W, VIEW_H);
-        g.fillGradient(x + VIEW_X + 1, y + VIEW_Y + 1, x + VIEW_X + VIEW_W - 1, y + VIEW_Y + VIEW_H - 1, 0xFF1C2A33, 0xFF0B1116);
-        if (menu.pos != null && minecraft.level != null && minecraft.level.getBlockEntity(menu.pos) != null) {
-            float yaw = 200 + (net.minecraft.util.Util.getMillis() % 24000L) / 24000F * 360F;
-            MachineView.draw(g, minecraft.level.getBlockEntity(menu.pos), x + VIEW_X + 1, y + VIEW_Y + 1, x + VIEW_X + VIEW_W - 1,
-                    y + VIEW_Y + VIEW_H - 1, yaw, minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false));
-        }
-        g.fill(x + VIEW_X + 2, y + VIEW_Y + 2, x + VIEW_X + 4, y + VIEW_Y + 20, 0x18FFFFFF);
+        // Power scope where the machine's waves and numbers live; the 3D model is in the Config tab.
+        double ceNow = Math.hypot(menu.fe(), menu.ee());
+        Skin.scope(g, x + VIEW_X, y + VIEW_Y, VIEW_W, 26, (float) (ceNow / Math.max(1, ratedCe)), menu.fe() > 0);
+        Skin.lcd(g, x + VIEW_X, y + VIEW_Y + 27, VIEW_W, VIEW_H - 27);
 
         // Machine slots, styled by role: the first output is the main product, in a big well.
         boolean firstOutput = true;
@@ -111,11 +107,13 @@ public class ProcessingScreen<M extends ProcessingMenu> extends MachineScreen<M>
     protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
         double ce = Math.hypot(menu.fe(), menu.ee());
         String pf = ce < 0.5 ? "PF ---" : String.format("PF %.2f", menu.fe() / ce);
+        int lx = VIEW_X + 3, ly = VIEW_Y + 29;
+        g.text(font, menu.fe() + " FE/t", lx, ly, Skin.FE, false);
+        g.text(font, menu.ee() + " EE/t", lx, ly + 9, Skin.EE, false);
+        g.text(font, pf, lx, ly + 18, Skin.LCD_TEXT, false);
         int ty = STRIP_Y + 3;
-        g.text(font, menu.fe() + " FE/t", 12, ty, Skin.FE, false);
-        g.text(font, menu.ee() + " EE/t", 62, ty, Skin.EE, false);
-        g.text(font, pf, 164 - font.width(pf), ty, Skin.LCD_TEXT, false);
-        g.text(font, font.substrByWidth(electrical().status(), 104).getString(), 12, ty + 11, Skin.LCD_TEXT, false);
+        g.text(font, font.substrByWidth(electrical().status(), 150).getString(), 12, ty, Skin.LCD_TEXT, false);
+        g.text(font, Component.translatable("gui.powerfactor.speed"), 12, ty + 11, Skin.DIM, false);
     }
 
     @Override

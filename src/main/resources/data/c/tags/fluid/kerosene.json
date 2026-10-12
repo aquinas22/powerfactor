@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:jet_fuel",
+    "powerfactor:flowing_jet_fuel"
+  ]
+}

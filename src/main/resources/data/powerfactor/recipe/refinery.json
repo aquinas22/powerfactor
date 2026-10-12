@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PTP",
+    "PKP",
+    "HFH"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "T": "powerfactor:fluid_tank",
+    "K": "powerfactor:control_circuit",
+    "H": "powerfactor:heating_coil",
+    "F": "minecraft:blast_furnace"
+  },
+  "result": {
+    "id": "powerfactor:refinery",
+    "count": 1
+  }
+}

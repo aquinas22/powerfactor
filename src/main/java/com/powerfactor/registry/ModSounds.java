@@ -71,6 +71,8 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> LASER_ENGRAVER_RUN = register("laser_engraver_run");
     public static final DeferredHolder<SoundEvent, SoundEvent> RADIO_KEY = register("radio_key");
     public static final DeferredHolder<SoundEvent, SoundEvent> RADIO_SQUELCH = register("radio_squelch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PUMPJACK_RUN = register("pumpjack_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> REFINERY_RUN = register("refinery_run");
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(PowerFactor.id(name)));

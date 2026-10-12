@@ -18,6 +18,8 @@ public final class PowerFactorCommonConfig {
     }
 
     public static final ModConfigSpec.BooleanValue RUBBER_TREES = BUILDER.define("generate_rubber_trees", true);
+    public static final ModConfigSpec.BooleanValue OIL = BUILDER.comment("Underground crude oil reservoirs and desert tar pits")
+            .define("generate_oil", true);
 
     static {
         BUILDER.pop();
@@ -31,6 +33,9 @@ public final class PowerFactorCommonConfig {
         }
         if (feature.equals("rubber_trees")) {
             return RUBBER_TREES.get();
+        }
+        if (feature.equals("oil")) {
+            return OIL.get();
         }
         var value = ORE_GEN.get(feature);
         return value == null || value.get();

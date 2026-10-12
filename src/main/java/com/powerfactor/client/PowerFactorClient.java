@@ -56,6 +56,19 @@ public final class PowerFactorClient {
     @SubscribeEvent
     static void onPictureInPicture(net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent event) {
         event.register(MachineView.State.class, MachineView.Renderer::new);
+        event.register(SideConfigView.State.class, SideConfigView.Renderer::new);
+    }
+
+    @SubscribeEvent
+    static void onLiquidModels(net.neoforged.neoforge.client.event.RegisterFluidModelsEvent event) {
+        for (var liquid : com.powerfactor.registry.ModFluids.LIQUIDS) {
+            int tint = liquid.tint();
+            event.register(new net.minecraft.client.renderer.block.FluidModel.Unbaked(
+                    new net.minecraft.client.resources.model.sprite.Material(net.minecraft.resources.Identifier.withDefaultNamespace("block/water_still")),
+                    new net.minecraft.client.resources.model.sprite.Material(net.minecraft.resources.Identifier.withDefaultNamespace("block/water_flow")),
+                    new net.minecraft.client.resources.model.sprite.Material(net.minecraft.resources.Identifier.withDefaultNamespace("block/water_overlay")),
+                    (net.neoforged.neoforge.client.fluid.FluidTintSource) state -> tint), liquid.source(), liquid.flowing());
+        }
     }
 
     @SubscribeEvent
@@ -88,6 +101,7 @@ public final class PowerFactorClient {
     static void onLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(EngineRenderer.LAYER, EngineRenderer::createLayer);
         event.registerLayerDefinition(JetpackLayer.LAYER, JetpackLayer::createLayer);
+        event.registerLayerDefinition(PumpjackRenderer.LAYER, PumpjackRenderer::createLayer);
         event.registerLayerDefinition(LaserEngraverRenderer.LAYER, LaserEngraverRenderer::createLayer);
         event.registerLayerDefinition(TurbineRotorRenderer.LAYER, TurbineRotorRenderer::createLayer);
         event.registerLayerDefinition(EnderCoreRenderer.LAYER, EnderCoreRenderer::createLayer);
@@ -112,6 +126,7 @@ public final class PowerFactorClient {
         event.registerBlockEntityRenderer(ModBlockEntities.TESLA_COIL.get(), TeslaCoilRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.UPGRADE_TABLE.get(), UpgradeTableRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.PIPE.get(), PipeRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.PUMPJACK.get(), PumpjackRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.RECIPE_MACHINES.get(com.powerfactor.machine.RecipeMachine.LASER_ENGRAVER).get(),
                 LaserEngraverRenderer::new);
     }
@@ -141,5 +156,7 @@ public final class PowerFactorClient {
         event.register(ModMenus.ELECTROLYZER.get(), GeneratorScreens.Electrolyzer::new);
         event.register(ModMenus.FUEL_CELL.get(), GeneratorScreens.FuelCell::new);
         event.register(ModMenus.UPGRADE_TABLE.get(), UpgradeTableScreen::new);
+        event.register(ModMenus.PUMPJACK.get(), GeneratorScreens.Pumpjack::new);
+        event.register(ModMenus.REFINERY.get(), GeneratorScreens.Refinery::new);
     }
 }

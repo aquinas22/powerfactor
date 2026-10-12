@@ -68,6 +68,7 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("laser_engraver_needs_right_mask", () -> PowerFactorGameTests::laserEngraverMakesChips);
         FUNCTIONS.register("mining_drill_instamines_dirt", () -> PowerFactorGameTests::drillInstaminesDirt);
         FUNCTIONS.register("woodcutter_drill_and_wrench", () -> PowerFactorGameTests::woodcutterAndWrench);
+        FUNCTIONS.register("pumpjack_and_refinery", () -> PowerFactorGameTests::pumpjackAndRefinery);
     }
 
     public static void register(IEventBus modBus) {
@@ -83,7 +84,7 @@ public final class PowerFactorGameTests {
         var env = event.registerEnvironment(PowerFactor.id("default"));
         java.util.Set<String> wide = java.util.Set.of("long_transformer_chain", "breaker_splits_grid", "tesla_coil_zaps_zombie",
                 "bare_wire_shocks_coated_does_not");
-        java.util.Set<String> tall = java.util.Set.of("chainsaw_fells_tree");
+        java.util.Set<String> tall = java.util.Set.of("chainsaw_fells_tree", "pumpjack_and_refinery");
         for (var fn : FUNCTIONS.getEntries()) {
             String structure = wide.contains(fn.getId().getPath()) ? "empty_9x3x3" : tall.contains(fn.getId().getPath()) ? "empty_7x8x7"
                     : "empty_3x3x3";
@@ -732,6 +733,45 @@ public final class PowerFactorGameTests {
                 net.minecraft.world.InteractionHand.MAIN_HAND, hit));
         helper.assertValueEqual(helper.getBlockState(CENTER).getValue(MachineBlock.FACING), Direction.EAST, "facing after one turn");
         helper.succeed();
+    }
+
+    private static void pumpjackAndRefinery(GameTestHelper helper) {
+        // A small reservoir: crude oil sealed in stone under the pumpjack.
+        var oil = com.powerfactor.registry.ModFluids.CRUDE_OIL.block().get().defaultBlockState();
+        for (BlockPos p : BlockPos.betweenClosed(new BlockPos(0, 0, 0), new BlockPos(6, 2, 6))) {
+            helper.setBlock(p, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        }
+        for (BlockPos p : BlockPos.betweenClosed(new BlockPos(2, 0, 2), new BlockPos(4, 1, 4))) {
+            helper.setBlock(p, oil);
+        }
+        BlockPos jack = new BlockPos(3, 3, 3);
+        helper.setBlock(jack, ModBlocks.PUMPJACK.get().defaultBlockState());
+        helper.setBlock(jack.above(), ModBlocks.PUMPJACK.get().defaultBlockState().setValue(com.powerfactor.machine.TallMachineBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+        var pump = helper.getBlockEntity(jack, com.powerfactor.oil.PumpjackBlockEntity.class);
+        feed(helper, pump.getEnergy(), 400);
+        BlockPos col = new BlockPos(0, 3, 0);
+        helper.setBlock(col, ModBlocks.REFINERY.get().defaultBlockState());
+        helper.setBlock(col.above(), ModBlocks.REFINERY.get().defaultBlockState().setValue(com.powerfactor.machine.TallMachineBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+        var refinery = helper.getBlockEntity(col, com.powerfactor.oil.RefineryBlockEntity.class);
+        feed(helper, refinery.getEnergy(), 500);
+        helper.runAfterDelay(120, () -> {
+            int crude = pump.getTank().amount(0);
+            helper.assertTrue(crude >= 1000, "pumpjack lifted only " + crude + " mB");
+            int left = 0;
+            for (BlockPos p : BlockPos.betweenClosed(new BlockPos(2, 0, 2), new BlockPos(4, 1, 4))) {
+                left += helper.getLevel().getFluidState(helper.absolutePos(p)).isSource() ? 1 : 0;
+            }
+            helper.assertTrue(left < 18, "reservoir didn't drain (" + left + " blocks left)");
+            // Hand the crude to the refinery, as a pipe would.
+            refinery.getTanks().add(com.powerfactor.oil.RefineryBlockEntity.CRUDE, crude);
+        });
+        helper.runAfterDelay(220, () -> {
+            helper.assertTrue(refinery.getTanks().amount(com.powerfactor.oil.RefineryBlockEntity.DIESEL) > 200, "no diesel");
+            helper.assertTrue(refinery.getTanks().amount(com.powerfactor.oil.RefineryBlockEntity.JET) > 150, "no jet fuel");
+            helper.succeed();
+        });
     }
 
     private PowerFactorGameTests() {}

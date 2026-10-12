@@ -150,6 +150,32 @@ public final class Skin {
         g.fill(x + 1, y + 1, x + 2, y + 2, 0xC0FFFFFF);
     }
 
+    /**
+     * An oscilloscope LCD: three phase waves (red, yellow, blue, 120 degrees apart) scrolling while
+     * the machine runs, their height following the load.
+     */
+    public static void scope(GuiGraphicsExtractor g, int x, int y, int w, int h, float load, boolean running) {
+        lcd(g, x, y, w, h);
+        int mid = y + h / 2;
+        for (int gx = x + 6; gx < x + w - 2; gx += 8) {
+            g.fill(gx, y + 2, gx + 1, y + h - 2, 0x1830FF90);
+        }
+        g.fill(x + 2, mid, x + w - 2, mid + 1, 0x3030FF90);
+        float amp = running ? Math.max(0.15F, Math.min(1F, load)) * (h / 2F - 3) : 0.8F;
+        double t = Util.getMillis() / 200.0;
+        int[] colors = {0xFFFF5A4A, 0xFFFFD040, 0xFF4FA8FF};
+        for (int ph = 0; ph < 3; ph++) {
+            int prev = Integer.MIN_VALUE;
+            for (int px = x + 2; px < x + w - 2; px++) {
+                double a = (px - x) / 7.0 - t + ph * 2.0943951;
+                int py = mid - (int) Math.round(Math.sin(a) * amp);
+                int lo = prev == Integer.MIN_VALUE ? py : Math.min(prev, py), hi = prev == Integer.MIN_VALUE ? py : Math.max(prev, py);
+                g.fill(px, lo, px + 1, hi + 1, colors[ph]);
+                prev = py;
+            }
+        }
+    }
+
     /** Thin bar for a 0..1 value. */
     public static void bar(GuiGraphicsExtractor g, int x, int y, int w, float value, int color) {
         g.fill(x, y, x + w, y + 3, 0xFF0A0F12);

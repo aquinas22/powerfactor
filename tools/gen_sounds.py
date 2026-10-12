@@ -1554,6 +1554,42 @@ def radio_squelch(seconds=0.32):
 ONESHOTS_3.update({"radio_key": radio_key, "radio_squelch": radio_squelch})
 
 
+def pumpjack_run(seconds=4.0):
+    """A pumpjack: slow gearbox grind with the beam's rhythm (two strokes per loop), a creak at the top of
+    each stroke and the clunk of the rod at the bottom."""
+    n = int(SR * seconds)
+    r = random.Random(1801)
+    motor = harm(phase_track(n, 50.0, [(0.5, 3.0, 0.0)]), [1.0, 0.6, 0.4, 0.25, 0.15])
+    motor = filt_periodic(motor, ("lp", 900, 0.7))
+    grind = loop_noise(n, r, ("bp", 300, 0.7))
+    grind = [x * (0.6 + 0.4 * math.sin(TAU * 0.5 * i / SR) ** 2) for i, x in enumerate(grind)]
+    hits = [0.0] * n
+    for k in range(2):
+        top = int((k * 2.0 + 0.4) * SR)
+        bottom = int((k * 2.0 + 1.4) * SR)
+        add_at(hits, squeal(r, 0.45, [(420, 1.0), (760, 0.4)], 0.15, 0.25), top, 0.25, circular=True)
+        add_at(hits, mix((thump(int(0.4 * SR), 120, 60, 0.12), 1.0), (burst(int(0.2 * SR), r, 0.03, [("bp", 700, 1.0)]), 0.5)),
+               bottom, 0.6, circular=True)
+    return mix((motor, 0.3), (grind, 0.3), (hits, 0.8))
+
+
+def refinery_run(seconds=3.0):
+    """Refinery: burner roar under the column, liquid bubbling in the trays, and a soft steam hiss."""
+    n = int(SR * seconds)
+    r = random.Random(1802)
+    roar = loop_noise(n, r, ("lp", 400, 0.7), ("hp", 40, 0.7))
+    roar = [x * e for x, e in zip(roar, loop_env(n, r, 10, 0.7, 1.0))]
+    bub = [0.0] * n
+    for _ in range(160):
+        add_at(bub, bubble(r.uniform(180, 700), r.uniform(0.006, 0.02)), r.randrange(n), r.uniform(0.2, 1.0), circular=True)
+    hiss = loop_noise(n, r, ("hp", 3000, 0.7))
+    return mix((roar, 0.7), (bub, 0.35), (hiss, 0.08))
+
+
+LOOPS_3["pumpjack_run"] = (pumpjack_run, -16.0)
+LOOPS_3["refinery_run"] = (refinery_run, -17.0)
+
+
 # events whose sounds list holds several files (Minecraft picks one at random)
 VARIANTS = {"sword_swing": ["sword_swing1", "sword_swing2", "sword_swing3"]}
 

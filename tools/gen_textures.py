@@ -4395,6 +4395,7 @@ def phaseC_F():
 
     phase_drill_big()
     phase_radio()
+    phase_oil()
 
 def crusher_jaws():
     """Jaw plate (9x4x2) at (0,0) and a tooth (1x4x1) at (0,8): manganese steel, worn bright on the crushing faces."""
@@ -6216,6 +6217,78 @@ def radio_tower_mast():
 def phase_radio():
     save(walkie_talkie(), "item/walkie_talkie.png")
     save(radio_tower_mast(), "block/radio_tower_mast.png")
+
+
+# ---------------------------------------------------------------- oil: pumpjack and refinery
+
+def pumpjack_entity():
+    """64x64 sheet for the pumpjack's moving parts (see PumpjackRenderer.createLayer)."""
+    img = Image.new("RGBA", (64, 64), CLEAR)
+
+    def solid(c, edge=None, stripe=None):
+        def paint(face, fw, fh):
+            t = Image.new("RGBA", (fw, fh), hexc(c))
+            for y in range(fh):
+                for x in range(fw):
+                    if (x * 7 + y * 3) % 5 == 0:
+                        t.putpixel((x, y), shade(hexc(c), 0.92))
+            if stripe:
+                for x in range(fw):
+                    t.putpixel((x, fh // 2), hexc(stripe))
+            if edge:
+                face_edges(t, hexc(edge))
+            return t
+        return paint
+
+    def hazard(face, fw, fh):
+        t = Image.new("RGBA", (fw, fh))
+        for y in range(fh):
+            for x in range(fw):
+                t.putpixel((x, y), hexc("f2c230") if ((x + y) // 2) % 2 == 0 else hexc("1e1e1e"))
+        return t
+
+    box_uv(img, 0, 0, 24, 2, 2, solid("c8382c", "7a1c16", "e86a5a"))     # walking beam: red I-beam
+    box_uv(img, 0, 6, 4, 8, 6, hazard)                                     # horse head
+    box_uv(img, 24, 6, 2, 12, 2, solid("7d868e", "3d444b"))                # samson post legs
+    box_uv(img, 0, 22, 6, 6, 2, solid("3a4046", "22272b"))                 # counterweight
+    box_uv(img, 20, 22, 1, 10, 1, solid("aab4bc"))                         # pitman arm / polished rod
+    box_uv(img, 32, 22, 2, 2, 2, solid("2a2e31"))                          # pivot bearing
+    return img
+
+
+def refinery_column():
+    """Distillation column skin: insulated steel with tray flanges every 4 px and a teal stripe."""
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            c = shade(hexc("b9c2c9"), 1.0 - abs(x - 6) * 0.035)
+            if y % 4 == 0:
+                c = hexc("7d868e")
+            if y % 4 == 1:
+                c = shade(c, 0.9)
+            img.putpixel((x, y), c)
+    for y in range(16):
+        img.putpixel((12, y), hexc("1f8a6a"))
+    return img
+
+
+def refinery_base():
+    """Heater skid: dark steel with a glowing burner window."""
+    img = painted(931, hexc("3f464d"))
+    d = ImageDraw.Draw(img)
+    d.rectangle((4, 8, 11, 12), fill=hexc("1a1a1a"))
+    for x in range(5, 11):
+        img.putpixel((x, 11), hexc("ff7a2a"))
+        img.putpixel((x, 10), hexc("ffb040") if x % 2 else hexc("ff7a2a"))
+    for x in range(1, 15, 3):
+        img.putpixel((x, 2), hexc("b9c2c9"))
+    return img
+
+
+def phase_oil():
+    save(pumpjack_entity(), "entity/pumpjack.png")
+    save(refinery_column(), "block/refinery_column.png")
+    save(refinery_base(), "block/refinery_base.png")
 
 
 if __name__ == "__main__":

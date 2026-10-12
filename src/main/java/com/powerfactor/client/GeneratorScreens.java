@@ -233,5 +233,96 @@ public final class GeneratorScreens {
         }
     }
 
+    /** A 3D view of the machine at the left of a classic-layout screen. */
+    /** A power scope at the left of a classic-layout screen (the 3D model lives in the Config tab). */
+    static void view(GuiGraphicsExtractor g, net.minecraft.client.Minecraft mc, net.minecraft.core.BlockPos pos, int x, int y, int w, int h,
+            float load, boolean running) {
+        Skin.scope(g, x, y, w, h, load, running);
+    }
+
+    public static class Pumpjack extends Base<DieselMenu.Pumpjack> {
+        public Pumpjack(DieselMenu.Pumpjack menu, Inventory inventory, Component title) {
+            super(menu, inventory, title, "diesel_generator");
+        }
+
+        private boolean running() {
+            return (menu.get(DieselMenu.DATA_FLAGS) & 1) != 0;
+        }
+
+        private boolean dry() {
+            return (menu.get(DieselMenu.DATA_FLAGS) & 2) != 0;
+        }
+
+        @Override
+        protected Electrical electrical() {
+            return new Electrical(1.0, 60.0, menu.get(DieselMenu.DATA_FE), menu.get(DieselMenu.DATA_EE), 75,
+                    Component.translatable(dry() ? "gui.powerfactor.pumpjack.dry" : running() ? "gui.powerfactor.pumpjack.pumping"
+                            : "gui.powerfactor.pumpjack.idle"), dry() ? 0xFFFF6A5A : running() ? 0xFF55FF55 : 0xFFFFB020);
+        }
+
+        @Override
+        protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+            super.extractMain(g, mouseX, mouseY);
+            view(g, minecraft, menu.pos, leftPos + 8, topPos + 20, 52, 52, menu.get(DieselMenu.DATA_FE) / 60F, running());
+            GuiUtil.fluidGauge(g, leftPos + 134, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK),
+                    com.powerfactor.oil.PumpjackBlockEntity.TANK, 0xFF2A2018);
+            GuiUtil.energyBar(g, leftPos + 156, topPos + 20, 12, 52, menu.unsigned(DieselMenu.DATA_STORED) * 10, 12_000);
+            Skin.lcd(g, leftPos + 64, topPos + 20, 66, 52);
+        }
+
+        @Override
+        protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
+            int x = 68;
+            g.text(font, Component.translatable(dry() ? "gui.powerfactor.pumpjack.dry" : running() ? "gui.powerfactor.pumpjack.pumping"
+                    : "gui.powerfactor.pumpjack.idle"), x, 24, dry() ? 0xFFFF6A5A : running() ? Skin.LCD_TEXT : 0xFFFFB020, false);
+            g.text(font, menu.get(DieselMenu.DATA_FE) + " FE/t", x, 36, Skin.FE, false);
+            g.text(font, Component.translatable("gui.powerfactor.pumpjack.blocks", menu.unsigned(DieselMenu.DATA_TANK2)), x, 48, Skin.LCD_TEXT, false);
+            g.text(font, menu.unsigned(DieselMenu.DATA_TANK) + " mB", x, 60, Skin.TEXT, false);
+        }
+    }
+
+    public static class Refinery extends Base<DieselMenu.Refinery> {
+        public Refinery(DieselMenu.Refinery menu, Inventory inventory, Component title) {
+            super(menu, inventory, title, "diesel_generator");
+        }
+
+        private boolean running() {
+            return (menu.get(DieselMenu.DATA_FLAGS) & 1) != 0;
+        }
+
+        @Override
+        protected Electrical electrical() {
+            return new Electrical(1.0, 60.0, menu.get(DieselMenu.DATA_FE), menu.get(DieselMenu.DATA_EE), 110,
+                    Component.translatable(running() ? "gui.powerfactor.refinery.running" : "gui.powerfactor.refinery.idle"),
+                    running() ? 0xFF55FF55 : 0xFFFFB020);
+        }
+
+        @Override
+        protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+            super.extractMain(g, mouseX, mouseY);
+            view(g, minecraft, menu.pos, leftPos + 8, topPos + 20, 52, 52, menu.get(DieselMenu.DATA_FE) / 100F, running());
+            int cap = com.powerfactor.oil.RefineryBlockEntity.TANK;
+            GuiUtil.fluidGauge(g, leftPos + 68, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK), cap, 0xFF2A2018);
+            Skin.chevrons(g, leftPos + 88, topPos + 42, 2, running() ? (net.minecraft.util.Util.getMillis() % 1200) / 1200F : 0, running());
+            GuiUtil.fluidGauge(g, leftPos + 108, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK2), cap, 0xFFC89A32);
+            GuiUtil.fluidGauge(g, leftPos + 130, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK3), cap, 0xFFE6D9A4);
+            GuiUtil.energyBar(g, leftPos + 156, topPos + 20, 12, 52, menu.unsigned(DieselMenu.DATA_STORED) * 10, 20_000);
+        }
+
+        @Override
+        public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
+            super.extractRenderState(g, mouseX, mouseY, a);
+            String[] keys = {"fluid.powerfactor.crude_oil", "fluid.powerfactor.diesel", "fluid.powerfactor.jet_fuel"};
+            int[] xs = {68, 108, 130}, idx = {DieselMenu.DATA_TANK, DieselMenu.DATA_TANK2, DieselMenu.DATA_TANK3};
+            for (int i = 0; i < 3; i++) {
+                if (isHovering(xs[i], 20, 16, 52, mouseX, mouseY)) {
+                    g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.fluid_amount", Component.translatable(keys[i]),
+                            String.format("%,d", menu.unsigned(idx[i])), String.format("%,d", com.powerfactor.oil.RefineryBlockEntity.TANK)),
+                            mouseX, mouseY);
+                }
+            }
+        }
+    }
+
     private GeneratorScreens() {}
 }

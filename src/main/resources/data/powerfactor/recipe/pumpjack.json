@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "SBS",
+    "GMG",
+    "CPC"
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "B": "powerfactor:steel_gear",
+    "G": "#c:gears/steel",
+    "M": "powerfactor:electric_motor",
+    "C": "minecraft:smooth_stone",
+    "P": "powerfactor:electric_pump"
+  },
+  "result": {
+    "id": "powerfactor:pumpjack",
+    "count": 1
+  }
+}

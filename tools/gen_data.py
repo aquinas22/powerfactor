@@ -2087,6 +2087,113 @@ def phase_radio():
     })
 
 
+# ======================================================================== oil
+
+def phase_oil():
+    six = ("north", "east", "south", "west", "up", "down")
+    liquids = {"crude_oil": "Crude Oil", "diesel": "Diesel", "jet_fuel": "Jet Fuel"}
+    for lid, label in liquids.items():
+        write(asset("models", "block", f"{lid}.json"), {"textures": {"particle": "minecraft:block/water_still"}})
+        write(asset("blockstates", f"{lid}.json"), {"variants": {"": {"model": pf(f"block/{lid}")}}})
+        write(asset("items", f"{lid}_bucket.json"), {"model": {"type": "neoforge:fluid_container", "fluid": pf(lid),
+            "textures": {"base": "minecraft:item/bucket", "fluid": "neoforge:item/mask/bucket_fluid", "cover": "neoforge:item/mask/bucket_fluid_cover"}}})
+        name(f"block.{NS}.{lid}", label)
+        name(f"fluid.{NS}.{lid}", label)
+        name(f"item.{NS}.{lid}_bucket", f"{label} Bucket")
+        tag("fluid", "c", lid.replace("crude_oil", "oil"), [pf(lid), pf("flowing_" + lid)])
+    tag("fluid", "c", "crude_oil", [pf("crude_oil"), pf("flowing_crude_oil")])
+    tag("fluid", "c", "kerosene", [pf("jet_fuel"), pf("flowing_jet_fuel")])
+    tag("item", "c", "buckets/crude_oil", [pf("crude_oil_bucket")])
+    tag("item", "c", "buckets/diesel", [pf("diesel_bucket")])
+    tag("item", "c", "buckets/jet_fuel", [pf("jet_fuel_bucket")])
+
+    # Pumpjack: concrete pad, wellhead, motor box; the moving parts are drawn by PumpjackRenderer.
+    t = {"pad": "minecraft:block/gray_concrete", "steel": pf("block/steel_block"), "motor": pf("block/refinery_base"),
+         "particle": "minecraft:block/gray_concrete"}
+    box = lambda frm, to, tex: {"from": frm, "to": to, "faces": {d: {"texture": tex} for d in six}}
+    els = [box([0, 0, 0], [16, 2, 16], "#pad"), box([6, 2, 0.5], [10, 6, 4.5], "#steel"), box([7, 6, 1.5], [9, 8, 3.5], "#steel"),
+           box([3, 2, 10], [13, 7, 15], "#motor"), box([2, 2, 7], [14, 3, 9], "#steel")]
+    write(asset("models", "block", "pumpjack.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els})
+    # Refinery: heater skid and a two-block distillation column with flanges, side draw-off pipes and a vent.
+    t = {"base": pf("block/refinery_base"), "col": pf("block/refinery_column"), "steel": pf("block/steel_block"),
+         "pipe": pf("block/fluid_pipe_flange"), "particle": pf("block/refinery_base")}
+    els = [box([0, 0, 0], [16, 5, 16], "#base")]
+    els += octagon(9, 5, 29, "#col", caps=("up",), uv=[0, 0, 16, 16])
+    els += [box([10.5, 12, 7], [15.5, 14, 9], "#pipe"), box([10.5, 21, 7], [15.5, 23, 9], "#pipe"),
+            box([7, 29, 7], [9, 31, 9], "#steel"), box([6, 31, 6], [10, 32, 10], "#steel")]
+    write(asset("models", "block", "refinery.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els,
+        "display": {"gui": {"rotation": [30, 225, 0], "translation": [0, -3.5, 0], "scale": [0.4, 0.4, 0.4]},
+                    "ground": {"rotation": [0, 0, 0], "translation": [0, 3, 0], "scale": [0.2, 0.2, 0.2]},
+                    "fixed": {"rotation": [0, 0, 0], "translation": [0, -3, 0], "scale": [0.4, 0.4, 0.4]},
+                    "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.28, 0.28, 0.28]},
+                    "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, -2, 0], "scale": [0.28, 0.28, 0.28]}}})
+    for b in ("pumpjack", "refinery"):
+        write(asset("models", "block", f"{b}_top.json"), {"textures": {"particle": pf("block/steel_block")}})
+        variants = {}
+        for f, y in HORIZONTAL.items():
+            for half in ("lower", "upper"):
+                for running in ("false", "true"):
+                    m = {"model": pf(f"block/{b}" if half == "lower" else f"block/{b}_top")}
+                    if y and half == "lower":
+                        m["y"] = y
+                    variants[f"facing={f},half={half},running={running}"] = m
+        write(asset("blockstates", f"{b}.json"), {"variants": variants})
+        item_def(b)
+        write(data(NS, "loot_table", "blocks", f"{b}.json"), {"type": "minecraft:block", "random_sequence": pf(f"blocks/{b}"),
+            "pools": [{"rolls": 1.0, "bonus_rolls": 0.0, "conditions": [{"condition": "minecraft:survives_explosion"},
+                {"condition": "minecraft:block_state_property", "block": pf(b), "properties": {"half": "lower"}}],
+                "entries": [{"type": "minecraft:item", "name": pf(b)}]}]})
+    tag("block", "minecraft", "mineable/pickaxe", [pf("pumpjack"), pf("refinery")])
+    shaped("pumpjack", ["SBS", "GMG", "CPC"], {"S": "#c:ingots/steel", "B": pf("steel_gear"), "G": "#c:gears/steel",
+                                                "M": pf("electric_motor"), "C": "minecraft:smooth_stone", "P": pf("electric_pump")}, 1, category="redstone")
+    shaped("refinery", ["PTP", "PKP", "HFH"], {"P": "#c:plates/steel", "T": pf("fluid_tank"), "K": pf("control_circuit"),
+                                               "H": pf("heating_coil"), "F": "minecraft:blast_furnace"}, 1, category="redstone")
+    name(f"block.{NS}.pumpjack", "Pumpjack")
+    name(f"block.{NS}.refinery", "Oil Refinery")
+    LANG.update({
+        "scada.powerfactor.pumpjack": "%s blocks of oil below · %s mB",
+        "scada.powerfactor.pumpjack.dry": "DRY: no oil below",
+        "scada.powerfactor.refinery": "Crude %s · diesel %s · jet %s mB",
+        "gui.powerfactor.pumpjack.pumping": "PUMPING", "gui.powerfactor.pumpjack.idle": "IDLE", "gui.powerfactor.pumpjack.dry": "WELL DRY",
+        "gui.powerfactor.pumpjack.blocks": "%s left",
+        "gui.powerfactor.refinery.running": "DISTILLING", "gui.powerfactor.refinery.idle": "IDLE",
+        "gui.powerfactor.fluid_amount": "%s: %s / %s mB",
+        "gui.powerfactor.speed": "Speed",
+        "gui.powerfactor.config.face_tip": "%s: %s (click to change, drag to turn)",
+        "gui.powerfactor.config.face_name.front": "Front", "gui.powerfactor.config.face_name.back": "Back",
+        "gui.powerfactor.config.face_name.left": "Left", "gui.powerfactor.config.face_name.right": "Right",
+        "gui.powerfactor.config.face_name.top": "Top", "gui.powerfactor.config.face_name.bottom": "Bottom",
+        "handbook.powerfactor.oil.title": "Oil",
+        "handbook.powerfactor.oil.text":
+            "Crude oil lies in reservoirs deep underground, and sometimes seeps up as tar pits in deserts and badlands. Build a "
+            "Pumpjack anywhere above a reservoir (it searches straight down, then up to 8 blocks sideways): the nodding donkey "
+            "lifts 25 mB of crude per tick for 60 FE/t until the reservoir runs dry.\\n\\nPipe the crude to an Oil Refinery. Its "
+            "distillation column splits 10 mB of crude into 5 mB of diesel and 4 mB of jet fuel every tick (100 FE/t). Diesel "
+            "runs the Diesel Generator; jet fuel flies the airplane. Buckets work for all three.",
+    })
+    # Worldgen: deep reservoirs everywhere in the overworld, tar pits in dry biomes.
+    oil_lake = {"type": "minecraft:lake", "config": {
+        "barrier": {"type": "minecraft:simple_state_provider", "state": {"Name": "minecraft:stone"}},
+        "can_place_feature": {"type": "minecraft:true"},
+        "can_replace_with_air_or_fluid": {"type": "minecraft:not", "predicate": {"type": "minecraft:matching_block_tag", "tag": "minecraft:features_cannot_replace"}},
+        "can_replace_with_barrier": {"type": "minecraft:not", "predicate": {"type": "minecraft:matching_block_tag", "tag": "minecraft:lava_pool_stone_cannot_replace"}},
+        "fluid": {"type": "minecraft:simple_state_provider", "state": {"Name": pf("crude_oil"), "Properties": {"level": "0"}}}}}
+    write(data(NS, "worldgen", "configured_feature", "oil_lake.json"), oil_lake)
+    write(data(NS, "worldgen", "placed_feature", "oil_reservoir.json"), {"feature": pf("oil_lake"), "placement": [
+        {"type": "minecraft:rarity_filter", "chance": 4}, {"type": "minecraft:in_square"},
+        {"type": "minecraft:height_range", "height": {"type": "minecraft:uniform", "min_inclusive": {"absolute": -48}, "max_inclusive": {"absolute": 20}}},
+        {"type": "minecraft:biome"}]})
+    write(data(NS, "worldgen", "placed_feature", "tar_pit.json"), {"feature": pf("oil_lake"), "placement": [
+        {"type": "minecraft:rarity_filter", "chance": 40}, {"type": "minecraft:in_square"},
+        {"type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE_WG"}, {"type": "minecraft:biome"}]})
+    cond = [{"type": pf("worldgen_enabled"), "feature": "oil"}]
+    write(data(NS, "neoforge", "biome_modifier", "add_oil_reservoirs.json"), {"type": "neoforge:add_features", "biomes": "#minecraft:is_overworld",
+        "features": pf("oil_reservoir"), "step": "lakes", "neoforge:conditions": cond})
+    write(data(NS, "neoforge", "biome_modifier", "add_tar_pits.json"), {"type": "neoforge:add_features",
+        "biomes": {"type": "neoforge:or", "values": ["#c:is_desert", "#minecraft:is_badlands"]},
+        "features": pf("tar_pit"), "step": "lakes", "neoforge:conditions": cond})
+
+
 if __name__ == "__main__":
     models()
     loot()
@@ -2102,6 +2209,7 @@ if __name__ == "__main__":
     phase_h()
     phase_i()
     phase_radio()
+    phase_oil()
     flush_tags()
     lang()
     print("data written to", os.path.normpath(ROOT))

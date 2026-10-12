@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:diesel",
+    "powerfactor:flowing_diesel"
+  ]
+}

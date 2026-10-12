@@ -36,9 +36,10 @@ public class HandbookScreen extends Screen {
             new Chapter("upgrades_tools", ModBlocks.UPGRADE_TABLE.get()),
             new Chapter("wire_safety", ModItems.RUBBER.get()),
             new Chapter("chips", ModItems.MICROPROCESSOR.get()),
-            new Chapter("radio", ModItems.WALKIE_TALKIE.get()));
+            new Chapter("radio", ModItems.WALKIE_TALKIE.get()),
+            new Chapter("oil", ModBlocks.PUMPJACK.get()));
 
-    private static final int ROW = 11;
+    private static final int ROW = 10;
     private static int selected;
     private static final int W = 340, H = 245, LIST_W = 124;
     private int left, top, scroll;

@@ -17,10 +17,12 @@ import org.jspecify.annotations.Nullable;
 public class DieselMenu extends AbstractContainerMenu {
     public static final int DATA_FE = 0, DATA_EE = 1, DATA_RPM = 2, DATA_TANK = 3, DATA_FLAGS = 4, DATA_REDSTONE = 5, DATA_STORED = 6;
     /** A second tank, for the hydrogen machines. */
-    public static final int DATA_TANK2 = 7;
+    public static final int DATA_TANK2 = 7, DATA_TANK3 = 8;
     public static final int DATA_COUNT = 10;
 
     protected final ContainerData data;
+    /** Where the machine is, for the GUI's 3D view. */
+    public final BlockPos pos;
     private final ContainerLevelAccess access;
     private final @Nullable MachineBlockEntity machine;
 
@@ -35,6 +37,7 @@ public class DieselMenu extends AbstractContainerMenu {
     protected DieselMenu(net.minecraft.world.inventory.MenuType<?> type, int id, Inventory inventory, BlockPos pos, ContainerData data,
             @Nullable MachineBlockEntity machine) {
         super(type, id);
+        this.pos = pos;
         this.data = data;
         this.machine = machine;
         this.access = ContainerLevelAccess.create(inventory.player.level(), pos);
@@ -114,6 +117,28 @@ public class DieselMenu extends AbstractContainerMenu {
 
         public FuelCell(int id, Inventory inventory, BlockPos pos, ContainerData data, @Nullable MachineBlockEntity machine) {
             super(ModMenus.FUEL_CELL.get(), id, inventory, pos, data, machine);
+        }
+    }
+
+    /** Pumpjack GUI. */
+    public static class Pumpjack extends DieselMenu {
+        public Pumpjack(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
+            super(ModMenus.PUMPJACK.get(), id, inventory, buf.readBlockPos(), new SimpleContainerData(DATA_COUNT), null);
+        }
+
+        public Pumpjack(int id, Inventory inventory, BlockPos pos, ContainerData data, @Nullable MachineBlockEntity machine) {
+            super(ModMenus.PUMPJACK.get(), id, inventory, pos, data, machine);
+        }
+    }
+
+    /** Refinery GUI. */
+    public static class Refinery extends DieselMenu {
+        public Refinery(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
+            super(ModMenus.REFINERY.get(), id, inventory, buf.readBlockPos(), new SimpleContainerData(DATA_COUNT), null);
+        }
+
+        public Refinery(int id, Inventory inventory, BlockPos pos, ContainerData data, @Nullable MachineBlockEntity machine) {
+            super(ModMenus.REFINERY.get(), id, inventory, pos, data, machine);
         }
     }
 }

@@ -211,7 +211,18 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             {1, 0}, // TOP
             {1, 2}, // BOTTOM
     };
-    private static final int TILE = 18, TILE_GAP = 2, DIAGRAM_Y = 52;
+    private static final int TILE = 18, TILE_GAP = 2, DIAGRAM_Y = 52, VIEW = 64;
+    private final SideConfigView sideView = new SideConfigView();
+    private boolean dragging;
+
+    /** The machine block shown in the 3D side picker, or null to fall back to the flat tiles. */
+    private net.minecraft.world.level.block.state.@Nullable BlockState configBlock() {
+        if (menu instanceof ProcessingMenu pm && pm.pos != null && minecraft != null && minecraft.level != null) {
+            var state = minecraft.level.getBlockState(pm.pos);
+            return state.isAir() ? null : state;
+        }
+        return null;
+    }
 
     private List<Button> configButtons(int x, int y) {
         List<Button> buttons = new ArrayList<>();
@@ -222,7 +233,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
                     Component.translatable("gui.powerfactor.config.redstone." + mode.name().toLowerCase(java.util.Locale.ROOT))));
         }
         if (menu instanceof ProcessingMenu pm) {
-            for (SideConfig.Face face : SideConfig.Face.values()) {
+            for (SideConfig.Face face : configBlock() != null ? new SideConfig.Face[0] : SideConfig.Face.values()) {
                 int[] cell = FACE_GRID[face.ordinal()];
                 buttons.add(new Button(ProcessingMenu.BUTTON_SIDE_NEXT + face.ordinal(), x + 8 + cell[0] * (TILE + TILE_GAP),
                         y + DIAGRAM_Y + cell[1] * (TILE + TILE_GAP), TILE, TILE, Component.empty()));
@@ -252,6 +263,19 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             g.fill(b.x(), b.y(), b.x() + b.w(), b.y() + b.h(), hover ? 0xFF2A5A3A : 0xFF16362A);
             g.outline(b.x(), b.y(), b.w(), b.h(), 0xFF5F8A66);
             g.centeredText(font, b.label(), b.x() + b.w() / 2, b.y() + 2, TEXT);
+        }
+        if (menu instanceof ProcessingMenu pm && configBlock() != null) {
+            int vx = x + 6, vy = y + DIAGRAM_Y;
+            Skin.well(g, vx - 1, vy - 1, VIEW + 2, VIEW + 2);
+            g.fillGradient(vx, vy, vx + VIEW, vy + VIEW, 0xFF1C2A33, 0xFF0B1116);
+            sideView.draw(g, configBlock(), pm::side, vx, vy, vx + VIEW, vy + VIEW, mx, my);
+            var hover = sideView.pick(mx, my, vx, vy, vx + VIEW, vy + VIEW);
+            if (hover != null) {
+                SideConfig.Face f = SideConfigView.face(hover);
+                g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.config.face_tip",
+                        Component.translatable("gui.powerfactor.config.face_name." + f.name().toLowerCase(java.util.Locale.ROOT)),
+                        Component.translatable("gui.powerfactor.config.mode." + pm.side(f).name().toLowerCase(java.util.Locale.ROOT))), mx, my);
+            }
         }
         if (menu instanceof ProcessingMenu) {
             // Legend beside the diagram.
@@ -313,6 +337,20 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
                 return true;
             }
         }
+        if (open == Tab.CONFIG && configBlock() != null) {
+            int vx = leftPos + PANEL_X + 6, vy = topPos + DIAGRAM_Y;
+            var face = sideView.pick(mx, my, vx, vy, vx + VIEW, vy + VIEW);
+            if (face != null) {
+                int base = event.button() == 1 ? ProcessingMenu.BUTTON_SIDE_PREV : ProcessingMenu.BUTTON_SIDE_NEXT;
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, base + SideConfigView.face(face).ordinal());
+                click();
+                return true;
+            }
+            if (mx >= vx && mx < vx + VIEW && my >= vy && my < vy + VIEW) {
+                dragging = true;
+                return true;
+            }
+        }
         if (open == Tab.CONFIG) {
             for (Button b : configButtons(leftPos + PANEL_X, topPos)) {
                 if (mx >= b.x() && mx < b.x() + b.w() && my >= b.y() && my < b.y() + b.h()) {
@@ -328,6 +366,22 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             }
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        if (dragging) {
+            sideView.yaw += (float) dx * 3F;
+            sideView.pitch = net.minecraft.util.Mth.clamp(sideView.pitch + (float) dy * 3F, -89F, 89F);
+            return true;
+        }
+        return super.mouseDragged(event, dx, dy);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        dragging = false;
+        return super.mouseReleased(event);
     }
 
     private void click() {

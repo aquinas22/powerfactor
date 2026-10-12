@@ -48,6 +48,10 @@ public final class ModMenus {
             "fuel_cell", () -> IMenuTypeExtension.create(com.powerfactor.generator.DieselMenu.FuelCell::new));
     public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.upgrade.UpgradeTableMenu>> UPGRADE_TABLE = MENUS.register(
             "upgrade_table", () -> IMenuTypeExtension.create(com.powerfactor.upgrade.UpgradeTableMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.generator.DieselMenu.Pumpjack>> PUMPJACK = MENUS.register(
+            "pumpjack", () -> IMenuTypeExtension.create(com.powerfactor.generator.DieselMenu.Pumpjack::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.generator.DieselMenu.Refinery>> REFINERY = MENUS.register(
+            "refinery", () -> IMenuTypeExtension.create(com.powerfactor.generator.DieselMenu.Refinery::new));
     public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.item.DrillMenu>> DRILL = MENUS.register("drill",
             () -> IMenuTypeExtension.create(com.powerfactor.item.DrillMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.logistics.PumpMenu>> ELECTRIC_PUMP = MENUS.register("electric_pump",

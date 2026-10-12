@@ -440,6 +440,24 @@
     ],
     "subtitle": "subtitles.powerfactor.laser_engraver_run"
   },
+  "pumpjack_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:pumpjack_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.pumpjack_run"
+  },
+  "refinery_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:refinery_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.refinery_run"
+  },
   "tree_fall": {
     "sounds": [
       {

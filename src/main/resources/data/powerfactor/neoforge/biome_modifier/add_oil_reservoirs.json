@@ -1,0 +1,12 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": "powerfactor:oil_reservoir",
+  "step": "lakes",
+  "neoforge:conditions": [
+    {
+      "type": "powerfactor:worldgen_enabled",
+      "feature": "oil"
+    }
+  ]
+}
