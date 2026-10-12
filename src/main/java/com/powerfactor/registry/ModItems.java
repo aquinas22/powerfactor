@@ -92,6 +92,9 @@ public final class ModItems {
             com.powerfactor.item.ChainsawItem::new, com.powerfactor.item.ChainsawItem::properties);
     public static final DeferredItem<com.powerfactor.item.JetpackItem> ELECTRIC_JETPACK = ITEMS.registerItem("electric_jetpack",
             com.powerfactor.item.JetpackItem::new, com.powerfactor.item.JetpackItem::properties);
+    public static final DeferredItem<com.powerfactor.radio.WalkieTalkieItem> WALKIE_TALKIE = ITEMS.registerItem("walkie_talkie",
+            com.powerfactor.radio.WalkieTalkieItem::new);
+    public static final DeferredItem<BlockItem> RADIO_TOWER = ITEMS.registerSimpleBlockItem("radio_tower", ModBlocks.RADIO_TOWER);
     public static final DeferredItem<com.powerfactor.item.WrenchItem> WRENCH = ITEMS.registerItem("wrench", com.powerfactor.item.WrenchItem::new);
     public static final DeferredItem<com.powerfactor.item.ClampMeterItem> CLAMP_METER = ITEMS.registerItem("clamp_meter",
             com.powerfactor.item.ClampMeterItem::new);

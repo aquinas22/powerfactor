@@ -4394,6 +4394,7 @@ def phaseC_F():
     phase_h()
 
     phase_drill_big()
+    phase_radio()
 
 def crusher_jaws():
     """Jaw plate (9x4x2) at (0,0) and a tooth (1x4x1) at (0,8): manganese steel, worn bright on the crushing faces."""
@@ -6167,6 +6168,54 @@ def phase_drill_big():
     save(mining_drill_bit(8, 1), "item/model/mining_drill_bit_running.png")
     write_mcmeta("item/model/mining_drill_bit_running.png", 1)
     save(mining_drill_body(), "item/model/mining_drill_body.png")
+
+
+# ---------------------------------------------------------------- walkie-talkie
+
+def walkie_talkie():
+    """Handheld radio: yellow rugged body, black speaker grille, little LCD, stubby rubber antenna."""
+    rows = [
+        "..........oo....",
+        "..........oKo...",
+        "..........oKo...",
+        "..........oKo...",
+        "....oooooooKo...",
+        "...oYYYYYYYYo...",
+        "...oYGGGGGGyo...",
+        "...oYGggggGyo...",
+        "...oYYYYYYYyo...",
+        "...oYkkkkkkyo...",
+        "...oYk,k,k,yo...",
+        "...oYkkkkkkyo...",
+        "...oYk,k,k,yo...",
+        "...oYkkkkkkyo...",
+        "...oYyyyyyyyo...",
+        "....oooooooo....",
+    ]
+    pal = {"o": hexc("1d1f22"), "K": hexc("2c2f33"), "Y": hexc("f2c230"), "y": hexc("c8961e"),
+           "G": hexc("2e4a3a"), "g": hexc("7cff8a"), "k": hexc("2a2c2f"), ",": hexc("4a4d52")}
+    return pixmap(blank(), rows, pal)
+
+
+def radio_tower_mast():
+    """Lattice radio mast: red-and-white bands of steel lattice."""
+    img = Image.new("RGBA", (16, 16), CLEAR)
+    for y in range(16):
+        band = hexc("d8382c") if (y // 4) % 2 == 0 else hexc("eef0f0")
+        for x in (0, 1, 14, 15):
+            img.putpixel((x, y), band)
+        for k in range(16):
+            for x in (k, 15 - k):
+                if (x - y) % 8 == 0 and 1 < x < 14:
+                    img.putpixel((x, y), shade(band, 0.85))
+    for x in range(16):
+        img.putpixel((x, 0), hexc("8a9298"))
+    return img
+
+
+def phase_radio():
+    save(walkie_talkie(), "item/walkie_talkie.png")
+    save(radio_tower_mast(), "block/radio_tower_mast.png")
 
 
 if __name__ == "__main__":

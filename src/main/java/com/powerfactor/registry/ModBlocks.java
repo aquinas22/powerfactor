@@ -154,6 +154,9 @@ public final class ModBlocks {
             p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.FUEL_CELL.get(), p),
             () -> machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 5 : 0));
 
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> RADIO_TOWER = BLOCKS.registerBlock("radio_tower",
+            p -> new com.powerfactor.generator.GeneratorBlock(() -> ModBlockEntities.RADIO_TOWER.get(), Block.box(5, 0, 5, 11, 16, 11), p),
+            () -> machine().noOcclusion().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 4 : 0));
     public static final DeferredBlock<com.powerfactor.upgrade.UpgradeTableBlock> UPGRADE_TABLE = BLOCKS.registerBlock("upgrade_table",
             com.powerfactor.upgrade.UpgradeTableBlock::new, () -> machine().noOcclusion().lightLevel(s -> 5));
 

@@ -79,6 +79,8 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("fuel_cell", () -> new BlockEntityType<>(com.powerfactor.generator.FuelCellBlockEntity::new, ModBlocks.FUEL_CELL.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.upgrade.UpgradeTableBlockEntity>> UPGRADE_TABLE =
             BLOCK_ENTITIES.register("upgrade_table", () -> new BlockEntityType<>(com.powerfactor.upgrade.UpgradeTableBlockEntity::new, ModBlocks.UPGRADE_TABLE.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.radio.RadioTowerBlockEntity>> RADIO_TOWER =
+            BLOCK_ENTITIES.register("radio_tower", () -> new BlockEntityType<>(com.powerfactor.radio.RadioTowerBlockEntity::new, ModBlocks.RADIO_TOWER.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FluidTankBlockEntity>> FLUID_TANK = BLOCK_ENTITIES.register("fluid_tank",
             () -> new BlockEntityType<>(FluidTankBlockEntity::new, ModBlocks.FLUID_TANK.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PumpBlockEntity>> ELECTRIC_PUMP = BLOCK_ENTITIES.register("electric_pump",

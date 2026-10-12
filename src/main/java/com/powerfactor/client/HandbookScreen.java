@@ -35,11 +35,12 @@ public class HandbookScreen extends Screen {
             new Chapter("hydrogen", ModBlocks.ELECTROLYZER.get()),
             new Chapter("upgrades_tools", ModBlocks.UPGRADE_TABLE.get()),
             new Chapter("wire_safety", ModItems.RUBBER.get()),
-            new Chapter("chips", ModItems.MICROPROCESSOR.get()));
+            new Chapter("chips", ModItems.MICROPROCESSOR.get()),
+            new Chapter("radio", ModItems.WALKIE_TALKIE.get()));
 
     private static final int ROW = 11;
     private static int selected;
-    private static final int W = 340, H = 234, LIST_W = 124;
+    private static final int W = 340, H = 245, LIST_W = 124;
     private int left, top, scroll;
     private List<FormattedCharSequence> lines = List.of();
 

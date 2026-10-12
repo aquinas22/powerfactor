@@ -1532,6 +1532,28 @@ def laser_engraver_run(seconds=2.0):
 LOOPS_3["laser_engraver_run"] = (laser_engraver_run, -18.0)
 
 
+def radio_key(seconds=0.12):
+    """The PTT key: a plastic click and a short chirp from the radio."""
+    n = int(SR * seconds)
+    r = random.Random(1701)
+    click = burst(n, r, 0.004, [("bp", 2500, 1.5)])
+    chirp = tone(n, [(1750.0, 1.0, 0.0)], lfo=lambda t: (1.0 if 0.015 < t < 0.07 else 0.0))
+    chirp = filt(chirp, ("bp", 1750, 3.0))
+    return fade_edges(mix((click, 0.8), (chirp, 0.35)), fin=0.0005, fout=0.02)
+
+
+def radio_squelch(seconds=0.32):
+    """End of transmission: the classic squelch tail, a burst of band-limited static cut off sharply."""
+    n = int(SR * seconds)
+    r = random.Random(1702)
+    hiss = filt(noise(n, r), ("bp", 1800, 0.6), ("hp", 400, 0.7))
+    env = [min(1.0, (i / SR) / 0.01) * (1.0 if i / SR < 0.22 else math.exp(-((i / SR) - 0.22) / 0.015)) for i in range(n)]
+    return fade_edges([x * e for x, e in zip(hiss, env)], fin=0.0005, fout=0.01)
+
+
+ONESHOTS_3.update({"radio_key": radio_key, "radio_squelch": radio_squelch})
+
+
 # events whose sounds list holds several files (Minecraft picks one at random)
 VARIANTS = {"sword_swing": ["sword_swing1", "sword_swing2", "sword_swing3"]}
 
@@ -1541,6 +1563,7 @@ ALL_ONESHOTS = {**ONESHOTS, **ONESHOTS_2, **ONESHOTS_3}
 # a near-continuous square-ish tone is far louder than a transient at the same peak; keep the alarm civil
 ONESHOT_PEAK = {"scada_alarm": 10 ** (-6 / 20),
                 "meter_beep": 10 ** (-12 / 20),
+                "radio_key": 10 ** (-8 / 20), "radio_squelch": 10 ** (-10 / 20),
                 # sustained tones: same reasoning
                 "arc_gun_charge": 10 ** (-4 / 20),
                 "transformer_buzz_overload": 10 ** (-4 / 20),

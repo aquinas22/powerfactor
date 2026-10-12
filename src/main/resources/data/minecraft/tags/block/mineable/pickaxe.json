@@ -65,6 +65,7 @@
     "powerfactor:electrolyzer",
     "powerfactor:fuel_cell",
     "powerfactor:upgrade_table",
-    "powerfactor:laser_engraver"
+    "powerfactor:laser_engraver",
+    "powerfactor:radio_tower"
   ]
 }

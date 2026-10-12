@@ -118,6 +118,8 @@ public final class ToolPayloads {
             }
         });
         registrar.playToClient(JetpackSync.TYPE, JetpackSync.STREAM_CODEC, (payload, context) -> jetpackHandler.accept(payload));
+        registrar.playToClient(com.powerfactor.radio.RadioPayload.TYPE, com.powerfactor.radio.RadioPayload.STREAM_CODEC,
+                (payload, context) -> com.powerfactor.radio.RadioPayload.clientHandler.accept(payload));
         registrar.playToClient(com.powerfactor.logistics.PipeTraffic.TYPE, com.powerfactor.logistics.PipeTraffic.STREAM_CODEC,
                 (payload, context) -> com.powerfactor.logistics.PipeTraffic.clientHandler.accept(payload));
     }

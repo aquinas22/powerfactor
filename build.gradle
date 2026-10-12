@@ -29,6 +29,12 @@ sourceSets.main.resources {
 repositories {
     // JEI, used only in dev runs to check compatibility (not bundled, not a dependency of the mod).
     maven { url = 'https://maven.blamejared.com/' }
+    // Simple Voice Chat: its API to compile the walkie-talkie plugin against; the mod itself only in dev runs.
+    maven { url = 'https://maven.maxhenkel.de/repository/public' }
+    exclusiveContent {
+        forRepository { maven { url = 'https://api.modrinth.com/maven' } }
+        filter { includeGroup 'maven.modrinth' }
+    }
 }
 
 base {
@@ -121,6 +127,8 @@ dependencies {
     localRuntime "mezz.jei:jei-26.2-neoforge:30.39.0.233"
     // JEI API for our integration (tab exclusion zones now, recipe categories later). Optional at runtime.
     compileOnly "mezz.jei:jei-26.2-common-api:30.39.0.233"
+    compileOnly "de.maxhenkel.voicechat:voicechat-api:2.6.24"
+    localRuntime "maven.modrinth:simple-voice-chat:neoforge-2.6.24+26.2"
 
     // Plain JUnit for the Minecraft-free power model in com.powerfactor.power.
     testImplementation platform('org.junit:junit-bom:5.11.4')

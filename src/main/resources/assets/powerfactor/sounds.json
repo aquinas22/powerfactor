@@ -495,5 +495,21 @@
       }
     ],
     "subtitle": "subtitles.powerfactor.wrench"
+  },
+  "radio_key": {
+    "sounds": [
+      {
+        "name": "powerfactor:radio_key"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.radio_key"
+  },
+  "radio_squelch": {
+    "sounds": [
+      {
+        "name": "powerfactor:radio_squelch"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.radio_squelch"
   }
 }

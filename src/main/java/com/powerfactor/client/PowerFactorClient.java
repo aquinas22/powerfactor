@@ -24,6 +24,7 @@ public final class PowerFactorClient {
         com.powerfactor.item.ToolPayloads.meterHandler = ClampMeterHud::onReading;
         com.powerfactor.item.ToolPayloads.jetpackHandler = JetpackClient::onSync;
         com.powerfactor.logistics.PipeTraffic.clientHandler = PipeTrafficClient::receive;
+        com.powerfactor.radio.RadioPayload.clientHandler = RadioHud::receive;
         com.powerfactor.api.MachineAudio.handler = MachineSoundLoop::update;
         com.powerfactor.item.HandbookItem.open = () -> net.minecraft.client.Minecraft.getInstance().gui.setScreen(new HandbookScreen());
         com.powerfactor.item.ArcSaberItem.openScreen = hand -> net.minecraft.client.Minecraft.getInstance().gui.setScreen(new SaberScreen(hand));
@@ -64,6 +65,7 @@ public final class PowerFactorClient {
                 JetpackClient::renderHud);
         event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.CROSSHAIR, com.powerfactor.PowerFactor.id("clamp_meter"),
                 ClampMeterHud::render);
+        event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("radio"), RadioHud::render);
     }
 
     @SubscribeEvent

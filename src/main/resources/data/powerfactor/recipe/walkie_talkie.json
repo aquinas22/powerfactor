@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " W ",
+    "PSP",
+    "PKP"
+  ],
+  "key": {
+    "W": "powerfactor:copper_wire",
+    "P": "#c:plates/aluminum",
+    "S": "minecraft:note_block",
+    "K": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:walkie_talkie",
+    "count": 1
+  }
+}

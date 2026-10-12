@@ -69,6 +69,10 @@ public final class CommonEvents {
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.TRANSFORMER.get(), (be, side) -> be.primaryHandler(side));
 
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.TESLA_COIL.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.RADIO_TOWER.get(), (be, side) -> be.getEnergy());
+        event.registerItem(Capabilities.Energy.ITEM,
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.radio.WalkieTalkieItem.CAPACITY, 2_000),
+                ModItems.WALKIE_TALKIE.get());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.GROW_LAMP.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CHARGING_PAD.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.ELECTROLYZER.get(), (be, side) -> be.getEnergy());

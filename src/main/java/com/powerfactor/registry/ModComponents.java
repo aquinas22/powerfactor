@@ -41,5 +41,11 @@ public final class ModComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> JETPACK_HOVER =
             COMPONENTS.registerComponentType("jetpack_hover", b -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
 
+    /** Walkie-talkie channel (1-16) and power switch. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> RADIO_CHANNEL =
+            COMPONENTS.registerComponentType("radio_channel", b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> RADIO_ON =
+            COMPONENTS.registerComponentType("radio_on", b -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+
     private ModComponents() {}
 }

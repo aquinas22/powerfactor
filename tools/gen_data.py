@@ -2040,6 +2040,53 @@ def phase_i():
     })
 
 
+# ======================================================================== radio
+
+def phase_radio():
+    six = ("north", "east", "south", "west", "up", "down")
+    t = {"mast": pf("block/radio_tower_mast"), "base": pf("block/steel_block"), "light": "minecraft:block/redstone_block",
+         "particle": pf("block/radio_tower_mast")}
+    for suffix, lit in (("", False), ("_on", True)):
+        light = {"from": [7.25, 15, 7.25], "to": [8.75, 16.5, 8.75], "faces": {d: {"texture": "#light"} for d in six}}
+        if lit:
+            light["light_emission"] = 15
+        els = [{"from": [3, 0, 3], "to": [13, 2, 13], "faces": {d: {"texture": "#base"} for d in six}},
+               {"from": [5, 2, 5], "to": [11, 15, 11], "faces": {d: {"texture": "#mast"} for d in six if d not in ("up", "down")}},
+               {"from": [7.5, 13, 7.5], "to": [8.5, 15, 8.5], "faces": {d: {"texture": "#base"} for d in six}},
+               {"from": [4, 10, 7.5], "to": [12, 10.8, 8.5], "faces": {d: {"texture": "#base"} for d in six}},
+               light]
+        write(asset("models", "block", f"radio_tower{suffix}.json"), {"parent": "minecraft:block/block", "render_type": "minecraft:cutout",
+            "textures": t, "elements": els})
+    machine_states("radio_tower", pf("block/radio_tower"), pf("block/radio_tower_on"))
+    item_def("radio_tower")
+    flat_item("walkie_talkie", "minecraft:item/handheld")
+    drops_self("radio_tower")
+    tag("block", "minecraft", "mineable/pickaxe", [pf("radio_tower")])
+    shaped("walkie_talkie", [" W ", "PSP", "PKP"], {"W": pf("copper_wire"), "P": "#c:plates/aluminum", "S": "minecraft:note_block",
+                                                    "K": pf("control_circuit")}, 1, category="equipment")
+    shaped("radio_tower", [" A ", "SKS", "SPS"], {"A": pf("fine_copper_wire"), "S": "#c:ingots/steel", "K": pf("advanced_circuit"),
+                                                  "P": "#c:plates/steel"}, 1, category="redstone")
+    name(f"item.{NS}.walkie_talkie", "Walkie-Talkie")
+    name(f"block.{NS}.radio_tower", "Radio Tower")
+    LANG.update({
+        "message.powerfactor.walkie.channel": "Walkie-talkie: channel %s",
+        "message.powerfactor.walkie.on": "Walkie-talkie ON (channel %s)",
+        "message.powerfactor.walkie.off": "Walkie-talkie off",
+        "tooltip.powerfactor.walkie.channel": "Channel %s",
+        "tooltip.powerfactor.walkie.off": "Switched off",
+        "tooltip.powerfactor.walkie.help": "Hold and talk · Use: next channel · Sneak-use: on/off",
+        "tooltip.powerfactor.walkie.needs_voicechat": "Needs the Simple Voice Chat mod",
+        "scada.powerfactor.radio_tower.on": "On the air", "scada.powerfactor.radio_tower.off": "OFF AIR",
+        "handbook.powerfactor.radio.title": "Radio",
+        "handbook.powerfactor.radio.text":
+            "Walkie-talkies use your real microphone through the Simple Voice Chat mod. Hold one and talk: everyone carrying a "
+            "switched-on walkie-talkie on the same channel hears you through its little speaker, with more static the further "
+            "away they are, out to about 190 blocks. Use the walkie-talkie to change channel (1-16); sneak-use to switch it off. "
+            "Talking uses a little charge; charge it in a charger.\\n\\nRadio Towers relay calls: when both people are within about "
+            "96 blocks of a powered tower, they can talk at any distance, crystal clear. A blackout takes the towers off the air.",
+    })
+
+
 if __name__ == "__main__":
     models()
     loot()
@@ -2054,6 +2101,7 @@ if __name__ == "__main__":
         wire(w)
     phase_h()
     phase_i()
+    phase_radio()
     flush_tags()
     lang()
     print("data written to", os.path.normpath(ROOT))

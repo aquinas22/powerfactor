@@ -73,6 +73,7 @@ public final class ToolEvents {
         for (ServerLevel level : event.getServer().getAllLevels()) {
             TreeFeller.tick(level);
         }
+        com.powerfactor.radio.RadioNet.tick(event.getServer());
     }
 
     @SubscribeEvent
