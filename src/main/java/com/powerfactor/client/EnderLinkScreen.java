@@ -43,7 +43,7 @@ public class EnderLinkScreen extends MachineScreen<EnderLinkMenu> {
 
     @Override
     protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, MAIN_W, imageHeight, 256, 256);
+        skinBackground(g);
         for (int c = 0; c < 16; c++) {
             int x = leftPos + GX + (c % 8) * (SW + 2), y = topPos + GY + (c / 8) * (SW + 2);
             int color = 0xFF000000 | DyeColor.byId(c).getTextureDiffuseColor();

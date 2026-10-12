@@ -18,12 +18,11 @@ public class DrillScreen extends AbstractContainerScreen<DrillMenu> {
     @Override
     public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
         super.extractBackground(g, mouseX, mouseY, a);
-        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
+        Skin.machineBackground(g, font, title, leftPos, topPos, imageWidth, imageHeight, menu.slots);
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
-        super.extractLabels(g, xm, ym);
-        g.text(font, Component.translatable("gui.powerfactor.drill.hint"), 8, 60, 0xFF404040, false);
+        g.text(font, Component.translatable("gui.powerfactor.drill.hint"), 8, 60, Skin.DIM, false);
     }
 }

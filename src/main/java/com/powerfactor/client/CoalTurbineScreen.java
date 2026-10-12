@@ -19,8 +19,8 @@ public class CoalTurbineScreen extends MachineScreen<CoalTurbineMenu> {
 
     // Layout, matching tools/gen_textures.py.
     private static final int FLAME_X = 19, FLAME_Y = 40;
-    private static final int LCD_X = 40, LCD_Y = 16, LCD_W = 110, LCD_H = 64;
-    private static final int BAR_X = 156, BAR_Y = 16, BAR_W = 12, BAR_H = 64;
+    private static final int LCD_X = 58, LCD_Y = 20, LCD_W = 94, LCD_H = 58;
+    private static final int BAR_X = 156, BAR_Y = 20, BAR_W = 12, BAR_H = 60;
 
     public static final int FE_COLOR = 0xFFFF5A4A;
     public static final int EE_COLOR = 0xFF33E0B0;
@@ -56,19 +56,16 @@ public class CoalTurbineScreen extends MachineScreen<CoalTurbineMenu> {
     @Override
     protected void extractMain(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         int x = leftPos, y = topPos;
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, 0, 176, imageHeight, 256, 256);
+        skinBackground(graphics);
+        Skin.lcd(graphics, x + LCD_X, y + LCD_Y, LCD_W, LCD_H);
+        Skin.well(graphics, x + FLAME_X - 1, y + FLAME_Y - 1, 16, 16);
 
         if (menu.steam()) {
             int h = Mth.ceil(menu.fuelProgress() * 13F) + 1;
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LIT_SPRITE, 14, 14, 0, 14 - h, x + FLAME_X, y + FLAME_Y + 14 - h, 14, h);
         }
 
-        int capacity = menu.capacity();
-        if (capacity > 0) {
-            int h = (int) ((long) (BAR_H - 2) * menu.stored() / capacity);
-            int bottom = y + BAR_Y + BAR_H - 1;
-            graphics.fillGradient(x + BAR_X + 1, bottom - h, x + BAR_X + BAR_W - 1, bottom, FE_COLOR, 0xFF9A2018);
-        }
+        GuiUtil.energyBar(graphics, x + BAR_X, y + BAR_Y, BAR_W, BAR_H, menu.stored(), menu.capacity());
     }
 
     @Override
@@ -97,9 +94,9 @@ public class CoalTurbineScreen extends MachineScreen<CoalTurbineMenu> {
         String hz = String.format("%.1f Hz", menu.hertz());
         graphics.text(font, hz, right - font.width(hz), y, LCD_TEXT, false);
 
-        y += 10;
+        y += 9;
         row(graphics, "RPM", Integer.toString(menu.rpm()), "", x, right, y, LCD_TEXT);
-        y += 10;
+        y += 9;
         int fe = menu.fe(), ee = menu.ee();
         double ce = Math.hypot(fe, ee);
         row(graphics, "FE", Integer.toString(fe), "/t", x, right, y, FE_COLOR);
@@ -107,7 +104,7 @@ public class CoalTurbineScreen extends MachineScreen<CoalTurbineMenu> {
         row(graphics, "EE", Integer.toString(ee), "/t", x, right, y, EE_COLOR);
         y += 9;
         row(graphics, "CE", Integer.toString((int) Math.round(ce)), "/t", x, right, y, CE_COLOR);
-        y += 10;
+        y += 9;
         String pf = ce == 0 ? "---" : String.format("%.2f", fe / ce);
         row(graphics, "PF", pf, "", x, right, y, LCD_TEXT);
     }

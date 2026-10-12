@@ -15,11 +15,12 @@ import org.jspecify.annotations.Nullable;
 public class PumpMenu extends ProcessingMenu {
     public PumpMenu(int containerId, Inventory inventory, RegistryFriendlyByteBuf extraData) {
         this(containerId, inventory, new SimpleContainer(0), UpgradeInventory.client(), new SimpleContainerData(DATA_COUNT), null);
+        this.pos = extraData.readBlockPos();
     }
 
     public PumpMenu(int containerId, Inventory inventory, Container items, UpgradeInventory upgrades, ContainerData data,
             @Nullable ProcessingBlockEntity machine) {
         super(ModMenus.ELECTRIC_PUMP.get(), containerId, items, upgrades, data, machine);
-        addUpgradesAndInventory(inventory, 84);
+        addUpgradesAndInventory(inventory, INVENTORY_V2);
     }
 }

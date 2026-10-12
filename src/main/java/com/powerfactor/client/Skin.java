@@ -79,7 +79,7 @@ public final class Skin {
 
     /** The player's inventory: a 9x3 grid plus the hotbar, item origin at (x, y). */
     public static void inventory(GuiGraphicsExtractor g, Font font, int x, int y) {
-        g.text(font, Component.translatable("container.inventory"), x, y - 11, DIM, false);
+        g.text(font, Component.translatable("container.inventory"), x, y - 10, DIM, false);
         for (int r = 0; r < 3; r++) {
             for (int c = 0; c < 9; c++) {
                 slot(g, x - 1 + c * 18, y - 1 + r * 18, 0);
@@ -154,6 +154,21 @@ public final class Skin {
     public static void bar(GuiGraphicsExtractor g, int x, int y, int w, float value, int color) {
         g.fill(x, y, x + w, y + 3, 0xFF0A0F12);
         g.fill(x, y, x + Math.round(w * Mth.clamp(value, 0, 1)), y + 3, color);
+    }
+
+    /** Background for a classic-layout container screen: panel, title, slot wells by role, player inventory. */
+    public static void machineBackground(GuiGraphicsExtractor g, Font font, Component title, int x, int y, int w, int h,
+            Iterable<net.minecraft.world.inventory.Slot> slots) {
+        panel(g, x, y, w, h);
+        title(g, font, title, x, y, w);
+        for (var slot : slots) {
+            if (slot instanceof com.powerfactor.machine.ProcessingMenu.UpgradeSlot
+                    || slot.container instanceof net.minecraft.world.entity.player.Inventory) {
+                continue;
+            }
+            slot(g, x + slot.x - 1, y + slot.y - 1, slot instanceof com.powerfactor.machine.MachineMenu.OutputSlotMarker ? OUTPUT : INPUT);
+        }
+        inventory(g, font, x + 8, y + h - 82);
     }
 
     private Skin() {}

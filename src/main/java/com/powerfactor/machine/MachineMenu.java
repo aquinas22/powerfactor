@@ -75,7 +75,10 @@ public abstract class MachineMenu extends AbstractContainerMenu {
     }
 
     /** A slot players can only take from. */
-    protected static class OutputSlot extends Slot {
+    /** Marks slots the GUI should draw as product wells. */
+    public interface OutputSlotMarker {}
+
+    protected static class OutputSlot extends Slot implements OutputSlotMarker {
         public OutputSlot(Container container, int index, int x, int y) {
             super(container, index, x, y);
         }

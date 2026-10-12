@@ -119,9 +119,10 @@ public final class PowerFactorClient {
     @SubscribeEvent
     static void onMenuScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.COAL_TURBINE.get(), CoalTurbineScreen::new);
-        event.register(ModMenus.CRUSHER.get(), CrusherScreen::new);
+        event.register(ModMenus.CRUSHER.get(), (CrusherMenu m, Inventory inv, Component t) ->
+                new ProcessingScreen<>(m, inv, t, null, 93, 39, 25, true, com.powerfactor.registry.ModBlocks.CRUSHER.get()));
         event.register(ModMenus.ELECTRIC_FURNACE.get(), (ElectricFurnaceMenu m, Inventory inv, Component t) ->
-                new ProcessingScreen<>(m, inv, t, PowerFactor.id("textures/gui/electric_furnace.png"), 79, 34, 16, false,
+                new ProcessingScreen<>(m, inv, t, null, 93, 39, 16, false,
                         com.powerfactor.registry.ModBlocks.ELECTRIC_FURNACE.get()));
         event.register(ModMenus.ENGINE.get(), EngineScreen::new);
         event.register(ModMenus.CHARGER.get(), ChargerScreen::new);

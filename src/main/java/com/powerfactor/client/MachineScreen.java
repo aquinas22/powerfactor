@@ -52,6 +52,18 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
 
     protected abstract Electrical electrical();
 
+    /**
+     * The v2 background for machines that keep their classic 176x166 layout: gunmetal panel, title
+     * plate, a well under every machine slot (blue in, orange out) and the player inventory.
+     */
+    protected void skinBackground(GuiGraphicsExtractor g) {
+        Skin.machineBackground(g, font, title, leftPos, topPos, MAIN_W, imageHeight, menu.slots);
+    }
+
+    /** Titles and the inventory label are part of the skin. */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {}
+
     /** Draws the main 176-wide face. */
     protected abstract void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY);
 

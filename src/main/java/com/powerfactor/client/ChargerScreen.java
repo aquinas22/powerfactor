@@ -21,7 +21,8 @@ public class ChargerScreen extends AbstractContainerScreen<ChargerMenu> {
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         super.extractBackground(graphics, mouseX, mouseY, a);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
+        Skin.machineBackground(graphics, font, title, leftPos, topPos, imageWidth, imageHeight, menu.slots);
+        Skin.well(graphics, leftPos + ITEM_BAR_X, topPos + ITEM_BAR_Y, ITEM_BAR_W, ITEM_BAR_H);
         GuiUtil.energyBar(graphics, leftPos + BAR_X, topPos + BAR_Y, BAR_W, BAR_H, menu.stored(), menu.capacity());
         int w = (int) ((ITEM_BAR_W - 2) * menu.itemCharge());
         graphics.fill(leftPos + ITEM_BAR_X + 1, topPos + ITEM_BAR_Y + 1, leftPos + ITEM_BAR_X + 1 + w, topPos + ITEM_BAR_Y + ITEM_BAR_H - 1, GuiUtil.FE_COLOR);
@@ -29,7 +30,6 @@ public class ChargerScreen extends AbstractContainerScreen<ChargerMenu> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
-        super.extractLabels(graphics, xm, ym);
         String rate = menu.fe() + " FE/t";
         graphics.text(font, rate, 88 - font.width(rate) / 2, 20, GuiUtil.FE_COLOR, false);
     }

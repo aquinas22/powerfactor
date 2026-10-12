@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class PumpScreen extends ProcessingScreen<PumpMenu> {
-    private static final int TANK_X = 80, TANK_Y = 16, TANK_W = 16, TANK_H = 54;
+    private static final int TANK_X = 72, TANK_Y = 22, TANK_W = 76, TANK_H = 54;
 
     public PumpScreen(PumpMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, PowerFactor.id("textures/gui/electric_pump.png"), -100, -100, 17, true, ModBlocks.ELECTRIC_PUMP.get());

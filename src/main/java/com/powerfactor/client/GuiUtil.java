@@ -12,18 +12,20 @@ public final class GuiUtil {
     public static final int EE_COLOR = 0xFF33E0B0;
     public static final int CE_COLOR = 0xFFE070FF;
 
-    /** Fills a gauge frame (1px inset) from the bottom. */
+    /** The v2 glass energy tube. */
     public static void energyBar(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int stored, int capacity) {
-        if (capacity <= 0 || stored <= 0) {
-            return;
-        }
-        int filled = (int) ((long) (h - 2) * Math.min(stored, capacity) / capacity);
-        int bottom = y + h - 1;
-        graphics.fillGradient(x + 1, bottom - filled, x + w - 1, bottom, FE_COLOR, FE_DARK);
+        Skin.energyTube(graphics, x, y, w, h, stored, capacity, false);
     }
 
     /** A liquid gauge: fills from the bottom with a wavy surface. */
     public static void fluidGauge(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int amount, int capacity, int color) {
+        // Glass tank: recessed, with tick marks and a highlight down the side.
+        Skin.well(graphics, x, y, w, h);
+        graphics.fill(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF0B1418);
+        for (int t = 1; t < 4; t++) {
+            graphics.fill(x + w - 4, y + h * t / 4, x + w - 1, y + h * t / 4 + 1, 0x70FFFFFF);
+        }
+        graphics.fill(x + 2, y + 2, x + 3, y + h - 2, 0x30FFFFFF);
         if (capacity <= 0 || amount <= 0) {
             return;
         }

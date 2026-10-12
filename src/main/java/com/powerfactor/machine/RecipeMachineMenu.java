@@ -19,6 +19,7 @@ public class RecipeMachineMenu extends ProcessingMenu {
     public RecipeMachineMenu(RecipeMachine machine, int containerId, Inventory inventory, RegistryFriendlyByteBuf extraData) {
         this(machine, containerId, inventory, new SimpleContainer(machine.slotCount()), UpgradeInventory.client(),
                 new SimpleContainerData(DATA_COUNT), null);
+        this.pos = extraData.readBlockPos();
     }
 
     public RecipeMachineMenu(RecipeMachine machine, int containerId, Inventory inventory, Container items, UpgradeInventory upgrades,
@@ -44,7 +45,7 @@ public class RecipeMachineMenu extends ProcessingMenu {
                 }
             });
         }
-        addUpgradesAndInventory(inventory, 84);
+        addUpgradesAndInventory(inventory, INVENTORY_V2);
     }
 
     public RecipeMachine machine() {

@@ -20,10 +20,10 @@ public class CrusherMenu extends ProcessingMenu {
     public CrusherMenu(int containerId, Inventory inventory, Container items, UpgradeInventory upgrades, ContainerData data,
             @Nullable ProcessingBlockEntity machine) {
         super(ModMenus.CRUSHER.get(), containerId, items, upgrades, data, machine);
-        // Layout v2 (see CrusherScreen): input, chevrons, main product in a big well, byproduct.
-        addSlot(new Slot(items, CrusherBlockEntity.INPUT, 71, 27));
-        addSlot(new OutputSlot(items, CrusherBlockEntity.OUTPUT, 122, 27));
-        addSlot(new OutputSlot(items, CrusherBlockEntity.BONUS, 124, 52));
-        addUpgradesAndInventory(inventory, 108);
+        // Layout v2 (see ProcessingScreen): input, chevrons, main product in a big well, byproduct.
+        addSlot(new Slot(items, CrusherBlockEntity.INPUT, 71, 35));
+        addSlot(new OutputSlot(items, CrusherBlockEntity.OUTPUT, 122, 35));
+        addSlot(new OutputSlot(items, CrusherBlockEntity.BONUS, 124, 60));
+        addUpgradesAndInventory(inventory, INVENTORY_V2);
     }
 }

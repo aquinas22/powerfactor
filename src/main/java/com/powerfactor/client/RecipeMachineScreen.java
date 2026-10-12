@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Recipe machines; the ore washer also shows its water tank. */
 public class RecipeMachineScreen extends ProcessingScreen<RecipeMachineMenu> {
-    private static final int TANK_X = 8, TANK_Y = 16, TANK_W = 16, TANK_H = 54;
+    private static final int TANK_X = 94, TANK_Y = 52, TANK_W = 16, TANK_H = 24;
 
     public RecipeMachineScreen(RecipeMachineMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, menu.machine().guiTexture(), menu.machine().arrowX, menu.machine().arrowY, menu.machine().ratedCe(),
@@ -18,17 +18,23 @@ public class RecipeMachineScreen extends ProcessingScreen<RecipeMachineMenu> {
     }
 
     @Override
-    protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        super.extractMain(g, mouseX, mouseY);
+    protected boolean isToolSlot(net.minecraft.world.inventory.Slot slot) {
+        return menu.machine().electrode && slot.getContainerSlot() == menu.machine().electrodeSlot()
+                && !(slot instanceof com.powerfactor.machine.MachineMenu.OutputSlotMarker) && slot.index < menu.machine().slotCount();
+    }
+
+    @Override
+    protected void extractExtras(GuiGraphicsExtractor g, int x, int y) {
         if (menu.machine() == RecipeMachine.ORE_WASHER) {
-            GuiUtil.fluidGauge(g, leftPos + TANK_X, topPos + TANK_Y, TANK_W, TANK_H, menu.tank(), RecipeMachineBlockEntity.TANK_CAPACITY, 0xFF3F76E4);
+            GuiUtil.fluidGauge(g, x + TANK_X, y + TANK_Y, TANK_W, TANK_H, menu.tank(), RecipeMachineBlockEntity.TANK_CAPACITY, 0xFF3F76E4);
         }
         if (menu.machine() == RecipeMachine.LASER_ENGRAVER) {
-            wafer(g, leftPos + WAFER_X, topPos + WAFER_Y);
+            Skin.well(g, x + WAFER_X - 1, y + WAFER_Y - 1, WAFER + 2, WAFER + 2);
+            wafer(g, x + WAFER_X, y + WAFER_Y);
         }
     }
 
-    private static final int WAFER_X = 80, WAFER_Y = 28, WAFER = 26;
+    private static final int WAFER_X = 90, WAFER_Y = 24, WAFER = 26;
 
     /**
      * The engraver's live view: a silicon wafer whose dies are etched line by line as the job runs,
