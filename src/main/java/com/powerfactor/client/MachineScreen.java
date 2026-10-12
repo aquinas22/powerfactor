@@ -97,9 +97,14 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
 
     private void tabButton(GuiGraphicsExtractor g, Tab tab, int x, int y, boolean selected, int mx, int my) {
         boolean hover = mx >= x && mx < x + TAB_W && my >= y && my < y + TAB_H;
-        g.fill(x, y, x + TAB_W, y + TAB_H, 0xFF2B3036);
-        g.fill(x, y + 1, x + TAB_W - 1, y + TAB_H - 1, selected ? 0xFF16362A : hover ? 0xFF8C949B : 0xFF6F767D);
-        g.fill(x + 1, y + 2, x + TAB_W - 2, y + TAB_H - 2, selected ? 0xFF0D1710 : 0xFFC6C6C6);
+        // Gunmetal tab, teal edge when open, like the v2 panels.
+        g.fill(x, y, x + TAB_W, y + TAB_H, 0xFF0B0D0F);
+        g.fillGradient(x, y + 1, x + TAB_W - 1, y + TAB_H - 1, hover ? 0xFF5A646C : 0xFF4A535B, 0xFF2E353B);
+        g.fill(x, y + 1, x + TAB_W - 1, y + 2, 0xFF7C8790);
+        g.fill(x + 3, y + 3, x + TAB_W - 4, y + TAB_H - 3, selected ? 0xFF10241C : 0xFF1A2026);
+        if (selected) {
+            g.fill(x + TAB_W - 3, y + 2, x + TAB_W - 1, y + TAB_H - 2, Skin.TEAL);
+        }
         ItemStack icon = switch (tab) {
             case ELECTRICAL -> new ItemStack(ModItems.COPPER_COIL.get());
             case UPGRADES -> new ItemStack(ModItems.SPEED_UPGRADE.get());
@@ -125,9 +130,11 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
     }
 
     private void frame(GuiGraphicsExtractor g, int x, int y, int w, int h) {
-        g.fill(x, y, x + w, y + h, 0xFF2B3036);
-        g.fill(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF6F767D);
-        g.fill(x + 2, y + 2, x + w - 2, y + h - 2, BG);
+        g.fill(x, y, x + w, y + h, 0xFF0B0D0F);
+        g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF4A535B, 0xFF2E353B);
+        g.fill(x + 1, y + 1, x + w - 1, y + 2, 0xFF7C8790);
+        g.fill(x + 3, y + 3, x + w - 3, y + h - 3, BG);
+        g.fill(x + 3, y + 3, x + w - 3, y + 4, 0x6030D0A8);
     }
 
     private void upgradesPanel(GuiGraphicsExtractor g, int x, int y) {

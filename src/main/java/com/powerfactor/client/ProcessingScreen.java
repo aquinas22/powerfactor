@@ -23,7 +23,12 @@ public class ProcessingScreen<M extends ProcessingMenu> extends MachineScreen<M>
 
     public ProcessingScreen(M menu, Inventory inventory, Component title, Identifier texture, int arrowX, int arrowY, double ratedCe, boolean motor,
             net.minecraft.world.level.ItemLike icon) {
-        super(menu, inventory, title, 166);
+        this(menu, inventory, title, texture, arrowX, arrowY, ratedCe, motor, icon, 166);
+    }
+
+    protected ProcessingScreen(M menu, Inventory inventory, Component title, Identifier texture, int arrowX, int arrowY, double ratedCe, boolean motor,
+            net.minecraft.world.level.ItemLike icon, int height) {
+        super(menu, inventory, title, height);
         this.icon = icon;
         this.texture = texture;
         this.arrowX = arrowX;

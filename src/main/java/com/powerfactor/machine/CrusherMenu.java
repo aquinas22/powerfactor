@@ -14,14 +14,16 @@ import org.jspecify.annotations.Nullable;
 public class CrusherMenu extends ProcessingMenu {
     public CrusherMenu(int containerId, Inventory inventory, RegistryFriendlyByteBuf extraData) {
         this(containerId, inventory, new SimpleContainer(3), UpgradeInventory.client(), new SimpleContainerData(DATA_COUNT), null);
+        this.pos = extraData.readBlockPos();
     }
 
     public CrusherMenu(int containerId, Inventory inventory, Container items, UpgradeInventory upgrades, ContainerData data,
             @Nullable ProcessingBlockEntity machine) {
         super(ModMenus.CRUSHER.get(), containerId, items, upgrades, data, machine);
-        addSlot(new Slot(items, CrusherBlockEntity.INPUT, 44, 35));
-        addSlot(new OutputSlot(items, CrusherBlockEntity.OUTPUT, 104, 35));
-        addSlot(new OutputSlot(items, CrusherBlockEntity.BONUS, 130, 35));
-        addUpgradesAndInventory(inventory, 84);
+        // Layout v2 (see CrusherScreen): input, chevrons, main product in a big well, byproduct.
+        addSlot(new Slot(items, CrusherBlockEntity.INPUT, 71, 27));
+        addSlot(new OutputSlot(items, CrusherBlockEntity.OUTPUT, 122, 27));
+        addSlot(new OutputSlot(items, CrusherBlockEntity.BONUS, 124, 52));
+        addUpgradesAndInventory(inventory, 108);
     }
 }

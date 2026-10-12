@@ -38,6 +38,9 @@ public abstract class ProcessingMenu extends MachineMenu {
     }
 
     /** Call after adding the machine's own slots. */
+    /** Where the machine is (client side, for the GUI's 3D view); null if not sent. */
+    public net.minecraft.core.@org.jspecify.annotations.Nullable BlockPos pos;
+
     protected void addUpgradesAndInventory(Inventory inventory, int inventoryTop) {
         for (int i = 0; i < UpgradeInventory.SLOTS; i++) {
             UpgradeSlot slot = new UpgradeSlot(upgrades, i, UPGRADE_X + (i % 2) * 20, UPGRADE_Y + (i / 2) * 20);

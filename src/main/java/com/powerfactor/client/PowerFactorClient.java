@@ -54,6 +54,11 @@ public final class PowerFactorClient {
     }
 
     @SubscribeEvent
+    static void onPictureInPicture(net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent event) {
+        event.register(MachineView.State.class, MachineView.Renderer::new);
+    }
+
+    @SubscribeEvent
     static void onKeys(net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent event) {
         event.registerCategory(JetpackClient.CATEGORY);
         event.register(JetpackClient.HOVER_KEY);
@@ -114,9 +119,7 @@ public final class PowerFactorClient {
     @SubscribeEvent
     static void onMenuScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.COAL_TURBINE.get(), CoalTurbineScreen::new);
-        event.register(ModMenus.CRUSHER.get(), (CrusherMenu m, Inventory inv, Component t) ->
-                new ProcessingScreen<>(m, inv, t, PowerFactor.id("textures/gui/crusher.png"), 70, 34, 25, true,
-                        com.powerfactor.registry.ModBlocks.CRUSHER.get()));
+        event.register(ModMenus.CRUSHER.get(), CrusherScreen::new);
         event.register(ModMenus.ELECTRIC_FURNACE.get(), (ElectricFurnaceMenu m, Inventory inv, Component t) ->
                 new ProcessingScreen<>(m, inv, t, PowerFactor.id("textures/gui/electric_furnace.png"), 79, 34, 16, false,
                         com.powerfactor.registry.ModBlocks.ELECTRIC_FURNACE.get()));
