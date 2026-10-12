@@ -21,4 +21,3 @@
 ## Known gaps / polish
 - [ ] Pumpjack is not yet a multiblock; old two-block refineries in existing worlds need rebuilding as the multiblock.
 - [ ] Mod targets Minecraft 26.2; the ATM11 server is 26.1.2 (needs a port to drop into that pack).
-- [ ] No git remote configured: set one up to push.
