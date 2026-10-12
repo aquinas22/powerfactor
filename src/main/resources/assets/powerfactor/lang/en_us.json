@@ -396,6 +396,7 @@
   "item.powerfactor.tree_tap": "Tree Tap",
   "item.powerfactor.turbine_blade": "Turbine Blade",
   "item.powerfactor.vfd_upgrade": "VFD Upgrade",
+  "item.powerfactor.woodcutter_module": "Woodcutter Module",
   "item.powerfactor.wrench": "Wrench",
   "item.powerfactor.zinc_dust": "Zinc Dust",
   "item.powerfactor.zinc_ingot": "Zinc Ingot",
@@ -571,6 +572,7 @@
   "tooltip.powerfactor.drill_module.silk": "Silk Touch",
   "tooltip.powerfactor.drill_module.speed": "+50% cutting speed per module",
   "tooltip.powerfactor.drill_module.thruster": "+35% jetpack thrust and top speed, each",
+  "tooltip.powerfactor.drill_module.woodcutter": "Cuts wood fast and fells whole trees",
   "tooltip.powerfactor.energy": "%s / %s FE",
   "tooltip.powerfactor.jetpack.help": "Hold Jump to climb · H toggles hover · Sneak to sink",
   "tooltip.powerfactor.jetpack.hover_off": "Hover: off",
@@ -592,7 +594,7 @@
   "tooltip.powerfactor.upgrade.speed": "+50% speed per card; uses more FE and EE",
   "tooltip.powerfactor.upgrade.surge": "Rides through dips down to 0.6 pu for 3 s",
   "tooltip.powerfactor.upgrade.vfd": "Motor ignores frequency and voltage sag, quarter EE, no idling",
-  "tooltip.powerfactor.wrench.dismantle": "Sneak-use: dismantle into your inventory",
-  "tooltip.powerfactor.wrench.rotate": "Use: turn a machine · strip a wire's coat",
-  "tooltip.powerfactor.wrench.strip": "Pipes: use to cycle an arm"
+  "tooltip.powerfactor.wrench.dismantle": "Sneak + right-click: pick the block up",
+  "tooltip.powerfactor.wrench.rotate": "Right-click: turn a machine",
+  "tooltip.powerfactor.wrench.strip": "Right-click a coated wire: strip it"
 }

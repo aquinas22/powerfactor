@@ -1834,10 +1834,12 @@ def tool_models():
         name = "electric_drill_3d" + ("_running" if running else "")
         display = dict(TOOL_DISPLAY,
                        # Tuned in game: carried at the hip, auger reaching toward the crosshair.
-                       firstperson_righthand={"rotation": [15, -15, 0], "translation": [1, 4, -9], "scale": [0.55, 0.55, 0.55]},
-                       firstperson_lefthand={"rotation": [15, 15, 0], "translation": [1, 4, -9], "scale": [0.55, 0.55, 0.55]},
-                       thirdperson_righthand={"rotation": [0, 180, 0], "translation": [0, 3, -2], "scale": [0.7, 0.7, 0.7]},
-                       thirdperson_lefthand={"rotation": [0, 180, 0], "translation": [0, 3, -2], "scale": [0.7, 0.7, 0.7]},
+                       # Tuned in game: the auger points away from the player, toward what you're digging.
+                       # Noah's pick of the first-person pose: big and close, auger forward-left.
+                       firstperson_righthand={"rotation": [0, 95, 5], "translation": [2, 2, -2], "scale": [0.48, 0.48, 0.48]},
+                       firstperson_lefthand={"rotation": [0, -85, -5], "translation": [2, 2, -2], "scale": [0.48, 0.48, 0.48]},
+                       thirdperson_righthand={"rotation": [0, 90, 0], "translation": [0, 3, -2], "scale": [0.7, 0.7, 0.7]},
+                       thirdperson_lefthand={"rotation": [0, 90, 0], "translation": [0, 3, -2], "scale": [0.7, 0.7, 0.7]},
                        gui={"rotation": [20, -135, 0], "translation": [0, -1, 0], "scale": [0.52, 0.52, 0.52]},
                        ground={"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.4, 0.4, 0.4]},
                        fixed={"rotation": [0, 90, 0], "translation": [0, 0, 0], "scale": [0.6, 0.6, 0.6]})
@@ -1865,16 +1867,8 @@ def tool_models():
     write(asset("items", "electric_chainsaw.json"), {"model": {"type": "minecraft:condition", "property": "minecraft:custom_model_data",
         "index": 0, "on_true": {"type": "minecraft:model", "model": pf("item/electric_chainsaw_3d_running")},
         "on_false": {"type": "minecraft:model", "model": pf("item/electric_chainsaw_3d")}}})
-    # Adjustable wrench: grip, shank, head with fixed and sliding jaws and the knurled worm.
-    wrench = [el([0, 7, 7.25], [7, 9, 8.75], "#grip"), el([-0.6, 6.8, 7.1], [0, 9.2, 8.9], "#grip"),
-              el([7, 7.25, 7.5], [12, 8.75, 8.5], "#chrome"), el([12, 6, 7.25], [15.5, 10, 8.75], "#chrome"),
-              el([14, 10, 7.25], [15.5, 13.5, 8.75], "#chrome"), el([11.5, 10, 7.4], [12.8, 12.3, 8.6], "#chrome"),
-              el([12.6, 6.6, 6.8], [14, 7.6, 9.2], "#knurl")]
-    write(asset("models", "item", "wrench_3d.json"), {"textures": {"grip": m("wrench_grip"), "chrome": m("wrench_chrome"),
-        "knurl": m("wrench_knurl"), "particle": pf("item/wrench")},
-        "gui_light": "side", "display": dict(TOOL_DISPLAY, firstperson_righthand={"rotation": [0, 100, 20], "translation": [2, 3, 0], "scale": [0.6, 0.6, 0.6]},
-            firstperson_lefthand={"rotation": [0, -80, -20], "translation": [2, 3, 0], "scale": [0.6, 0.6, 0.6]}), "elements": wrench})
-    write(asset("items", "wrench.json"), {"model": {"type": "minecraft:model", "model": pf("item/wrench_3d")}})
+    # Crescent wrench: a plain handheld tool sprite, like vanilla tools.
+    flat_item("wrench", "minecraft:item/handheld")
 
 
 def upgrade_table_model():
@@ -1896,18 +1890,19 @@ def phase_h():
     glass_pipe("fluid_pipe")
     tool_models()
     upgrade_table_model()
-    for mod in ("efficiency_module", "thruster_module", "plating_module", "overcharge_module", "chain_module"):
+    for mod in ("efficiency_module", "thruster_module", "plating_module", "overcharge_module", "chain_module", "woodcutter_module"):
         flat_item(mod)
     drops_self("upgrade_table")
     tag("block", "minecraft", "mineable/pickaxe", [pf("upgrade_table")])
     card = {"P": "#c:plates/steel", "K": pf("advanced_circuit")}
     shaped("upgrade_table", ["GKG", "PCP", "P P"], {"G": "#c:glass_panes", "K": pf("advanced_circuit"), "C": "minecraft:crafting_table",
                                                      "P": "#c:plates/steel"}, 1, category="redstone")
-    shaped("wrench", [" I ", " BI", "B  "], {"I": "#c:ingots/steel", "B": "#c:ingots/brass"}, 1, category="equipment")
+    shaped("wrench", ["I I", " I ", " I "], {"I": "#c:ingots/iron"}, 1, category="equipment")
     shaped("efficiency_module", ["PGP", "GKG", "PGP"], {**card, "G": "#c:plates/gold"}, 1, category="equipment")
     shaped("thruster_module", ["PMP", "AKA", "PMP"], {**card, "M": pf("electric_motor"), "A": "#c:plates/aluminum"}, 1, category="equipment")
     shaped("plating_module", ["PSP", "SKS", "PSP"], {**card, "S": "#c:storage_blocks/steel"}, 1, category="equipment")
     shaped("overcharge_module", ["PCP", "RKR", "PCP"], {**card, "C": pf("capacitor"), "R": "#c:storage_blocks/redstone"}, 1, category="equipment")
+    shaped("woodcutter_module", ["PAP", "AKA", "PAP"], {**card, "A": "minecraft:diamond_axe"}, 1, category="equipment")
     shaped("chain_module", ["PWP", "QKQ", "PWP"], {**card, "W": pf("fine_silver_wire"), "Q": "#c:gems/quartz"}, 1, category="equipment")
     write(data(NS, "damage_type", "electrocution.json"), {"message_id": "powerfactor.electrocution", "exhaustion": 0.1, "scaling": "never",
                                                           "effects": "burning"})
@@ -1916,7 +1911,7 @@ def phase_h():
     for t in ("area", "speed", "silk", "fortune", "magnet", "battery"):
         name(f"item.{NS}.drill_{t}_module", pretty(t) + " Module")
     name(f"item.{NS}.drill_silk_module", "Silk Touch Module")
-    for mod in ("efficiency_module", "thruster_module", "plating_module", "overcharge_module", "chain_module"):
+    for mod in ("efficiency_module", "thruster_module", "plating_module", "overcharge_module", "chain_module", "woodcutter_module"):
         name(f"item.{NS}.{mod}", pretty(mod))
     name(f"item.{NS}.chain_module", "Chain Arc Module")
     name(f"item.{NS}.wrench", "Wrench")
@@ -1924,9 +1919,9 @@ def phase_h():
     LANG.update({
         "death.attack.powerfactor.electrocution": "%1$s was electrocuted",
         "death.attack.powerfactor.electrocution.player": "%1$s was electrocuted while fleeing %2$s",
-        "tooltip.powerfactor.wrench.rotate": "Use: turn a machine · strip a wire's coat",
-        "tooltip.powerfactor.wrench.strip": "Pipes: use to cycle an arm",
-        "tooltip.powerfactor.wrench.dismantle": "Sneak-use: dismantle into your inventory",
+        "tooltip.powerfactor.wrench.rotate": "Right-click: turn a machine",
+        "tooltip.powerfactor.wrench.strip": "Right-click a coated wire: strip it",
+        "tooltip.powerfactor.wrench.dismantle": "Sneak + right-click: pick the block up",
         "tooltip.powerfactor.module.fits": "Fits: %s",
         "tooltip.powerfactor.module.max": "Up to %s per tool",
         "tooltip.powerfactor.drill_module.install": "Install at an Upgrade Table",
@@ -1935,6 +1930,7 @@ def phase_h():
         "tooltip.powerfactor.drill_module.plating": "+2 armour, +1 toughness, each",
         "tooltip.powerfactor.drill_module.overcharge": "More damage per hit, each",
         "tooltip.powerfactor.drill_module.chain": "Arcs leap to more targets",
+        "tooltip.powerfactor.drill_module.woodcutter": "Cuts wood fast and fells whole trees",
         "tooltip.powerfactor.drill_module.speed": "+50% cutting speed per module",
         "tool_kind.powerfactor.drill": "Electric Mining Drill", "tool_kind.powerfactor.chainsaw": "Electric Chainsaw",
         "tool_kind.powerfactor.jetpack": "Electric Jetpack", "tool_kind.powerfactor.saber": "Arc Saber",

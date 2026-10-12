@@ -21,6 +21,12 @@ public final class ToolEvents {
     @SubscribeEvent
     static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
         var stack = event.getEntity().getMainHandItem();
+        // Woodcutter module: the drill cuts wood like a chainsaw.
+        if (stack.getItem() instanceof com.powerfactor.item.DrillItem && com.powerfactor.item.DrillItem.powered(stack)
+                && com.powerfactor.item.ToolModules.count(stack, com.powerfactor.item.DrillModule.Type.WOODCUTTER) > 0
+                && event.getState().is(BlockTags.MINEABLE_WITH_AXE)) {
+            event.setNewSpeed(Math.max(event.getNewSpeed(), ChainsawItem.SPEED));
+        }
         if (stack.getItem() instanceof ChainsawItem) {
             if (!ChainsawItem.powered(stack)) {
                 event.setNewSpeed(Math.min(event.getNewSpeed(), ChainsawItem.UNPOWERED_SPEED));
@@ -38,8 +44,7 @@ public final class ToolEvents {
             return;
         }
         var stack = player.getMainHandItem();
-        if (!(stack.getItem() instanceof ChainsawItem) || !ChainsawItem.powered(stack) && !player.getAbilities().instabuild
-                || !event.getState().is(BlockTags.LOGS)) {
+        if (!TreeFeller.canFell(stack, player) || !event.getState().is(BlockTags.LOGS)) {
             return;
         }
         var tree = TreeFeller.findTree(level, event.getPos());

@@ -66,6 +66,18 @@ public final class TreeFeller {
         return naturalLeaves >= 4 ? logs : List.of();
     }
 
+    /** Whether this tool fells trees, and has the charge to. */
+    public static boolean canFell(ItemStack tool, net.minecraft.world.entity.player.Player player) {
+        boolean able = tool.getItem() instanceof ChainsawItem
+                || tool.getItem() instanceof DrillItem && ToolModules.count(tool, DrillModule.Type.WOODCUTTER) > 0;
+        return able && (player.getAbilities().instabuild || PoweredItem.energy(tool) >= perLog(tool));
+    }
+
+    /** FE per log for whichever tool is felling. */
+    public static int perLog(ItemStack tool) {
+        return tool.getItem() instanceof ChainsawItem ? ChainsawItem.perLog(tool) : DrillItem.costPerBlock(tool);
+    }
+
     /** Start felling: {@code cut} was already broken by the player. */
     public static void fell(ServerLevel level, ServerPlayer player, ItemStack tool, BlockPos cut, List<BlockPos> logs) {
         List<BlockPos> rest = new ArrayList<>(logs);
@@ -97,11 +109,11 @@ public final class TreeFeller {
                 if (!level.getBlockState(p).is(BlockTags.LOGS)) {
                     continue;
                 }
-                if (!ChainsawItem.powered(job.tool()) && !job.player().getAbilities().instabuild) {
+                if (PoweredItem.energy(job.tool()) < perLog(job.tool()) && !job.player().getAbilities().instabuild) {
                     job.logs().clear();
                     break;
                 }
-                PoweredItem.drain(job.tool(), ChainsawItem.perLog(job.tool()), job.player());
+                PoweredItem.drain(job.tool(), perLog(job.tool()), job.player());
                 level.destroyBlock(p, true, job.player());
                 job.felled().add(p);
             }

@@ -67,6 +67,7 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("upgrade_table_installs_modules", () -> PowerFactorGameTests::upgradeTableInstalls);
         FUNCTIONS.register("laser_engraver_needs_right_mask", () -> PowerFactorGameTests::laserEngraverMakesChips);
         FUNCTIONS.register("mining_drill_instamines_dirt", () -> PowerFactorGameTests::drillInstaminesDirt);
+        FUNCTIONS.register("woodcutter_drill_and_wrench", () -> PowerFactorGameTests::woodcutterAndWrench);
     }
 
     public static void register(IEventBus modBus) {
@@ -709,6 +710,27 @@ public final class PowerFactorGameTests {
         float stoneProgress = helper.getLevel().getBlockState(stone).getDestroyProgress(player, helper.getLevel(), stone);
         helper.assertTrue(dirtProgress >= 1F, "dirt should break instantly, progress/tick " + dirtProgress);
         helper.assertTrue(stoneProgress > 0.1F, "stone should still be fast, progress/tick " + stoneProgress);
+        helper.succeed();
+    }
+
+    private static void woodcutterAndWrench(GameTestHelper helper) {
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var drill = new net.minecraft.world.item.ItemStack(ModItems.ELECTRIC_DRILL.get());
+        drill.set(com.powerfactor.registry.ModComponents.ENERGY.get(), 50_000);
+        helper.assertFalse(com.powerfactor.item.TreeFeller.canFell(drill, player), "a drill without the module felled trees");
+        var modules = net.minecraft.core.NonNullList.withSize(com.powerfactor.item.ToolModules.SLOTS, net.minecraft.world.item.ItemStack.EMPTY);
+        modules.set(0, new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.WOODCUTTER).get()));
+        com.powerfactor.item.ToolModules.install(drill, modules, helper.getLevel().registryAccess());
+        helper.assertTrue(com.powerfactor.item.TreeFeller.canFell(drill, player), "the woodcutter module didn't enable felling");
+        // The wrench turns a machine, no power needed.
+        helper.setBlock(CENTER, ModBlocks.CRUSHER.get().defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
+        var wrench = new net.minecraft.world.item.ItemStack(ModItems.WRENCH.get());
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, wrench);
+        BlockPos abs = helper.absolutePos(CENTER);
+        var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(abs), Direction.UP, abs, false);
+        wrench.getItem().onItemUseFirst(wrench, new net.minecraft.world.item.context.UseOnContext(player,
+                net.minecraft.world.InteractionHand.MAIN_HAND, hit));
+        helper.assertValueEqual(helper.getBlockState(CENTER).getValue(MachineBlock.FACING), Direction.EAST, "facing after one turn");
         helper.succeed();
     }
 

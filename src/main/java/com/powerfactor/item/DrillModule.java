@@ -22,7 +22,8 @@ public class DrillModule extends Item {
         THRUSTER(3, "thruster_module", ToolKind.JETPACK),
         PLATING(3, "plating_module", ToolKind.JETPACK),
         OVERCHARGE(3, "overcharge_module", ToolKind.CHAINSAW, ToolKind.SABER, ToolKind.ARC_GUN),
-        CHAIN(2, "chain_module", ToolKind.SABER, ToolKind.ARC_GUN);
+        CHAIN(2, "chain_module", ToolKind.SABER, ToolKind.ARC_GUN),
+        WOODCUTTER(1, "woodcutter_module", ToolKind.DRILL);
 
         public final int max;
         public final String id;

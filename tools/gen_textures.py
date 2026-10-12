@@ -5457,29 +5457,6 @@ def saw_chain(frame=0):
     return img
 
 
-def wrench_chrome():
-    return chrome(["9aa3ab", "eef2f4", "ffffff", "dfe5e9", "aab3ba", "7d858c", "8a939a", "b9c2c9",
-                   "dfe5e9", "f4f7f8", "c9d1d6", "9aa3ab", "7d858c", "6f777e", "5a6167", "4a5056"], hexc("6aa8ff"))
-
-
-def wrench_grip():
-    """Two-tone grip: orange rubber with black ridges."""
-    img = tool_plastic(2207, TOOL_ORANGE)
-    for y in range(16):
-        for x in range(16):
-            if x % 4 in (2, 3) and 1 < y < 14:
-                img.putpixel((x, y), hexc("2a2a2c") if x % 4 == 2 else hexc("1a1a1c"))
-    return img
-
-
-def wrench_knurl():
-    img = Image.new("RGBA", (16, 16))
-    for y in range(16):
-        for x in range(16):
-            dark = (x + y) % 4 == 0 or (x - y) % 4 == 0
-            c = hexc("3a3f44") if dark else hexc("dfe5e9") if y < 5 else hexc("aab3ba") if y < 11 else hexc("7d858c")
-            img.putpixel((x, y), c)
-    return img
 
 
 WRENCH = [
@@ -5503,16 +5480,28 @@ WRENCH = [
 
 
 def wrench_item():
-    """Adjustable wrench, head top-right, orange grip bottom-left."""
-    pal = {"A": hexc("f4f7f8"), "B": hexc("b9c2c9"), "C": hexc("6f777e"), "k": hexc("4a5056"),
-           "O": TOOL_ORANGE[0], "P": TOOL_ORANGE[1], "Q": TOOL_ORANGE[3], "K": hexc("222224")}
-    return outline(pixmap(blank(), WRENCH, pal), hexc("1c1c1e"))
-
-
-# ---------------------------------------------------------------- upgrade table
-HOLO = hexc("3fe0ff")
-HOLO_DIM = hexc("1d5a66")
-GUNMETAL = hexc("2e353c")
+    """A classic crescent (adjustable) wrench, held like a vanilla tool: chrome head with an open
+    jaw at the top right, the worm screw under it, and a long flat handle with a hanging hole."""
+    rows = [
+        "...........oo...",
+        "..........oHHo..",
+        ".........oHh.Ho.",
+        ".........oHo..o.",
+        "........oHHHo...",
+        ".......oHhKHHo..",
+        "......oHhKKhHo..",
+        ".....oHhhhho....",
+        "....oHhhho......",
+        "...oHhhho.......",
+        "..oHhhho........",
+        ".oHhhho.........",
+        "oHh.ho..........",
+        "oHhhho..........",
+        ".oooo...........",
+        "................",
+    ]
+    pal = {"o": hexc("23272b"), "H": hexc("eef2f5"), "h": hexc("aab4bc"), "K": hexc("6d757b")}
+    return pixmap(blank(), rows, pal)
 
 
 def upgrade_table_top():
@@ -5746,6 +5735,8 @@ UPGRADE_MODULE_EMBLEMS = {
                                          ".##.....", ".#......"]),
     "chain": ("c04aff", "f0c8ff", ["...##...", "...#....", "..##....", "..#.#...", ".#...#..", ".+...##.",
                                     "+.....#.", "......+."]),
+    "woodcutter": ("c88a3a", "ffe0a8", ["..##....", ".####...", "#####+..", "####.+..", ".##...+.", ".......+",
+                                         "........", "........"]),
 }
 
 
@@ -5771,9 +5762,6 @@ def phase_g():
     save(saw_chain(), "item/model/saw_chain.png")
     save(anim([saw_chain(f) for f in range(4)]), "item/model/saw_chain_running.png")
     write_mcmeta("item/model/saw_chain_running.png", 1)
-    save(wrench_chrome(), "item/model/wrench_chrome.png")
-    save(wrench_grip(), "item/model/wrench_grip.png")
-    save(wrench_knurl(), "item/model/wrench_knurl.png")
     save(wrench_item(), "item/wrench.png")
     save(upgrade_table_top(), "block/upgrade_table_top.png")
     save(upgrade_table_side(), "block/upgrade_table_side.png")
