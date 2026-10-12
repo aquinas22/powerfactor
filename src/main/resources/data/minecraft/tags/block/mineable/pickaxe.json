@@ -67,6 +67,8 @@
     "powerfactor:upgrade_table",
     "powerfactor:laser_engraver",
     "powerfactor:radio_tower",
+    "powerfactor:refinery_casing",
+    "powerfactor:distillation_column",
     "powerfactor:pumpjack",
     "powerfactor:refinery"
   ]

@@ -74,6 +74,11 @@ public final class CommonEvents {
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.PUMPJACK.get(), (be, side) -> be.getTank());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.REFINERY.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.REFINERY.get(), (be, side) -> be.getTanks());
+        // Casings of a formed structure pass energy and fluids through to their controller.
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CASING.get(), (be, side) ->
+                be.controller() instanceof com.powerfactor.oil.RefineryBlockEntity r ? r.getEnergy() : null);
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.CASING.get(), (be, side) ->
+                be.controller() instanceof com.powerfactor.oil.RefineryBlockEntity r ? r.getTanks() : null);
         event.registerItem(Capabilities.Energy.ITEM,
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.radio.WalkieTalkieItem.CAPACITY, 2_000),
                 ModItems.WALKIE_TALKIE.get());

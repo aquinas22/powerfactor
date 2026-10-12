@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/distillation_column"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/distillation_column"
+    }
+  }
+}

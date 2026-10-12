@@ -133,6 +133,10 @@ public final class PowerGrid implements Bus {
                 continue;
             }
             BlockEntity be = level.getBlockEntity(e.pos());
+            // A multiblock's casing stands in for its controller, counted once however many casings touch the grid.
+            if (be instanceof com.powerfactor.multiblock.MultiblockPart part) {
+                be = part.controller();
+            }
             if (be == null) {
                 continue;
             }

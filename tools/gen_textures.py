@@ -4396,6 +4396,7 @@ def phaseC_F():
     phase_drill_big()
     phase_radio()
     phase_oil()
+    phase_multiblock()
 
 def crusher_jaws():
     """Jaw plate (9x4x2) at (0,0) and a tooth (1x4x1) at (0,8): manganese steel, worn bright on the crushing faces."""
@@ -6289,6 +6290,50 @@ def phase_oil():
     save(pumpjack_entity(), "entity/pumpjack.png")
     save(refinery_column(), "block/refinery_column.png")
     save(refinery_base(), "block/refinery_base.png")
+
+
+# ---------------------------------------------------------------- multiblock casings
+
+def refinery_casing(formed=False):
+    """Refinery casing: heavy riveted steel frame, a hazard band at the foot, and (formed) teal
+    status lights and a lit seam showing it's part of a working structure."""
+    img = painted(4801, hexc("4a525a"))
+    d = ImageDraw.Draw(img)
+    d.rectangle((1, 1, 14, 14), outline=hexc("6f7880"))
+    d.rectangle((2, 2, 13, 13), outline=hexc("2c3238"))
+    for x, y in ((2, 2), (13, 2), (2, 13), (13, 13), (7, 2), (7, 13)):
+        img.putpixel((x, y), hexc("b9c2c9"))
+    for x in range(3, 13):                       # cross-brace
+        img.putpixel((x, x), hexc("39414a"))
+        img.putpixel((x, 15 - x), hexc("39414a"))
+    for x in range(16):
+        img.putpixel((x, 15), hexc("f2c230") if (x // 2) % 2 == 0 else hexc("1e1e1e"))
+    if formed:
+        for x in range(4, 12):
+            img.putpixel((x, 7), hexc("2fd0a8"))
+            img.putpixel((x, 8), hexc("1f8a6a"))
+        for x, y in ((4, 4), (11, 4)):
+            img.putpixel((x, y), hexc("7cffd0"))
+    return img
+
+
+def refinery_controller_front():
+    """Controller face: a control panel with an LCD, gauges and a big start button."""
+    img = refinery_casing()
+    d = ImageDraw.Draw(img)
+    d.rectangle((3, 3, 12, 8), fill=hexc("0b2016"), outline=hexc("1b1d20"))
+    for x in range(4, 12):
+        img.putpixel((x, 5 + (x % 3 == 0)), hexc("7cffb0"))
+    d.ellipse((3, 10, 6, 13), fill=hexc("d0d6da"), outline=hexc("2c3238"))
+    img.putpixel((5, 11), hexc("d8382c"))
+    d.ellipse((9, 10, 12, 13), fill=hexc("2fb04a"), outline=hexc("1b1d20"))
+    return img
+
+
+def phase_multiblock():
+    save(refinery_casing(), "block/refinery_casing.png")
+    save(refinery_casing(True), "block/refinery_casing_formed.png")
+    save(refinery_controller_front(), "block/refinery_controller_front.png")
 
 
 if __name__ == "__main__":

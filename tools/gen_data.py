@@ -2114,20 +2114,46 @@ def phase_oil():
     els = [box([0, 0, 0], [16, 2, 16], "#pad"), box([6, 2, 0.5], [10, 6, 4.5], "#steel"), box([7, 6, 1.5], [9, 8, 3.5], "#steel"),
            box([3, 2, 10], [13, 7, 15], "#motor"), box([2, 2, 7], [14, 3, 9], "#steel")]
     write(asset("models", "block", "pumpjack.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els})
-    # Refinery: heater skid and a two-block distillation column with flanges, side draw-off pipes and a vent.
-    t = {"base": pf("block/refinery_base"), "col": pf("block/refinery_column"), "steel": pf("block/steel_block"),
-         "pipe": pf("block/fluid_pipe_flange"), "particle": pf("block/refinery_base")}
-    els = [box([0, 0, 0], [16, 5, 16], "#base")]
-    els += octagon(9, 5, 29, "#col", caps=("up",), uv=[0, 0, 16, 16])
-    els += [box([10.5, 12, 7], [15.5, 14, 9], "#pipe"), box([10.5, 21, 7], [15.5, 23, 9], "#pipe"),
-            box([7, 29, 7], [9, 31, 9], "#steel"), box([6, 31, 6], [10, 32, 10], "#steel")]
-    write(asset("models", "block", "refinery.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els,
-        "display": {"gui": {"rotation": [30, 225, 0], "translation": [0, -3.5, 0], "scale": [0.4, 0.4, 0.4]},
-                    "ground": {"rotation": [0, 0, 0], "translation": [0, 3, 0], "scale": [0.2, 0.2, 0.2]},
-                    "fixed": {"rotation": [0, 0, 0], "translation": [0, -3, 0], "scale": [0.4, 0.4, 0.4]},
-                    "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.28, 0.28, 0.28]},
-                    "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, -2, 0], "scale": [0.28, 0.28, 0.28]}}})
-    for b in ("pumpjack", "refinery"):
+    # Refinery multiblock: controller (front-centre of a 3x3 casing base) and a three-block column.
+    for formed in (False, True):
+        suf = "_formed" if formed else ""
+        casing = pf("block/refinery_casing" + suf)
+        write(asset("models", "block", f"refinery_casing{suf}.json"), {"parent": "minecraft:block/cube_all", "textures": {"all": casing}})
+        write(asset("models", "block", f"refinery{suf}.json"), {"parent": "minecraft:block/orientable", "textures": {
+            "top": casing, "side": casing, "front": pf("block/refinery_controller_front")}})
+    write(asset("blockstates", "refinery_casing.json"), {"variants": {f"formed={f}": {"model": pf("block/refinery_casing" + ("_formed" if f == "true" else ""))}
+                                                                      for f in ("false", "true")}})
+    item_def("refinery_casing")
+    t = {"col": pf("block/refinery_column"), "particle": pf("block/refinery_column")}
+    write(asset("models", "block", "distillation_column.json"), {"parent": "minecraft:block/block", "textures": t,
+        "elements": octagon(10, 0, 16, "#col", caps=("up", "down"))})
+    write(asset("blockstates", "distillation_column.json"), {"variants": {f"formed={f}": {"model": pf("block/distillation_column")}
+                                                                          for f in ("false", "true")}})
+    item_def("distillation_column")
+    variants = {}
+    for f, y in HORIZONTAL.items():
+        for formed in ("false", "true"):
+            for running in ("false", "true"):
+                m = {"model": pf("block/refinery" + ("_formed" if formed == "true" else ""))}
+                if y:
+                    m["y"] = y
+                variants[f"facing={f},formed={formed},running={running}"] = m
+    write(asset("blockstates", "refinery.json"), {"variants": variants})
+    item_def("refinery")
+    for b in ("refinery", "refinery_casing", "distillation_column"):
+        drops_self(b)
+    tag("block", "minecraft", "mineable/pickaxe", [pf("refinery_casing"), pf("distillation_column")])
+    shaped("refinery_casing", ["PBP", "B B", "PBP"], {"P": "#c:plates/steel", "B": "minecraft:bricks"}, 4, category="building")
+    shaped("distillation_column", ["PGP", "P P", "PGP"], {"P": "#c:plates/steel", "G": "#c:glass_panes"}, 2, category="building")
+    name(f"block.{NS}.refinery_casing", "Refinery Casing")
+    name(f"block.{NS}.distillation_column", "Distillation Column")
+    LANG.update({
+        "scada.powerfactor.multiblock.incomplete": "STRUCTURE INCOMPLETE",
+        "gui.powerfactor.multiblock.incomplete": "STRUCTURE INCOMPLETE",
+        "gui.powerfactor.multiblock.hint": "Build the shape shown by the hologram",
+        "scada.powerfactor.wind.short": "TOWER TOO SHORT: %s/%s sections",
+    })
+    for b in ("pumpjack",):
         write(asset("models", "block", f"{b}_top.json"), {"textures": {"particle": pf("block/steel_block")}})
         variants = {}
         for f, y in HORIZONTAL.items():
@@ -2167,8 +2193,9 @@ def phase_oil():
         "handbook.powerfactor.oil.text":
             "Crude oil lies in reservoirs deep underground, and sometimes seeps up as tar pits in deserts and badlands. Build a "
             "Pumpjack anywhere above a reservoir (it searches straight down, then up to 8 blocks sideways): the nodding donkey "
-            "lifts 25 mB of crude per tick for 60 FE/t until the reservoir runs dry.\\n\\nPipe the crude to an Oil Refinery. Its "
-            "distillation column splits 10 mB of crude into 5 mB of diesel and 4 mB of jet fuel every tick (100 FE/t). Diesel "
+            "lifts 25 mB of crude per tick for 60 FE/t until the reservoir runs dry.\\n\\nPipe the crude to an Oil Refinery, a multiblock: the "
+            "controller sits front-centre of a 3x3 base of Refinery Casing, with three Distillation Column blocks stacked on the "
+            "middle casing; a hologram shows what's missing. Cables and pipes attach to any casing. The distillation column splits 10 mB of crude into 5 mB of diesel and 4 mB of jet fuel every tick (100 FE/t). Diesel "
             "runs the Diesel Generator; jet fuel flies the airplane. Buckets work for all three.",
     })
     # Worldgen: deep reservoirs everywhere in the overworld, tar pits in dry biomes.

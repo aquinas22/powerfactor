@@ -290,11 +290,28 @@ public final class GeneratorScreens {
             return (menu.get(DieselMenu.DATA_FLAGS) & 1) != 0;
         }
 
+        private boolean formed() {
+            return (menu.get(DieselMenu.DATA_FLAGS) & 2) != 0;
+        }
+
         @Override
         protected Electrical electrical() {
             return new Electrical(1.0, 60.0, menu.get(DieselMenu.DATA_FE), menu.get(DieselMenu.DATA_EE), 110,
-                    Component.translatable(running() ? "gui.powerfactor.refinery.running" : "gui.powerfactor.refinery.idle"),
-                    running() ? 0xFF55FF55 : 0xFFFFB020);
+                    Component.translatable(!formed() ? "gui.powerfactor.multiblock.incomplete"
+                            : running() ? "gui.powerfactor.refinery.running" : "gui.powerfactor.refinery.idle"),
+                    !formed() ? 0xFFFF6A5A : running() ? 0xFF55FF55 : 0xFFFFB020);
+        }
+
+        @Override
+        protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
+            if (!formed()) {
+                // Over the scope: what's wrong and how to fix it.
+                g.fill(8, 20, 60, 72, 0xD0100808);
+                var lines = font.split(Component.translatable("gui.powerfactor.multiblock.hint"), 48);
+                for (int i = 0; i < lines.size() && i < 5; i++) {
+                    g.text(font, lines.get(i), 10, 23 + i * 10, 0xFFFF8A7A, false);
+                }
+            }
         }
 
         @Override

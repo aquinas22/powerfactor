@@ -1,0 +1,131 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "col": "powerfactor:block/refinery_column",
+    "particle": "powerfactor:block/refinery_column"
+  },
+  "elements": [
+    {
+      "from": [
+        3.0,
+        0,
+        5.9289
+      ],
+      "to": [
+        13.0,
+        16,
+        10.0711
+      ],
+      "faces": {
+        "east": {
+          "texture": "#col"
+        },
+        "west": {
+          "texture": "#col"
+        },
+        "up": {
+          "texture": "#col"
+        },
+        "down": {
+          "texture": "#col"
+        }
+      }
+    },
+    {
+      "from": [
+        5.9289,
+        0,
+        3.0
+      ],
+      "to": [
+        10.0711,
+        16,
+        13.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#col"
+        },
+        "south": {
+          "texture": "#col"
+        },
+        "up": {
+          "texture": "#col"
+        },
+        "down": {
+          "texture": "#col"
+        }
+      }
+    },
+    {
+      "from": [
+        3.0,
+        0,
+        5.9289
+      ],
+      "to": [
+        13.0,
+        16,
+        10.0711
+      ],
+      "faces": {
+        "east": {
+          "texture": "#col"
+        },
+        "west": {
+          "texture": "#col"
+        },
+        "up": {
+          "texture": "#col"
+        },
+        "down": {
+          "texture": "#col"
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        5.9289,
+        0,
+        3.0
+      ],
+      "to": [
+        10.0711,
+        16,
+        13.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#col"
+        },
+        "south": {
+          "texture": "#col"
+        },
+        "up": {
+          "texture": "#col"
+        },
+        "down": {
+          "texture": "#col"
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    }
+  ]
+}

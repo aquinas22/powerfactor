@@ -41,6 +41,18 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
     private final HydrogenTanks tanks = new HydrogenTanks(TANK, new net.minecraft.world.level.material.Fluid[] {ModFluids.CRUDE_OIL.source().get(),
             ModFluids.DIESEL.source().get(), ModFluids.JET_FUEL.source().get()}, new boolean[] {false, true, true}, this::setChanged);
     private int lastFe;
+    private boolean formed;
+    private final java.util.Set<BlockPos> linked = new java.util.HashSet<>();
+
+    /** 3x3 casing base with this controller front-centre, and a three-block distillation column in the middle. */
+    public static final com.powerfactor.multiblock.Structure STRUCTURE = new com.powerfactor.multiblock.Structure.Builder()
+            .key('B', com.powerfactor.registry.ModBlocks.REFINERY_CASING)
+            .key('T', com.powerfactor.registry.ModBlocks.DISTILLATION_COLUMN)
+            .layer(0, "BCB", "BBB", "BBB")
+            .layer(1, "...", ".T.", "...")
+            .layer(2, "...", ".T.", "...")
+            .layer(3, "...", ".T.", "...")
+            .build();
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -52,7 +64,7 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
                 case DieselMenu.DATA_TANK2 -> tanks.amount(DIESEL);
                 case DieselMenu.DATA_TANK3 -> tanks.amount(JET);
                 case DieselMenu.DATA_STORED -> energy.getAmountAsInt() / 10;
-                case DieselMenu.DATA_FLAGS -> lastFe > 0 ? 1 : 0;
+                case DieselMenu.DATA_FLAGS -> (lastFe > 0 ? 1 : 0) | (formed ? 2 : 0);
                 case DieselMenu.DATA_REDSTONE -> redstoneMode().ordinal();
                 default -> 0;
             };
@@ -74,7 +86,10 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
     @Override
     public void serverTick(ServerLevel level, BlockPos pos, BlockState state) {
         lastFe = 0;
-        boolean run = enabled(level, pos) && energy.getAmountAsInt() >= FE_PER_TICK && tanks.amount(CRUDE) >= CRUDE_PER_TICK
+        if (level.getGameTime() % 20 == pos.asLong() % 20 || linked.isEmpty() == formed) {
+            checkStructure(level, pos, state);
+        }
+        boolean run = formed && enabled(level, pos) && energy.getAmountAsInt() >= FE_PER_TICK && tanks.amount(CRUDE) >= CRUDE_PER_TICK
                 && tanks.amount(DIESEL) + DIESEL_PER_TICK <= TANK && tanks.amount(JET) + JET_PER_TICK <= TANK;
         if (run) {
             energy.set(energy.getAmountAsInt() - FE_PER_TICK);
@@ -83,10 +98,62 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
             tanks.add(DIESEL, DIESEL_PER_TICK);
             tanks.add(JET, JET_PER_TICK);
             if (level.getGameTime() % 6 == 0) {
-                level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, pos.getX() + 0.5, pos.getY() + 2.1, pos.getZ() + 0.5, 1, 0.05, 0, 0.05, 0.01);
+                BlockPos top = pos.offset(new BlockPos(0, 4, 1).rotate(com.powerfactor.multiblock.Structure.rotation(facing())));
+                level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, top.getX() + 0.5, top.getY() + 0.1, top.getZ() + 0.5, 1, 0.05, 0, 0.05, 0.01);
             }
         }
         setRunning(level, pos, state, run);
+    }
+
+    private net.minecraft.core.Direction facing() {
+        return getBlockState().getValueOrElse(com.powerfactor.machine.MachineBlock.FACING, net.minecraft.core.Direction.NORTH);
+    }
+
+    public boolean formed() {
+        return formed;
+    }
+
+    /** Form or break the structure, linking or releasing its casings. */
+    private void checkStructure(ServerLevel level, BlockPos pos, BlockState state) {
+        boolean now = STRUCTURE.complete(level, pos, facing());
+        java.util.Set<BlockPos> parts = new java.util.HashSet<>();
+        if (now) {
+            for (var p : STRUCTURE.parts()) {
+                parts.add(STRUCTURE.worldPos(pos, facing(), p));
+            }
+        }
+        for (BlockPos p : linked) {
+            if (!parts.contains(p) && level.getBlockEntity(p) instanceof com.powerfactor.multiblock.CasingBlockEntity c && pos.equals(c.controllerPos())) {
+                c.link(null);
+            }
+        }
+        for (BlockPos p : parts) {
+            if (level.getBlockEntity(p) instanceof com.powerfactor.multiblock.CasingBlockEntity c) {
+                c.link(pos);
+            }
+        }
+        linked.clear();
+        linked.addAll(parts);
+        if (now != formed) {
+            formed = now;
+            level.playSound(null, pos, now ? com.powerfactor.registry.ModSounds.UPGRADE_INSTALL.get() : com.powerfactor.registry.ModSounds.UPGRADE_REMOVE.get(),
+                    net.minecraft.sounds.SoundSource.BLOCKS, 1F, now ? 0.8F : 1F);
+        }
+        if (state.getValue(com.powerfactor.multiblock.CasingBlock.FORMED) != now) {
+            level.setBlock(pos, state.setValue(com.powerfactor.multiblock.CasingBlock.FORMED, now), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level != null && !level.isClientSide()) {
+            for (BlockPos p : linked) {
+                if (level.getBlockEntity(p) instanceof com.powerfactor.multiblock.CasingBlockEntity c && worldPosition.equals(c.controllerPos())) {
+                    c.link(null);
+                }
+            }
+        }
     }
 
     /** Resistive heaters and a pump motor. */
@@ -120,6 +187,10 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
 
     @Override
     public ScadaReading scadaReading() {
+        if (!formed) {
+            return new ScadaReading(worldPosition, getDisplayName(), ScadaReading.Status.WARNING, 0, 0,
+                    Component.translatable("scada.powerfactor.multiblock.incomplete"), true, remoteEnabled(), false, 1F, 60F);
+        }
         return new ScadaReading(worldPosition, getDisplayName(), lastFe > 0 ? ScadaReading.Status.RUNNING
                 : tanks.amount(CRUDE) < CRUDE_PER_TICK ? ScadaReading.Status.WARNING : ScadaReading.Status.OFF, lastFe, (int) eeDemand(),
                 Component.translatable("scada.powerfactor.refinery", tanks.amount(CRUDE), tanks.amount(DIESEL), tanks.amount(JET)), true,

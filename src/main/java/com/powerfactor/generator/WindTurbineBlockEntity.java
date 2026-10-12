@@ -35,6 +35,8 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil;
  */
 public class WindTurbineBlockEntity extends PushingGenerator implements MachineAudio.Looping {
     public static final int PEAK = 160;
+    /** The turbine is a multiblock: it forms only on a tower of at least this many sections. */
+    public static final int MIN_TOWER = 6;
     /** Blade length, in blocks from the hub centre. */
     public static final double ROTOR_RADIUS = 6.5;
     /** Hub centre above the nacelle block's floor, and ahead of its centre, in blocks. */
@@ -52,6 +54,7 @@ public class WindTurbineBlockEntity extends PushingGenerator implements MachineA
     private float syncedWind;
     private WindModel.Mode syncedMode = WindModel.Mode.LOW_WIND;
     private boolean syncedBlocked;
+    private int syncedTower = -1;
 
     // Client animation.
     private float rpm, angle, prevAngle;
@@ -79,12 +82,14 @@ public class WindTurbineBlockEntity extends PushingGenerator implements MachineA
         gust += (gustTarget - gust) * 0.02;
         wind = meanWind(level) * heightFactor(pos) * gust;
 
-        WindModel.Mode mode = model.update(wind, enabled(level, pos) && !blocked, 1);
+        boolean formed = towerHeight >= MIN_TOWER;
+        WindModel.Mode mode = model.update(wind, enabled(level, pos) && !blocked && formed, 1);
         generate(mode == WindModel.Mode.RUNNING ? (int) Math.round(PEAK * WindModel.powerFraction(wind)) : 0);
         push(level, pos);
         setRunning(level, pos, state, lastFe > 0);
 
-        if (mode != syncedMode || blocked != syncedBlocked || Math.abs(wind - syncedWind) > 0.4) {
+        if (mode != syncedMode || blocked != syncedBlocked || Math.abs(wind - syncedWind) > 0.4 || towerHeight != syncedTower) {
+            syncedTower = towerHeight;
             syncedMode = mode;
             syncedBlocked = blocked;
             syncedWind = (float) wind;
@@ -236,6 +241,11 @@ public class WindTurbineBlockEntity extends PushingGenerator implements MachineA
         return (float) (6 * Math.sin(t / 1300.0 + (seed & 63)) + 2.5 * Math.sin(t / 377.0 + ((seed >> 6) & 63)));
     }
 
+    /** Tower sections under the nacelle, as last synced; -1 if not known yet. */
+    public int towerSections() {
+        return syncedTower;
+    }
+
     public float rpm() {
         return rpm;
     }
@@ -273,10 +283,11 @@ public class WindTurbineBlockEntity extends PushingGenerator implements MachineA
     @Override
     public ScadaReading scadaReading() {
         WindModel.Mode mode = model.mode();
-        ScadaReading.Status status = blocked || mode == WindModel.Mode.CUT_OUT ? ScadaReading.Status.WARNING
+        ScadaReading.Status status = blocked || towerHeight < MIN_TOWER || mode == WindModel.Mode.CUT_OUT ? ScadaReading.Status.WARNING
                 : mode == WindModel.Mode.RUNNING ? ScadaReading.Status.RUNNING : ScadaReading.Status.OFF;
         String ms = String.format("%.1f", wind);
-        Component detail = blocked ? Component.translatable("scada.powerfactor.wind.blocked")
+        Component detail = towerHeight < MIN_TOWER ? Component.translatable("scada.powerfactor.wind.short", towerHeight, MIN_TOWER)
+                : blocked ? Component.translatable("scada.powerfactor.wind.blocked")
                 : switch (mode) {
                     case RUNNING -> Component.translatable("scada.powerfactor.wind", ms, Math.round(WindModel.rpm(wind)),
                             Math.round(WindModel.pitch(mode, wind)));
@@ -295,6 +306,7 @@ public class WindTurbineBlockEntity extends PushingGenerator implements MachineA
         syncedWind = input.getFloatOr("wind", 0);
         syncedMode = WindModel.Mode.values()[Math.clamp(input.getIntOr("mode", 1), 0, WindModel.Mode.values().length - 1)];
         syncedBlocked = input.getBooleanOr("blocked", false);
+        syncedTower = input.getIntOr("tower", -1);
         model.setMode(syncedMode);
         if (getLevel() == null || !getLevel().isClientSide()) {
             return;
@@ -326,6 +338,7 @@ public class WindTurbineBlockEntity extends PushingGenerator implements MachineA
         tag.putFloat("wind", syncedWind);
         tag.putInt("mode", syncedMode.ordinal());
         tag.putBoolean("blocked", syncedBlocked);
+        tag.putInt("tower", syncedTower);
         return tag;
     }
 }

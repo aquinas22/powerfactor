@@ -160,9 +160,14 @@ public final class ModBlocks {
     public static final DeferredBlock<com.powerfactor.machine.TallMachineBlock> PUMPJACK = BLOCKS.registerBlock("pumpjack",
             p -> new com.powerfactor.machine.TallMachineBlock(() -> ModBlockEntities.PUMPJACK.get(), Block.box(1, 0, 1, 15, 16, 15),
                     Block.box(5, 0, 5, 11, 12, 11), p), () -> machine().noOcclusion());
-    public static final DeferredBlock<com.powerfactor.machine.TallMachineBlock> REFINERY = BLOCKS.registerBlock("refinery",
-            p -> new com.powerfactor.machine.TallMachineBlock(() -> ModBlockEntities.REFINERY.get(), Block.box(0, 0, 0, 16, 16, 16),
-                    Block.box(3, 0, 3, 13, 16, 13), p), () -> machine().noOcclusion().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 6 : 0));
+    /** Refinery controller: the front-centre block of a 3x3 casing base under a three-block distillation column. */
+    public static final DeferredBlock<com.powerfactor.multiblock.MultiblockControllerBlock> REFINERY = BLOCKS.registerBlock("refinery",
+            p -> new com.powerfactor.multiblock.MultiblockControllerBlock(() -> ModBlockEntities.REFINERY.get(), p),
+            () -> machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 6 : 0));
+    public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> REFINERY_CASING = BLOCKS.registerBlock("refinery_casing",
+            p -> new com.powerfactor.multiblock.CasingBlock(net.minecraft.world.phys.shapes.Shapes.block(), p), ModBlocks::machine);
+    public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> DISTILLATION_COLUMN = BLOCKS.registerBlock("distillation_column",
+            p -> new com.powerfactor.multiblock.CasingBlock(Block.box(3, 0, 3, 13, 16, 13), p), () -> machine().noOcclusion());
     public static final DeferredBlock<com.powerfactor.upgrade.UpgradeTableBlock> UPGRADE_TABLE = BLOCKS.registerBlock("upgrade_table",
             com.powerfactor.upgrade.UpgradeTableBlock::new, () -> machine().noOcclusion().lightLevel(s -> 5));
 

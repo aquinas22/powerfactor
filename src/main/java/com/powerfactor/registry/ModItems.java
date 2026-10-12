@@ -102,6 +102,8 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> UPGRADE_TABLE = ITEMS.registerSimpleBlockItem("upgrade_table", ModBlocks.UPGRADE_TABLE);
     public static final DeferredItem<BlockItem> PUMPJACK = ITEMS.registerSimpleBlockItem("pumpjack", ModBlocks.PUMPJACK);
     public static final DeferredItem<BlockItem> REFINERY = ITEMS.registerSimpleBlockItem("refinery", ModBlocks.REFINERY);
+    public static final DeferredItem<BlockItem> REFINERY_CASING = ITEMS.registerSimpleBlockItem("refinery_casing", ModBlocks.REFINERY_CASING);
+    public static final DeferredItem<BlockItem> DISTILLATION_COLUMN = ITEMS.registerSimpleBlockItem("distillation_column", ModBlocks.DISTILLATION_COLUMN);
     public static final DeferredItem<BlockItem> TESLA_COIL = ITEMS.registerSimpleBlockItem("tesla_coil", ModBlocks.TESLA_COIL);
     public static final DeferredItem<BlockItem> GROW_LAMP = ITEMS.registerSimpleBlockItem("grow_lamp", ModBlocks.GROW_LAMP);
     public static final DeferredItem<BlockItem> CHARGING_PAD = ITEMS.registerSimpleBlockItem("charging_pad", ModBlocks.CHARGING_PAD);

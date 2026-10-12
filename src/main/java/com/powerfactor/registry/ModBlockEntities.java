@@ -85,6 +85,9 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("pumpjack", () -> new BlockEntityType<>(com.powerfactor.oil.PumpjackBlockEntity::new, ModBlocks.PUMPJACK.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.oil.RefineryBlockEntity>> REFINERY =
             BLOCK_ENTITIES.register("refinery", () -> new BlockEntityType<>(com.powerfactor.oil.RefineryBlockEntity::new, ModBlocks.REFINERY.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.multiblock.CasingBlockEntity>> CASING =
+            BLOCK_ENTITIES.register("casing", () -> new BlockEntityType<>(com.powerfactor.multiblock.CasingBlockEntity::new,
+                    ModBlocks.REFINERY_CASING.get(), ModBlocks.DISTILLATION_COLUMN.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FluidTankBlockEntity>> FLUID_TANK = BLOCK_ENTITIES.register("fluid_tank",
             () -> new BlockEntityType<>(FluidTankBlockEntity::new, ModBlocks.FLUID_TANK.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PumpBlockEntity>> ELECTRIC_PUMP = BLOCK_ENTITIES.register("electric_pump",

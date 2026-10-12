@@ -1,58 +1,64 @@
 {
   "variants": {
-    "facing=north,half=lower,running=false": {
+    "facing=north,formed=false,running=false": {
       "model": "powerfactor:block/refinery"
     },
-    "facing=north,half=lower,running=true": {
+    "facing=north,formed=false,running=true": {
       "model": "powerfactor:block/refinery"
     },
-    "facing=north,half=upper,running=false": {
-      "model": "powerfactor:block/refinery_top"
+    "facing=north,formed=true,running=false": {
+      "model": "powerfactor:block/refinery_formed"
     },
-    "facing=north,half=upper,running=true": {
-      "model": "powerfactor:block/refinery_top"
+    "facing=north,formed=true,running=true": {
+      "model": "powerfactor:block/refinery_formed"
     },
-    "facing=east,half=lower,running=false": {
+    "facing=east,formed=false,running=false": {
       "model": "powerfactor:block/refinery",
       "y": 90
     },
-    "facing=east,half=lower,running=true": {
+    "facing=east,formed=false,running=true": {
       "model": "powerfactor:block/refinery",
       "y": 90
     },
-    "facing=east,half=upper,running=false": {
-      "model": "powerfactor:block/refinery_top"
+    "facing=east,formed=true,running=false": {
+      "model": "powerfactor:block/refinery_formed",
+      "y": 90
     },
-    "facing=east,half=upper,running=true": {
-      "model": "powerfactor:block/refinery_top"
+    "facing=east,formed=true,running=true": {
+      "model": "powerfactor:block/refinery_formed",
+      "y": 90
     },
-    "facing=south,half=lower,running=false": {
+    "facing=south,formed=false,running=false": {
       "model": "powerfactor:block/refinery",
       "y": 180
     },
-    "facing=south,half=lower,running=true": {
+    "facing=south,formed=false,running=true": {
       "model": "powerfactor:block/refinery",
       "y": 180
     },
-    "facing=south,half=upper,running=false": {
-      "model": "powerfactor:block/refinery_top"
+    "facing=south,formed=true,running=false": {
+      "model": "powerfactor:block/refinery_formed",
+      "y": 180
     },
-    "facing=south,half=upper,running=true": {
-      "model": "powerfactor:block/refinery_top"
+    "facing=south,formed=true,running=true": {
+      "model": "powerfactor:block/refinery_formed",
+      "y": 180
     },
-    "facing=west,half=lower,running=false": {
+    "facing=west,formed=false,running=false": {
       "model": "powerfactor:block/refinery",
       "y": 270
     },
-    "facing=west,half=lower,running=true": {
+    "facing=west,formed=false,running=true": {
       "model": "powerfactor:block/refinery",
       "y": 270
     },
-    "facing=west,half=upper,running=false": {
-      "model": "powerfactor:block/refinery_top"
+    "facing=west,formed=true,running=false": {
+      "model": "powerfactor:block/refinery_formed",
+      "y": 270
     },
-    "facing=west,half=upper,running=true": {
-      "model": "powerfactor:block/refinery_top"
+    "facing=west,formed=true,running=true": {
+      "model": "powerfactor:block/refinery_formed",
+      "y": 270
     }
   }
 }

@@ -57,6 +57,8 @@ public class WindTurbineRenderer implements BlockEntityRenderer<WindTurbineBlock
         public Direction facing = Direction.NORTH;
         public float yaw, rotor, pitch, anemometer;
         public boolean lightOn;
+        public final java.util.List<MultiblockGhost.Ghost> ghosts = new java.util.ArrayList<>();
+        public float time;
         /** 0 by day, 1 at night: how much glow the aviation lights throw. */
         public float darkness;
     }
@@ -106,6 +108,17 @@ public class WindTurbineRenderer implements BlockEntityRenderer<WindTurbineBlock
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(be, state, partialTicks, camera, breakProgress);
         state.facing = be.getBlockState().getValueOrElse(MachineBlock.FACING, Direction.NORTH);
+        // Unformed: show the tower sections still needed under the nacelle.
+        state.ghosts.clear();
+        int have = be.towerSections();
+        if (have >= 0 && have < WindTurbineBlockEntity.MIN_TOWER && be.getLevel() != null) {
+            state.time = be.getLevel().getGameTime() + partialTicks;
+            var section = new AABB(4.5 / 16, 0, 4.5 / 16, 11.5 / 16, 1, 11.5 / 16);
+            for (int k = have + 1; k <= WindTurbineBlockEntity.MIN_TOWER; k++) {
+                var at = be.getBlockPos().below(k);
+                state.ghosts.add(new MultiblockGhost.Ghost(at.subtract(be.getBlockPos()), !be.getLevel().getBlockState(at).canBeReplaced(), section));
+            }
+        }
         state.yaw = be.yawOffset(partialTicks);
         state.rotor = be.rotorAngle(partialTicks);
         state.pitch = be.bladePitch(partialTicks);
@@ -121,6 +134,7 @@ public class WindTurbineRenderer implements BlockEntityRenderer<WindTurbineBlock
 
     @Override
     public void submit(State state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
+        MultiblockGhost.submit(pose, collector, state.ghosts, state.time);
         int light = state.lightCoords;
         pose.pushPose();
         pose.translate(0.5F, 1.0F, 0.5F);

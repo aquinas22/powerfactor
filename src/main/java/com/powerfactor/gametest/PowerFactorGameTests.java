@@ -741,26 +741,37 @@ public final class PowerFactorGameTests {
         for (BlockPos p : BlockPos.betweenClosed(new BlockPos(0, 0, 0), new BlockPos(6, 2, 6))) {
             helper.setBlock(p, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
         }
-        for (BlockPos p : BlockPos.betweenClosed(new BlockPos(2, 0, 2), new BlockPos(4, 1, 4))) {
+        for (BlockPos p : BlockPos.betweenClosed(new BlockPos(3, 0, 3), new BlockPos(5, 1, 5))) {
             helper.setBlock(p, oil);
         }
-        BlockPos jack = new BlockPos(3, 3, 3);
+        BlockPos jack = new BlockPos(4, 3, 4);
         helper.setBlock(jack, ModBlocks.PUMPJACK.get().defaultBlockState());
         helper.setBlock(jack.above(), ModBlocks.PUMPJACK.get().defaultBlockState().setValue(com.powerfactor.machine.TallMachineBlock.HALF,
                 net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
         var pump = helper.getBlockEntity(jack, com.powerfactor.oil.PumpjackBlockEntity.class);
         feed(helper, pump.getEnergy(), 400);
-        BlockPos col = new BlockPos(0, 3, 0);
+        // Refinery multiblock: controller front-centre of a 3x3 casing base (extending +Z), column on the middle.
+        BlockPos col = new BlockPos(1, 3, 0);
+        for (int x = 0; x <= 2; x++) {
+            for (int z = 0; z <= 2; z++) {
+                helper.setBlock(new BlockPos(x, 3, z), ModBlocks.REFINERY_CASING.get().defaultBlockState());
+            }
+        }
         helper.setBlock(col, ModBlocks.REFINERY.get().defaultBlockState());
-        helper.setBlock(col.above(), ModBlocks.REFINERY.get().defaultBlockState().setValue(com.powerfactor.machine.TallMachineBlock.HALF,
-                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
         var refinery = helper.getBlockEntity(col, com.powerfactor.oil.RefineryBlockEntity.class);
+        helper.runAfterDelay(25, () -> helper.assertFalse(refinery.formed(), "formed without its column"));
+        helper.runAfterDelay(30, () -> {
+            for (int y = 4; y <= 6; y++) {
+                helper.setBlock(new BlockPos(1, y, 1), ModBlocks.DISTILLATION_COLUMN.get().defaultBlockState());
+            }
+        });
+        helper.runAfterDelay(60, () -> helper.assertTrue(refinery.formed(), "complete structure didn't form"));
         feed(helper, refinery.getEnergy(), 500);
         helper.runAfterDelay(120, () -> {
             int crude = pump.getTank().amount(0);
             helper.assertTrue(crude >= 1000, "pumpjack lifted only " + crude + " mB");
             int left = 0;
-            for (BlockPos p : BlockPos.betweenClosed(new BlockPos(2, 0, 2), new BlockPos(4, 1, 4))) {
+            for (BlockPos p : BlockPos.betweenClosed(new BlockPos(3, 0, 3), new BlockPos(5, 1, 5))) {
                 left += helper.getLevel().getFluidState(helper.absolutePos(p)).isSource() ? 1 : 0;
             }
             helper.assertTrue(left < 18, "reservoir didn't drain (" + left + " blocks left)");

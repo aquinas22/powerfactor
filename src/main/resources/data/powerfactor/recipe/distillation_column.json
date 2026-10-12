@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PGP",
+    "P P",
+    "PGP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "G": "#c:glass_panes"
+  },
+  "result": {
+    "id": "powerfactor:distillation_column",
+    "count": 2
+  }
+}

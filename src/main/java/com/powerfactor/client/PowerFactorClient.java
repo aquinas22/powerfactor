@@ -127,6 +127,7 @@ public final class PowerFactorClient {
         event.registerBlockEntityRenderer(ModBlockEntities.UPGRADE_TABLE.get(), UpgradeTableRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.PIPE.get(), PipeRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.PUMPJACK.get(), PumpjackRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.REFINERY.get(), RefineryRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.RECIPE_MACHINES.get(com.powerfactor.machine.RecipeMachine.LASER_ENGRAVER).get(),
                 LaserEngraverRenderer::new);
     }
