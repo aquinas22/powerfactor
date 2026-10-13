@@ -66,7 +66,10 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
             @Override
             protected void onContentsChanged(int index, FluidStack previousContents) {
                 setChanged();
-                if (level != null && !level.isClientSide() && previousContents.getAmount() / 250 != getAmountAsInt(index) / 250)
+                int amount = getAmountAsInt(index);
+                if (level != null && !level.isClientSide() && (previousContents.getAmount() / 250 != amount / 250
+                        || (previousContents.getAmount() == 0) != (amount == 0)
+                        || (previousContents.getAmount() == TANK_CAPACITY) != (amount == TANK_CAPACITY)))
                     level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
             }
         } : null;

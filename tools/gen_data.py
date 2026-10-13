@@ -1444,7 +1444,8 @@ HANDBOOK = {
         "grid. Connect any panel to fiber; right-click to change page."),
     "transmission": ("Transmission",
         "Low voltage loses a lot over distance. Step up.\n\nWire tiers: Copper Wire (512 CE), Insulated Cable (1,024), MV Aluminum Cable "
-        "(4,096), and HV pylons (16,384) with far lower loss. Transformers join two grids: power enters the red primary face and leaves the "
+        "(4,096), and HV pylons (16,384) with far lower loss. Bare and insulated copper share 480 V and connect directly; a mixed run uses "
+        "its weakest cable's rating. Different voltages need a transformer, including across closed breaker chains. Transformers join two grids: power enters the red primary face and leaves the "
         "blue secondary face, and they carry EE back upstream. Overload one and it trips; right-click to reset.\n\nString HV conductors "
         "between pylons with a Conductor Spool, up to 32 blocks per span. Circuit Breakers split a grid when open and trip on overcurrent."),
     "generators": ("Generators & Storage",

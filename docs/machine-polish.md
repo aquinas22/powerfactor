@@ -85,6 +85,18 @@ leaf textures, and visible latex cuts.
 
 ## Energy and mod compatibility
 
+Bare copper and insulated copper both use 480 V and now connect directly. A mixed run
+uses its weakest conductor's rating and losses, regardless of which cable is queried first.
+Different voltages require a transformer. Closed breaker chains with conflicting voltage
+levels remain isolated; correcting a remote terminal rebuilds the affected networks.
+
+Attaching a machine refreshes cached grid endpoints immediately. Previously cached
+handlers reject insertion after invalidation. Fresh wires start unpowered and cannot shock
+until real FE is committed; an aborted transfer does not energize them.
+
+The washer sends model updates when its tank enters or leaves empty/full, even when the
+change is smaller than a quarter bucket.
+
 Generators rotate output priority and share stored energy among distinct adjacent
 consumers. Repeated references to the same capability are deduplicated. The coal
 generator's front accepts an output connection consistently with its other energy faces.
@@ -121,7 +133,7 @@ python3 tools/check_resources.py
 ./gradlew test build runGameTestServer --offline
 ```
 
-The completed checks passed 54 unit tests and 87 required in-world GameTests. Resource
+The completed checks passed 54 unit tests and 91 required in-world GameTests. Resource
 validation passed for 1,368 JSON resources and 24 animation sheets. Native client checks
 cover machine models, processing and generator animations, empty/full washer water,
 closed panels, face and redstone selection, compact layout, pause/resume messages and Creative/Survival commands.

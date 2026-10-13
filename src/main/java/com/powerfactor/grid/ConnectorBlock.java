@@ -72,7 +72,9 @@ public abstract class ConnectorBlock extends Block {
     @Override
     protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
             BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
-        return state.setValue(CONNECTIONS.get(direction), connectsTo(level, pos, direction));
+        BlockState updated = state.setValue(CONNECTIONS.get(direction), connectsTo(level, pos, direction));
+        if (updated != state && level instanceof Level l && !l.isClientSide()) onTopologyChanged(l, pos);
+        return updated;
     }
 
     @Override
@@ -97,6 +99,7 @@ public abstract class ConnectorBlock extends Block {
         // capability caches and per-tick lookups already follow block entities.
         BlockState updated = withConnections(level, pos, state);
         if (updated != state) {
+            if (!level.isClientSide()) onTopologyChanged(level, pos);
             level.setBlock(pos, updated, Block.UPDATE_CLIENTS);
         }
     }

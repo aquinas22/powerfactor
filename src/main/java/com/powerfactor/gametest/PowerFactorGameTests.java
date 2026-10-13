@@ -42,6 +42,10 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("turbine_redstone_shutdown", () -> PowerFactorGameTests::redstoneShutdown);
         FUNCTIONS.register("crusher_doubles_raw_iron", () -> PowerFactorGameTests::crusherDoublesRawIron);
         FUNCTIONS.register("wire_grid_powers_crusher_and_carries_ee", () -> PowerFactorGameTests::gridPowersCrusher);
+        FUNCTIONS.register("mixed_copper_cables_share_weakest_grid", () -> PowerFactorGameTests::mixedCopperCables);
+        FUNCTIONS.register("wire_rebuilds_when_device_attached", () -> PowerFactorGameTests::wireDeviceAttachment);
+        FUNCTIONS.register("fresh_wire_requires_committed_power", () -> PowerFactorGameTests::freshWirePower);
+        FUNCTIONS.register("breaker_chain_rejects_mixed_voltages", () -> PowerFactorGameTests::breakerVoltageConflict);
         FUNCTIONS.register("fixed_capacitor_over_corrects", () -> PowerFactorGameTests::fixedCapacitorOverCorrects);
         FUNCTIONS.register("auto_capacitor_bank_holds_unity_pf", () -> PowerFactorGameTests::autoCapacitorHoldsUnity);
         FUNCTIONS.register("stirling_engine_powers_crusher", () -> PowerFactorGameTests::stirlingEnginePowersCrusher);
@@ -156,7 +160,7 @@ public final class PowerFactorGameTests {
     private static void onRegisterTests(RegisterGameTestsEvent event) {
         var env = event.registerEnvironment(PowerFactor.id("default"));
         java.util.Set<String> wide = java.util.Set.of("long_transformer_chain", "breaker_splits_grid", "tesla_coil_zaps_zombie",
-                "bare_wire_shocks_coated_does_not");
+                "bare_wire_shocks_coated_does_not", "mixed_copper_cables_share_weakest_grid", "breaker_chain_rejects_mixed_voltages");
         java.util.Set<String> tall = java.util.Set.of("chainsaw_fells_tree", "pumpjack_and_refinery", "multiblock_auto_build", "wind_tower_auto_build",
                 "steam_plant_recycles_water", "steam_turbine_preserves_backed_up_steam", "steam_structure_ownership", "cooling_tower_needs_open_vent",
                 "grapple_hits_and_reels", "grapple_swing_and_empty_battery", "grapple_releases_broken_anchor", "grapple_tracks_moving_entity", "wingsuit_deploy_and_fold",
@@ -1709,6 +1713,81 @@ public final class PowerFactorGameTests {
             if(state.is(ModBlocks.RUBBER_LOG.get()) && state.getValue(com.powerfactor.world.RubberLogBlock.NATURAL)){natural++;if(state.getValue(com.powerfactor.world.RubberLogBlock.LATEX))latex++;}
         }
         helper.assertTrue(leaves>40 && xs.size()>=5 && natural>=6 && latex>0,"rubber canopy or renewable latex missing");helper.succeed();
+    }
+
+    private static void mixedCopperCables(GameTestHelper helper) {
+        var copper = new BlockPos(1,1,1); var insulated = copper.east(); var target = insulated.east();
+        placeTurbine(helper, copper.west(), Direction.NORTH);
+        placeWire(helper, copper);
+        var cable = ModBlocks.INSULATED_COPPER_CABLE.get();
+        helper.setBlock(insulated, cable.withConnections(helper.getLevel(), helper.absolutePos(insulated), cable.defaultBlockState()));
+        var crusher = placeCrusher(helper, target);
+        var manager = com.powerfactor.grid.GridManager.get(helper.getLevel());
+        var grid = manager.gridAt(helper.absolutePos(insulated));
+        helper.assertTrue(grid != null && grid == manager.gridAt(helper.absolutePos(copper)), "same-voltage wires built separate grids");
+        helper.assertValueEqual(grid.ratingCe(), com.powerfactor.grid.CableTier.COPPER.ratingCe, "mixed run exceeded weakest wire rating");
+        helper.assertTrue(helper.getBlockState(copper).getValue(com.powerfactor.grid.ConnectorBlock.CONNECTIONS.get(Direction.EAST))
+                && helper.getBlockState(insulated).getValue(com.powerfactor.grid.ConnectorBlock.CONNECTIONS.get(Direction.WEST)), "mixed cable seam has no physical arms");
+        insert(helper, copper.west(), Items.COAL, 4); insert(helper, target, Items.RAW_IRON, 4);
+        helper.runAfterDelay(RUN_TICKS + 80, () -> {
+            helper.assertTrue(crusher.slot(1).is(ModItems.IRON_DUST.get()), "mixed cable run did not power processing");
+            helper.succeed();
+        });
+    }
+
+    private static void wireDeviceAttachment(GameTestHelper helper) {
+        placeWire(helper, CENTER);
+        var level = helper.getLevel(); var at = helper.absolutePos(CENTER);
+        var manager = com.powerfactor.grid.GridManager.get(level);
+        var old = manager.gridAt(at); var cached = old.handler();
+        helper.setBlock(CENTER.east(), ModBlocks.CHARGING_PAD.get().defaultBlockState());
+        var pad = helper.getBlockEntity(CENTER.east(), com.powerfactor.device.ChargingPadBlockEntity.class);
+        var updated = manager.gridAt(at);
+        helper.assertTrue(!old.isValid() && updated != old, "new device did not invalidate the old endpoint list");
+        try (var tx = Transaction.openRoot()) {helper.assertValueEqual(cached.insert(100,tx),0,"old cached grid still accepted energy");}
+        try (var tx = Transaction.openRoot()) {helper.assertValueEqual(updated.handler().insert(100,tx),100,"rebuilt grid rejected power");tx.commit();}
+        helper.runAfterDelay(2, () -> {
+            helper.assertValueEqual(pad.getEnergy().getAmountAsInt(),100,"newly attached device did not receive power");
+            helper.succeed();
+        });
+    }
+
+    private static void freshWirePower(GameTestHelper helper) {
+        placeWire(helper, CENTER);
+        var level = helper.getLevel(); var at = helper.absolutePos(CENTER);
+        var grid = com.powerfactor.grid.GridManager.get(level).gridAt(at);
+        var husk = helper.spawn(net.minecraft.world.entity.EntityTypes.HUSK, CENTER); husk.setNoAi(true);
+        float health = husk.getHealth(); var wire = ModBlocks.COPPER_WIRE.get();
+        helper.assertTrue(!grid.energized(), "fresh unpowered wire reports a live grid");
+        wire.stepOn(level, at, helper.getBlockState(CENTER), husk);
+        helper.assertValueEqual(husk.getHealth(),health,"fresh unpowered wire caused a shock");
+        try (var tx = Transaction.openRoot()) {helper.assertValueEqual(grid.handler().insert(100,tx),100,"simulation refused FE");}
+        helper.assertTrue(!grid.energized() && grid.handler().getAmountAsInt() == 0,"aborted transfer energized a wire");
+        try (var tx = Transaction.openRoot()) {grid.handler().insert(100,tx);tx.commit();}
+        helper.assertTrue(grid.energized(), "committed power did not energize the wire immediately");
+        wire.stepOn(level, at, helper.getBlockState(CENTER), husk);
+        helper.assertTrue(husk.getHealth() < health,"powered bare wire failed to shock");
+        helper.succeed();
+    }
+
+    private static void breakerVoltageConflict(GameTestHelper helper) {
+        var copper = new BlockPos(1,1,1); var aluminum = new BlockPos(5,1,1);
+        placeWire(helper,copper);
+        for (int x = 2; x <= 4; x++) helper.setBlock(new BlockPos(x,1,1),ModBlocks.CIRCUIT_BREAKER.get().defaultBlockState());
+        var mv = ModBlocks.ALUMINUM_CABLE.get();
+        helper.setBlock(aluminum,mv.withConnections(helper.getLevel(),helper.absolutePos(aluminum),mv.defaultBlockState()));
+        var level=helper.getLevel(); var manager=com.powerfactor.grid.GridManager.get(level);
+        var low=manager.gridAt(helper.absolutePos(copper));var high=manager.gridAt(helper.absolutePos(aluminum));
+        helper.assertTrue(low!=high && low.isValid() && high.isValid(),"breaker chain overlapped incompatible grids");
+        helper.assertTrue(manager.gridAt(helper.absolutePos(new BlockPos(3,1,1)))==null,"breaker chain bridged voltages");
+        for (int i=0;i<3;i++) helper.assertTrue(manager.gridAt(helper.absolutePos(copper))==low && manager.gridAt(helper.absolutePos(aluminum))==high,"query order rebuilt incompatible grids");
+        var lv=ModBlocks.INSULATED_COPPER_CABLE.get();
+        helper.setBlock(aluminum,lv.withConnections(level,helper.absolutePos(aluminum),lv.defaultBlockState()));
+        helper.assertTrue(!low.isValid() && !high.isValid(),"remote terminal change failed to invalidate breaker-chain grids");
+        var joined=manager.gridAt(helper.absolutePos(copper));
+        helper.assertTrue(joined!=null && joined==manager.gridAt(helper.absolutePos(aluminum)),"compatible terminal did not reconnect breaker chain");
+        helper.assertValueEqual(joined.ratingCe(),com.powerfactor.grid.CableTier.COPPER.ratingCe,"breaker bypassed weakest cable limit");
+        helper.succeed();
     }
 
     private static void wireCommonRubber(GameTestHelper helper) {

@@ -33,6 +33,8 @@
 - [x] Recipe-specific saved progress, pause/resume for blocked outputs and missing supplies, clear GUI/SCADA stop reasons,
       and animation speed tied to actual processing and upgrades.
 - [x] Whole output-batch reservations, stack-limit checks, missing-product protection and common-tag hand insulation.
+- [x] Mixed 480 V copper runs use their weakest rating; endpoint changes rebuild grids; conflicting breaker chains stay isolated;
+      fresh wires require committed FE before energizing. Washer model updates include tiny empty/full transitions.
 - [x] Flat Creative test launcher with cheats and mode switching. See [update notes](docs/machine-polish.md).
 
 The feature backlog below is paused while testing this polish update.

@@ -29,6 +29,7 @@ public final class GridManager {
     private final ServerLevel level;
     private final Map<BlockPos, PowerGrid> byPos = new HashMap<>();
     private final Set<PowerGrid> grids = new LinkedHashSet<>();
+    private final Map<BlockPos, java.util.Optional<CableTier>> breakerTiers = new HashMap<>();
 
     private GridManager(ServerLevel level) {
         this.level = level;
@@ -69,20 +70,45 @@ public final class GridManager {
         if (state.getBlock() instanceof PylonBlock) {
             return CableTier.HV;
         }
-        if (state.getBlock() instanceof BreakerBlock && state.getValue(BreakerBlock.CLOSED)) {
-            for (Direction d : Direction.values()) {
-                if (level.getBlockState(pos.relative(d)).getBlock() instanceof WireBlock wire) {
-                    return wire.tier();
-                }
-            }
-        }
+        if (state.getBlock() instanceof BreakerBlock && state.getValue(BreakerBlock.CLOSED)) return breakerTier(pos);
         return null;
     }
 
-    private boolean isNode(BlockState state, CableTier tier) {
-        return state.getBlock() instanceof WireBlock w && w.tier() == tier
+    /** A whole closed-breaker group must have one voltage; conflicting groups join neither grid. */
+    private @Nullable CableTier breakerTier(BlockPos start) {
+        var known = breakerTiers.get(start);
+        if (known != null) return known.orElse(null);
+        Set<BlockPos> group = new HashSet<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        group.add(start.immutable()); queue.add(start.immutable());
+        CableTier selected = null; boolean conflict = false;
+        while (!queue.isEmpty() && group.size() <= MAX_WIRES) {
+            BlockPos pos = queue.remove();
+            for (Direction d : Direction.values()) {
+                BlockPos next = pos.relative(d);
+                if (!level.isLoaded(next)) continue;
+                BlockState state = level.getBlockState(next);
+                if (state.getBlock() instanceof BreakerBlock && state.getValue(BreakerBlock.CLOSED)) {
+                    if (group.add(next)) queue.add(next);
+                } else {
+                    CableTier wire = state.getBlock() instanceof WireBlock w ? w.tier() : state.getBlock() instanceof PylonBlock ? CableTier.HV : null;
+                    if (wire == null) continue;
+                    if (selected != null && !selected.compatible(wire)) conflict = true;
+                    if (selected == null || wire.ratingCe < selected.ratingCe) selected = wire;
+                }
+            }
+        }
+        if (conflict || !queue.isEmpty()) selected = null;
+        var result = java.util.Optional.ofNullable(selected);
+        for (BlockPos pos : group) breakerTiers.put(pos, result);
+        return selected;
+    }
+
+    private boolean isNode(BlockPos pos, BlockState state, CableTier tier) {
+        return state.getBlock() instanceof WireBlock w && w.tier().compatible(tier)
                 || state.getBlock() instanceof PylonBlock && tier == CableTier.HV
-                || state.getBlock() instanceof BreakerBlock && state.getValue(BreakerBlock.CLOSED);
+                || state.getBlock() instanceof BreakerBlock && state.getValue(BreakerBlock.CLOSED)
+                && breakerTier(pos) instanceof CableTier breaker && breaker.compatible(tier);
     }
 
     /** Something worth delivering to or hearing from: an FE handler or an EE device. */
@@ -96,13 +122,34 @@ public final class GridManager {
     }
 
     public void invalidate(BlockPos pos) {
+        breakerTiers.clear();
         drop(byPos.get(pos));
+        Set<BlockPos> visited = new HashSet<>();
+        ArrayDeque<BlockPos> breakers = new ArrayDeque<>();
+        if (level.isLoaded(pos) && level.getBlockState(pos).getBlock() instanceof BreakerBlock) {
+            visited.add(pos.immutable()); breakers.add(pos.immutable());
+        }
         for (Direction d : Direction.values()) {
-            drop(byPos.get(pos.relative(d)));
+            BlockPos next = pos.relative(d);
+            drop(byPos.get(next));
+            if (level.isLoaded(next) && level.getBlockState(next).getBlock() instanceof BreakerBlock && visited.add(next)) breakers.add(next);
+        }
+        // A previously incompatible breaker chain may become valid when a remote terminal changes.
+        while (!breakers.isEmpty() && visited.size() <= MAX_WIRES) {
+            BlockPos breaker = breakers.remove();
+            drop(byPos.get(breaker));
+            for (Direction d : Direction.values()) {
+                BlockPos next = breaker.relative(d);
+                if (!level.isLoaded(next)) continue;
+                drop(byPos.get(next));
+                BlockState state = level.getBlockState(next);
+                if (state.getBlock() instanceof BreakerBlock && state.getValue(BreakerBlock.CLOSED) && visited.add(next)) breakers.add(next);
+            }
         }
     }
 
     void onChunkUnloaded(ChunkPos chunk) {
+        breakerTiers.clear();
         for (PowerGrid grid : List.copyOf(grids)) {
             for (BlockPos p : grid.wires()) {
                 if (ChunkPos.containing(p).equals(chunk)) {
@@ -133,6 +180,7 @@ public final class GridManager {
     }
 
     private PowerGrid build(BlockPos start, CableTier tier) {
+        CableTier limitingTier = tier;
         Set<BlockPos> wires = new HashSet<>();
         Set<PowerGrid.Endpoint> endpoints = new java.util.LinkedHashSet<>();
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
@@ -151,7 +199,8 @@ public final class GridManager {
                     continue;
                 }
                 BlockState nextState = level.getBlockState(next);
-                if (isNode(nextState, tier)) {
+                if (isNode(next, nextState, tier)) {
+                    if (nextState.getBlock() instanceof WireBlock wire && wire.ratingCe() < limitingTier.ratingCe) limitingTier = wire.tier();
                     if (wires.add(next)) {
                         queue.add(next);
                     }
@@ -168,7 +217,7 @@ public final class GridManager {
                 }
             }
         }
-        PowerGrid grid = new PowerGrid(wires, new ArrayList<>(endpoints), tier);
+        PowerGrid grid = new PowerGrid(wires, new ArrayList<>(endpoints), limitingTier);
         for (BlockPos p : wires) {
             drop(byPos.get(p));
             byPos.put(p, grid);

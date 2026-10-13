@@ -24,7 +24,7 @@ import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One connected run of same-rated wire, solved as a single AC bus each tick (see {@link BusSolver}).
+ * One connected run at a single voltage, limited by its weakest wire and solved each tick.
  *
  * <p>Generators push FE in through any wire; the grid loses some as line heat, then splits the
  * rest evenly between everything connected that will take it. Motor EE less capacitor EE is the
@@ -50,8 +50,8 @@ public final class PowerGrid implements Bus {
     private BusSolver.Result state = BusSolver.Result.NOMINAL;
     private double hertz = 60.0;
     private double generatorEeCapacity;
-    /** A rebuilt grid assumes it's live until proven otherwise, so machines don't see a 1-tick blackout. */
-    private int ticksSinceSupply = 0;
+    /** A new wire is cold until actual committed FE arrives. */
+    private int ticksSinceSupply = DEAD_AFTER;
     private int lastDelivered;
     private double interference;
 
@@ -214,6 +214,10 @@ public final class PowerGrid implements Bus {
     private final class Buffer extends SimpleEnergyHandler {
         Buffer(int capacity) {
             super(capacity, Integer.MAX_VALUE, 0);
+        }
+
+        @Override protected void onEnergyChanged(int previousAmount) {
+            if (energy > previousAmount) ticksSinceSupply = 0;
         }
 
         @Override

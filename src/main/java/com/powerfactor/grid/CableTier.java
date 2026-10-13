@@ -20,4 +20,6 @@ public enum CableTier {
         this.resistance = resistance;
         this.volts = volts;
     }
+
+    public boolean compatible(CableTier other) { return volts == other.volts; }
 }

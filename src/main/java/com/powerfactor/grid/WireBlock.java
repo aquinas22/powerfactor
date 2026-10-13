@@ -37,9 +37,9 @@ import net.neoforged.neoforge.capabilities.Capabilities;
  * higher its voltage. Right-click one with rubber to coat it (a wrench strips the coat off again).
  * Insulated cable comes coated.
  *
- * <p>Power wire. Connects to wire of the same rating, to anything with an FE handler on that side, and
+ * <p>Power wire. Connects to wire at the same voltage, to anything with an FE handler on that side, and
  * to EE loads/sources such as capacitor banks.
- * Wires of different ratings don't join; that's what transformers will be for.
+ * Mixed cable runs use the weakest conductor's rating. Different voltages require transformers.
  */
 public class WireBlock extends ConnectorBlock {
     public static final BooleanProperty COATED = BooleanProperty.create("coated");
@@ -169,9 +169,10 @@ public class WireBlock extends ConnectorBlock {
     @Override
     protected boolean connectsTo(BlockGetter level, BlockPos pos, Direction side) {
         BlockPos other = pos.relative(side);
-        if (level.getBlockState(other).getBlock() instanceof ConnectorBlock connector) {
-            return connector == this;
-        }
+        BlockState neighbor = level.getBlockState(other);
+        if (neighbor.getBlock() instanceof WireBlock wire) return tier.compatible(wire.tier());
+        if (neighbor.getBlock() instanceof ConnectorBlock) return false;
+        if (neighbor.getBlock() instanceof PylonBlock) return tier.compatible(CableTier.HV);
         if (level.getBlockState(other).getBlock() instanceof BreakerBlock) {
             return true;
         }
