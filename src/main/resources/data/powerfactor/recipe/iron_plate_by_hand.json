@@ -1,12 +1,11 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "pattern": [
-    "##"
+  "ingredients": [
+    "#c:ingots/iron",
+    "#c:ingots/iron",
+    "#c:tools/hammers"
   ],
-  "key": {
-    "#": "#c:ingots/iron"
-  },
   "result": {
     "id": "powerfactor:iron_plate",
     "count": 1

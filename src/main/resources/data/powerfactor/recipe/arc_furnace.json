@@ -9,9 +9,9 @@
   "key": {
     "E": "powerfactor:graphite_electrode",
     "G": "#c:glass_blocks",
-    "S": "#c:plates/steel",
+    "S": "#c:plates/iron",
     "F": "powerfactor:alloy_furnace",
-    "K": "powerfactor:advanced_circuit"
+    "K": "powerfactor:control_circuit"
   },
   "result": {
     "id": "powerfactor:arc_furnace",

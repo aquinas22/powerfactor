@@ -9,7 +9,7 @@
   "key": {
     "P": "#c:plates/steel",
     "F": "powerfactor:fluid_tank",
-    "R": "powerfactor:rubber",
+    "R": "#c:rubbers",
     "K": "powerfactor:control_circuit"
   },
   "result": {

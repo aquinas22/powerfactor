@@ -63,10 +63,17 @@ public class EngineRenderer implements BlockEntityRenderer<EngineBlockEntity, En
     public static LayerDefinition createLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
-        root.addOrReplaceChild("plate", CubeListBuilder.create().texOffs(0, 0).addBox(-8F, -4F, -8F, 16F, 4F, 16F), PartPose.ZERO);
+        var plate = CubeListBuilder.create().texOffs(0, 0).addBox(-7F, -4F, -7F, 14F, 3F, 14F)
+                .texOffs(0, 0).addBox(-8F, -3F, -8F, 16F, 1F, 16F);
+        for (int x : new int[]{-6, 5}) for (int z : new int[]{-6, 5})
+            plate.texOffs(0, 0).addBox(x, -1F, z, 1F, 1F, 1F);
+        root.addOrReplaceChild("plate", plate, PartPose.ZERO);
         // One pixel tall; stretched to fill the gap under the plate.
         root.addOrReplaceChild("bellows", CubeListBuilder.create().texOffs(0, 20).addBox(-7F, 0F, -7F, 14F, 1F, 14F), PartPose.ZERO);
-        root.addOrReplaceChild("trunk", CubeListBuilder.create().texOffs(0, 40).addBox(-4F, -4F, -4F, 8F, 12F, 8F), PartPose.ZERO);
+        var trunk = CubeListBuilder.create().texOffs(0, 40).addBox(-3.5F, -4F, -3.5F, 7F, 12F, 7F);
+        for (int y = -2; y <= 6; y += 2)
+            trunk.texOffs(0, 40).addBox(-4.5F, y, -4.5F, 9F, 0.6F, 9F);
+        root.addOrReplaceChild("trunk", trunk, PartPose.ZERO);
         return LayerDefinition.create(mesh, 64, 64);
     }
 

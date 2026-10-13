@@ -69,9 +69,12 @@ neoForge {
 
         server {
             server()
-            gameDirectory = project.file('runs/server')
+            gameDirectory = project.file(project.findProperty('serverDir') ?: 'runs/server')
             programArgument '--nogui'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            if (project.hasProperty('prepareTestWorld')) {
+                systemProperty 'powerfactor.prepareTestWorld', 'true'
+            }
         }
 
         // This run config launches GameTestServer and runs all registered gametests, then exits.

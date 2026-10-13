@@ -244,7 +244,7 @@ public final class ModBlocks {
     }
 
     private static BlockBehaviour.Properties machine() {
-        return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
+        return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion();
     }
 
     private ModBlocks() {}

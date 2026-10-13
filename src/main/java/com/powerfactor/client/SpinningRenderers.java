@@ -80,7 +80,10 @@ public class SpinningRenderers<T extends BlockEntity> implements BlockEntityRend
 
     public static LayerDefinition condenserLayer() {
         MeshDefinition mesh = new MeshDefinition();
-        mesh.getRoot().addOrReplaceChild("rotor", CubeListBuilder.create().texOffs(0, 0).addBox(-5, -5, -1, 10, 10, 2), PartPose.ZERO);
+        var rotor = mesh.getRoot().addOrReplaceChild("rotor", CubeListBuilder.create().texOffs(0,0).addBox(-1,-1,-1.2F,2,2,2.4F), PartPose.ZERO);
+        for (int i = 0; i < 8; i++) rotor.addOrReplaceChild("rim" + i, CubeListBuilder.create().texOffs(0,8)
+                .addBox(-1.8F,3.8F,-1,3.6F,1.3F,2).texOffs(16,8).addBox(-0.35F,0.9F,-0.8F,0.7F,3.4F,1.6F),
+                PartPose.rotation(0,0,i*(float)Math.PI/4));
         return LayerDefinition.create(mesh, 32, 32);
     }
 

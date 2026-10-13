@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WWW",
+    "WIW",
+    "WWW"
+  ],
+  "key": {
+    "W": "#c:wires/copper",
+    "I": "#c:ingots/iron"
+  },
+  "result": {
+    "id": "powerfactor:copper_coil",
+    "count": 1
+  }
+}

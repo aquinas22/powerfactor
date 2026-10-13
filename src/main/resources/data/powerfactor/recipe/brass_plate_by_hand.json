@@ -1,12 +1,11 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "pattern": [
-    "##"
+  "ingredients": [
+    "#c:ingots/brass",
+    "#c:ingots/brass",
+    "#c:tools/hammers"
   ],
-  "key": {
-    "#": "#c:ingots/brass"
-  },
   "result": {
     "id": "powerfactor:brass_plate",
     "count": 1

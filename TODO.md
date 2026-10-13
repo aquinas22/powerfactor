@@ -23,6 +23,17 @@
 - [x] Electric rover: single-seat server-driven traction, reverse, braking and boost; 500,000 FE battery,
       charging-pad support, one-block hill climbing, preserved wrench packing, repairs and animated chassis.
 
+## Machine and progression polish
+- [x] Existing machine and generator models, exposed tooling, cooling fins, coils and smooth animations.
+- [x] Fixed six-face controls with symbols, direct redstone selectors, live model preview and closed-by-default panels.
+- [x] Physical energy sockets and wind-base connection cabinet; external cables can extract through a complete tower.
+- [x] Forge Hammer and Wire Cutters, hand plates/wire, more expensive wind turbine and a working graphite/arc bootstrap.
+- [x] Fuller rubber trees, refreshed bark/leaves/rubber, slime/clay/coal rubber and improved latex processing.
+- [x] Fair generator output, cached fluid-face filtering, common resource/tool tags and wrench protection events.
+- [x] Flat Creative test launcher with cheats and mode switching. See [update notes](docs/machine-polish.md).
+
+The feature backlog below is paused while testing this polish update.
+
 ## Requested features
 - [x] **Electric rover**: 90 km/h drive / 158 km/h boost, native step climbing, FE powered and chargeable on a pad.
 - [ ] **Mini airplane**: runs on jet fuel (from the refinery), takeoff/landing, fuel gauge.

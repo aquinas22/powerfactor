@@ -158,38 +158,60 @@ public final class PowerFactorClient {
         event.registerLayerDefinition(CrusherJawRenderer.LAYER, CrusherJawRenderer::createLayer);
         event.registerLayerDefinition(SpinningRenderers.HYDRO, SpinningRenderers::hydroLayer);
         event.registerLayerDefinition(SpinningRenderers.CONDENSER, SpinningRenderers::condenserLayer);
+        event.registerLayerDefinition(PowerConnections.LAYER, PowerConnections::createLayer);
+        event.registerLayerDefinition(IndustrialRenderer.LAYER, IndustrialRenderer::createLayer);
     }
 
     @SubscribeEvent
     static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(com.powerfactor.registry.ModEntities.GRAPPLE_HOOK.get(), GrappleHookRenderer::new);
         event.registerEntityRenderer(com.powerfactor.registry.ModEntities.ELECTRIC_ROVER.get(), RoverRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.STEAM_BOILER.get(), SteamPlantRenderer::boiler);
-        event.registerBlockEntityRenderer(ModBlockEntities.STEAM_TURBINE.get(), SteamPlantRenderer::turbine);
-        event.registerBlockEntityRenderer(ModBlockEntities.COOLING_TOWER.get(), CoolingTowerRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.RAIN_COLLECTOR.get(), RainCollectorRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.ENGINE.get(), EngineRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.COAL_TURBINE.get(), TurbineRotorRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.STEAM_BOILER.get(), PowerConnections.wrap(SteamPlantRenderer::boiler));
+        event.registerBlockEntityRenderer(ModBlockEntities.STEAM_TURBINE.get(), PowerConnections.wrap(SteamPlantRenderer::turbine));
+        event.registerBlockEntityRenderer(ModBlockEntities.COOLING_TOWER.get(), PowerConnections.wrap(CoolingTowerRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.RAIN_COLLECTOR.get(), PowerConnections.wrap(RainCollectorRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.ENGINE.get(), PowerConnections.wrap(EngineRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.COAL_TURBINE.get(), PowerConnections.wrap(TurbineRotorRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.ELECTRIC_FURNACE.get(), PowerConnections.wrap(IndustrialRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.CHARGER.get(), PowerConnections.wrap(IndustrialRenderer::new));
         event.registerBlockEntityRenderer(ModBlockEntities.FLUID_TANK.get(), FluidTankRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.SCADA_DISPLAY.get(), ScadaDisplayRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.ENDER_LINK.get(), EnderCoreRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.WIND_TURBINE.get(), WindTurbineRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.HYDRO_TURBINE.get(), SpinningRenderers::hydro);
-        event.registerBlockEntityRenderer(ModBlockEntities.SYNCHRONOUS_CONDENSER.get(), SpinningRenderers::condenser);
+        event.registerBlockEntityRenderer(ModBlockEntities.ENDER_LINK.get(), PowerConnections.wrap(EnderCoreRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.WIND_TURBINE.get(), PowerConnections.wrap(WindTurbineRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.HYDRO_TURBINE.get(), PowerConnections.wrap(SpinningRenderers::hydro));
+        event.registerBlockEntityRenderer(ModBlockEntities.SYNCHRONOUS_CONDENSER.get(), PowerConnections.wrap(SpinningRenderers::condenser));
+        event.registerBlockEntityRenderer(ModBlockEntities.DIESEL_GENERATOR.get(), PowerConnections.wrap(IndustrialRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.ELECTRIC_PUMP.get(), PowerConnections.wrap(IndustrialRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.FUEL_CELL.get(), PowerConnections.wrap(IndustrialRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.ELECTROLYZER.get(), PowerConnections.wrap(IndustrialRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.SOLAR_PANEL.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.CHARGING_PAD.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.GROW_LAMP.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.RADIO_TOWER.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.BATTERY_BANK.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.POWER_METER.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.GEOTHERMAL_GENERATOR.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.THERMOELECTRIC_GENERATOR.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.TRANSFORMER.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.CAPACITOR_BANK.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.AUTO_CAPACITOR_BANK.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.CASING.get(), PowerConnections.only());
         event.registerBlockEntityRenderer(ModBlockEntities.PYLON.get(), PylonRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.CRUSHER.get(), CrusherJawRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.TESLA_COIL.get(), TeslaCoilRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CRUSHER.get(), PowerConnections.wrap(CrusherJawRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.TESLA_COIL.get(), PowerConnections.wrap(TeslaCoilRenderer::new));
         event.registerBlockEntityRenderer(ModBlockEntities.UPGRADE_TABLE.get(), UpgradeTableRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.PIPE.get(), PipeRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.PUMPJACK.get(), PumpjackRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.PUMPJACK.get(), PowerConnections.wrap(PumpjackRenderer::new));
         for (var machine : com.powerfactor.machine.RecipeMachine.values()) {
             if (machine.animatedWorkshop()) {
-                event.registerBlockEntityRenderer(ModBlockEntities.RECIPE_MACHINES.get(machine).get(), WorkshopRenderer::new);
+                event.registerBlockEntityRenderer(ModBlockEntities.RECIPE_MACHINES.get(machine).get(), PowerConnections.wrap(WorkshopRenderer::new));
+            } else if (machine != com.powerfactor.machine.RecipeMachine.LASER_ENGRAVER) {
+                event.registerBlockEntityRenderer(ModBlockEntities.RECIPE_MACHINES.get(machine).get(), PowerConnections.wrap(IndustrialRenderer::new));
             }
         }
-        event.registerBlockEntityRenderer(ModBlockEntities.REFINERY.get(), RefineryRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.REFINERY.get(), PowerConnections.wrap(RefineryRenderer::new));
         event.registerBlockEntityRenderer(ModBlockEntities.RECIPE_MACHINES.get(com.powerfactor.machine.RecipeMachine.LASER_ENGRAVER).get(),
-                LaserEngraverRenderer::new);
+                PowerConnections.wrap(LaserEngraverRenderer::new));
     }
 
     @SubscribeEvent

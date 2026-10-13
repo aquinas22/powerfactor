@@ -1,52 +1,100 @@
 {
   "variants": {
-    "base=false,taper=0": {
+    "base=false,taper=0,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_0"
     },
-    "base=true,taper=0": {
+    "base=false,taper=0,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_0"
+    },
+    "base=true,taper=0,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_0_base"
     },
-    "base=false,taper=1": {
+    "base=true,taper=0,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_0_base_connected"
+    },
+    "base=false,taper=1,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_1"
     },
-    "base=true,taper=1": {
+    "base=false,taper=1,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_1"
+    },
+    "base=true,taper=1,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_1_base"
     },
-    "base=false,taper=2": {
+    "base=true,taper=1,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_1_base_connected"
+    },
+    "base=false,taper=2,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_2"
     },
-    "base=true,taper=2": {
+    "base=false,taper=2,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_2"
+    },
+    "base=true,taper=2,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_2_base"
     },
-    "base=false,taper=3": {
+    "base=true,taper=2,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_2_base_connected"
+    },
+    "base=false,taper=3,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_3"
     },
-    "base=true,taper=3": {
+    "base=false,taper=3,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_3"
+    },
+    "base=true,taper=3,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_3_base"
     },
-    "base=false,taper=4": {
+    "base=true,taper=3,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_3_base_connected"
+    },
+    "base=false,taper=4,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_4"
     },
-    "base=true,taper=4": {
+    "base=false,taper=4,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_4"
+    },
+    "base=true,taper=4,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_4_base"
     },
-    "base=false,taper=5": {
+    "base=true,taper=4,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_4_base_connected"
+    },
+    "base=false,taper=5,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_5"
     },
-    "base=true,taper=5": {
+    "base=false,taper=5,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_5"
+    },
+    "base=true,taper=5,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_5_base"
     },
-    "base=false,taper=6": {
+    "base=true,taper=5,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_5_base_connected"
+    },
+    "base=false,taper=6,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_6"
     },
-    "base=true,taper=6": {
+    "base=false,taper=6,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_6"
+    },
+    "base=true,taper=6,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_6_base"
     },
-    "base=false,taper=7": {
+    "base=true,taper=6,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_6_base_connected"
+    },
+    "base=false,taper=7,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_7"
     },
-    "base=true,taper=7": {
+    "base=false,taper=7,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_7"
+    },
+    "base=true,taper=7,connected=false": {
       "model": "powerfactor:block/wind_turbine_tower_7_base"
+    },
+    "base=true,taper=7,connected=true": {
+      "model": "powerfactor:block/wind_turbine_tower_7_base_connected"
     }
   }
 }

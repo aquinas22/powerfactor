@@ -1,14 +1,11 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "redstone",
-  "pattern": [
-    "CCC"
+  "ingredients": [
+    "#c:wires/copper"
   ],
-  "key": {
-    "C": "#c:ingots/copper"
-  },
   "result": {
     "id": "powerfactor:copper_wire",
-    "count": 8
+    "count": 1
   }
 }

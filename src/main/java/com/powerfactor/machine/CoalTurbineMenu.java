@@ -118,11 +118,7 @@ public class CoalTurbineMenu extends AbstractContainerMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int buttonId) {
-        if (machine != null && buttonId == ProcessingMenu.BUTTON_REDSTONE) {
-            machine.cycleRedstoneMode();
-            return true;
-        }
-        return false;
+        return machine != null && machine.redstoneButton(buttonId);
     }
 
     @Override

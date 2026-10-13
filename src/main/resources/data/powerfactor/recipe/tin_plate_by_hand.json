@@ -1,12 +1,11 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "pattern": [
-    "##"
+  "ingredients": [
+    "#c:ingots/tin",
+    "#c:ingots/tin",
+    "#c:tools/hammers"
   ],
-  "key": {
-    "#": "#c:ingots/tin"
-  },
   "result": {
     "id": "powerfactor:tin_plate",
     "count": 1

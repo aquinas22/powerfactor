@@ -2111,7 +2111,23 @@ def rubber_log_top():
 
 
 def rubber_leaves():
-    return recolor(LEAVES_MAP, RUBBER_LEAF)
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0)); d = ImageDraw.Draw(img)
+    colors = [hexc(c) for c in ("1b4939", "2c6550", "438566", "63a580", "8ec59a")]
+    r = random.Random(1934)
+    for x in range(32):
+        for y in range(32):
+            if r.random() > 0.26: img.putpixel((x,y),colors[r.randrange(2)])
+    # Overlapping, angled leaflets keep the crown leafy without a repeated vertical stripe.
+    import math
+    for _ in range(28):
+        x,y=r.randrange(-2,33),r.randrange(-2,33); angle=r.uniform(-1.1,1.1)
+        u,v=math.sin(angle),math.cos(angle)
+        def point(a,b): return (round(x+a*u+b*v),round(y+a*v-b*u))
+        length=r.randrange(6,10)
+        d.polygon([point(0,0),point(length*.4,-2),point(length,0),point(length*.4,2)],fill=colors[r.randrange(1,4)],outline=colors[0])
+        d.line([point(1,0),point(length-1,0)],fill=colors[3])
+        d.line([point(length*.4,0),point(length*.25,1)],fill=colors[4])
+    return img
 
 
 def rubber_planks():
@@ -2291,7 +2307,7 @@ def rubber_item():
     """A roll of dark rubber sheet lying on its side: spiral end on the left, the free end of the
     sheet unrolling flat toward the lower right."""
     import math
-    ramp = [hexc(h) for h in ["0c0c0e", "17171a", "212124", "2b2b30", "37373d", "46464e", "5c5c66", "7a7a86"]]
+    ramp = [hexc(h) for h in ["11191e", "202a31", "2c3942", "394952", "4b5c64", "607078", "7f9198", "b0bdbe"]]
     img = blank()
     # Free end first (the roll sits on top of it).
     for x in range(6, 16):
@@ -6701,6 +6717,84 @@ def phase_movement():
     save(img, "entity/grapple_cable.png")
 
 
+def phase_machine_polish():
+    for name, base in [("industrial_dark","273d48"),("industrial_copper","b4773e"),("industrial_coil","70472d")]:
+        img = Image.new("RGBA", (16,16), hexc(base)); d = ImageDraw.Draw(img); r = random.Random(1803)
+        for x in range(16):
+            for y in range(16): img.putpixel((x,y), shade(hexc(base), 0.86+r.random()*0.18))
+        if name=="industrial_dark":
+            d.rectangle((1,1,14,14),outline=hexc("4e6570")); rivets(img,CORNERS)
+        elif name=="industrial_coil":
+            for y in range(1,16,3): d.line((0,y,15,y),fill=hexc("d39d5c"));d.line((0,y+1,15,y+1),fill=hexc("9b642f"))
+        else:
+            d.line((1,2,14,2),fill=hexc("e6bb78"));d.line((1,13,14,13),fill=hexc("77482c"))
+        save(img,"block/"+name+".png")
+    img=Image.new("RGBA",(16,16),(0,0,0,0));d=ImageDraw.Draw(img)
+    d.rectangle((0,0,15,15),outline=hexc("8bb4b6"));d.line((3,12,12,3),fill=hexc("8bb4b6"));d.line((3,13,6,10),fill=hexc("bad7cb"))
+    save(img,"block/industrial_glass.png")
+    for active in (False,True):
+        img=Image.new("RGBA",(16,16),hexc("243c3f"));d=ImageDraw.Draw(img)
+        d.rectangle((2,2,13,13),fill=hexc("55d6a9" if active else "385657"),outline=hexc("799498"))
+        d.rectangle((4,4,11,5),fill=hexc("a5efd5" if active else "567577"));d.rectangle((4,11,11,12),fill=hexc("228477" if active else "1f363b"))
+        save(img,"block/industrial_lamp"+("_on" if active else "")+".png")
+    img=Image.new("RGBA",(16,16),hexc("bd6630"));d=ImageDraw.Draw(img)
+    for y in range(16):
+        for x in range(16):img.putpixel((x,y),hexc("eaae4b" if (x*3+y*7)%9<4 else "b75f2d"))
+    d.line((2,4,12,4),fill=hexc("fff0a1"));d.line((5,10,14,11),fill=hexc("f7cf6a"));save(img,"block/industrial_heat_on.png")
+    img=Image.new("RGBA",(16,16),hexc("275f78"));d=ImageDraw.Draw(img)
+    for y in (2,6,10,14): d.line((0,y,15,y),fill=hexc("3f8294"))
+    d.ellipse((3,3,5,5),outline=hexc("9fd2d0"));d.ellipse((10,9,12,11),outline=hexc("8bbec5"));save(img,"block/water_window.png")
+    img=Image.new("RGBA",(16,16),hexc("3d5765"));d=ImageDraw.Draw(img)
+    d.rectangle((1,1,14,14),outline=hexc("b4c6c5"));d.rectangle((3,3,12,7),fill=hexc("142e38"))
+    d.line((4,5,11,5),fill=hexc("68d3ba"));d.rectangle((3,9,6,12),fill=hexc("d5a856"));d.rectangle((9,9,12,12),fill=hexc("293d48"))
+    d.rectangle((4,10,5,11),fill=hexc("ffe1a5"));rivets(img,CORNERS);save(img,"block/wind_turbine_connected.png")
+    # Machine parts atlas: brushed steel, copper rim, grooved rolls, graphite electrodes and glass bubbles.
+    img=Image.new("RGBA",(128,128),hexc("7a939d"));d=ImageDraw.Draw(img);r=random.Random(1804)
+    for x in range(128):
+        for y in range(128): img.putpixel((x,y),shade(hexc("7a939d"),.83+r.random()*.22+(y%3)*.025))
+    d.rectangle((32,0,63,31),fill=hexc("b58043"))
+    for y in range(2,32,4): d.line((33,y,62,y),fill=hexc("e0b670"))
+    d.rectangle((0,64,63,95),fill=hexc("5d7680"))
+    for x in range(1,64,3):d.line((x,65,x,94),fill=hexc("b4c6c6"))
+    d.rectangle((64,64,87,95),fill=hexc("303940"));d.rectangle((64,94,87,99),fill=hexc("c29057"))
+    d.rectangle((96,0,127,32),fill=hexc("529cb4"));d.rectangle((98,2,108,4),fill=hexc("d5f5ed"))
+    for y in (8,16,24):d.line((97,y,126,y),fill=hexc("77bdc8"))
+    save(img,"entity/machine_motion.png")
+    img=Image.new("RGBA",(64,64),hexc("283c47"));d=ImageDraw.Draw(img)
+    d.rectangle((0,0,31,19),fill=hexc("718d97"))
+    for x,y in ((1,1),(10,1),(1,9),(10,9)):d.rectangle((x,y,x+1,y+1),fill=hexc("d0d9cc"))
+    d.rectangle((0,20,23,32),fill=hexc("bb8546"));d.line((1,22,22,22),fill=hexc("e6c38e"))
+    d.rectangle((32,0,43,20),fill=hexc("455961"));d.line((35,0,35,20),fill=hexc("b9864a"));save(img,"entity/power_socket.png")
+    for tool in ("forge_hammer","wire_cutters"):
+        img=blank();d=ImageDraw.Draw(img)
+        if tool=="forge_hammer":
+            d.line((5,14,10,5),fill=hexc("46392a"),width=3);d.line((5,13,9,6),fill=hexc("bc9160"))
+            d.polygon([(2,2),(5,0),(14,4),(12,8),(3,5)],fill=hexc("728a91"),outline=hexc("293d47"))
+            d.line((4,1,12,4),fill=hexc("d3ddd7"));d.line((3,4,12,7),fill=hexc("435e6d"))
+        else:
+            d.line((3,14,11,3),fill=hexc("3c525b"),width=3);d.line((12,14,5,4),fill=hexc("3c525b"),width=3)
+            d.line((3,14,6,9),fill=hexc("cf9e40"),width=3);d.line((12,14,9,9),fill=hexc("cf9e40"),width=3)
+            d.line((5,5,3,1),fill=hexc("c5d3cf"),width=2);d.line((10,4,12,1),fill=hexc("c5d3cf"),width=2)
+            d.rectangle((6,6,8,8),fill=hexc("adc1c4"));d.point((7,7),fill=hexc("344b58"))
+        save(img,"item/"+tool+".png")
+    for tapped in (False,True):
+        img=Image.new("RGBA",(32,32),hexc("777b68"));d=ImageDraw.Draw(img);r=random.Random(1805)
+        for x in range(32):
+            for y in range(32): img.putpixel((x,y),shade(hexc("929381"),.8+r.random()*.23))
+        for x in (2,9,17,25,30):
+            d.line((x,0,x-1,10,x+1,22,x,31),fill=hexc("5e675b"));d.line((x+1,1,x,9,x+2,21,x+1,31),fill=hexc("b5b8a0"))
+        for y in (5,15,27): d.line((3,y,12,y+1),fill=hexc("6c7465"));d.line((20,y+1,28,y),fill=hexc("7b816c"))
+        if tapped:
+            d.line((11,8,22,14),fill=hexc("484c3e"),width=4);d.line((12,10,21,15),fill=hexc("d5c898"),width=2)
+            d.line((19,15,19,24),fill=hexc("f3f2d9"),width=3);d.ellipse((16,22,21,28),fill=hexc("d6d7bd"));d.line((17,23,17,26),fill=hexc("ffffed"))
+        save(img,"block/rubber_log"+("_tapped" if tapped else "")+".png")
+    img=Image.new("RGBA",(32,32),hexc("757d68"));d=ImageDraw.Draw(img)
+    d.ellipse((2,2,29,29),fill=hexc("c8bb89"),outline=hexc("a6aa8d"),width=2)
+    for r in (4,8,12): d.ellipse((16-r,15-r,16+r,15+r),outline=hexc("ab9b70"))
+    d.line((17,16,26,23),fill=hexc("857959"));save(img,"block/rubber_log_top.png")
+    save(rubber_item(),"item/rubber.png");save(rubber_leaves(),"block/rubber_leaves.png")
+
+
 if __name__ == "__main__":
     save(side(), "block/coal_turbine_side.png")
     save(top(), "block/coal_turbine_top.png")
@@ -6775,4 +6869,5 @@ if __name__ == "__main__":
     phase_power_armor()
     phase_movement()
     phase_rover()
+    phase_machine_polish()
     print("textures written to", os.path.normpath(ROOT))

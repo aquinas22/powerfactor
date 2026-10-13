@@ -59,11 +59,7 @@ public class DieselMenu extends AbstractContainerMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        if (machine != null && id == com.powerfactor.machine.ProcessingMenu.BUTTON_REDSTONE) {
-            machine.cycleRedstoneMode();
-            return true;
-        }
-        return false;
+        return machine != null && machine.redstoneButton(id);
     }
 
     @Override

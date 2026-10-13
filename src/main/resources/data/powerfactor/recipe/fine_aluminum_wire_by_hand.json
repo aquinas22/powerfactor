@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:plates/aluminum",
+    "#c:tools/wire_cutters"
+  ],
+  "result": {
+    "id": "powerfactor:fine_aluminum_wire",
+    "count": 2
+  }
+}

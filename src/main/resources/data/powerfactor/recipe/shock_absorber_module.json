@@ -7,7 +7,7 @@
     "RPR"
   ],
   "key": {
-    "R": "powerfactor:rubber",
+    "R": "#c:rubbers",
     "P": "#c:plates/steel",
     "C": "powerfactor:capacitor"
   },

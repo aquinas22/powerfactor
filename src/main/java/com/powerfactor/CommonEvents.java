@@ -19,6 +19,10 @@ import net.neoforged.neoforge.transfer.energy.ItemAccessEnergyHandler;
 @EventBusSubscriber(modid = PowerFactor.MODID)
 public final class CommonEvents {
     @SubscribeEvent
+    static void prepareTestWorld(net.neoforged.neoforge.event.server.ServerStartedEvent event) {
+        if (Boolean.getBoolean("powerfactor.prepareTestWorld")) event.getServer().halt(false);
+    }
+    @SubscribeEvent
     static void onCapabilities(RegisterCapabilitiesEvent event) {
         // Any mod's cables can pull FE from the turbine; hoppers and pipes can feed it coal.
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.COAL_TURBINE.get(), (be, side) -> be.getEnergy());
@@ -37,7 +41,7 @@ public final class CommonEvents {
         for (var type : ModBlockEntities.RECIPE_MACHINES.values()) {
             event.registerBlockEntity(Capabilities.Energy.BLOCK, type.get(), (be, side) -> be.getEnergy());
             event.registerBlockEntity(Capabilities.Item.BLOCK, type.get(), (be, side) -> be.getItemHandler(side));
-            event.registerBlockEntity(Capabilities.Fluid.BLOCK, type.get(), (be, side) -> be.getTank());
+            event.registerBlockEntity(Capabilities.Fluid.BLOCK, type.get(), (be, side) -> be.getFluidHandler(side));
         }
 
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CHARGER.get(), (be, side) -> be.getEnergy());
@@ -52,6 +56,9 @@ public final class CommonEvents {
         for (var type : java.util.List.of(ModBlockEntities.SOLAR_PANEL.get(), ModBlockEntities.WIND_TURBINE.get(), ModBlockEntities.HYDRO_TURBINE.get())) {
             event.registerBlockEntity(Capabilities.Energy.BLOCK, type, (be, side) -> be.getEnergy());
         }
+        event.registerBlock(Capabilities.Energy.BLOCK, (level, pos, state, be, side) ->
+                state.getValue(com.powerfactor.generator.WindTowerBlock.BASE) ? new com.powerfactor.generator.WindTowerEnergy(level, pos) : null,
+                ModBlocks.WIND_TURBINE_TOWER.get());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.DIESEL_GENERATOR.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.DIESEL_GENERATOR.get(), (be, side) -> be.getTank());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.SYNCHRONOUS_CONDENSER.get(), (be, side) -> be.getEnergy());

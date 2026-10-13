@@ -1,12 +1,11 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "pattern": [
-    "##"
+  "ingredients": [
+    "#c:ingots/zinc",
+    "#c:ingots/zinc",
+    "#c:tools/hammers"
   ],
-  "key": {
-    "#": "#c:ingots/zinc"
-  },
   "result": {
     "id": "powerfactor:zinc_plate",
     "count": 1

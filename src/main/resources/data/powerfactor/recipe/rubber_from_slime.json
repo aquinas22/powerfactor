@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:slime_balls",
+    "minecraft:clay_ball",
+    "#minecraft:coals"
+  ],
+  "result": {
+    "id": "powerfactor:rubber",
+    "count": 2
+  }
+}

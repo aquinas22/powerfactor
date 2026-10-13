@@ -7,7 +7,7 @@
     "RRR"
   ],
   "key": {
-    "R": "powerfactor:rubber",
+    "R": "#c:rubbers",
     "W": "powerfactor:copper_wire"
   },
   "result": {

@@ -1,0 +1,15 @@
+{
+  "type": "powerfactor:alloying",
+  "inputs": [
+    {
+      "ingredient": "#c:dusts/coal",
+      "count": 4
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:graphite"
+    }
+  ],
+  "time": 300
+}

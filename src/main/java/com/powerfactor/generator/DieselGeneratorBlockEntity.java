@@ -30,7 +30,6 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
@@ -48,6 +47,7 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements Gr
             .map(n -> TagKey.create(Registries.FLUID, Identifier.fromNamespaceAndPath("c", n))).toList();
 
     private final TurbineModel engine = new TurbineModel(SPEC);
+    private int outputRotation, visualRpm, lastSyncedRpm;
     private final SimpleEnergyHandler buffer = new SimpleEnergyHandler(10_000, 0, Integer.MAX_VALUE) {
         @Override
         protected void onEnergyChanged(int previousAmount) {
@@ -133,15 +133,23 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements Gr
         if (made > 0) {
             buffer.set(stored + made);
         }
+        var targets = new java.util.ArrayList<EnergyHandler>();
         for (Direction d : Direction.values()) {
             EnergyHandler target = level.getCapability(Capabilities.Energy.BLOCK, pos.relative(d), d.getOpposite());
-            if (target != null && buffer.getAmountAsInt() > 0) {
-                EnergyHandlerUtil.move(buffer, target, buffer.getAmountAsInt(), null);
-            }
+            if (target != null) targets.add(target);
         }
+        com.powerfactor.machine.EnergyOut.distribute(buffer, targets, outputRotation++);
         setRunning(level, pos, state, enabled && engine.fuelEnergy() > 0);
+        if (Math.abs(engine.rpm() - lastSyncedRpm) > 120 || (engine.rpm() == 0) != (lastSyncedRpm == 0)) {
+            lastSyncedRpm = engine.rpm(); level.sendBlockUpdated(pos, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        }
         setChanged();
     }
+    @Override protected double animationRate() { return visualRpm / 3600.0 * 0.65; }
+    @Override public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider lookup) {
+        var tag = saveCustomOnly(lookup); tag.putInt("visual_rpm", engine.rpm()); return tag;
+    }
+    @Override public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() { return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this); }
 
     @Override
     public double ratedCe() {
@@ -196,6 +204,7 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements Gr
         buffer.deserialize(input);
         tank.deserialize(input.childOrEmpty("tank"));
         engine.load(input.getDoubleOr("rpm", 0), input.getBooleanOr("breaker", false), input.getLongOr("fuel", 0), input.getLongOr("fuel_max", 0));
+        visualRpm = input.getIntOr("visual_rpm", (int) input.getDoubleOr("rpm", 0));
     }
 
     @Override

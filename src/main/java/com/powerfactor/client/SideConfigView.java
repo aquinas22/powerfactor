@@ -13,25 +13,29 @@ import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.block.model.BlockDisplayContext;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The Config tab's side picker: a 3D model of the machine you can drag to turn. Each face is tinted
- * with its mode (blue in, orange out, green both, grey closed); the face under the mouse lights up,
- * and clicking it cycles the mode. The model is shown facing north, so faces map to the machine's
- * own front/back/left/right.
+ * A draggable live model beside the fixed face controls. Colored outlines indicate modes without
+ * hiding the machinery. The model faces north, matching the machine's front/back/left/right.
  */
 public final class SideConfigView {
     private static final BlockDisplayContext CONTEXT = BlockDisplayContext.create();
 
-    public record State(BlockModelRenderState block, int[] faceColors, int hover, float yaw, float pitch, int x0, int y0, int x1, int y1,
+    public record State(BlockModelRenderState block, @Nullable BlockEntityRenderer<?, ?> renderer, @Nullable BlockEntityRenderState beState,
+                        float beYaw, int[] faceColors, int hover, float yaw, float pitch, int x0, int y0, int x1, int y1,
                         float scale, @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds) implements PictureInPictureRenderState {}
 
     public float yaw = 35, pitch = 25;
@@ -45,17 +49,26 @@ public final class SideConfigView {
         return Math.min(w, h) * 0.5F;
     }
 
-    public void draw(GuiGraphicsExtractor g, BlockState machine, java.util.function.Function<SideConfig.Face, SideConfig.Mode> modes,
-            int x0, int y0, int x1, int y1, int mouseX, int mouseY) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void draw(GuiGraphicsExtractor g, BlockState machine, @Nullable BlockEntity be, java.util.function.Function<SideConfig.Face, SideConfig.Mode> modes,
+            int x0, int y0, int x1, int y1, int mouseX, int mouseY, float partial) {
         BlockState shown = machine.hasProperty(MachineBlock.FACING) ? machine.setValue(MachineBlock.FACING, Direction.NORTH) : machine;
         BlockModelRenderState block = new BlockModelRenderState();
         Minecraft.getInstance().getBlockModelResolver().update(block, shown, CONTEXT);
+        BlockEntityRenderer renderer = be == null ? null : Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(be);
+        BlockEntityRenderState beState = null;
+        if (renderer != null && be.hasLevel()) {
+            beState = renderer.createRenderState();
+            renderer.extractRenderState(be, beState, partial, Vec3.atCenterOf(be.getBlockPos()), null);
+            beState.lightCoords = 0xF000F0;
+        }
+        float beYaw = machine.hasProperty(MachineBlock.FACING) ? machine.getValue(MachineBlock.FACING).toYRot() - Direction.NORTH.toYRot() : 0;
         int[] colors = new int[6];
         for (Direction d : Direction.values()) {
             colors[d.ordinal()] = modes.apply(face(d)).color;
         }
         Direction hover = pick(mouseX, mouseY, x0, y0, x1, y1);
-        g.submitPictureInPictureRenderState(new State(block, colors, hover == null ? -1 : hover.ordinal(), yaw, pitch, x0, y0, x1, y1,
+        g.submitPictureInPictureRenderState(new State(block, renderer, beState, beYaw, colors, hover == null ? -1 : hover.ordinal(), yaw, pitch, x0, y0, x1, y1,
                 size(x1 - x0, y1 - y0), null, PictureInPictureRenderState.getBounds(x0, y0, x1, y1, null)));
     }
 
@@ -127,30 +140,35 @@ public final class SideConfigView {
         }
 
         @Override
+        @SuppressWarnings({"unchecked", "rawtypes"})
         protected void renderToTexture(State s, PoseStack pose, SubmitNodeCollector collector) {
             Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
             pose.mulPose(Axis.XP.rotationDegrees(180 + s.pitch()));
             pose.mulPose(Axis.YP.rotationDegrees(s.yaw()));
             pose.translate(-0.5F, -0.5F, -0.5F);
             s.block().submit(pose, collector, 0xF000F0, OverlayTexture.NO_OVERLAY, 0);
+            if (s.renderer() != null && s.beState() != null) {
+                pose.pushPose(); pose.translate(0.5, 0, 0.5); pose.mulPose(Axis.YP.rotationDegrees(s.beYaw())); pose.translate(-0.5, 0, -0.5);
+                ((BlockEntityRenderer) s.renderer()).submit(s.beState(), pose, collector, new CameraRenderState()); pose.popPose();
+            }
             collector.submitCustomGeometry(pose, RenderTypes.lightning(), (p, buf) -> {
                 for (Direction d : Direction.values()) {
                     int c = s.faceColors()[d.ordinal()];
                     boolean hot = d.ordinal() == s.hover();
-                    float a = hot ? 0.75F : 0.42F;
-                    quad(buf, p, d, 0.004F, ((c >> 16) & 255) / 255F, ((c >> 8) & 255) / 255F, (c & 255) / 255F, a);
-                    if (hot) {
-                        quad(buf, p, d, 0.008F, 1, 1, 1, 0.25F);
-                    }
+                    frame(buf, p, d, 0.004F, hot ? 1 : ((c >> 16) & 255) / 255F,
+                            hot ? 1 : ((c >> 8) & 255) / 255F, hot ? 1 : (c & 255) / 255F);
                 }
             });
         }
 
-        private static void quad(VertexConsumer buf, PoseStack.Pose p, Direction d, float out, float r, float g, float b, float a) {
+        private static void frame(VertexConsumer buf, PoseStack.Pose p, Direction d, float out, float r, float g, float b) {
             Vector3f[] c = corners(d);
             float ox = d.getStepX() * out, oy = d.getStepY() * out, oz = d.getStepZ() * out;
-            for (Vector3f v : c) {
-                buf.addVertex(p, v.x + ox, v.y + oy, v.z + oz).setColor(r, g, b, a);
+            Vector3f center = new Vector3f(); for (Vector3f v : c) center.add(v); center.mul(0.25F);
+            for (int i = 0; i < 4; i++) {
+                Vector3f a = c[i], next = c[(i + 1) % 4];
+                for (Vector3f v : new Vector3f[]{a, next, new Vector3f(next).lerp(center, 0.055F), new Vector3f(a).lerp(center, 0.055F)})
+                    buf.addVertex(p, v.x + ox, v.y + oy, v.z + oz).setColor(r, g, b, 0.65F);
             }
         }
 

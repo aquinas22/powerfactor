@@ -11,7 +11,7 @@
     "C": "powerfactor:control_circuit",
     "M": "powerfactor:electric_motor",
     "B": "powerfactor:capacitor",
-    "R": "powerfactor:rubber",
+    "R": "#c:rubbers",
     "G": "powerfactor:steel_gear"
   },
   "result": {

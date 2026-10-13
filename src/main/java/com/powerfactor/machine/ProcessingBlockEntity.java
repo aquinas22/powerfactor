@@ -324,6 +324,10 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
         }
     }
 
+    public SideConfig.Mode resourceMode(@Nullable Direction side) {
+        return side == null ? SideConfig.Mode.BOTH : sides.mode(facing(), side);
+    }
+
     public EnergyHandler getEnergy() {
         return energy;
     }

@@ -165,12 +165,7 @@ public final class SteamTurbineBlockEntity extends PushingGenerator implements G
                 if (target != null && target != buffer && seen.add(target)) targets.add(target);
             }
         }
-        if (targets.isEmpty()) return;
-        int share = Math.max(1, buffer.getAmountAsInt() / targets.size());
-        for (int index = 0; index < targets.size(); index++) {
-            EnergyHandlerUtil.move(buffer, targets.get((index + outputCursor) % targets.size()), Math.min(share, buffer.getAmountAsInt()), null);
-        }
-        outputCursor = (outputCursor + 1) % targets.size();
+        com.powerfactor.machine.EnergyOut.distribute(buffer, targets, outputCursor++);
     }
     @Override public double ratedCe() { return online() ? RATED_CE : 0; }
     @Override public double hertz() { return online() ? turbine.hertz() : 0; }

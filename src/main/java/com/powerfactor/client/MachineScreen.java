@@ -26,7 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A 176-wide machine GUI with side tabs on its right edge. One tab can be open at a time; its panel
- * opens to the right of the tab column. The last opened tab is remembered across machines.
+ * opens to the right of the tab column. New screens start with every panel closed.
  */
 public abstract class MachineScreen<M extends AbstractContainerMenu> extends AbstractContainerScreen<M> {
     public enum Tab { ELECTRICAL, UPGRADES, CONFIG }
@@ -37,7 +37,6 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
     protected static final int MAIN_W = 176;
     private static final int TAB_X = MAIN_W - 1, TAB_W = 26, TAB_H = 24, TAB_GAP = 2;
     private static final int BG = 0xFF0A100D, TEXT = 0xFFB8F5C0, DIM = 0xFF5F8A66;
-    private static @Nullable Tab lastOpen;
 
     private @Nullable Tab open;
     private final ElectricalPanel panel = new ElectricalPanel();
@@ -70,7 +69,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
     @Override
     protected void init() {
         super.init();
-        open = lastOpen != null && tabs().contains(lastOpen) ? lastOpen : null;
+        open = null;
         reposition();
     }
 
@@ -148,7 +147,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
         return switch (tab) {
             case ELECTRICAL -> ElectricalPanel.HEIGHT;
             case UPGRADES -> 140;
-            case CONFIG -> menu instanceof ProcessingMenu ? 162 : 48;
+            case CONFIG -> menu instanceof ProcessingMenu ? 182 : 52;
         };
     }
 
@@ -220,7 +219,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             {1, 0}, // TOP
             {1, 2}, // BOTTOM
     };
-    private static final int TILE = 18, TILE_GAP = 2, DIAGRAM_Y = 52, VIEW = 64;
+    private static final int TILE = 20, TILE_GAP = 2, DIAGRAM_Y = 52, VIEW = 38;
     private final SideConfigView sideView = new SideConfigView();
     private boolean dragging;
 
@@ -238,18 +237,21 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
         int w = panelWidth(Tab.CONFIG) - 12;
         MachineBlockEntity.@Nullable RedstoneMode mode = redstoneMode();
         if (mode != null) {
-            buttons.add(new Button(ProcessingMenu.BUTTON_REDSTONE, x + 6, y + 28, w, 12,
-                    Component.translatable("gui.powerfactor.config.redstone." + mode.name().toLowerCase(java.util.Locale.ROOT))));
+            for (var choice : MachineBlockEntity.RedstoneMode.values()) buttons.add(new Button(ProcessingMenu.BUTTON_REDSTONE_SET + choice.ordinal(),
+                    x + 6 + choice.ordinal() * 37, y + 26, 35, 16,
+                    Component.translatable("gui.powerfactor.config.redstone." + choice.name().toLowerCase(java.util.Locale.ROOT))));
         }
         if (menu instanceof ProcessingMenu pm) {
-            for (SideConfig.Face face : configBlock() != null ? new SideConfig.Face[0] : SideConfig.Face.values()) {
+            for (SideConfig.Face face : SideConfig.Face.values()) {
                 int[] cell = FACE_GRID[face.ordinal()];
-                buttons.add(new Button(ProcessingMenu.BUTTON_SIDE_NEXT + face.ordinal(), x + 8 + cell[0] * (TILE + TILE_GAP),
-                        y + DIAGRAM_Y + cell[1] * (TILE + TILE_GAP), TILE, TILE, Component.empty()));
+                buttons.add(new Button(ProcessingMenu.BUTTON_SIDE_NEXT + face.ordinal(), x + 6 + cell[0] * (TILE + TILE_GAP),
+                        y + DIAGRAM_Y + cell[1] * (TILE + TILE_GAP), TILE, TILE, Component.translatable("gui.powerfactor.config.face_tip",
+                        Component.translatable("gui.powerfactor.config.face_name." + face.name().toLowerCase(java.util.Locale.ROOT)),
+                        Component.translatable("gui.powerfactor.config.mode." + pm.side(face).name().toLowerCase(java.util.Locale.ROOT)))));
             }
-            buttons.add(new Button(ProcessingMenu.BUTTON_AUTO_INPUT, x + 6, y + 128, w, 12,
+            buttons.add(new Button(ProcessingMenu.BUTTON_AUTO_INPUT, x + 6, y + 134, w, 20,
                     Component.translatable(pm.autoInput() ? "gui.powerfactor.config.input.on" : "gui.powerfactor.config.input.off")));
-            buttons.add(new Button(ProcessingMenu.BUTTON_AUTO_EJECT, x + 6, y + 143, w, 12,
+            buttons.add(new Button(ProcessingMenu.BUTTON_AUTO_EJECT, x + 6, y + 157, w, 20,
                     Component.translatable(pm.autoEject() ? "gui.powerfactor.config.eject.on" : "gui.powerfactor.config.eject.off")));
         }
         return buttons;
@@ -269,31 +271,42 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
                 faceTile(g, pm, SideConfig.Face.values()[id], b, hover);
                 continue;
             }
-            g.fill(b.x(), b.y(), b.x() + b.w(), b.y() + b.h(), hover ? 0xFF2A5A3A : 0xFF16362A);
-            g.outline(b.x(), b.y(), b.w(), b.h(), 0xFF5F8A66);
-            g.centeredText(font, Skin.fit(font, b.label(), b.w() - 6), b.x() + b.w() / 2, b.y() + 2, TEXT);
+            int redstone = b.id() - ProcessingMenu.BUTTON_REDSTONE_SET;
+            boolean selected = redstone >= 0 && redstone < 3 ? redstoneMode().ordinal() == redstone
+                    : menu instanceof ProcessingMenu pm && (b.id() == ProcessingMenu.BUTTON_AUTO_INPUT ? pm.autoInput() : pm.autoEject());
+            g.fill(b.x(), b.y(), b.x() + b.w(), b.y() + b.h(), hover ? 0xFF293D49 : selected ? 0xFF173A36 : 0xFF19242B);
+            g.outline(b.x(), b.y(), b.w(), b.h(), selected ? Skin.TEAL : 0xFF586873);
+            if (redstone >= 0 && redstone < 3) {
+                GuiIcons.redstone(g, b.x() + (b.w() - 12) / 2, b.y() + 2, MachineBlockEntity.RedstoneMode.values()[redstone]);
+            } else {
+                boolean input = b.id() == ProcessingMenu.BUTTON_AUTO_INPUT;
+                g.item(new ItemStack(input ? Items.CHEST : machineIcon()), b.x() + 15, b.y() + 2);
+                g.item(new ItemStack(input ? machineIcon() : Items.CHEST), b.x() + b.w() - 31, b.y() + 2);
+                GuiIcons.port(g, b.x() + b.w() / 2 - 6, b.y() + 5, SideConfig.Mode.OUTPUT, selected ? Skin.TEAL : Skin.DIM);
+                Skin.lamp(g, b.x() + 6, b.y() + 8, selected ? Skin.TEAL : Skin.DIM);
+            }
         }
         if (menu instanceof ProcessingMenu pm && configBlock() != null) {
-            int vx = x + 6, vy = y + DIAGRAM_Y;
-            Skin.well(g, vx - 1, vy - 1, VIEW + 2, VIEW + 2);
-            g.fillGradient(vx, vy, vx + VIEW, vy + VIEW, 0xFF1C2A33, 0xFF0B1116);
-            sideView.draw(g, configBlock(), pm::side, vx, vy, vx + VIEW, vy + VIEW, mx, my);
-            var hover = sideView.pick(mx, my, vx, vy, vx + VIEW, vy + VIEW);
+            int vx = x + 79, vy = y + DIAGRAM_Y;
+            Skin.well(g, vx - 1, vy - 1, VIEW + 2, 66);
+            g.fillGradient(vx, vy, vx + VIEW, vy + 64, 0xFF1C2A33, 0xFF0B1116);
+            var be = pm.pos == null || minecraft.level == null ? null : minecraft.level.getBlockEntity(pm.pos);
+            sideView.draw(g, configBlock(), be, pm::side, vx, vy, vx + VIEW, vy + 64, mx, my, framePartialTick);
+            var hover = sideView.pick(mx, my, vx, vy, vx + VIEW, vy + 64);
             if (hover != null) {
                 SideConfig.Face f = SideConfigView.face(hover);
-                g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.config.face_tip",
+                g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.config.preview_tip",
                         Component.translatable("gui.powerfactor.config.face_name." + f.name().toLowerCase(java.util.Locale.ROOT)),
                         Component.translatable("gui.powerfactor.config.mode." + pm.side(f).name().toLowerCase(java.util.Locale.ROOT))), mx, my);
             }
         }
         if (menu instanceof ProcessingMenu) {
-            // Legend beside the diagram.
-            int lx = x + 72, ly = y + DIAGRAM_Y + 2;
+            int lx = x + 10, ly = y + 121;
             for (SideConfig.Mode m : SideConfig.Mode.values()) {
-                g.fill(lx, ly + 1, lx + 6, ly + 7, m.color);
-                g.text(font, Component.translatable("gui.powerfactor.config.mode." + m.name().toLowerCase(java.util.Locale.ROOT)),
-                        lx + 9, ly, TEXT, false);
-                ly += 12;
+                GuiIcons.port(g, lx, ly, m, m.color);
+                if (mx >= lx - 3 && mx < lx + 19 && my >= ly - 2 && my < ly + 11) g.setTooltipForNextFrame(font,
+                        Component.translatable("gui.powerfactor.config.mode." + m.name().toLowerCase(java.util.Locale.ROOT)), mx, my);
+                lx += 27;
             }
         }
     }
@@ -303,12 +316,9 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
         g.fill(b.x(), b.y(), b.x() + TILE, b.y() + TILE, hover ? 0xFFFFFFFF : 0xFF2B3036);
         g.fill(b.x() + 1, b.y() + 1, b.x() + TILE - 1, b.y() + TILE - 1, mode.color);
         g.fill(b.x() + 3, b.y() + 3, b.x() + TILE - 3, b.y() + TILE - 3, darken(mode.color));
-        if (face == SideConfig.Face.FRONT && minecraft.level != null) {
-            g.item(new ItemStack(machineIcon()), b.x() + 1, b.y() + 1);
-        } else {
-            String letter = Component.translatable("gui.powerfactor.config.face." + face.name().toLowerCase(java.util.Locale.ROOT)).getString();
-            g.centeredText(font, letter, b.x() + TILE / 2, b.y() + 5, 0xFFFFFFFF);
-        }
+        String letter = Component.translatable("gui.powerfactor.config.face." + face.name().toLowerCase(java.util.Locale.ROOT)).getString();
+        g.text(font, letter, b.x() + 3, b.y() + 1, Skin.TEXT, false);
+        GuiIcons.port(g, b.x() + 4, b.y() + 10, mode, mode == SideConfig.Mode.NONE ? Skin.DIM : mode.color);
     }
 
     /** The block this screen belongs to, for the diagram's front tile. */
@@ -340,27 +350,20 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             int tx = leftPos + TAB_X, ty = topPos + 4 + i * (TAB_H + TAB_GAP);
             if ((event.button() == 0 || event.button() == 1) && mx >= tx && mx < tx + tabWidth() && my >= ty && my < ty + TAB_H) {
                 open = open == tabs.get(i) ? null : tabs.get(i);
-                lastOpen = open;
                 reposition();
                 click();
                 return true;
             }
         }
         if (open == Tab.CONFIG && configBlock() != null) {
-            int vx = leftPos + panelX() + 6, vy = topPos + DIAGRAM_Y;
-            var face = sideView.pick(mx, my, vx, vy, vx + VIEW, vy + VIEW);
-            if (face != null) {
-                int base = event.button() == 1 ? ProcessingMenu.BUTTON_SIDE_PREV : ProcessingMenu.BUTTON_SIDE_NEXT;
-                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, base + SideConfigView.face(face).ordinal());
-                click();
-                return true;
-            }
-            if (mx >= vx && mx < vx + VIEW && my >= vy && my < vy + VIEW) {
+            int vx = leftPos + panelX() + 79, vy = topPos + DIAGRAM_Y;
+            if (mx >= vx && mx < vx + VIEW && my >= vy && my < vy + 64) {
                 dragging = true;
                 return true;
             }
         }
         if (open == Tab.CONFIG) {
+            if (event.button() != 0 && event.button() != 1) return super.mouseClicked(event, doubleClick);
             for (Button b : configButtons(leftPos + panelX(), topPos)) {
                 if (mx >= b.x() && mx < b.x() + b.w() && my >= b.y() && my < b.y() + b.h()) {
                     int id = b.id();
@@ -423,7 +426,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
         } else if (open == Tab.CONFIG) {
             for (Button b : configButtons(leftPos + panelX(), topPos)) {
                 if (mouseX >= b.x() && mouseX < b.x() + b.w() && mouseY >= b.y() && mouseY < b.y() + b.h()
-                        && font.width(b.label()) > b.w() - 6) {
+                        ) {
                     g.setTooltipForNextFrame(font, b.label(), mouseX, mouseY);
                 }
             }

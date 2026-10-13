@@ -32,6 +32,7 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
     private final RecipeMachine machine;
     private final RecipeManager.CachedCheck<MachineRecipeInput, MachineRecipe> recipes;
     private final @Nullable FluidStacksResourceHandler tank;
+    private final java.util.Map<net.minecraft.core.Direction, net.neoforged.neoforge.transfer.ResourceHandler<FluidResource>> sidedFluids = new java.util.EnumMap<>(net.minecraft.core.Direction.class);
     private final com.powerfactor.animation.RotaryMotion workshopMotion = new com.powerfactor.animation.RotaryMotion();
 
     @Override
@@ -61,8 +62,26 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
             @Override
             protected void onContentsChanged(int index, FluidStack previousContents) {
                 setChanged();
+                if (level != null && !level.isClientSide() && previousContents.getAmount() / 250 != getAmountAsInt(index) / 250)
+                    level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
             }
         } : null;
+        if (tank != null) for (var side : net.minecraft.core.Direction.values()) {
+            sidedFluids.put(side, new net.neoforged.neoforge.transfer.DelegatingResourceHandler<>(tank) {
+                @Override public int insert(int slot, FluidResource resource, int amount, net.neoforged.neoforge.transfer.transaction.TransactionContext tx) {
+                    return resourceMode(side).input() ? super.insert(slot, resource, amount, tx) : 0;
+                }
+                @Override public int insert(FluidResource resource, int amount, net.neoforged.neoforge.transfer.transaction.TransactionContext tx) {
+                    return resourceMode(side).input() ? super.insert(resource, amount, tx) : 0;
+                }
+                @Override public int extract(int slot, FluidResource resource, int amount, net.neoforged.neoforge.transfer.transaction.TransactionContext tx) {
+                    return resourceMode(side).output() ? super.extract(slot, resource, amount, tx) : 0;
+                }
+                @Override public int extract(FluidResource resource, int amount, net.neoforged.neoforge.transfer.transaction.TransactionContext tx) {
+                    return resourceMode(side).output() ? super.extract(resource, amount, tx) : 0;
+                }
+            });
+        }
     }
 
     /** Input slots, plus the electrode slot (which hoppers may fill) for the arc furnace. */
@@ -154,6 +173,9 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
     public @Nullable FluidStacksResourceHandler getTank() {
         return tank;
     }
+    public net.neoforged.neoforge.transfer.@Nullable ResourceHandler<FluidResource> getFluidHandler(net.minecraft.core.@Nullable Direction side) {
+        return side == null ? tank : sidedFluids.get(side);
+    }
 
     @Override
     public SoundEvent loopSound() {
@@ -206,12 +228,12 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
 
     @Override
     public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return machine == RecipeMachine.LASER_ENGRAVER ? net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this) : null;
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
     public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
-        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        net.minecraft.nbt.CompoundTag tag = saveCustomOnly(registries);
         if (machine == RecipeMachine.LASER_ENGRAVER) {
             tag.putString("shown_input", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(items.getItem(0).getItem()).toString());
         }

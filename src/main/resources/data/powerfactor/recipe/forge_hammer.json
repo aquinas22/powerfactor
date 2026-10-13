@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "II ",
+    "ISI",
+    " S "
+  ],
+  "key": {
+    "I": "#c:ingots/iron",
+    "S": "#c:rods/wooden"
+  },
+  "result": {
+    "id": "powerfactor:forge_hammer",
+    "count": 1
+  }
+}

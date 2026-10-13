@@ -376,7 +376,7 @@ def recipes():
     shaped("drill_head", [" I ", "IDI", "BIB"], {"I": "#c:ingots/iron", "D": "#c:gems/diamond", "B": "#c:ingots/brass"})
 
     # ---------------------------------------------------------------- blocks
-    shaped("copper_wire", ["CCC"], {"C": "#c:ingots/copper"}, 8, category="redstone")
+    shapeless("copper_wire", ["#c:wires/copper"], 1, category="redstone")
     shaped("fiber_optic_cable", ["KKK", "FFF", "KKK"], {"K": "minecraft:dried_kelp", "F": pf("optical_fiber")}, 6, category="redstone")
     shaped("coal_turbine", ["IBI", "KFK", "IRI"], {"I": "#c:ingots/iron", "B": pf("turbine_blade"), "K": pf("copper_coil"),
                                                    "F": "minecraft:furnace", "R": "#c:dusts/redstone"}, category="redstone")
@@ -584,7 +584,7 @@ def lang():
         "gui.powerfactor.config.redstone.high": "Run only when powered",
         "gui.powerfactor.config.redstone.ignore": "Always run",
         "gui.powerfactor.config.eject": "Outputs",
-        "gui.powerfactor.config.sides": "Sides · R-click: back",
+        "gui.powerfactor.config.sides": "Faces · L / R click",
         "gui.powerfactor.config.mode.none": "Closed",
         "gui.powerfactor.config.mode.input": "Input",
         "gui.powerfactor.config.mode.output": "Output",
@@ -919,7 +919,8 @@ def phase_b_recipes():
     for name, parts, count in alloys:
         for form in ("ingots", "dusts"):
             machine_recipe("alloying", f"{name}_from_{form}", [(f"#c:{form}/{m}", n) for m, n in parts], [out(f"{name}_ingot", count)])
-    machine_recipe("alloying", "rubber", [(pf("latex"), 2)], [out("rubber", 1)], time=100)
+    machine_recipe("alloying", "rubber", [(pf("latex"), 2)], [out("rubber", 3)], time=100)
+    machine_recipe("alloying", "graphite_from_coal", [("#c:dusts/coal", 4)], [out("graphite", 1)], time=300)
 
     # Arc furnace: steel, aluminum, silicon, graphite.
     machine_recipe("arc_smelting", "steel_from_ingot", [("#c:ingots/iron", 1), ("#c:dusts/coal", 1)], [out("steel_ingot")])
@@ -933,8 +934,7 @@ def phase_b_recipes():
         machine_recipe("wire_drawing", f"fine_{metal}_wire", [(f"#c:ingots/{metal}", 1)], [out(f"fine_{metal}_wire", 3)])
     for m in PLATE_METALS:
         machine_recipe("rolling", f"{m}_plate", [(f"#c:ingots/{m}", 1)], [out(f"{m}_plate")])
-        # Early game: a hammer-free 2-ingot crafting route so plates aren't gated on the mill.
-        shaped(f"{m}_plate", ["##"], {"#": f"#c:ingots/{m}"}, file=f"{m}_plate_by_hand")
+        shapeless(f"{m}_plate", [f"#c:ingots/{m}", f"#c:ingots/{m}", "#c:tools/hammers"], file=f"{m}_plate_by_hand")
 
     cooking(pf("rubber"), pf("latex"), "rubber", xp=0.1)
     crushing("granite", "minecraft:granite", out("minecraft:red_sand"), [out("mica", 1, 0.25)], time=80)
@@ -949,8 +949,8 @@ def phase_b_recipes():
                                                        "R": "#c:dusts/redstone"}, 2)
     shaped("alloy_furnace", ["PCP", "HFH", "PKP"], {"P": "#c:plates/iron", "C": pf("copper_coil"), "H": pf("heating_coil"),
                                                     "F": pf("electric_furnace"), "K": pf("control_circuit")}, category="redstone")
-    shaped("arc_furnace", ["EGE", "SFS", "SKS"], {"E": pf("graphite_electrode"), "G": "#c:glass_blocks", "S": "#c:plates/steel",
-                                                  "F": pf("alloy_furnace"), "K": pf("advanced_circuit")}, category="redstone")
+    shaped("arc_furnace", ["EGE", "SFS", "SKS"], {"E": pf("graphite_electrode"), "G": "#c:glass_blocks", "S": "#c:plates/iron",
+                                                  "F": pf("alloy_furnace"), "K": pf("control_circuit")}, category="redstone")
     shaped("wire_drawer", ["PDP", "GMG", "PKP"], {"P": "#c:plates/iron", "D": "#c:gems/diamond", "G": "#c:gears/iron",
                                                   "M": pf("electric_motor"), "K": pf("control_circuit")}, category="redstone")
     shaped("rolling_mill", ["PSP", "GMG", "PKP"], {"P": "#c:plates/iron", "S": "#c:storage_blocks/iron", "G": "#c:gears/brass",
@@ -1056,11 +1056,10 @@ def phase_b_worldgen():
                                  "state": {"Name": "minecraft:dirt"}}, "rules": []},
         "trunk_provider": {"type": "minecraft:weighted_state_provider", "entries": [
             {"data": log("false"), "weight": 3}, {"data": log("true"), "weight": 1}]},
-        "trunk_placer": {"type": "minecraft:straight_trunk_placer", "base_height": 6, "height_rand_a": 3, "height_rand_b": 1},
+        "trunk_placer": {"type": "minecraft:fancy_trunk_placer", "base_height": 6, "height_rand_a": 3, "height_rand_b": 1},
         "foliage_provider": {"type": "minecraft:simple_state_provider", "state": {"Name": pf("rubber_leaves"),
                              "Properties": {"distance": "7", "persistent": "false", "waterlogged": "false"}}},
-        "foliage_placer": {"type": "minecraft:spruce_foliage_placer", "radius": 2, "offset": 0, "trunk_height": {"type": "minecraft:uniform",
-                           "min_inclusive": 1, "max_inclusive": 2}},
+                    "foliage_placer": {"type": "minecraft:fancy_foliage_placer", "radius": 2, "offset": 4, "height": 4},
         "minimum_size": {"type": "minecraft:two_layers_feature_size", "limit": 1, "lower_size": 0, "upper_size": 1},
         "decorators": []}})
     write(data(NS, "worldgen", "placed_feature", "rubber_tree.json"), {"feature": pf("rubber_tree"), "placement": [
@@ -1279,17 +1278,17 @@ def phase_cf_data():
                                                       "K": pf("advanced_circuit"), "C": pf("copper_coil")}, 1),
         ("ender_receiver", ["OPO", "EKE", "OCO"], {"E": "minecraft:ender_pearl", "P": "minecraft:ender_eye", "O": "minecraft:obsidian",
                                                    "K": pf("advanced_circuit"), "C": pf("copper_coil")}, 1),
-        ("insulated_copper_cable", ["RRR", "WWW", "RRR"], {"R": pf("rubber"), "W": pf("copper_wire")}, 6),
-        ("aluminum_cable", ["RRR", "AAA", "RRR"], {"R": pf("rubber"), "A": pf("fine_aluminum_wire")}, 6),
+        ("insulated_copper_cable", ["RRR", "WWW", "RRR"], {"R": "#c:rubbers", "W": pf("copper_wire")}, 6),
+        ("aluminum_cable", ["RRR", "AAA", "RRR"], {"R": "#c:rubbers", "A": pf("fine_aluminum_wire")}, 6),
         ("circuit_breaker", ["PKP", "CLC", "PWP"], {"P": "#c:plates/iron", "K": pf("control_circuit"), "C": pf("copper_coil"),
                                                    "L": "minecraft:lever", "W": pf("copper_wire")}, 1),
         ("transformer", ["PKP", "SIS", "PKP"], {"P": "#c:plates/steel", "K": pf("copper_coil"), "S": pf("silicon"), "I": "#c:storage_blocks/iron"}, 1),
         ("hv_pylon", ["S S", "SPS", "S S"], {"S": "#c:ingots/steel", "P": "#c:plates/steel"}, 2),
         ("conductor_spool", [" A ", "AWA", " A "], {"A": pf("fine_aluminum_wire"), "W": "#minecraft:planks"}, 4),
         ("solar_panel", ["GGG", "SSS", "PWP"], {"G": "#c:glass_blocks", "S": pf("silicon"), "P": "#c:plates/aluminum", "W": pf("copper_wire")}, 1),
-        ("wind_turbine", ["PBP", "BMB", "GKG"], {"B": pf("turbine_blade"), "M": pf("electric_motor"), "P": "#c:plates/steel",
-                                                 "G": pf("steel_gear"), "K": pf("advanced_circuit")}, 1),
-        ("wind_turbine_tower", ["P P", "PSP", "P P"], {"P": "#c:plates/steel", "S": "#c:ingots/steel"}, 4),
+        ("wind_turbine", ["BBB", "MGM", "PKP"], {"B": pf("turbine_blade"), "M": pf("electric_motor"), "P": "#c:storage_blocks/steel",
+                                                 "G": pf("generator_magnet"), "K": pf("advanced_circuit")}, 1),
+        ("wind_turbine_tower", ["P P", "PSP", "P P"], {"P": "#c:plates/steel", "S": "#c:ingots/steel"}, 2),
         ("hydro_turbine", ["PBP", "BMB", "PKP"], {"P": "#c:plates/bronze", "B": pf("turbine_blade"), "M": pf("electric_motor"),
                                                   "K": pf("control_circuit")}, 1),
         ("diesel_generator", ["PXP", "GMG", "PKP"], {"P": "#c:plates/steel", "X": "minecraft:piston", "G": "#c:gears/steel",
@@ -1565,7 +1564,22 @@ def wind_turbine_models():
                     "north": {"texture": "#door", "uv": [2, 0, 14, 16]}, "east": face("#tube"), "west": face("#tube"), "up": face("#tube")}})
             name = f"wind_turbine_tower_{taper}" + ("_base" if base else "")
             write(asset("models", "block", f"{name}.json"), {"parent": "minecraft:block/block", "textures": tower_tex, "elements": els})
-            variants[f"base={'true' if base else 'false'},taper={taper}"] = {"model": pf(f"block/{name}")}
+            if base:
+                connected = els + [{"from": [5.5, 3, round(z - 1.0, 4)], "to": [10.5, 11, round(z - 0.4, 4)], "faces": {
+                    d: {"texture": "#cabinet", "uv": [0, 0, 16, 16]} for d in ("north", "east", "south", "west", "up", "down")}}]
+                # Junction studs bridge the narrow tower tube to the cable's block-face contact.
+                for side in range(4):
+                    for low, high, texture in (([7.25,7.25,0.8],[8.75,8.75,8],"#contact"), ([6.5,6.5,0],[9.5,9.5,1.2],"#socket")):
+                        points = [(x,z) for x in (low[0],high[0]) for z in (low[2],high[2])]
+                        for _ in range(side): points = [(16-z,x) for x,z in points]
+                        connected.append({"from":[min(x for x,z in points),low[1],min(z for x,z in points)],
+                            "to":[max(x for x,z in points),high[1],max(z for x,z in points)],
+                            "faces":{d:{"texture":texture,"uv":[0,0,16,16]} for d in ("north","east","south","west","up","down")}})
+                tex = dict(tower_tex, cabinet=pf("block/wind_turbine_connected"),contact=pf("block/industrial_copper"),socket=pf("block/workshop_steel"))
+                write(asset("models", "block", name + "_connected.json"), {"parent": "minecraft:block/block", "textures": tex, "elements": connected})
+            for plugged in (False, True):
+                variants[f"base={'true' if base else 'false'},taper={taper},connected={'true' if plugged else 'false'}"] = {
+                    "model": pf(f"block/{name}" + ("_connected" if base and plugged else ""))}
     write(asset("blockstates", "wind_turbine_tower.json"), {"variants": variants})
     item_def("wind_turbine_tower", pf("block/wind_turbine_tower_3_base"))
     # Nacelle block: the top of the tower and the yaw bearing; the nacelle and rotor are drawn by WindTurbineRenderer.
@@ -2066,7 +2080,7 @@ def phase_i():
     engrave("memory_chip", 2, ("#c:dusts/redstone", 2), "memory")
     engrave("power_transistor", 2, ("#c:dusts/copper", 1), "power", 160)
     engrave("sensor_chip", 1, ("#c:gems/quartz", 1), "sensor")
-    shaped("printed_circuit_board", ["WWW", "RPR"], {"W": pf("fine_copper_wire"), "R": pf("rubber"), "P": "#c:plates/copper"}, 2, category="misc")
+    shaped("printed_circuit_board", ["WWW", "RPR"], {"W": pf("fine_copper_wire"), "R": "#c:rubbers", "P": "#c:plates/copper"}, 2, category="misc")
     # Chips in the higher-tech recipes.
     shaped("advanced_circuit", ["WMW", "KBK", "WCW"], {"W": pf("fine_silver_wire"), "M": pf("microprocessor"), "K": pf("memory_chip"),
                                                        "B": pf("printed_circuit_board"), "C": pf("control_circuit")})
@@ -2501,9 +2515,9 @@ def power_armor():
     shaped("power_leggings", ["PKP", "MIM", "P P"], {"P": "#c:plates/steel", "K": pf("advanced_circuit"), "M": pf("electric_motor"), "I": "minecraft:iron_leggings"})
     shaped("power_boots", ["P P", "MIM", "CSC"], {"P": "#c:plates/steel", "M": pf("electric_motor"), "I": "minecraft:iron_boots", "C": pf("capacitor"), "S": pf("sensor_chip")})
     shaped("jump_servo_module", [" M ", "PKP", " M "], {"M": pf("electric_motor"), "P": "#c:plates/steel", "K": pf("control_circuit")})
-    shaped("shock_absorber_module", ["RPR", "PCP", "RPR"], {"R": pf("rubber"), "P": "#c:plates/steel", "C": pf("capacitor")})
+    shaped("shock_absorber_module", ["RPR", "PCP", "RPR"], {"R": "#c:rubbers", "P": "#c:plates/steel", "C": pf("capacitor")})
     shaped("night_vision_module", ["GSG", "PKP", " W "], {"G": "#c:glass_blocks", "S": pf("sensor_chip"), "P": "#c:plates/steel", "K": pf("advanced_circuit"), "W": pf("fine_copper_wire")})
-    shaped("rebreather_module", ["PFP", "RKR", " P "], {"P": "#c:plates/steel", "F": pf("fluid_tank"), "R": pf("rubber"), "K": pf("control_circuit")})
+    shaped("rebreather_module", ["PFP", "RKR", " P "], {"P": "#c:plates/steel", "F": pf("fluid_tank"), "R": "#c:rubbers", "K": pf("control_circuit")})
     armor = [pf(i) for i in ("power_helmet", "power_chestplate", "power_leggings", "power_boots")]
     tag("item", "minecraft", "enchantable/armor", armor)
     tag("item", "minecraft", "armor", armor)
@@ -2623,7 +2637,7 @@ def electric_rover():
             "firstperson_righthand": {"rotation": [0, 0, 0], "scale": [0.6, 0.6, 0.6]}}})
     item_def("electric_rover", pf("item/electric_rover"))
     shaped("electric_rover", ["PCP", "MBM", "RGR"], {"P": "#c:plates/steel", "C": pf("control_circuit"),
-        "M": pf("electric_motor"), "B": pf("capacitor"), "R": pf("rubber"), "G": pf("steel_gear")})
+        "M": pf("electric_motor"), "B": pf("capacitor"), "R": "#c:rubbers", "G": pf("steel_gear")})
     LANG.update({"item.powerfactor.electric_rover": "Electric Rover", "entity.powerfactor.electric_rover": "Electric Rover",
         "tooltip.powerfactor.rover.controls": "W/S drive · A/D steer · Jump brake · Sprint boost",
         "tooltip.powerfactor.rover.pack": "Sneak-wrench to pack; charge on a Charging Pad",
@@ -2637,6 +2651,35 @@ def electric_rover():
         "and brakes automatically if the driver leaves or input stops. Drive uses 20 FE/t, boost 50 FE/t. Empty batteries coast but cannot accelerate. "
         "Park above a powered Charging Pad to recharge; the packed vehicle also charges as an FE item. Sneak-use a wrench on a stopped, empty rover "
         "to pack it without losing battery or hull state. Steel ingots repair 10 HP each. The chassis has 80 HP; a destroyed rover becomes scrap.")
+
+
+def workshop_progression_polish():
+    for tool in ("forge_hammer", "wire_cutters"):
+        flat_item(tool, "minecraft:item/handheld")
+    shaped("forge_hammer", ["II ", "ISI", " S "], {"I": "#c:ingots/iron", "S": "#c:rods/wooden"}, category="equipment")
+    shaped("wire_cutters", ["I I", " I ", "S S"], {"I": "#c:ingots/iron", "S": "#c:rods/wooden"}, category="equipment")
+    tag("item", "c", "tools/hammers", [pf("forge_hammer")])
+    tag("item", "c", "tools/wire_cutters", [pf("wire_cutters")])
+    tag("item", "c", "tools", ["#c:tools/hammers", "#c:tools/wire_cutters"])
+    tag("item", "c", "wires", ["#c:wires/copper", "#c:wires/silver", "#c:wires/aluminum"])
+    for metal in ("copper", "silver", "aluminum"):
+        shapeless("fine_" + metal + "_wire", ["#c:plates/" + metal, "#c:tools/wire_cutters"], 2, file="fine_" + metal + "_wire_by_hand")
+    shaped("copper_coil", ["WWW", "WIW", "WWW"], {"W": "#c:wires/copper", "I": "#c:ingots/iron"}, file="copper_coil_from_fine")
+    shapeless("rubber", ["#c:slime_balls", "minecraft:clay_ball", "#minecraft:coals"], 2, file="rubber_from_slime")
+    LANG.update({"item.powerfactor.forge_hammer": "Forge Hammer", "item.powerfactor.wire_cutters": "Wire Cutters",
+        "tooltip.powerfactor.forge_hammer": "Craft with two ingots to flatten one plate",
+        "tooltip.powerfactor.wire_cutters": "Craft with a plate to cut wire; right-click cable to dismantle",
+        "tooltip.powerfactor.crafting_tool": "%s workshop uses remaining · returned after crafting",
+        "gui.powerfactor.config.preview_tip": "%s: %s · Drag to turn"})
+    LANG["handbook.powerfactor.machines.text"] += (
+        "\n\nEarly workshop: craft a Forge Hammer and Wire Cutters from iron and sticks. Two ingots plus a hammer make one plate; "
+        "a plate plus cutters makes two wires. Both tools return to the grid and wear once per operation. Machines improve material yield: "
+        "the Rolling Mill or Mechanical Press makes a plate from one ingot, and the Wire Drawer makes three fine wires from one ingot. "
+        "Heat four coal dust in the Alloy Furnace to make starting graphite for electrodes. The first Arc Furnace uses iron plates "
+        "and a control circuit, so its own steel and silicon are not needed to build it.\n\n"
+        "Mix a slimeball, clay ball and coal or charcoal to make two rubber. Natural latex remains renewable. Rubber from other mods "
+        "can substitute in tagged insulation recipes. Wind turbines now need three blades, two motors, a generator magnet, two steel blocks "
+        "and an advanced circuit; tower sections craft in pairs.")
 
 
 if __name__ == "__main__":
@@ -2660,6 +2703,9 @@ if __name__ == "__main__":
     power_armor()
     movement_kit()
     electric_rover()
+    workshop_progression_polish()
+    from machine_models import generate as polish_models
+    polish_models(globals())
     flush_tags()
     lang()
     print("data written to", os.path.normpath(ROOT))

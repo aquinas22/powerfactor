@@ -1,12 +1,11 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "pattern": [
-    "##"
+  "ingredients": [
+    "#c:ingots/copper",
+    "#c:ingots/copper",
+    "#c:tools/hammers"
   ],
-  "key": {
-    "#": "#c:ingots/copper"
-  },
   "result": {
     "id": "powerfactor:copper_plate",
     "count": 1

@@ -4,14 +4,14 @@
       "model": "powerfactor:block/ender_transmitter"
     },
     "facing=north,running=true": {
-      "model": "powerfactor:block/ender_transmitter"
+      "model": "powerfactor:block/ender_transmitter_on"
     },
     "facing=east,running=false": {
       "model": "powerfactor:block/ender_transmitter",
       "y": 90
     },
     "facing=east,running=true": {
-      "model": "powerfactor:block/ender_transmitter",
+      "model": "powerfactor:block/ender_transmitter_on",
       "y": 90
     },
     "facing=south,running=false": {
@@ -19,7 +19,7 @@
       "y": 180
     },
     "facing=south,running=true": {
-      "model": "powerfactor:block/ender_transmitter",
+      "model": "powerfactor:block/ender_transmitter_on",
       "y": 180
     },
     "facing=west,running=false": {
@@ -27,7 +27,7 @@
       "y": 270
     },
     "facing=west,running=true": {
-      "model": "powerfactor:block/ender_transmitter",
+      "model": "powerfactor:block/ender_transmitter_on",
       "y": 270
     }
   }

@@ -18,6 +18,10 @@ public final class ModItems {
 
     public static final DeferredItem<com.powerfactor.item.HandbookItem> HANDBOOK = ITEMS.registerItem("powerfactor_handbook",
             com.powerfactor.item.HandbookItem::new);
+    public static final DeferredItem<com.powerfactor.item.CraftingToolItem> FORGE_HAMMER = ITEMS.registerItem("forge_hammer",
+            p -> new com.powerfactor.item.CraftingToolItem("forge_hammer", p));
+    public static final DeferredItem<com.powerfactor.item.CraftingToolItem> WIRE_CUTTERS = ITEMS.registerItem("wire_cutters",
+            p -> new com.powerfactor.item.CraftingToolItem("wire_cutters", p));
 
     // ---------------------------------------------------------------- machines and wiring
     static {

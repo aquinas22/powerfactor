@@ -37,7 +37,6 @@ public final class SteamBoilerMenu extends MachineMenu {
     public int get(int index) { return data.get(index) & 0xFFFF; }
     public MachineBlockEntity.RedstoneMode redstoneMode() { return MachineBlockEntity.RedstoneMode.values()[Math.clamp(get(REDSTONE), 0, 2)]; }
     @Override public boolean clickMenuButton(Player player, int id) {
-        if (boiler != null && id == ProcessingMenu.BUTTON_REDSTONE) { boiler.cycleRedstoneMode(); return true; }
-        return false;
+        return boiler != null && boiler.redstoneButton(id);
     }
 }

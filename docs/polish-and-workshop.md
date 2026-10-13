@@ -1,5 +1,8 @@
 # Workshop and visual update — October 12, 2026
 
+The subsequent [machine and progression polish](machine-polish.md) covers the current
+models, face controls, recipes, rubber, compatibility checks and flat-world launcher.
+
 PowerFactor targets Minecraft 26.2 / NeoForge 26.2.0.90. The built mod is
 `build/libs/powerfactor-0.1.0.jar`.
 

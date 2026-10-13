@@ -155,7 +155,7 @@ public class CoalTurbineBlockEntity extends MachineBlockEntity implements GridGe
         if (generated > 0) {
             buffer.set(stored + generated);
         }
-        pushToNeighbors(level, pos, state.getValue(MachineBlock.FACING));
+        pushToNeighbors(level, pos);
 
         if (model.breakerClosed() != breakerBefore) {
             level.playSound(null, pos, model.breakerClosed() ? com.powerfactor.registry.ModSounds.TURBINE_BREAKER_CLOSE.get()
@@ -196,17 +196,15 @@ public class CoalTurbineBlockEntity extends MachineBlockEntity implements GridGe
         return ee;
     }
 
-    private void pushToNeighbors(ServerLevel level, BlockPos pos, Direction front) {
+    private int outputRotation;
+    private void pushToNeighbors(ServerLevel level, BlockPos pos) {
+        var targets = new java.util.ArrayList<EnergyHandler>();
         for (Direction dir : Direction.values()) {
-            if (dir == front || buffer.getAmountAsInt() == 0) {
-                continue;
-            }
             EnergyHandler target = outputs.computeIfAbsent(dir,
                     d -> BlockCapabilityCache.create(Capabilities.Energy.BLOCK, level, pos.relative(d), d.getOpposite())).getCapability();
-            if (target != null) {
-                EnergyHandlerUtil.move(buffer, target, buffer.getAmountAsInt(), null);
-            }
+            if (target != null) targets.add(target);
         }
+        EnergyOut.distribute(buffer, targets, outputRotation++);
     }
 
     /** Picks up config changes without losing turbine state. */

@@ -24,7 +24,6 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil;
 
 /**
  * Utility-scale wind turbine nacelle, mounted on a {@link WindTowerBlock} tower. The rotor sweeps a
@@ -79,7 +78,7 @@ public class WindTurbineBlockEntity extends PushingGenerator implements MachineA
 
     @Override
     public void serverTick(ServerLevel level, BlockPos pos, BlockState state) {
-        if (towerBase == null || level.getGameTime() % 100 == 0) {
+        if (towerBase == null || level.getGameTime() % 20 == 0) {
             surveyTower(level, pos);
             blocked = !clear(level, pos, state.getValue(MachineBlock.FACING));
         }
@@ -146,26 +145,20 @@ public class WindTurbineBlockEntity extends PushingGenerator implements MachineA
         return true;
     }
 
-    /** Push into whatever touches the nacelle, then into whatever touches the foot of the tower. */
+    /** Share output between distinct consumers at the nacelle and a complete tower's foot. */
     @Override
     protected void push(ServerLevel level, BlockPos pos) {
-        super.push(level, pos);
-        if (towerBase == null || towerBase.equals(pos) || buffer.getAmountAsInt() == 0) {
-            return;
-        }
-        for (Direction d : Direction.values()) {
-            if (buffer.getAmountAsInt() == 0) {
-                return;
-            }
-            BlockPos at = towerBase.relative(d);
-            if (level.getBlockState(at).getBlock() instanceof WindTowerBlock || at.equals(pos)) {
-                continue;
-            }
-            EnergyHandler target = level.getCapability(Capabilities.Energy.BLOCK, at, d.getOpposite());
-            if (target != null && !(level.getBlockEntity(at) instanceof PushingGenerator)) {
-                EnergyHandlerUtil.move(buffer, target, buffer.getAmountAsInt(), null);
+        var targets = new java.util.ArrayList<EnergyHandler>();
+        boolean linkedBase = towerBase != null && !towerBase.equals(pos) && WindTowerBlock.turbine(level, towerBase) == this;
+        for (BlockPos origin : linkedBase ? java.util.List.of(pos, towerBase) : java.util.List.of(pos)) {
+            for (Direction d : Direction.values()) {
+                BlockPos at = origin.relative(d);
+                if (level.getBlockState(at).getBlock() instanceof WindTowerBlock || at.equals(pos)) continue;
+                EnergyHandler target = level.getCapability(Capabilities.Energy.BLOCK, at, d.getOpposite());
+                if (target != null && !(level.getBlockEntity(at) instanceof PushingGenerator)) targets.add(target);
             }
         }
+        com.powerfactor.machine.EnergyOut.distribute(buffer, targets, outputRotation++);
     }
 
     // ------------------------------------------------------------------ client

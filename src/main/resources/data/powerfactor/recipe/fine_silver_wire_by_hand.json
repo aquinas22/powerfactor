@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:plates/silver",
+    "#c:tools/wire_cutters"
+  ],
+  "result": {
+    "id": "powerfactor:fine_silver_wire",
+    "count": 2
+  }
+}

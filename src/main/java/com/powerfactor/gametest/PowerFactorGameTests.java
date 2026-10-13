@@ -48,6 +48,16 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("electric_furnace_smelts", () -> PowerFactorGameTests::electricFurnaceSmelts);
         FUNCTIONS.register("capacitor_upgrades_correct_motor_pf", () -> PowerFactorGameTests::capacitorUpgradesCorrectPf);
         FUNCTIONS.register("side_config_controls_faces", () -> PowerFactorGameTests::sideConfigControlsFaces);
+        FUNCTIONS.register("fluid_faces_follow_configuration", () -> PowerFactorGameTests::fluidFacesFollowConfiguration);
+        FUNCTIONS.register("hand_tool_plate_and_wire", () -> PowerFactorGameTests::handToolRecipes);
+        FUNCTIONS.register("synthetic_rubber_coal_and_charcoal", () -> PowerFactorGameTests::syntheticRubber);
+        FUNCTIONS.register("graphite_bootstrap_in_alloy_furnace", () -> PowerFactorGameTests::graphiteBootstrap);
+        FUNCTIONS.register("wind_base_foreign_energy_and_broken_tower", () -> PowerFactorGameTests::windBaseEnergy);
+        FUNCTIONS.register("generator_shared_energy_conserved", () -> PowerFactorGameTests::generatorSharesEnergy);
+        FUNCTIONS.register("redstone_direct_selection", () -> PowerFactorGameTests::redstoneDirectSelection);
+        FUNCTIONS.register("wire_cutters_respect_permissions", () -> PowerFactorGameTests::wireCuttersPermissions);
+        FUNCTIONS.register("wrench_respects_protection_mods", () -> PowerFactorGameTests::wrenchRespectsProtection);
+        FUNCTIONS.register("rubber_tree_canopy_and_latex", () -> PowerFactorGameTests::rubberTreeCanopy);
         FUNCTIONS.register("alloy_furnace_makes_brass", () -> PowerFactorGameTests::alloyFurnaceMakesBrass);
         FUNCTIONS.register("arc_furnace_makes_steel", () -> PowerFactorGameTests::arcFurnaceMakesSteel);
         FUNCTIONS.register("ore_washer_triples", () -> PowerFactorGameTests::oreWasherTriples);
@@ -132,7 +142,8 @@ public final class PowerFactorGameTests {
                 "grapple_hits_and_reels", "grapple_swing_and_empty_battery", "grapple_releases_broken_anchor", "grapple_tracks_moving_entity", "wingsuit_deploy_and_fold",
                 "rover_climbs_and_pays", "rover_rejects_input_and_stops", "rover_pad_charges_entity", "rover_pack_and_restore", "rover_submerged_stops_motor");
         for (var fn : FUNCTIONS.getEntries()) {
-            String structure = wide.contains(fn.getId().getPath()) ? "empty_9x3x3" : tall.contains(fn.getId().getPath()) ? "empty_7x8x7"
+            String structure = fn.getId().getPath().equals("rubber_tree_canopy_and_latex") ? "empty_11x16x11"
+                    : wide.contains(fn.getId().getPath()) ? "empty_9x3x3" : tall.contains(fn.getId().getPath()) || fn.getId().getPath().startsWith("wind_base_") ? "empty_7x8x7"
                     : "empty_3x3x3";
             event.registerTest(fn.getId(), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, fn.getId()),
                     new TestData<>(env, PowerFactor.id(structure), MAX_TICKS, 0, true)));
@@ -1525,6 +1536,159 @@ public final class PowerFactorGameTests {
         driver.stopRiding(); rover.discard();
         for (int x = 0; x < 7; x++) for (int y = 1; y < 4; y++) for (int z = 0; z < 7; z++) helper.setBlock(new BlockPos(x, y, z), Blocks.AIR);
         helper.succeed();
+    }
+
+    private static void fluidFacesFollowConfiguration(GameTestHelper helper) {
+        var machine=placeRecipeMachine(helper,CENTER,com.powerfactor.machine.RecipeMachine.ORE_WASHER);
+        var at=helper.absolutePos(CENTER);var water=net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER);
+        var front=helper.getLevel().getCapability(Capabilities.Fluid.BLOCK,at,Direction.NORTH);
+        var side=helper.getLevel().getCapability(Capabilities.Fluid.BLOCK,at,Direction.EAST);
+        try(var tx=Transaction.openRoot()) {helper.assertValueEqual(front.insert(water,100,tx),0,"closed front admitted fluid");helper.assertValueEqual(side.insert(water,600,tx),600,"open side rejected fluid");tx.commit();}
+        machine.cycleSide(com.powerfactor.machine.SideConfig.Face.LEFT,1);
+        try(var tx=Transaction.openRoot()) {helper.assertValueEqual(side.insert(water,100,tx),0,"cached closed fluid face accepted input");helper.assertValueEqual(side.extract(water,100,tx),0,"cached closed fluid face allowed extraction");}
+        machine.cycleSide(com.powerfactor.machine.SideConfig.Face.LEFT,2);
+        try(var tx=Transaction.openRoot()) {helper.assertValueEqual(side.insert(water,100,tx),0,"output face accepted fluid input");helper.assertValueEqual(side.extract(water,500,tx),500,"output face failed to drain");tx.commit();}
+        helper.assertValueEqual(machine.getTank().getAmountAsInt(0),100,"side transfer lost or duplicated water");
+        machine.cycleSide(com.powerfactor.machine.SideConfig.Face.LEFT,2); // OUTPUT -> NONE
+        helper.getLevel().setBlock(at,machine.getBlockState().setValue(MachineBlock.FACING,Direction.WEST),net.minecraft.world.level.block.Block.UPDATE_ALL);
+        try(var tx=Transaction.openRoot()) {helper.assertValueEqual(side.insert(water,200,tx),200,"cached fluid handler did not follow rotated faces");}
+        helper.assertValueEqual(machine.getTank().getAmountAsInt(0),100,"aborted external transfer changed water");helper.succeed();
+    }
+
+    private static net.minecraft.world.item.crafting.CraftingRecipe crafting(GameTestHelper helper, net.minecraft.world.item.crafting.CraftingInput input) {
+        var found = helper.getLevel().getServer().getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, input, helper.getLevel());
+        helper.assertTrue(found.isPresent(), "no crafting recipe for " + input.items()); return found.orElseThrow().value();
+    }
+    private static void handToolRecipes(GameTestHelper helper) {
+        var hammer = new net.minecraft.world.item.ItemStack(ModItems.FORGE_HAMMER.get()); hammer.setDamageValue(30);
+        hammer.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Bench Hammer"));
+        var input = net.minecraft.world.item.crafting.CraftingInput.of(3,1, java.util.List.of(new net.minecraft.world.item.ItemStack(Items.COPPER_INGOT), new net.minecraft.world.item.ItemStack(Items.COPPER_INGOT), hammer));
+        var recipe = crafting(helper,input); var product = recipe.assemble(input);
+        helper.assertTrue(product.is(com.powerfactor.registry.ModMaterials.PLATES.get("copper").get()) && product.getCount()==1,"manual plate yield wrong");
+        var remainder=recipe.getRemainingItems(input).get(2);
+        helper.assertTrue(remainder.is(ModItems.FORGE_HAMMER.get()) && remainder.getDamageValue()==31 && "Bench Hammer".equals(remainder.getHoverName().getString()),"crafting did not return the worn, named hammer");
+        hammer.setDamageValue(127); helper.assertTrue(recipe.getRemainingItems(input).get(2).isEmpty(),"exhausted hammer returned");
+        var cutters=new net.minecraft.world.item.ItemStack(ModItems.WIRE_CUTTERS.get());
+        input=net.minecraft.world.item.crafting.CraftingInput.of(2,1,java.util.List.of(new net.minecraft.world.item.ItemStack(com.powerfactor.registry.ModMaterials.PLATES.get("copper").get()),cutters));
+        product=crafting(helper,input).assemble(input);
+        helper.assertTrue(product.is(ModItems.FINE_COPPER_WIRE.get()) && product.getCount()==2,"plate cutting yield wrong");
+        helper.assertValueEqual(crafting(helper,input).getRemainingItems(input).get(1).getDamageValue(),1,"cutters did not wear once");
+        input=net.minecraft.world.item.crafting.CraftingInput.of(1,1,java.util.List.of(new net.minecraft.world.item.ItemStack(ModItems.FINE_COPPER_WIRE.get())));
+        helper.assertTrue(crafting(helper,input).assemble(input).is(ModItems.COPPER_WIRE.get()),"drawer wire cannot make a cable");
+        helper.succeed();
+    }
+    private static void syntheticRubber(GameTestHelper helper) {
+        for(var coal:java.util.List.of(Items.COAL,Items.CHARCOAL)){
+            var input=net.minecraft.world.item.crafting.CraftingInput.of(3,1,java.util.List.of(new net.minecraft.world.item.ItemStack(Items.SLIME_BALL),new net.minecraft.world.item.ItemStack(Items.CLAY_BALL),new net.minecraft.world.item.ItemStack(coal)));
+            var result=crafting(helper,input).assemble(input); helper.assertTrue(result.is(ModItems.RUBBER.get()) && result.getCount()==2,"synthetic rubber recipe failed for "+coal);
+        } helper.succeed();
+    }
+    private static void graphiteBootstrap(GameTestHelper helper) {
+        var machine=placeRecipeMachine(helper,CENTER,com.powerfactor.machine.RecipeMachine.ALLOY_FURNACE);
+        insert(helper,CENTER,ModItems.COAL_DUST.get(),4);
+        helper.runAfterDelay(340,()->{
+            helper.assertTrue(machine.slot(2).is(ModItems.GRAPHITE.get()),"alloy furnace did not make starting graphite");
+            var plate=com.powerfactor.registry.ModMaterials.PLATES.get("iron").get();
+            var input=net.minecraft.world.item.crafting.CraftingInput.of(3,3,java.util.List.of(
+                new net.minecraft.world.item.ItemStack(ModItems.GRAPHITE_ELECTRODE.get()),new net.minecraft.world.item.ItemStack(Items.GLASS),new net.minecraft.world.item.ItemStack(ModItems.GRAPHITE_ELECTRODE.get()),
+                new net.minecraft.world.item.ItemStack(plate),new net.minecraft.world.item.ItemStack(ModBlocks.RECIPE_MACHINES.get(com.powerfactor.machine.RecipeMachine.ALLOY_FURNACE).get()),new net.minecraft.world.item.ItemStack(plate),
+                new net.minecraft.world.item.ItemStack(plate),new net.minecraft.world.item.ItemStack(ModItems.CONTROL_CIRCUIT.get()),new net.minecraft.world.item.ItemStack(plate)));
+            helper.assertTrue(crafting(helper,input).assemble(input).is(ModBlocks.RECIPE_MACHINES.get(com.powerfactor.machine.RecipeMachine.ARC_FURNACE).get().asItem()),"arc furnace still requires its own steel or silicon");helper.succeed();
+        });
+    }
+    private static void windBaseEnergy(GameTestHelper helper) {
+        var base=new BlockPos(3,1,3);
+        for(int y=6;y>=1;y--) helper.setBlock(new BlockPos(3,y,3),ModBlocks.WIND_TURBINE_TOWER.get().defaultBlockState());
+        var head=new BlockPos(3,7,3);helper.setBlock(head,ModBlocks.WIND_TURBINE.get().defaultBlockState());
+        var wind=helper.getBlockEntity(head,com.powerfactor.generator.WindTurbineBlockEntity.class);
+        ((net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler)wind.getEnergy()).set(250);
+        var handler=helper.getLevel().getCapability(Capabilities.Energy.BLOCK,helper.absolutePos(base),Direction.EAST);
+        helper.assertTrue(handler!=null && handler.getAmountAsInt()==250,"foreign cable cannot see wind energy at the foot");
+        try(var tx=Transaction.openRoot()){helper.assertValueEqual(handler.extract(50,tx),50,"wind foot rejects extraction");}
+        helper.assertValueEqual(handler.getAmountAsInt(),250,"simulation drained turbine");
+        try(var tx=Transaction.openRoot()){helper.assertValueEqual(handler.extract(60,tx),60,"committed extraction failed");tx.commit();}
+        helper.assertValueEqual(wind.getEnergy().getAmountAsInt(),190,"foot extraction did not debit nacelle");
+        var foreign = new net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler(1000,1000,0);
+        try (var tx = Transaction.openRoot()) { helper.assertValueEqual(net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil.move(handler,foreign,40,tx),40,"standard energy transfer failed"); }
+        helper.assertTrue(foreign.getAmountAsInt()==0 && wind.getEnergy().getAmountAsInt()==190,"aborted cross-mod transfer moved FE");
+        try (var tx = Transaction.openRoot()) { net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil.move(handler,foreign,40,tx);tx.commit(); }
+        helper.assertTrue(foreign.getAmountAsInt()==40 && wind.getEnergy().getAmountAsInt()==150,"cross-mod FE transfer lost energy");
+        var wire=base.east();helper.setBlock(wire,ModBlocks.COPPER_WIRE.get().withConnections(helper.getLevel(),helper.absolutePos(wire),ModBlocks.COPPER_WIRE.get().defaultBlockState()));
+        helper.assertTrue(helper.getBlockState(wire).getValue(com.powerfactor.grid.ConnectorBlock.CONNECTIONS.get(Direction.WEST)),"wire has no arm at wind foot");
+        helper.assertTrue(helper.getBlockState(base).getValue(com.powerfactor.generator.WindTowerBlock.CONNECTED),"connected footing did not change appearance");
+        helper.setBlock(new BlockPos(3,4,3),Blocks.AIR);
+        try(var tx=Transaction.openRoot()){helper.assertValueEqual(handler.extract(50,tx),0,"cached cable extracted through a broken tower");tx.commit();}
+        helper.assertValueEqual(wind.getEnergy().getAmountAsInt(),150,"broken tower lost stored energy");helper.succeed();
+    }
+    private static void generatorSharesEnergy(GameTestHelper helper) {
+        helper.setBlock(CENTER,ModBlocks.SOLAR_PANEL.get().defaultBlockState());
+        var solar=helper.getBlockEntity(CENTER,com.powerfactor.generator.SolarPanelBlockEntity.class);
+        helper.setBlock(CENTER.north(),ModBlocks.CHARGING_PAD.get().defaultBlockState());helper.setBlock(CENTER.east(),ModBlocks.CHARGING_PAD.get().defaultBlockState());
+        var a=helper.getBlockEntity(CENTER.north(),com.powerfactor.device.ChargingPadBlockEntity.class).getEnergy();
+        var b=helper.getBlockEntity(CENTER.east(),com.powerfactor.device.ChargingPadBlockEntity.class).getEnergy();
+        ((net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler)solar.getEnergy()).set(100);
+        solar.serverTick(helper.getLevel(),helper.absolutePos(CENTER),solar.getBlockState());
+        helper.assertTrue(a.getAmountAsInt()>0 && Math.abs(a.getAmountAsInt()-b.getAmountAsInt())<=1,"generator starved one direction");
+        helper.assertValueEqual(a.getAmountAsInt()+b.getAmountAsInt()+solar.getEnergy().getAmountAsInt(),100+solar.scadaReading().fe(),"generator created or lost FE");
+        for (var block : java.util.List.of(ModBlocks.COAL_TURBINE.get(), ModBlocks.DIESEL_GENERATOR.get())) {
+            ((net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler)a).set(0); ((net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler)b).set(0);
+            helper.setBlock(CENTER,block.defaultBlockState());
+            var generator=(com.powerfactor.machine.MachineBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(CENTER));
+            EnergyHandler energy=generator instanceof com.powerfactor.machine.CoalTurbineBlockEntity coal ? coal.getEnergy() : ((com.powerfactor.generator.DieselGeneratorBlockEntity)generator).getEnergy();
+            ((net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler)energy).set(100);generator.serverTick(helper.getLevel(),helper.absolutePos(CENTER),generator.getBlockState());
+            helper.assertTrue(a.getAmountAsInt()==50 && b.getAmountAsInt()==50 && energy.getAmountAsInt()==0,"generator did not share stored FE across front and side: "+block);
+        }
+        var source=new net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler(1000,0,0);source.set(100);
+        var x=new net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler(1000,1000,0);var y=new net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler(1000,1000,0);
+        com.powerfactor.machine.EnergyOut.distribute(source,java.util.List.of(x,x,y),0);
+        helper.assertTrue(x.getAmountAsInt()==50 && y.getAmountAsInt()==50 && source.getAmountAsInt()==0,"duplicated external capability got extra share");helper.succeed();
+    }
+    private static void redstoneDirectSelection(GameTestHelper helper) {
+        var player=helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        for(var block:java.util.List.of(ModBlocks.CRUSHER.get(),ModBlocks.COAL_TURBINE.get(),ModBlocks.DIESEL_GENERATOR.get(),ModBlocks.STEAM_BOILER.get())){
+            helper.setBlock(CENTER,block.defaultBlockState());var machine=(com.powerfactor.machine.MachineBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(CENTER));
+            var menu=machine.createMenu(17,player.getInventory(),player);
+            for(var mode:com.powerfactor.machine.MachineBlockEntity.RedstoneMode.values()){
+                helper.assertTrue(menu.clickMenuButton(player,com.powerfactor.machine.ProcessingMenu.BUTTON_REDSTONE_SET+mode.ordinal()),"redstone selector rejected "+block);
+                helper.assertTrue(machine.redstoneMode()==mode,"redstone icon selected wrong mode");
+            }
+            helper.assertFalse(menu.clickMenuButton(player,33),"invalid redstone mode accepted");
+        }helper.succeed();
+    }
+    private static void wireCuttersPermissions(GameTestHelper helper) {
+        var player=helper.makeMockServerPlayerInLevel();player.setGameMode(net.minecraft.world.level.GameType.ADVENTURE);
+        var at=helper.absolutePos(CENTER);player.setPos(at.getX()+0.5,at.getY(),at.getZ()+0.5);
+        helper.setBlock(CENTER,ModBlocks.COPPER_WIRE.get().defaultBlockState());var cutters=new net.minecraft.world.item.ItemStack(ModItems.WIRE_CUTTERS.get());player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,cutters);
+        var hit=new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(at),Direction.UP,at,false);
+        var context=new net.minecraft.world.item.context.UseOnContext(player,net.minecraft.world.InteractionHand.MAIN_HAND,hit);
+        cutters.getItem().onItemUseFirst(cutters,context);
+        helper.assertTrue(helper.getBlockState(CENTER).is(ModBlocks.COPPER_WIRE.get()) && cutters.getDamageValue()==0,"cutters bypassed adventure permissions");
+        player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);cutters.getItem().onItemUseFirst(cutters,context);
+        helper.assertTrue(helper.getBlockState(CENTER).isAir() && cutters.getDamageValue()==1,"cutters did not dismantle cable for one use");helper.succeed();
+    }
+    private static void wrenchRespectsProtection(GameTestHelper helper) {
+        helper.setBlock(CENTER,ModBlocks.CRUSHER.get().defaultBlockState());var player=helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var at=helper.absolutePos(CENTER);var wrench=new net.minecraft.world.item.ItemStack(ModItems.WRENCH.get());player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,wrench);player.setShiftKeyDown(true);
+        var hit=new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(at),Direction.UP,at,false);
+        var context=new net.minecraft.world.item.context.UseOnContext(player,net.minecraft.world.InteractionHand.MAIN_HAND,hit);
+        java.util.function.Consumer<net.neoforged.neoforge.event.level.block.BreakBlockEvent> deny=event->{if(event.getPos().equals(at))event.setCanceled(true);};
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(deny);
+        try {wrench.getItem().onItemUseFirst(wrench,context);helper.assertTrue(helper.getBlockState(CENTER).is(ModBlocks.CRUSHER.get()),"wrench bypassed protection event");}
+        finally {net.neoforged.neoforge.common.NeoForge.EVENT_BUS.unregister(deny);}
+        wrench.getItem().onItemUseFirst(wrench,context);helper.assertTrue(helper.getBlockState(CENTER).isAir(),"unprotected dismantling failed");
+        helper.assertTrue(player.getInventory().contains(new net.minecraft.world.item.ItemStack(ModBlocks.CRUSHER.get())),"dismantled machine was not returned");helper.succeed();
+    }
+
+    private static void rubberTreeCanopy(GameTestHelper helper) {
+        for(int x=0;x<11;x++)for(int z=0;z<11;z++)helper.setBlock(new BlockPos(x,0,z),Blocks.GRASS_BLOCK);
+        var feature=helper.getLevel().registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).getOrThrow(ResourceKey.create(Registries.CONFIGURED_FEATURE,PowerFactor.id("rubber_tree"))).value();
+        helper.assertTrue(feature.place(helper.getLevel(),helper.getLevel().getChunkSource().getGenerator(),net.minecraft.util.RandomSource.create(1934),helper.absolutePos(new BlockPos(5,1,5))),"rubber tree failed to grow");
+        int leaves=0,natural=0,latex=0;java.util.Set<Integer> xs=new java.util.HashSet<>();
+        for(var p:BlockPos.betweenClosed(0,1,0,10,15,10)){var state=helper.getBlockState(p);
+            if(state.is(ModBlocks.RUBBER_LEAVES.get())){leaves++;xs.add(p.getX());}
+            if(state.is(ModBlocks.RUBBER_LOG.get()) && state.getValue(com.powerfactor.world.RubberLogBlock.NATURAL)){natural++;if(state.getValue(com.powerfactor.world.RubberLogBlock.LATEX))latex++;}
+        }
+        helper.assertTrue(leaves>40 && xs.size()>=5 && natural>=6 && latex>0,"rubber canopy or renewable latex missing");helper.succeed();
     }
 
     private PowerFactorGameTests() {}

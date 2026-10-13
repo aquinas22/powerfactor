@@ -40,10 +40,9 @@ public class WrenchItem extends Item {
         if (player == null || !PowerFactor.MODID.equals(state.getBlock().builtInRegistryHolder().key().identifier().getNamespace())) {
             return InteractionResult.PASS;
         }
+        if (!level.mayInteract(player, pos) || player.blockActionRestricted(level, pos, player.gameMode())) return InteractionResult.FAIL;
         if (player.isShiftKeyDown()) {
-            if (!level.isClientSide()) {
-                dismantle(level, pos, state, player);
-            }
+            if (!level.isClientSide() && !dismantle(level, pos, state, player)) return InteractionResult.FAIL;
             return InteractionResult.SUCCESS;
         }
         if (state.getBlock() instanceof PipeBlock) {
@@ -67,24 +66,26 @@ public class WrenchItem extends Item {
     }
 
     /** Break the block as if mined, with its drops going straight to the player. */
-    private static void dismantle(Level level, BlockPos pos, BlockState state, Player player) {
+    private static boolean dismantle(Level level, BlockPos pos, BlockState state, Player player) {
         if (!(level instanceof net.minecraft.server.level.ServerLevel server)) {
-            return;
+            return false;
         }
         var half = net.minecraft.world.level.block.state.properties.BlockStateProperties.DOUBLE_BLOCK_HALF;
         if (state.hasProperty(half) && state.getValue(half) == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER) {
             pos = pos.below();
             state = level.getBlockState(pos);
         }
+        if (!level.mayInteract(player, pos) || net.neoforged.neoforge.common.CommonHooks.fireBlockBreak(level, player.gameMode(), player, pos, state).isCanceled()) return false;
         var be = level.getBlockEntity(pos);
         var drops = Block.getDrops(state, server, pos, be, player, player.getMainHandItem());
-        level.destroyBlock(pos, false, player);
+        if (!level.destroyBlock(pos, false, player)) return false;
         for (ItemStack drop : drops) {
             if (!player.getInventory().add(drop)) {
                 player.drop(drop, false);
             }
         }
         level.playSound(null, pos, ModSounds.WRENCH.get(), SoundSource.BLOCKS, 0.9F, 0.75F);
+        return true;
     }
 
     @Override

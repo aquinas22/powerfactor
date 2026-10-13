@@ -7,7 +7,7 @@
   ],
   "key": {
     "W": "powerfactor:fine_copper_wire",
-    "R": "powerfactor:rubber",
+    "R": "#c:rubbers",
     "P": "#c:plates/copper"
   },
   "result": {

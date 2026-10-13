@@ -23,6 +23,7 @@ public abstract class ProcessingMenu extends MachineMenu {
     public static final int BUTTON_REDSTONE = 0, BUTTON_AUTO_EJECT = 1, BUTTON_AUTO_INPUT = 2;
     /** Cycle a face forward: BUTTON_SIDE_NEXT + face ordinal; backward: BUTTON_SIDE_PREV + ordinal. */
     public static final int BUTTON_SIDE_NEXT = 10, BUTTON_SIDE_PREV = 20;
+    public static final int BUTTON_REDSTONE_SET = 30;
     /** Where the Upgrades tab draws its 2x2 slot grid (see MachineScreen). */
     public static final int UPGRADE_X = 212, UPGRADE_Y = 24;
 
@@ -62,6 +63,7 @@ public abstract class ProcessingMenu extends MachineMenu {
         if (machine == null) {
             return false;
         }
+        if (machine.redstoneButton(buttonId)) return true;
         SideConfig.Face[] faces = SideConfig.Face.values();
         if (buttonId >= BUTTON_SIDE_NEXT && buttonId < BUTTON_SIDE_NEXT + faces.length) {
             machine.cycleSide(faces[buttonId - BUTTON_SIDE_NEXT], 1);

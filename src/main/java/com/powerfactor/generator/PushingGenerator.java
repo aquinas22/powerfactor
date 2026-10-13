@@ -10,13 +10,13 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 
 /** A generator with an extract-only FE buffer that it pushes into every neighbour each tick. */
 public abstract class PushingGenerator extends MachineBlockEntity {
     protected final SimpleEnergyHandler buffer;
     protected int lastFe;
+    protected int outputRotation;
 
     protected PushingGenerator(BlockEntityType<?> type, BlockPos pos, BlockState state, int capacity) {
         super(type, pos, state);
@@ -35,15 +35,14 @@ public abstract class PushingGenerator extends MachineBlockEntity {
     }
 
     protected void push(ServerLevel level, BlockPos pos) {
+        var targets = new java.util.ArrayList<EnergyHandler>();
         for (Direction d : Direction.values()) {
-            if (buffer.getAmountAsInt() == 0) {
-                return;
-            }
             EnergyHandler target = level.getCapability(Capabilities.Energy.BLOCK, pos.relative(d), d.getOpposite());
             if (target != null && !(level.getBlockEntity(pos.relative(d)) instanceof PushingGenerator)) {
-                EnergyHandlerUtil.move(buffer, target, buffer.getAmountAsInt(), null);
+                targets.add(target);
             }
         }
+        com.powerfactor.machine.EnergyOut.distribute(buffer, targets, outputRotation++);
     }
 
     public EnergyHandler getEnergy() {

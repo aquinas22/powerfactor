@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:plates/copper",
+    "#c:tools/wire_cutters"
+  ],
+  "result": {
+    "id": "powerfactor:fine_copper_wire",
+    "count": 2
+  }
+}

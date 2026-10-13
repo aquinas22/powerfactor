@@ -1,12 +1,11 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "pattern": [
-    "##"
+  "ingredients": [
+    "#c:ingots/electrum",
+    "#c:ingots/electrum",
+    "#c:tools/hammers"
   ],
-  "key": {
-    "#": "#c:ingots/electrum"
-  },
   "result": {
     "id": "powerfactor:electrum_plate",
     "count": 1
