@@ -32,7 +32,7 @@ import org.lwjgl.glfw.GLFW;
  */
 public final class JetpackClient {
     public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(PowerFactor.id("powerfactor"));
-    public static final KeyMapping HOVER_KEY = new KeyMapping("key.powerfactor.jetpack_hover", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, CATEGORY);
+    public static final KeyMapping HOVER_KEY = new KeyMapping("key.powerfactor.jetpack_hover", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, CATEGORY);
 
     /** Mode of every player's jetpack we've been told about, by entity id. */
     private static final Map<Integer, Integer> MODES = new HashMap<>();
@@ -70,7 +70,7 @@ public final class JetpackClient {
             return;
         }
         ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-        boolean worn = chest.getItem() instanceof JetpackItem;
+        boolean worn = JetpackItem.worn(chest);
         while (HOVER_KEY.consumeClick()) {
             if (worn) {
                 ClientPacketDistributor.sendToServer(new ToolPayloads.JetpackToggle());
@@ -83,7 +83,7 @@ public final class JetpackClient {
         }
 
         for (Player p : mc.level.players()) {
-            boolean wearing = p.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof JetpackItem;
+            boolean wearing = JetpackItem.worn(p.getItemBySlot(EquipmentSlot.CHEST));
             if (!wearing) {
                 FANS.remove(p.getId());
                 continue;
@@ -110,7 +110,8 @@ public final class JetpackClient {
     /** Applies this tick's lift to the local player and returns the mode it amounts to. */
     private static int flight(LocalPlayer player, ItemStack chest) {
         if (player.getAbilities().flying || player.isFallFlying() || player.isPassenger()
-                || !JetpackItem.powered(chest) && !player.getAbilities().instabuild) {
+                || PoweredItem.energy(chest) < JetpackItem.flightCost(chest, player.input.keyPresses.jump() ? JetpackItem.THRUST_FE : JetpackItem.HOVER_FE)
+                        && !player.getAbilities().instabuild) {
             return JetpackServer.OFF;
         }
         var keys = player.input.keyPresses;
@@ -148,11 +149,11 @@ public final class JetpackClient {
     /** The gauge beside the hotbar while a jetpack is worn. */
     public static void renderHud(GuiGraphicsExtractor g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) {
+        if (mc.gui.hud.isHidden() || mc.player == null || mc.player.getVehicle() instanceof com.powerfactor.vehicle.RoverEntity) {
             return;
         }
         ItemStack chest = mc.player.getItemBySlot(EquipmentSlot.CHEST);
-        if (!(chest.getItem() instanceof JetpackItem jetpack)) {
+        if (!JetpackItem.worn(chest) || !(chest.getItem() instanceof PoweredItem jetpack)) {
             return;
         }
         int w = g.guiWidth(), h = g.guiHeight();
@@ -160,7 +161,7 @@ public final class JetpackClient {
         String pct = Math.round(Mth.clamp((float) PoweredItem.energy(chest) / jetpack.capacity(chest), 0, 1) * 100) + "%";
         // Wide enough for the longest label and "100%" side by side, with a gap.
         int width = mc.font.width("JETPACK") + mc.font.width("100%") + 10;
-        int x = w / 2 - 91 - width - 6, y = h - 21;
+        int x = Math.max(5, w / 2 - 91 - width - 6), y = h - (w < 420 ? 48 : 21);
         float frac = Mth.clamp((float) PoweredItem.energy(chest) / jetpack.capacity(chest), 0, 1);
         g.fill(x - 1, y - 1, x + width + 1, y + 19, 0x90000000);
         g.fill(x + 1, y + 11, x + width - 1, y + 16, 0xFF1A1A1A);

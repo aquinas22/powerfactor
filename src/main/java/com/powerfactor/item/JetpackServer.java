@@ -13,7 +13,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The server side of jetpack flight. The client moves the player (that's how Minecraft movement
@@ -33,7 +32,7 @@ public final class JetpackServer {
 
     public static void toggleHover(ServerPlayer player) {
         ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-        if (chest.getItem() instanceof JetpackItem) {
+        if (JetpackItem.worn(chest)) {
             boolean on = !JetpackItem.hover(chest);
             chest.set(com.powerfactor.registry.ModComponents.JETPACK_HOVER.get(), on);
             player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable(on ? "message.powerfactor.jetpack.hover_on"
@@ -44,12 +43,13 @@ public final class JetpackServer {
     public static void tick(ServerPlayer player) {
         ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
         int mode = REQUESTED.getOrDefault(player.getUUID(), OFF);
-        if (!(chest.getItem() instanceof JetpackItem) || !JetpackItem.powered(chest) && !player.getAbilities().instabuild
+        int cost = JetpackItem.flightCost(chest, mode == THRUST ? JetpackItem.THRUST_FE : JetpackItem.HOVER_FE);
+        if (!JetpackItem.worn(chest) || PoweredItem.energy(chest) < cost && !player.getAbilities().instabuild
                 || player.getAbilities().flying || player.isFallFlying() || player.isPassenger()) {
             mode = OFF;
         }
         if (mode != OFF) {
-            PoweredItem.drain(chest, ToolModules.cost(chest, mode == THRUST ? JetpackItem.THRUST_FE : JetpackItem.HOVER_FE), player);
+            PoweredItem.drain(chest, cost, player);
             player.resetFallDistance();
             exhaust((ServerLevel) player.level(), player, mode);
         }
@@ -69,7 +69,7 @@ public final class JetpackServer {
             player.connection.resetFlyingTicks();
         }
         if (before == null || before != mode) {
-            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new ToolPayloads.JetpackSync(player.getId(), mode));
+            com.powerfactor.api.ClientEffects.send((ServerLevel) player.level(), player.chunkPosition(), new ToolPayloads.JetpackSync(player.getId(), mode));
         }
     }
 

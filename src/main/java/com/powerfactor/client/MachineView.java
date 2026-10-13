@@ -28,7 +28,7 @@ public final class MachineView {
     private static final BlockDisplayContext CONTEXT = BlockDisplayContext.create();
 
     public record State(BlockModelRenderState block, @Nullable BlockEntityRenderer<?, ?> renderer, @Nullable BlockEntityRenderState beState,
-                        float yaw, float pitch, int x0, int y0, int x1, int y1, float scale, @Nullable ScreenRectangle scissorArea,
+                        float yaw, float pitch, float centerY, int x0, int y0, int x1, int y1, float scale, @Nullable ScreenRectangle scissorArea,
                         @Nullable ScreenRectangle bounds) implements PictureInPictureRenderState {}
 
     /** Draw {@code be}'s machine filling the box, turned {@code yaw} degrees. */
@@ -45,9 +45,9 @@ public final class MachineView {
             renderer.extractRenderState(be, beState, partial, Vec3.atCenterOf(be.getBlockPos()), null);
             beState.lightCoords = 0xF000F0;
         }
-        // Tall machines (turbines with towers, coils) need room: fit about two blocks high.
-        float size = Math.min(x1 - x0, y1 - y0) * 0.6F;
-        g.submitPictureInPictureRenderState(new State(block, renderer, beState, yaw, 26, x0, y0, x1, y1, size, null,
+        boolean pumpjack = be instanceof com.powerfactor.oil.PumpjackBlockEntity;
+        float size = pumpjack ? Math.min((x1 - x0) / 2.8F, (y1 - y0) / 2.6F) : Math.min(x1 - x0, y1 - y0) * 0.6F;
+        g.submitPictureInPictureRenderState(new State(block, renderer, beState, yaw, 26, pumpjack ? 0.9F : 0.5F, x0, y0, x1, y1, size, null,
                 PictureInPictureRenderState.getBounds(x0, y0, x1, y1, null)));
     }
 
@@ -63,7 +63,7 @@ public final class MachineView {
             Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
             pose.mulPose(Axis.XP.rotationDegrees(180 + s.pitch()));
             pose.mulPose(Axis.YP.rotationDegrees(s.yaw()));
-            pose.translate(-0.5F, -0.5F, -0.5F);
+            pose.translate(-0.5F, -s.centerY(), -0.5F);
             s.block().submit(pose, collector, 0xF000F0, OverlayTexture.NO_OVERLAY, 0);
             if (s.renderer() != null && s.beState() != null) {
                 ((BlockEntityRenderer) s.renderer()).submit(s.beState(), pose, collector, new CameraRenderState());

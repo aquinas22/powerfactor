@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "powerfactor:block/steel_beam_x"
+    },
+    "axis=y": {
+      "model": "powerfactor:block/steel_beam"
+    },
+    "axis=z": {
+      "model": "powerfactor:block/steel_beam_z"
+    }
+  }
+}

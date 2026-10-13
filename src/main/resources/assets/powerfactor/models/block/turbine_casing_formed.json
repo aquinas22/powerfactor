@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "powerfactor:block/turbine_casing"
+  },
+  "elements": []
+}

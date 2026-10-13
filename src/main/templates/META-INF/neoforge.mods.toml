@@ -7,6 +7,7 @@ modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
 authors="Noah"
+enumExtensions="META-INF/enumextensions.json"
 description='''
 Generators, turbines, three-phase power and SCADA.
 Real power is FE, reactive power is EE (Ender Energy), and apparent power is CE (Creative Energy).

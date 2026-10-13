@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PCP",
+    "HTH",
+    "PKP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "C": "powerfactor:copper_coil",
+    "H": "powerfactor:heating_coil",
+    "T": "powerfactor:fluid_tank",
+    "K": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:geothermal_generator",
+    "count": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "powerfactor:sawing",
+  "inputs": [
+    {
+      "ingredient": "#minecraft:crimson_stems",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "minecraft:crimson_planks",
+      "count": 6
+    },
+    {
+      "item": "minecraft:stick"
+    }
+  ]
+}

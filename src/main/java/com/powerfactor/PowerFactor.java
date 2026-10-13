@@ -33,6 +33,7 @@ public class PowerFactor {
         com.powerfactor.registry.ModFluids.register(modBus);
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
+        com.powerfactor.registry.ModEntities.ENTITIES.register(modBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);
         ModMenus.MENUS.register(modBus);
         ModRecipes.register(modBus);

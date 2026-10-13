@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " M ",
+    "PKP",
+    " M "
+  ],
+  "key": {
+    "M": "powerfactor:electric_motor",
+    "P": "#c:plates/steel",
+    "K": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:jump_servo_module",
+    "count": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "P P",
+    "PTP",
+    "PFP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "T": "minecraft:cauldron",
+    "F": "powerfactor:fluid_pipe"
+  },
+  "result": {
+    "id": "powerfactor:rain_collector",
+    "count": 1
+  }
+}

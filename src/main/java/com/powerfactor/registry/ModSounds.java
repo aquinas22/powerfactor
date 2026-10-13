@@ -79,4 +79,13 @@ public final class ModSounds {
     }
 
     private ModSounds() {}
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOILER_RUN = register("boiler_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STEAM_TURBINE_RUN = register("steam_turbine_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> COOLING_TOWER_RUN = register("cooling_tower_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GRAPPLE_FIRE = register("grapple_fire");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GRAPPLE_ATTACH = register("grapple_attach");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WINGSUIT_OPEN = register("wingsuit_open");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WINGSUIT_WIND = register("wingsuit_wind");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROVER_MOTOR = register("rover_motor");
 }

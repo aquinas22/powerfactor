@@ -30,7 +30,23 @@ public enum RecipeMachine {
     /** Fibre laser through a photomask: the mask in the tool slot decides which chip it makes. */
     LASER_ENGRAVER("laser_engraver", MachineRecipeKind.LASER_ENGRAVING, 2, 1, true, false, 48, false,
             () -> new HeaterDrive(48, 0.33, false), EnumSet.complementOf(EnumSet.of(UpgradeType.VFD)), ModSounds.LASER_ENGRAVER_RUN::get,
-            new int[][] {{71, 24}, {71, 46}}, new int[][] {{122, 35}}, new int[] {94, 58}, 0, 0);
+            new int[][] {{71, 24}, {71, 46}}, new int[][] {{122, 35}}, new int[] {94, 58}, 0, 0),
+    MECHANICAL_PRESS("mechanical_press", MachineRecipeKind.PRESSING, 1, 1, true, false, 32, false,
+            () -> new MotorDrive(24), EnumSet.allOf(UpgradeType.class), ModSounds.ROLLING_MILL_RUN::get,
+            new int[][] {{71, 35}}, new int[][] {{122, 35}}, new int[] {94, 58}, 93, 39),
+    MIXER("mixer", MachineRecipeKind.MIXING, 2, 1, false, false, 20, false,
+            () -> new MotorDrive(15), EnumSet.allOf(UpgradeType.class), ModSounds.ORE_WASHER_RUN::get,
+            new int[][] {{71, 24}, {71, 46}}, new int[][] {{122, 35}}, null, 93, 39),
+    CENTRIFUGE("centrifuge", MachineRecipeKind.CENTRIFUGING, 1, 2, false, false, 40, false,
+            () -> new MotorDrive(30), EnumSet.allOf(UpgradeType.class), ModSounds.WIRE_DRAWER_RUN::get,
+            new int[][] {{71, 35}}, new int[][] {{122, 35}, {124, 60}}, null, 93, 39),
+    SAWMILL("sawmill", MachineRecipeKind.SAWING, 1, 2, false, false, 16, false,
+            () -> new MotorDrive(12), EnumSet.allOf(UpgradeType.class), ModSounds.CRUSHER_RUN::get,
+            new int[][] {{71, 35}}, new int[][] {{122, 35}, {124, 60}}, null, 93, 39);
+
+    public boolean animatedWorkshop() {
+        return this == MECHANICAL_PRESS || this == MIXER || this == CENTRIFUGE || this == SAWMILL;
+    }
 
     public final String id;
     public final MachineRecipeKind kind;
@@ -66,10 +82,13 @@ public enum RecipeMachine {
         this.arrowY = arrowY;
     }
 
-    /** What the tool slot takes: graphite electrodes for the arc furnace, photomasks for the engraver. */
+    /** The replaceable tooling accepted by the furnace, engraver and press. */
     public boolean isTool(net.minecraft.world.item.ItemStack stack) {
-        return this == LASER_ENGRAVER ? stack.getItem() instanceof com.powerfactor.item.PhotomaskItem
-                : stack.is(com.powerfactor.registry.ModItems.GRAPHITE_ELECTRODE.get());
+        return switch (this) {
+            case LASER_ENGRAVER -> stack.getItem() instanceof com.powerfactor.item.PhotomaskItem;
+            case MECHANICAL_PRESS -> stack.getItem() instanceof com.powerfactor.item.PressDieItem;
+            default -> stack.is(com.powerfactor.registry.ModItems.GRAPHITE_ELECTRODE.get());
+        };
     }
 
     public int slotCount() {

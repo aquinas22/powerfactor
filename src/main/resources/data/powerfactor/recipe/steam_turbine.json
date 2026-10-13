@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PKP",
+    "BRB",
+    "PMP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:advanced_circuit",
+    "B": "powerfactor:turbine_casing",
+    "R": "powerfactor:steam_rotor",
+    "M": "powerfactor:generator_magnet"
+  },
+  "result": {
+    "id": "powerfactor:steam_turbine",
+    "count": 1
+  }
+}

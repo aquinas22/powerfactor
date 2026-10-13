@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PFP",
+    "RKR",
+    " P "
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "F": "powerfactor:fluid_tank",
+    "R": "powerfactor:rubber",
+    "K": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:rebreather_module",
+    "count": 1
+  }
+}

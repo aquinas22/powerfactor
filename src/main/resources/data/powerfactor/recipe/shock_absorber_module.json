@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "RPR",
+    "PCP",
+    "RPR"
+  ],
+  "key": {
+    "R": "powerfactor:rubber",
+    "P": "#c:plates/steel",
+    "C": "powerfactor:capacitor"
+  },
+  "result": {
+    "id": "powerfactor:shock_absorber_module",
+    "count": 1
+  }
+}

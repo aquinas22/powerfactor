@@ -24,6 +24,19 @@ public final class ModFluids {
     public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_HYDROGEN = FLUIDS.register("flowing_hydrogen",
             () -> new BaseFlowingFluid.Flowing(hydrogenProperties()));
 
+    public static final DeferredHolder<FluidType, FluidType> STEAM_TYPE = TYPES.register("steam", () -> new FluidType(
+            FluidType.Properties.create().descriptionId("fluid.powerfactor.steam").density(-100).viscosity(15).temperature(473)));
+    public static final DeferredHolder<Fluid, FlowingFluid> STEAM = FLUIDS.register("steam",
+            () -> new BaseFlowingFluid.Source(new BaseFlowingFluid.Properties(STEAM_TYPE, ModFluids.STEAM, ModFluids.FLOWING_STEAM)));
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_STEAM = FLUIDS.register("flowing_steam",
+            () -> new BaseFlowingFluid.Flowing(new BaseFlowingFluid.Properties(STEAM_TYPE, ModFluids.STEAM, ModFluids.FLOWING_STEAM)));
+    public static final DeferredHolder<FluidType, FluidType> HOT_WATER_TYPE = TYPES.register("hot_water", () -> new FluidType(
+            FluidType.Properties.create().descriptionId("fluid.powerfactor.hot_water").density(1000).viscosity(800).temperature(368)));
+    public static final DeferredHolder<Fluid, FlowingFluid> HOT_WATER = FLUIDS.register("hot_water",
+            () -> new BaseFlowingFluid.Source(new BaseFlowingFluid.Properties(HOT_WATER_TYPE, ModFluids.HOT_WATER, ModFluids.FLOWING_HOT_WATER)));
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_HOT_WATER = FLUIDS.register("flowing_hot_water",
+            () -> new BaseFlowingFluid.Flowing(new BaseFlowingFluid.Properties(HOT_WATER_TYPE, ModFluids.HOT_WATER, ModFluids.FLOWING_HOT_WATER)));
+
     private static BaseFlowingFluid.Properties hydrogenProperties() {
         return new BaseFlowingFluid.Properties(HYDROGEN_TYPE, HYDROGEN, FLOWING_HYDROGEN);
     }

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PKP",
+    "BFB",
+    "PTP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:advanced_circuit",
+    "B": "powerfactor:boiler_casing",
+    "F": "powerfactor:boiler_firebox",
+    "T": "powerfactor:steam_drum"
+  },
+  "result": {
+    "id": "powerfactor:steam_boiler",
+    "count": 1
+  }
+}

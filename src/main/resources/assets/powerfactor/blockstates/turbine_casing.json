@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/turbine_casing"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/turbine_casing_formed"
+    }
+  }
+}

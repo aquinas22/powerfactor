@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:hot_water",
+    "powerfactor:flowing_hot_water"
+  ]
+}

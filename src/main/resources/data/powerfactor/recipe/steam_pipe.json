@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PGP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "G": "#c:glass_blocks"
+  },
+  "result": {
+    "id": "powerfactor:steam_pipe",
+    "count": 8
+  }
+}

@@ -74,6 +74,13 @@ public final class ToolPayloads {
         }
     }
 
+    public record ArmorControl(int action) implements CustomPacketPayload {
+        public static final Type<ArmorControl> TYPE = new Type<>(PowerFactor.id("armor_control"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, ArmorControl> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, ArmorControl::action, ArmorControl::new);
+        @Override public Type<ArmorControl> type() { return TYPE; }
+    }
+
     /** Server to clients: a player's jetpack mode, for its fans, glow and sound. */
     public record JetpackSync(int entity, int mode) implements CustomPacketPayload {
         public static final Type<JetpackSync> TYPE = new Type<>(PowerFactor.id("jetpack_sync"));
@@ -92,6 +99,7 @@ public final class ToolPayloads {
 
     public static void register(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
+        com.powerfactor.movement.MovementPayloads.register(registrar);
         registrar.playToServer(MeterRequest.TYPE, MeterRequest.STREAM_CODEC, (payload, context) -> {
             if (!(context.player() instanceof ServerPlayer player) || !(player.level() instanceof ServerLevel level)) {
                 return;
@@ -116,6 +124,9 @@ public final class ToolPayloads {
             if (context.player() instanceof ServerPlayer player) {
                 JetpackServer.toggleHover(player);
             }
+        });
+        registrar.playToServer(ArmorControl.TYPE, ArmorControl.STREAM_CODEC, (payload, context) -> {
+            if (context.player() instanceof ServerPlayer player) PowerArmorServer.control(player, payload.action());
         });
         registrar.playToClient(JetpackSync.TYPE, JetpackSync.STREAM_CODEC, (payload, context) -> jetpackHandler.accept(payload));
         registrar.playToClient(com.powerfactor.radio.RadioPayload.TYPE, com.powerfactor.radio.RadioPayload.STREAM_CODEC,

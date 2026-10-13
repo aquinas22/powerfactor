@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "P P",
+    "MIM",
+    "CSC"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "M": "powerfactor:electric_motor",
+    "I": "minecraft:iron_boots",
+    "C": "powerfactor:capacitor",
+    "S": "powerfactor:sensor_chip"
+  },
+  "result": {
+    "id": "powerfactor:power_boots",
+    "count": 1
+  }
+}

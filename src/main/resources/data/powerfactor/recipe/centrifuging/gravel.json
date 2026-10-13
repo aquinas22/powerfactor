@@ -1,0 +1,18 @@
+{
+  "type": "powerfactor:centrifuging",
+  "inputs": [
+    {
+      "ingredient": "minecraft:gravel",
+      "count": 4
+    }
+  ],
+  "results": [
+    {
+      "item": "minecraft:flint"
+    },
+    {
+      "item": "minecraft:sand",
+      "count": 2
+    }
+  ]
+}

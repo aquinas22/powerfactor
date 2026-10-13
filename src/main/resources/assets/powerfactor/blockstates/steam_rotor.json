@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/steam_rotor"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/steam_rotor_formed"
+    }
+  }
+}

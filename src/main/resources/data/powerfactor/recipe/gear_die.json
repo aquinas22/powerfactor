@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PPP",
+    "PXP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "X": "#c:gears/iron"
+  },
+  "result": {
+    "id": "powerfactor:gear_die",
+    "count": 1
+  }
+}

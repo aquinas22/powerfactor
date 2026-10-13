@@ -1,0 +1,8 @@
+{
+  "entries": [{
+    "enum": "net/minecraft/client/model/HumanoidModel$ArmPose",
+    "name": "POWERFACTOR_WINGSUIT",
+    "constructor": "(ZZLnet/neoforged/neoforge/client/IArmPoseTransformer;)V",
+    "parameters": {"class": "com/powerfactor/client/WingsuitPose", "field": "POSE"}
+  }]
+}

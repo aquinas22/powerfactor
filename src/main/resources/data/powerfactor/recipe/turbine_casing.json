@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "G G",
+    "PPP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "G": "#c:glass_blocks"
+  },
+  "result": {
+    "id": "powerfactor:turbine_casing",
+    "count": 4
+  }
+}

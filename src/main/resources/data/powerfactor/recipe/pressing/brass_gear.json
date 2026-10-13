@@ -1,0 +1,16 @@
+{
+  "type": "powerfactor:pressing",
+  "inputs": [
+    {
+      "ingredient": "#c:ingots/brass",
+      "count": 4
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:brass_gear"
+    }
+  ],
+  "time": 160,
+  "tool": "powerfactor:gear_die"
+}

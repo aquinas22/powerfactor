@@ -2,6 +2,23 @@
   "replace": false,
   "values": [
     "powerfactor:silver_ore",
-    "powerfactor:deepslate_silver_ore"
+    "powerfactor:deepslate_silver_ore",
+    "powerfactor:steel_beam",
+    "powerfactor:steel_catwalk",
+    "powerfactor:riveted_steel",
+    "powerfactor:hazard_block",
+    "powerfactor:warning_block",
+    "powerfactor:boiler_casing",
+    "powerfactor:boiler_firebox",
+    "powerfactor:steam_drum",
+    "powerfactor:turbine_casing",
+    "powerfactor:steam_rotor",
+    "powerfactor:generator_magnet",
+    "powerfactor:steam_boiler",
+    "powerfactor:steam_turbine",
+    "powerfactor:cooling_tower",
+    "powerfactor:geothermal_generator",
+    "powerfactor:thermoelectric_generator",
+    "powerfactor:rain_collector"
   ]
 }

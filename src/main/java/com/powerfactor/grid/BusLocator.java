@@ -16,8 +16,10 @@ public final class BusLocator {
                 if (grid != null) {
                     return grid;
                 }
-            } else if (turbine == null && level.getBlockEntity(other) instanceof Bus bus) {
-                turbine = bus;
+            } else if (turbine == null) {
+                var entity = level.getBlockEntity(other);
+                if (entity instanceof com.powerfactor.multiblock.MultiblockPart part) entity = part.controller();
+                if (entity instanceof Bus bus) turbine = bus;
             }
         }
         return turbine != null ? turbine : Bus.NOMINAL;

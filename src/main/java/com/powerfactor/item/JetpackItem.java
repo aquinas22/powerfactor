@@ -18,7 +18,7 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.equipment.Equippable;
 
 /**
- * Electric jetpack: twin ducted fans worn on the back. Hold jump to climb; toggle hover (H) to hang
+ * Electric jetpack: twin ducted fans worn on the back. Hold jump to climb; toggle hover to hang
  * in the air, sneaking to sink. Thrust is hungry; hovering less so.
  */
 public class JetpackItem extends PoweredItem {
@@ -46,12 +46,20 @@ public class JetpackItem extends PoweredItem {
     }
 
     public static boolean powered(ItemStack stack) {
-        return energy(stack) >= ToolModules.cost(stack, THRUST_FE);
+        return energy(stack) >= flightCost(stack, THRUST_FE);
+    }
+
+    public static boolean worn(ItemStack stack) { return stack.getItem() instanceof JetpackItem || !PowerArmorItem.jetpack(stack).isEmpty(); }
+    public static int flightModules(ItemStack stack, DrillModule.Type type) {
+        return Math.min(type.max, ToolModules.count(stack, type) + ToolModules.count(PowerArmorItem.jetpack(stack), type));
+    }
+    public static int flightCost(ItemStack stack, int base) {
+        return Math.max(1, (int) Math.round(base * Math.pow(0.8, flightModules(stack, DrillModule.Type.EFFICIENCY))));
     }
 
     /** Thrust multiplier from thruster modules. */
     public static float thrust(ItemStack stack) {
-        return 1 + 0.35F * ToolModules.count(stack, DrillModule.Type.THRUSTER);
+        return 1 + 0.35F * flightModules(stack, DrillModule.Type.THRUSTER);
     }
 
     @Override

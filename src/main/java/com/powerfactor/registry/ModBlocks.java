@@ -56,6 +56,15 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> ZINC_BLOCK = BLOCKS.registerSimpleBlock("zinc_block", ModBlocks::metal);
     public static final DeferredBlock<Block> BRASS_BLOCK = BLOCKS.registerSimpleBlock("brass_block", ModBlocks::metal);
 
+    // ---------------------------------------------------------------- industrial construction
+    public static final DeferredBlock<com.powerfactor.building.SteelBeamBlock> STEEL_BEAM = BLOCKS.registerBlock("steel_beam",
+            com.powerfactor.building.SteelBeamBlock::new, () -> metal().noOcclusion());
+    public static final DeferredBlock<com.powerfactor.building.CatwalkBlock> STEEL_CATWALK = BLOCKS.registerBlock("steel_catwalk",
+            com.powerfactor.building.CatwalkBlock::new, () -> metal().noOcclusion());
+    public static final DeferredBlock<Block> RIVETED_STEEL = BLOCKS.registerSimpleBlock("riveted_steel", ModBlocks::metal);
+    public static final DeferredBlock<Block> HAZARD_BLOCK = BLOCKS.registerSimpleBlock("hazard_block", ModBlocks::metal);
+    public static final DeferredBlock<Block> WARNING_BLOCK = BLOCKS.registerSimpleBlock("warning_block", ModBlocks::metal);
+
     // ---------------------------------------------------------------- machines
     public static final DeferredBlock<CoalTurbineBlock> COAL_TURBINE = BLOCKS.registerBlock("coal_turbine", CoalTurbineBlock::new,
             () -> machine().noOcclusion().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 9 : 0));
@@ -105,7 +114,10 @@ public final class ModBlocks {
     static {
         for (RecipeMachine m : RecipeMachine.values()) {
             RECIPE_MACHINES.put(m, BLOCKS.registerBlock(m.id, p -> new RecipeMachineBlock(m, p),
-                    () -> machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) && m.heater ? 11 : 0)));
+                    () -> {
+                        var properties = machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) && m.heater ? 11 : 0);
+                        return m.animatedWorkshop() ? properties.noOcclusion() : properties;
+                    }));
         }
     }
 
@@ -157,9 +169,10 @@ public final class ModBlocks {
     public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> RADIO_TOWER = BLOCKS.registerBlock("radio_tower",
             p -> new com.powerfactor.generator.GeneratorBlock(() -> ModBlockEntities.RADIO_TOWER.get(), Block.box(5, 0, 5, 11, 16, 11), p),
             () -> machine().noOcclusion().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 4 : 0));
-    public static final DeferredBlock<com.powerfactor.machine.TallMachineBlock> PUMPJACK = BLOCKS.registerBlock("pumpjack",
-            p -> new com.powerfactor.machine.TallMachineBlock(() -> ModBlockEntities.PUMPJACK.get(), Block.box(1, 0, 1, 15, 16, 15),
-                    Block.box(5, 0, 5, 11, 12, 11), p), () -> machine().noOcclusion());
+    public static final DeferredBlock<com.powerfactor.oil.PumpjackBlock> PUMPJACK = BLOCKS.registerBlock("pumpjack",
+            com.powerfactor.oil.PumpjackBlock::new, () -> machine().noOcclusion());
+    public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> PUMPJACK_CASING = BLOCKS.registerBlock("pumpjack_casing",
+            p -> new com.powerfactor.multiblock.CasingBlock(net.minecraft.world.phys.shapes.Shapes.block(), p), ModBlocks::machine);
     /** Refinery controller: the front-centre block of a 3x3 casing base under a three-block distillation column. */
     public static final DeferredBlock<com.powerfactor.multiblock.MultiblockControllerBlock> REFINERY = BLOCKS.registerBlock("refinery",
             p -> new com.powerfactor.multiblock.MultiblockControllerBlock(() -> ModBlockEntities.REFINERY.get(), p),
@@ -172,6 +185,31 @@ public final class ModBlocks {
             com.powerfactor.upgrade.UpgradeTableBlock::new, () -> machine().noOcclusion().lightLevel(s -> 5));
 
     // ---------------------------------------------------------------- logistics
+    public static final DeferredBlock<com.powerfactor.multiblock.MultiblockControllerBlock> STEAM_BOILER = BLOCKS.registerBlock("steam_boiler",
+            p -> new com.powerfactor.multiblock.MultiblockControllerBlock(() -> ModBlockEntities.STEAM_BOILER.get(), p), () -> machine().noOcclusion());
+    public static final DeferredBlock<com.powerfactor.multiblock.MultiblockControllerBlock> STEAM_TURBINE = BLOCKS.registerBlock("steam_turbine",
+            p -> new com.powerfactor.multiblock.MultiblockControllerBlock(() -> ModBlockEntities.STEAM_TURBINE.get(), p), () -> machine().noOcclusion());
+    public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> BOILER_CASING = steamCasing("boiler_casing");
+    public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> BOILER_FIREBOX = steamCasing("boiler_firebox");
+    public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> STEAM_DRUM = steamCasing("steam_drum");
+    public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> TURBINE_CASING = steamCasing("turbine_casing");
+    public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> STEAM_ROTOR = steamCasing("steam_rotor");
+    public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> GENERATOR_MAGNET = steamCasing("generator_magnet");
+    private static DeferredBlock<com.powerfactor.multiblock.CasingBlock> steamCasing(String id) {
+        return BLOCKS.registerBlock(id, p -> new com.powerfactor.multiblock.CasingBlock(net.minecraft.world.phys.shapes.Shapes.block(), p), () -> machine().noOcclusion());
+    }
+    public static final DeferredBlock<com.powerfactor.machine.TallMachineBlock> COOLING_TOWER = BLOCKS.registerBlock("cooling_tower",
+            p -> new com.powerfactor.machine.TallMachineBlock(() -> ModBlockEntities.COOLING_TOWER.get(), Block.box(1, 0, 1, 15, 16, 15),
+                    Block.box(2, 0, 2, 14, 16, 14), p), () -> machine().noOcclusion());
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> GEOTHERMAL_GENERATOR = BLOCKS.registerBlock("geothermal_generator",
+            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.GEOTHERMAL_GENERATOR.get(), p), ModBlocks::machine);
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> THERMOELECTRIC_GENERATOR = BLOCKS.registerBlock("thermoelectric_generator",
+            p -> com.powerfactor.generator.GeneratorBlock.full(() -> ModBlockEntities.THERMOELECTRIC_GENERATOR.get(), p), ModBlocks::machine);
+    public static final DeferredBlock<com.powerfactor.generator.GeneratorBlock> RAIN_COLLECTOR = BLOCKS.registerBlock("rain_collector",
+            p -> new com.powerfactor.generator.GeneratorBlock(() -> ModBlockEntities.RAIN_COLLECTOR.get(), Block.box(0, 0, 0, 16, 12, 16), p),
+            () -> machine().noOcclusion());
+    public static final DeferredBlock<PipeBlock> STEAM_PIPE = BLOCKS.registerBlock("steam_pipe", p -> new PipeBlock(PipeKind.STEAM, p),
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1.5F).sound(SoundType.METAL).noOcclusion());
     public static final DeferredBlock<FluidTankBlock> FLUID_TANK = BLOCKS.registerBlock("fluid_tank", FluidTankBlock::new,
             () -> BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(2.5F, 6.0F).sound(SoundType.GLASS).noOcclusion()
                     .requiresCorrectToolForDrops());

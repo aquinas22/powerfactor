@@ -1,0 +1,18 @@
+{
+  "type": "powerfactor:sawing",
+  "inputs": [
+    {
+      "ingredient": "#minecraft:cherry_logs",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "minecraft:cherry_planks",
+      "count": 6
+    },
+    {
+      "item": "minecraft:stick"
+    }
+  ]
+}

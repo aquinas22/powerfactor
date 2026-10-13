@@ -25,7 +25,7 @@ public final class RadioHud {
 
     public static void render(GuiGraphicsExtractor g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) {
+        if (mc.player == null || mc.gui.hud.isHidden()) {
             return;
         }
         ItemStack held = mc.player.getMainHandItem().getItem() instanceof WalkieTalkieItem ? mc.player.getMainHandItem()
@@ -50,7 +50,11 @@ public final class RadioHud {
             color = 0xFFB8F5FF;
         }
         // Right of the hotbar (the jetpack gauge takes the left), clear of the action-bar text above it.
-        int w = font.width(text) + 16, x = g.guiWidth() / 2 + 91 + 6, y = g.guiHeight() - 17;
+        int width = g.guiWidth(), x = width / 2 + 97, y = g.guiHeight() - 17;
+        int available = width - x - 5;
+        if (available < 90) { available = Math.min(148, width / 2 - 8); x = width - available - 5; y = g.guiHeight() - 64; }
+        text = Skin.fit(font, Component.literal(text), available - 16).getString();
+        int w = font.width(text) + 16;
         g.fill(x, y, x + w, y + 13, 0xC0101418);
         g.fill(x, y + 12, x + w, y + 13, color);
         // A blinking dot while live.

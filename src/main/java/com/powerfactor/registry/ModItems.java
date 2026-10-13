@@ -20,6 +20,23 @@ public final class ModItems {
             com.powerfactor.item.HandbookItem::new);
 
     // ---------------------------------------------------------------- machines and wiring
+    static {
+        for (var block : java.util.List.of(ModBlocks.STEAM_BOILER, ModBlocks.STEAM_TURBINE, ModBlocks.BOILER_CASING, ModBlocks.BOILER_FIREBOX,
+                ModBlocks.STEAM_DRUM, ModBlocks.TURBINE_CASING, ModBlocks.STEAM_ROTOR, ModBlocks.GENERATOR_MAGNET, ModBlocks.COOLING_TOWER,
+                ModBlocks.GEOTHERMAL_GENERATOR, ModBlocks.THERMOELECTRIC_GENERATOR, ModBlocks.RAIN_COLLECTOR, ModBlocks.STEAM_PIPE)) {
+            ITEMS.registerSimpleBlockItem(block);
+        }
+    }
+    public static final DeferredItem<BlockItem> STEEL_BEAM = ITEMS.registerSimpleBlockItem("steel_beam", ModBlocks.STEEL_BEAM);
+    public static final DeferredItem<BlockItem> PUMPJACK_CASING = ITEMS.registerSimpleBlockItem("pumpjack_casing", ModBlocks.PUMPJACK_CASING);
+    public static final DeferredItem<com.powerfactor.item.PressDieItem> PLATE_DIE = ITEMS.registerItem("plate_die",
+            p -> new com.powerfactor.item.PressDieItem("plate", p));
+    public static final DeferredItem<com.powerfactor.item.PressDieItem> GEAR_DIE = ITEMS.registerItem("gear_die",
+            p -> new com.powerfactor.item.PressDieItem("gear", p));
+    public static final DeferredItem<BlockItem> STEEL_CATWALK = ITEMS.registerSimpleBlockItem("steel_catwalk", ModBlocks.STEEL_CATWALK);
+    public static final DeferredItem<BlockItem> RIVETED_STEEL = ITEMS.registerSimpleBlockItem("riveted_steel", ModBlocks.RIVETED_STEEL);
+    public static final DeferredItem<BlockItem> HAZARD_BLOCK = ITEMS.registerSimpleBlockItem("hazard_block", ModBlocks.HAZARD_BLOCK);
+    public static final DeferredItem<BlockItem> WARNING_BLOCK = ITEMS.registerSimpleBlockItem("warning_block", ModBlocks.WARNING_BLOCK);
     public static final DeferredItem<BlockItem> COAL_TURBINE = ITEMS.registerSimpleBlockItem("coal_turbine", ModBlocks.COAL_TURBINE);
     public static final DeferredItem<BlockItem> REDSTONE_ENGINE = ITEMS.registerSimpleBlockItem("redstone_engine", ModBlocks.REDSTONE_ENGINE);
     public static final DeferredItem<BlockItem> STIRLING_ENGINE = ITEMS.registerSimpleBlockItem("stirling_engine", ModBlocks.STIRLING_ENGINE);
@@ -62,6 +79,10 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> FIBER_OPTIC_CABLE = ITEMS.registerSimpleBlockItem("fiber_optic_cable", ModBlocks.FIBER_OPTIC_CABLE);
 
     // ---------------------------------------------------------------- tools
+    public static final DeferredItem<com.powerfactor.item.RoverItem> ELECTRIC_ROVER = ITEMS.registerItem("electric_rover", com.powerfactor.item.RoverItem::new);
+    public static final DeferredItem<com.powerfactor.item.GrappleItem> GRAPPLE_HOOK = ITEMS.registerItem("grapple_hook", com.powerfactor.item.GrappleItem::new,
+            p -> p.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<com.powerfactor.item.WingsuitItem> WINGSUIT = ITEMS.registerItem("wingsuit", com.powerfactor.item.WingsuitItem::new);
     public static final DeferredItem<DrillItem> ELECTRIC_DRILL = ITEMS.registerItem("electric_drill", DrillItem::new,
             p -> DrillItem.properties(p).rarity(Rarity.UNCOMMON));
 
@@ -92,6 +113,14 @@ public final class ModItems {
             com.powerfactor.item.ChainsawItem::new, com.powerfactor.item.ChainsawItem::properties);
     public static final DeferredItem<com.powerfactor.item.JetpackItem> ELECTRIC_JETPACK = ITEMS.registerItem("electric_jetpack",
             com.powerfactor.item.JetpackItem::new, com.powerfactor.item.JetpackItem::properties);
+    public static final DeferredItem<com.powerfactor.item.PowerArmorItem> POWER_HELMET = powerArmor("power_helmet", com.powerfactor.item.PowerArmorItem.Part.HELMET);
+    public static final DeferredItem<com.powerfactor.item.PowerArmorItem> POWER_CHESTPLATE = powerArmor("power_chestplate", com.powerfactor.item.PowerArmorItem.Part.CHEST);
+    public static final DeferredItem<com.powerfactor.item.PowerArmorItem> POWER_LEGGINGS = powerArmor("power_leggings", com.powerfactor.item.PowerArmorItem.Part.LEGS);
+    public static final DeferredItem<com.powerfactor.item.PowerArmorItem> POWER_BOOTS = powerArmor("power_boots", com.powerfactor.item.PowerArmorItem.Part.BOOTS);
+
+    private static DeferredItem<com.powerfactor.item.PowerArmorItem> powerArmor(String id, com.powerfactor.item.PowerArmorItem.Part part) {
+        return ITEMS.registerItem(id, p -> new com.powerfactor.item.PowerArmorItem(part, p.rarity(Rarity.RARE)));
+    }
     public static final DeferredItem<com.powerfactor.radio.WalkieTalkieItem> WALKIE_TALKIE = ITEMS.registerItem("walkie_talkie",
             com.powerfactor.radio.WalkieTalkieItem::new);
     public static final DeferredItem<BlockItem> RADIO_TOWER = ITEMS.registerSimpleBlockItem("radio_tower", ModBlocks.RADIO_TOWER);

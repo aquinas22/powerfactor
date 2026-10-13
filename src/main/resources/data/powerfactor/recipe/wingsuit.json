@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SLS",
+    "WRW",
+    " S "
+  ],
+  "key": {
+    "S": "minecraft:string",
+    "L": "minecraft:leather",
+    "W": "#minecraft:wool",
+    "R": "#c:plates/aluminum"
+  },
+  "result": {
+    "id": "powerfactor:wingsuit",
+    "count": 1
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/boiler_firebox"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/boiler_firebox_formed"
+    }
+  }
+}

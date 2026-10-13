@@ -74,11 +74,31 @@ public final class CommonEvents {
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.PUMPJACK.get(), (be, side) -> be.getTank());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.REFINERY.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.REFINERY.get(), (be, side) -> be.getTanks());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.STEAM_BOILER.get(), (be, side) -> be.getTanks());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.STEAM_BOILER.get(), (be, side) -> be.getFuelHandler());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.STEAM_TURBINE.get(), (be, side) -> be.getTanks());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.STEAM_TURBINE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.COOLING_TOWER.get(), (be, side) -> be.getTanks());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.COOLING_TOWER.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.GEOTHERMAL_GENERATOR.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.THERMOELECTRIC_GENERATOR.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.RAIN_COLLECTOR.get(), (be, side) -> be.getTank());
         // Casings of a formed structure pass energy and fluids through to their controller.
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CASING.get(), (be, side) ->
-                be.controller() instanceof com.powerfactor.oil.RefineryBlockEntity r ? r.getEnergy() : null);
-        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.CASING.get(), (be, side) ->
-                be.controller() instanceof com.powerfactor.oil.RefineryBlockEntity r ? r.getTanks() : null);
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CASING.get(), (be, side) -> switch (be.controller()) {
+            case com.powerfactor.oil.RefineryBlockEntity r -> r.getEnergy();
+            case com.powerfactor.oil.PumpjackBlockEntity p -> p.getEnergy();
+            case com.powerfactor.steam.SteamTurbineBlockEntity t -> t.getEnergy();
+            case null, default -> null;
+        });
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.CASING.get(), (be, side) -> switch (be.controller()) {
+            case com.powerfactor.oil.RefineryBlockEntity r -> r.getTanks();
+            case com.powerfactor.oil.PumpjackBlockEntity p -> p.getTank();
+            case com.powerfactor.steam.SteamBoilerBlockEntity b -> b.getTanks();
+            case com.powerfactor.steam.SteamTurbineBlockEntity t -> t.getTanks();
+            case null, default -> null;
+        });
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.CASING.get(), (be, side) ->
+                be.controller() instanceof com.powerfactor.steam.SteamBoilerBlockEntity b ? b.getFuelHandler() : null);
         event.registerItem(Capabilities.Energy.ITEM,
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.radio.WalkieTalkieItem.CAPACITY, 2_000),
                 ModItems.WALKIE_TALKIE.get());
@@ -103,11 +123,22 @@ public final class CommonEvents {
         event.registerItem(Capabilities.Energy.ITEM,
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), ModItems.ELECTRIC_JETPACK.get().capacity(stack), 8_000),
                 ModItems.ELECTRIC_JETPACK.get());
+        for (var armor : java.util.List.of(ModItems.POWER_HELMET, ModItems.POWER_CHESTPLATE, ModItems.POWER_LEGGINGS, ModItems.POWER_BOOTS)) {
+            event.registerItem(Capabilities.Energy.ITEM,
+                    (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), armor.get().capacity(stack), 8_000), armor.get());
+        }
         event.registerItem(Capabilities.Energy.ITEM,
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.item.ClampMeterItem.CAPACITY, 2_000),
                 ModItems.CLAMP_METER.get());
 
         // The drill charges from any mod's charger.
+        event.registerItem(Capabilities.Energy.ITEM,
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), ModItems.GRAPPLE_HOOK.get().capacity(stack), 5_000),
+                ModItems.GRAPPLE_HOOK.get());
+        event.registerItem(Capabilities.Energy.ITEM,
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.vehicle.RoverEntity.CAPACITY, 8_000),
+                ModItems.ELECTRIC_ROVER.get());
+        event.registerEntity(Capabilities.Energy.ENTITY, com.powerfactor.registry.ModEntities.ELECTRIC_ROVER.get(), (rover, side) -> rover.energyHandler());
         event.registerItem(Capabilities.Energy.ITEM,
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), DrillItem.capacity(stack), 5_000),
                 ModItems.ELECTRIC_DRILL.get());

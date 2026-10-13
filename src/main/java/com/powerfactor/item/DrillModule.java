@@ -13,17 +13,21 @@ public class DrillModule extends Item {
     /** Every module, the tools it fits, and how many of it one tool takes. */
     public enum Type {
         AREA(1, "drill_area_module", ToolKind.DRILL),
-        SPEED(3, "drill_speed_module", ToolKind.DRILL, ToolKind.CHAINSAW),
+        SPEED(3, "drill_speed_module", ToolKind.DRILL, ToolKind.CHAINSAW, ToolKind.POWER_LEGS, ToolKind.GRAPPLE),
         SILK(1, "drill_silk_module", ToolKind.DRILL),
         FORTUNE(3, "drill_fortune_module", ToolKind.DRILL),
         MAGNET(1, "drill_magnet_module", ToolKind.DRILL, ToolKind.CHAINSAW),
         BATTERY(3, "drill_battery_module", ToolKind.values()),
         EFFICIENCY(3, "efficiency_module", ToolKind.values()),
-        THRUSTER(3, "thruster_module", ToolKind.JETPACK),
-        PLATING(3, "plating_module", ToolKind.JETPACK),
+        THRUSTER(3, "thruster_module", ToolKind.JETPACK, ToolKind.POWER_CHEST),
+        PLATING(3, "plating_module", ToolKind.JETPACK, ToolKind.POWER_HELMET, ToolKind.POWER_CHEST, ToolKind.POWER_LEGS, ToolKind.POWER_BOOTS),
         OVERCHARGE(3, "overcharge_module", ToolKind.CHAINSAW, ToolKind.SABER, ToolKind.ARC_GUN),
         CHAIN(2, "chain_module", ToolKind.SABER, ToolKind.ARC_GUN),
-        WOODCUTTER(1, "woodcutter_module", ToolKind.DRILL);
+        WOODCUTTER(1, "woodcutter_module", ToolKind.DRILL),
+        JUMP(3, "jump_servo_module", ToolKind.POWER_LEGS),
+        SHOCK(3, "shock_absorber_module", ToolKind.POWER_BOOTS),
+        NIGHT_VISION(1, "night_vision_module", ToolKind.POWER_HELMET),
+        REBREATHER(1, "rebreather_module", ToolKind.POWER_HELMET);
 
         public final int max;
         public final String id;

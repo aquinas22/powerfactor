@@ -72,7 +72,7 @@ public class PipeBlockEntity extends BlockEntity {
         int budget = kind.batch;
         for (int i = 0; i < source.size() && budget > 0; i++) {
             T resource = source.getResource(i);
-            if (resource.isEmpty()) {
+            if (resource.isEmpty() || !kind.accepts(resource)) {
                 continue;
             }
             for (int t = 0; t < targets.size() && budget > 0; t++) {
@@ -121,7 +121,7 @@ public class PipeBlockEntity extends BlockEntity {
                 ? ir.toStack(Math.min(amount, 64)) : net.minecraft.world.item.ItemStack.EMPTY;
         net.minecraft.resources.Identifier fluid = resource instanceof net.neoforged.neoforge.transfer.fluid.FluidResource fr
                 ? net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(fr.getFluid()) : net.minecraft.resources.Identifier.withDefaultNamespace("empty");
-        net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingChunk(level, net.minecraft.world.level.ChunkPos.containing(start),
+        com.powerfactor.api.ClientEffects.send(level, net.minecraft.world.level.ChunkPos.containing(start),
                 new PipeTraffic(path, item, fluid));
     }
 

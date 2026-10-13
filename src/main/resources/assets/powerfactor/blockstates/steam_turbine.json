@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,formed=false,running=false": {
+      "model": "powerfactor:block/steam_turbine",
+      "y": 0
+    },
+    "facing=north,formed=false,running=true": {
+      "model": "powerfactor:block/steam_turbine_on",
+      "y": 0
+    },
+    "facing=north,formed=true,running=false": {
+      "model": "powerfactor:block/steam_turbine_formed",
+      "y": 0
+    },
+    "facing=north,formed=true,running=true": {
+      "model": "powerfactor:block/steam_turbine_formed_on",
+      "y": 0
+    },
+    "facing=east,formed=false,running=false": {
+      "model": "powerfactor:block/steam_turbine",
+      "y": 90
+    },
+    "facing=east,formed=false,running=true": {
+      "model": "powerfactor:block/steam_turbine_on",
+      "y": 90
+    },
+    "facing=east,formed=true,running=false": {
+      "model": "powerfactor:block/steam_turbine_formed",
+      "y": 90
+    },
+    "facing=east,formed=true,running=true": {
+      "model": "powerfactor:block/steam_turbine_formed_on",
+      "y": 90
+    },
+    "facing=south,formed=false,running=false": {
+      "model": "powerfactor:block/steam_turbine",
+      "y": 180
+    },
+    "facing=south,formed=false,running=true": {
+      "model": "powerfactor:block/steam_turbine_on",
+      "y": 180
+    },
+    "facing=south,formed=true,running=false": {
+      "model": "powerfactor:block/steam_turbine_formed",
+      "y": 180
+    },
+    "facing=south,formed=true,running=true": {
+      "model": "powerfactor:block/steam_turbine_formed_on",
+      "y": 180
+    },
+    "facing=west,formed=false,running=false": {
+      "model": "powerfactor:block/steam_turbine",
+      "y": 270
+    },
+    "facing=west,formed=false,running=true": {
+      "model": "powerfactor:block/steam_turbine_on",
+      "y": 270
+    },
+    "facing=west,formed=true,running=false": {
+      "model": "powerfactor:block/steam_turbine_formed",
+      "y": 270
+    },
+    "facing=west,formed=true,running=true": {
+      "model": "powerfactor:block/steam_turbine_formed_on",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "powerfactor:centrifuging",
+  "inputs": [
+    {
+      "ingredient": "minecraft:dirt",
+      "count": 4
+    }
+  ],
+  "results": [
+    {
+      "item": "minecraft:clay_ball"
+    },
+    {
+      "item": "minecraft:sand"
+    }
+  ]
+}

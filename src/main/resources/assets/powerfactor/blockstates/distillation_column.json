@@ -4,7 +4,7 @@
       "model": "powerfactor:block/distillation_column"
     },
     "formed=true": {
-      "model": "powerfactor:block/distillation_column"
+      "model": "powerfactor:block/distillation_column_formed"
     }
   }
 }

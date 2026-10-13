@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "BBB",
+    "P P"
+  ],
+  "key": {
+    "B": "minecraft:iron_bars",
+    "P": "#c:plates/steel"
+  },
+  "result": {
+    "id": "powerfactor:steel_catwalk",
+    "count": 8
+  }
+}

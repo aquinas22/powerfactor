@@ -1,0 +1,19 @@
+{
+  "type": "powerfactor:mixing",
+  "inputs": [
+    {
+      "ingredient": "#c:dusts/copper",
+      "count": 3
+    },
+    {
+      "ingredient": "#c:dusts/tin",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:bronze_dust",
+      "count": 4
+    }
+  ]
+}

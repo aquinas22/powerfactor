@@ -1593,6 +1593,30 @@ LOOPS_3["refinery_run"] = (refinery_run, -17.0)
 # events whose sounds list holds several files (Minecraft picks one at random)
 VARIANTS = {"sword_swing": ["sword_swing1", "sword_swing2", "sword_swing3"]}
 
+LOOPS_3["boiler_run"] = (refinery_run, -19.0)
+LOOPS_3["steam_turbine_run"] = (turbine_run, -17.0)
+LOOPS_3["cooling_tower_run"] = (hydro_turbine_run, -19.0)
+
+def wingsuit_wind():
+    n = int(3.0 * SR); r = random.Random(5700)
+    air = loop_noise(n, r, ("hp", 450, 0.7), ("lp", 6200, 0.7))
+    return [value * (0.82 + 0.12 * math.sin(2 * math.pi * i / n)) for i, value in enumerate(air)]
+
+def grapple_fire():
+    return mix((drill_start(0.25), 0.45), (pipe_click(0.15), 0.65))
+
+def wingsuit_open():
+    n = int(SR * 0.22); r = random.Random(5701)
+    return fade_edges(burst(n, r, 0.1, [("lp", 4500, 0.7)], attack=0.018), fout=0.04)
+
+LOOPS_3["wingsuit_wind"] = (wingsuit_wind, -22.0)
+def rover_motor():
+    n = int(4 * SR); r = random.Random(1203)
+    return motor_hum(n, r, base=80, bright=0.55, whine_f=480, whine_a=0.2)
+
+LOOPS_3["rover_motor"] = (rover_motor, -20.0)
+ONESHOTS_3.update({"grapple_fire": grapple_fire, "grapple_attach": pipe_click, "wingsuit_open": wingsuit_open})
+
 ALL_LOOPS = {**LOOPS, **LOOPS_2, **LOOPS_3}
 ALL_ONESHOTS = {**ONESHOTS, **ONESHOTS_2, **ONESHOTS_3}
 

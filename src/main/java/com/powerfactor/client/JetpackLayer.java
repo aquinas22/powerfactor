@@ -81,11 +81,14 @@ public class JetpackLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
         var level = net.minecraft.client.Minecraft.getInstance().level;
         var entity = level == null ? null : level.getEntity(state.id);
         if (state.isInvisible || !(entity instanceof net.minecraft.world.entity.player.Player player)
-                || !(player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getItem() instanceof JetpackItem)) {
+                || !JetpackItem.worn(player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST))) {
             return;
         }
         pose.pushPose();
         getParentModel().body.translateAndRotate(pose);
+        if (player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getItem() instanceof com.powerfactor.item.PowerArmorItem) {
+            pose.translate(0, 0, 0.06);
+        }
         collector.submitModelPart(pack, pose, SOLID, light, OverlayTexture.NO_OVERLAY, null, -1, null);
         float angle = JetpackClient.fanAngle(state.id, state.partialTick);
         int mode = JetpackClient.mode(state.id);

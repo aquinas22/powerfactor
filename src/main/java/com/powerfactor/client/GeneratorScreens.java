@@ -1,27 +1,25 @@
 package com.powerfactor.client;
 
-import com.powerfactor.PowerFactor;
 import com.powerfactor.generator.BatteryBankBlockEntity;
 import com.powerfactor.generator.DieselGeneratorBlockEntity;
 import com.powerfactor.generator.DieselMenu;
 import com.powerfactor.generator.PowerMeterBlockEntity;
 import com.powerfactor.grid.CableTier;
 import com.powerfactor.machine.MachineBlockEntity;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /** GUIs for the diesel generator, battery bank and power meter. */
 public final class GeneratorScreens {
     private abstract static class Base<M extends DieselMenu> extends MachineScreen<M> {
-        private final Identifier texture;
+        private record Gauge(int x, int y, int w, int h, Component tooltip) {}
+        private final List<Gauge> gauges = new ArrayList<>();
 
-        Base(M menu, Inventory inventory, Component title, String texture) {
+        Base(M menu, Inventory inventory, Component title) {
             super(menu, inventory, title, 166);
-            this.texture = PowerFactor.id("textures/gui/" + texture + ".png");
         }
 
         @Override
@@ -36,13 +34,50 @@ public final class GeneratorScreens {
 
         @Override
         protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+            gauges.clear();
             skinBackground(g);
+            Skin.lamp(g, leftPos + MAIN_W - 14, topPos + 6, electrical().statusColor());
+        }
+
+        protected void tank(GuiGraphicsExtractor g, int x, int amount, int capacity, int color, String key) {
+            GuiUtil.fluidGauge(g, leftPos + x, topPos + 20, 16, 52, amount, capacity, color);
+            gauges.add(new Gauge(x, 20, 16, 52, Component.translatable("gui.powerfactor.fluid_amount", Component.translatable(key),
+                    String.format("%,d", amount), String.format("%,d", capacity))));
+        }
+
+        protected void energy(GuiGraphicsExtractor g, int x, int w, int stored, int capacity, boolean active) {
+            Skin.energyTube(g, leftPos + x, topPos + 20, w, 52, stored, capacity, active);
+            gauges.add(new Gauge(x, 20, w, 52, Component.translatable("gui.powerfactor.buffer", String.format("%,d", stored),
+                    String.format("%,d", capacity))));
+        }
+
+        protected void preview(GuiGraphicsExtractor g, int x, int y, int w, int h) {
+            Skin.well(g, leftPos + x, topPos + y, w, h);
+            g.fillGradient(leftPos + x + 1, topPos + y + 1, leftPos + x + w - 1, topPos + y + h - 1, 0xFF1C2A33, 0xFF0B1116);
+            if (minecraft.level != null && minecraft.level.getBlockEntity(menu.pos) instanceof com.powerfactor.oil.PumpjackBlockEntity pump) {
+                MachineView.draw(g, pump, leftPos + x + 1, topPos + y + 1, leftPos + x + w - 1, topPos + y + h - 1,
+                        45, framePartialTick);
+            }
+        }
+
+        @Override
+        public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
+            super.extractRenderState(g, mouseX, mouseY, a);
+            for (Gauge gauge : gauges) {
+                if (isHovering(gauge.x(), gauge.y(), gauge.w(), gauge.h(), mouseX, mouseY)) {
+                    g.setTooltipForNextFrame(font, gauge.tooltip(), mouseX, mouseY);
+                    return;
+                }
+            }
+            if (isHovering(MAIN_W - 16, 3, 12, 12, mouseX, mouseY)) {
+                g.setTooltipForNextFrame(font, electrical().status(), mouseX, mouseY);
+            }
         }
     }
 
     public static class Diesel extends Base<DieselMenu> {
         public Diesel(DieselMenu menu, Inventory inventory, Component title) {
-            super(menu, inventory, title, "diesel_generator");
+            super(menu, inventory, title);
         }
 
         @Override
@@ -58,9 +93,11 @@ public final class GeneratorScreens {
         protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
             super.extractMain(g, mouseX, mouseY);
             boolean lava = (menu.get(DieselMenu.DATA_FLAGS) & 2) != 0;
-            GuiUtil.fluidGauge(g, leftPos + 44, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK), DieselGeneratorBlockEntity.TANK,
-                    lava ? 0xFFE0571A : 0xFFC8A030);
-            GuiUtil.energyBar(g, leftPos + 156, topPos + 20, 12, 52, menu.unsigned(DieselMenu.DATA_STORED) * 10, 10_000);
+            tank(g, 44, menu.unsigned(DieselMenu.DATA_TANK), DieselGeneratorBlockEntity.TANK,
+                    lava ? 0xFFE0571A : 0xFFC8A030, lava ? "block.minecraft.lava" : "gui.powerfactor.fuel");
+            energy(g, 156, 12, menu.unsigned(DieselMenu.DATA_STORED) * 10, 10_000, menu.get(DieselMenu.DATA_FE) > 0);
+            Skin.scope(g, leftPos + 8, topPos + 20, 30, 52, menu.get(DieselMenu.DATA_FE) / 125F, menu.get(DieselMenu.DATA_FE) > 0);
+            Skin.lcd(g, leftPos + 66, topPos + 20, 84, 52);
         }
 
         @Override
@@ -75,7 +112,7 @@ public final class GeneratorScreens {
 
     public static class Battery extends Base<DieselMenu.Battery> {
         public Battery(DieselMenu.Battery menu, Inventory inventory, Component title) {
-            super(menu, inventory, title, "battery_bank");
+            super(menu, inventory, title);
         }
 
         @Override
@@ -88,7 +125,10 @@ public final class GeneratorScreens {
         @Override
         protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
             super.extractMain(g, mouseX, mouseY);
-            GuiUtil.energyBar(g, leftPos + 76, topPos + 20, 24, 52, menu.unsigned(DieselMenu.DATA_STORED) * 1000, BatteryBankBlockEntity.CAPACITY);
+            energy(g, 76, 24, menu.unsigned(DieselMenu.DATA_STORED) * 1000, BatteryBankBlockEntity.CAPACITY, menu.get(DieselMenu.DATA_EE) > 0);
+            Skin.scope(g, leftPos + 8, topPos + 20, 62, 52, menu.get(DieselMenu.DATA_FE) / (float) BatteryBankBlockEntity.RATE,
+                    menu.get(DieselMenu.DATA_FE) > 0);
+            Skin.lcd(g, leftPos + 104, topPos + 20, 64, 52);
         }
 
         @Override
@@ -103,7 +143,7 @@ public final class GeneratorScreens {
 
     public static class Meter extends Base<DieselMenu.Meter> {
         public Meter(DieselMenu.Meter menu, Inventory inventory, Component title) {
-            super(menu, inventory, title, "power_meter");
+            super(menu, inventory, title);
         }
 
         @Override
@@ -118,7 +158,7 @@ public final class GeneratorScreens {
         @Override
         protected Electrical electrical() {
             int tier = menu.get(PowerMeterBlockEntity.DATA_TIER);
-            double rating = tier < 0 ? 512 : CableTier.values()[tier].ratingCe;
+            double rating = tier < 0 || tier >= CableTier.values().length ? 512 : CableTier.values()[tier].ratingCe;
             return new Electrical(tier < 0 ? 0 : volts(), menu.unsigned(PowerMeterBlockEntity.DATA_HZ) / 100.0,
                     menu.get(PowerMeterBlockEntity.DATA_FE), (short) menu.get(PowerMeterBlockEntity.DATA_EE), rating,
                     Component.translatable("gui.powerfactor.meter.loading", menu.get(PowerMeterBlockEntity.DATA_LOAD) / 10), 0xFFB8F5C0);
@@ -128,7 +168,7 @@ public final class GeneratorScreens {
         protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
             super.extractLabels(g, xm, ym);
             int tier = menu.get(PowerMeterBlockEntity.DATA_TIER);
-            if (tier < 0) {
+            if (tier < 0 || tier >= CableTier.values().length) {
                 g.text(font, Component.translatable("gui.powerfactor.meter.no_grid"), 8, 24, 0xFFFF6A5A, false);
                 return;
             }
@@ -145,14 +185,20 @@ public final class GeneratorScreens {
                             menu.get(PowerMeterBlockEntity.DATA_LOAD) / 10).getString(),
                     Component.translatable("gui.powerfactor.meter.interference", menu.get(PowerMeterBlockEntity.DATA_INTERFERENCE)).getString()};
             for (int i = 0; i < lines.length; i++) {
-                g.text(font, lines[i], 8, 18 + i * 10, i == 2 ? Skin.TEXT : Skin.TEXT, false);
+                g.text(font, Skin.fit(font, Component.literal(lines[i]), 152), 12, 23 + i * 10, i == 2 ? Skin.LCD_TEXT : Skin.TEXT, false);
             }
+        }
+
+        @Override
+        protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+            super.extractMain(g, mouseX, mouseY);
+            Skin.lcd(g, leftPos + 8, topPos + 20, 160, 54);
         }
     }
 
     public static class Electrolyzer extends Base<DieselMenu.Electrolyzer> {
         public Electrolyzer(DieselMenu.Electrolyzer menu, Inventory inventory, Component title) {
-            super(menu, inventory, title, "electrolyzer");
+            super(menu, inventory, title);
         }
 
         private boolean running() {
@@ -170,9 +216,9 @@ public final class GeneratorScreens {
         protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
             super.extractMain(g, mouseX, mouseY);
             int cap = com.powerfactor.device.ElectrolyzerBlockEntity.TANK;
-            GuiUtil.fluidGauge(g, leftPos + 26, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK), cap, 0xFF3F76E4);
-            GuiUtil.fluidGauge(g, leftPos + 130, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK2), cap, 0xFFB8E8FF);
-            GuiUtil.energyBar(g, leftPos + 156, topPos + 20, 12, 52, menu.unsigned(DieselMenu.DATA_STORED) * 10, 20_000);
+            tank(g, 26, menu.unsigned(DieselMenu.DATA_TANK), cap, 0xFF3F76E4, "block.minecraft.water");
+            tank(g, 130, menu.unsigned(DieselMenu.DATA_TANK2), cap, 0xFFB8E8FF, "fluid.powerfactor.hydrogen");
+            energy(g, 156, 12, menu.unsigned(DieselMenu.DATA_STORED) * 10, 20_000, running());
             // The cell: water between two electrodes; bubbles stream off them while it runs.
             int cx = leftPos + 50, cy = topPos + 26, cw = 74, ch = 46;
             g.fill(cx, cy, cx + cw, cy + ch, 0xFF20262B);
@@ -196,7 +242,7 @@ public final class GeneratorScreens {
 
     public static class FuelCell extends Base<DieselMenu.FuelCell> {
         public FuelCell(DieselMenu.FuelCell menu, Inventory inventory, Component title) {
-            super(menu, inventory, title, "fuel_cell");
+            super(menu, inventory, title);
         }
 
         private boolean online() {
@@ -213,11 +259,13 @@ public final class GeneratorScreens {
         @Override
         protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
             super.extractMain(g, mouseX, mouseY);
-            GuiUtil.fluidGauge(g, leftPos + 44, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK2),
-                    com.powerfactor.generator.FuelCellBlockEntity.TANK, 0xFFB8E8FF);
-            GuiUtil.energyBar(g, leftPos + 156, topPos + 20, 12, 52, menu.unsigned(DieselMenu.DATA_STORED) * 10, 4_000);
+            tank(g, 44, menu.unsigned(DieselMenu.DATA_TANK2), com.powerfactor.generator.FuelCellBlockEntity.TANK,
+                    0xFFB8E8FF, "fluid.powerfactor.hydrogen");
+            energy(g, 156, 12, menu.unsigned(DieselMenu.DATA_STORED) * 10, 4_000, online());
+            Skin.scope(g, leftPos + 8, topPos + 20, 30, 52, menu.get(DieselMenu.DATA_FE) / 200F, online());
+            Skin.lcd(g, leftPos + 66, topPos + 20, 84, 52);
             // Warm-up bar under the readouts.
-            int x = leftPos + 70, y = topPos + 64, w = 78;
+            int x = leftPos + 70, y = topPos + 69, w = 78;
             g.fill(x, y, x + w, y + 4, 0xFF1A1A1A);
             g.fill(x, y, x + w * Math.clamp(menu.get(DieselMenu.DATA_RPM), 0, 100) / 100, y + 4, online() ? 0xFF55FF55 : 0xFFFFB020);
         }
@@ -225,24 +273,17 @@ public final class GeneratorScreens {
         @Override
         protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
             super.extractLabels(g, xm, ym);
-            g.text(font, Component.translatable(online() ? "gui.powerfactor.fuel_cell.grid_forming" : "gui.powerfactor.fuel_cell.warming"), 70, 18,
+            g.text(font, Skin.fit(font, Component.translatable(online() ? "gui.powerfactor.fuel_cell.grid_forming" : "gui.powerfactor.fuel_cell.warming"), 76), 70, 23,
                     online() ? 0xFF7CFF8A : 0xFFFFB020, false);
-            g.text(font, menu.get(DieselMenu.DATA_FE) + " FE/t", 70, 30, GuiUtil.FE_COLOR, false);
-            g.text(font, Component.translatable("gui.powerfactor.fuel_cell.ee", menu.get(DieselMenu.DATA_EE)), 70, 41, GuiUtil.EE_COLOR, false);
-            g.text(font, menu.unsigned(DieselMenu.DATA_TANK2) + " mB H\u2082", 70, 52, Skin.TEXT, false);
+            g.text(font, menu.get(DieselMenu.DATA_FE) + " FE/t", 70, 34, GuiUtil.FE_COLOR, false);
+            g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.fuel_cell.ee", menu.get(DieselMenu.DATA_EE)), 76), 70, 45, GuiUtil.EE_COLOR, false);
+            g.text(font, menu.unsigned(DieselMenu.DATA_TANK2) + " mB H\u2082", 70, 56, Skin.TEXT, false);
         }
-    }
-
-    /** A 3D view of the machine at the left of a classic-layout screen. */
-    /** A power scope at the left of a classic-layout screen (the 3D model lives in the Config tab). */
-    static void view(GuiGraphicsExtractor g, net.minecraft.client.Minecraft mc, net.minecraft.core.BlockPos pos, int x, int y, int w, int h,
-            float load, boolean running) {
-        Skin.scope(g, x, y, w, h, load, running);
     }
 
     public static class Pumpjack extends Base<DieselMenu.Pumpjack> {
         public Pumpjack(DieselMenu.Pumpjack menu, Inventory inventory, Component title) {
-            super(menu, inventory, title, "diesel_generator");
+            super(menu, inventory, title);
         }
 
         private boolean running() {
@@ -253,37 +294,49 @@ public final class GeneratorScreens {
             return (menu.get(DieselMenu.DATA_FLAGS) & 2) != 0;
         }
 
+        private boolean formed() {
+            return (menu.get(DieselMenu.DATA_FLAGS) & 4) != 0;
+        }
+
         @Override
         protected Electrical electrical() {
             return new Electrical(1.0, 60.0, menu.get(DieselMenu.DATA_FE), menu.get(DieselMenu.DATA_EE), 75,
-                    Component.translatable(dry() ? "gui.powerfactor.pumpjack.dry" : running() ? "gui.powerfactor.pumpjack.pumping"
-                            : "gui.powerfactor.pumpjack.idle"), dry() ? 0xFFFF6A5A : running() ? 0xFF55FF55 : 0xFFFFB020);
+                    Component.translatable(!formed() ? "gui.powerfactor.multiblock.incomplete" : dry() ? "gui.powerfactor.pumpjack.dry" : running() ? "gui.powerfactor.pumpjack.pumping"
+                            : "gui.powerfactor.pumpjack.idle"), !formed() || dry() ? 0xFFFF6A5A : running() ? 0xFF55FF55 : 0xFFFFB020);
         }
 
         @Override
         protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
             super.extractMain(g, mouseX, mouseY);
-            view(g, minecraft, menu.pos, leftPos + 8, topPos + 20, 52, 52, menu.get(DieselMenu.DATA_FE) / 60F, running());
-            GuiUtil.fluidGauge(g, leftPos + 134, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK),
-                    com.powerfactor.oil.PumpjackBlockEntity.TANK, 0xFF2A2018);
-            GuiUtil.energyBar(g, leftPos + 156, topPos + 20, 12, 52, menu.unsigned(DieselMenu.DATA_STORED) * 10, 12_000);
+            preview(g, 8, 20, 52, 52);
+            tank(g, 134, menu.unsigned(DieselMenu.DATA_TANK), com.powerfactor.oil.PumpjackBlockEntity.TANK, 0xFF51402D, "fluid.powerfactor.crude_oil");
+            energy(g, 156, 12, menu.unsigned(DieselMenu.DATA_STORED) * 10, 12_000, running());
             Skin.lcd(g, leftPos + 64, topPos + 20, 66, 52);
         }
 
         @Override
         protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
             int x = 68;
-            g.text(font, Component.translatable(dry() ? "gui.powerfactor.pumpjack.dry" : running() ? "gui.powerfactor.pumpjack.pumping"
-                    : "gui.powerfactor.pumpjack.idle"), x, 24, dry() ? 0xFFFF6A5A : running() ? Skin.LCD_TEXT : 0xFFFFB020, false);
+            g.text(font, Skin.fit(font, Component.translatable(!formed() ? "gui.powerfactor.multiblock.short" : dry() ? "gui.powerfactor.pumpjack.dry" : running() ? "gui.powerfactor.pumpjack.pumping"
+                    : "gui.powerfactor.pumpjack.idle"), 58), x, 24, !formed() || dry() ? 0xFFFF6A5A : running() ? Skin.LCD_TEXT : 0xFFFFB020, false);
             g.text(font, menu.get(DieselMenu.DATA_FE) + " FE/t", x, 36, Skin.FE, false);
             g.text(font, Component.translatable("gui.powerfactor.pumpjack.blocks", menu.unsigned(DieselMenu.DATA_TANK2)), x, 48, Skin.LCD_TEXT, false);
             g.text(font, menu.unsigned(DieselMenu.DATA_TANK) + " mB", x, 60, Skin.TEXT, false);
+        }
+
+        @Override
+        public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
+            super.extractRenderState(g, mouseX, mouseY, a);
+            if (!formed() && isHovering(8, 20, 122, 52, mouseX, mouseY)) {
+                g.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.powerfactor.pumpjack.foundation"),
+                        Component.translatable("gui.powerfactor.multiblock.auto_hint")), mouseX, mouseY);
+            }
         }
     }
 
     public static class Refinery extends Base<DieselMenu.Refinery> {
         public Refinery(DieselMenu.Refinery menu, Inventory inventory, Component title) {
-            super(menu, inventory, title, "diesel_generator");
+            super(menu, inventory, title);
         }
 
         private boolean running() {
@@ -317,26 +370,21 @@ public final class GeneratorScreens {
         @Override
         protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
             super.extractMain(g, mouseX, mouseY);
-            view(g, minecraft, menu.pos, leftPos + 8, topPos + 20, 52, 52, menu.get(DieselMenu.DATA_FE) / 100F, running());
+            Skin.scope(g, leftPos + 8, topPos + 20, 52, 52, menu.get(DieselMenu.DATA_FE) / 100F, running());
             int cap = com.powerfactor.oil.RefineryBlockEntity.TANK;
-            GuiUtil.fluidGauge(g, leftPos + 68, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK), cap, 0xFF2A2018);
+            tank(g, 68, menu.unsigned(DieselMenu.DATA_TANK), cap, 0xFF51402D, "fluid.powerfactor.crude_oil");
             Skin.chevrons(g, leftPos + 88, topPos + 42, 2, running() ? (net.minecraft.util.Util.getMillis() % 1200) / 1200F : 0, running());
-            GuiUtil.fluidGauge(g, leftPos + 108, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK2), cap, 0xFFC89A32);
-            GuiUtil.fluidGauge(g, leftPos + 130, topPos + 20, 16, 52, menu.unsigned(DieselMenu.DATA_TANK3), cap, 0xFFE6D9A4);
-            GuiUtil.energyBar(g, leftPos + 156, topPos + 20, 12, 52, menu.unsigned(DieselMenu.DATA_STORED) * 10, 20_000);
+            tank(g, 108, menu.unsigned(DieselMenu.DATA_TANK2), cap, 0xFFC89A32, "fluid.powerfactor.diesel");
+            tank(g, 130, menu.unsigned(DieselMenu.DATA_TANK3), cap, 0xFFE6D9A4, "fluid.powerfactor.jet_fuel");
+            energy(g, 156, 12, menu.unsigned(DieselMenu.DATA_STORED) * 10, 20_000, running());
         }
 
         @Override
         public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
             super.extractRenderState(g, mouseX, mouseY, a);
-            String[] keys = {"fluid.powerfactor.crude_oil", "fluid.powerfactor.diesel", "fluid.powerfactor.jet_fuel"};
-            int[] xs = {68, 108, 130}, idx = {DieselMenu.DATA_TANK, DieselMenu.DATA_TANK2, DieselMenu.DATA_TANK3};
-            for (int i = 0; i < 3; i++) {
-                if (isHovering(xs[i], 20, 16, 52, mouseX, mouseY)) {
-                    g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.fluid_amount", Component.translatable(keys[i]),
-                            String.format("%,d", menu.unsigned(idx[i])), String.format("%,d", com.powerfactor.oil.RefineryBlockEntity.TANK)),
-                            mouseX, mouseY);
-                }
+            if (!formed() && isHovering(8, 20, 52, 52, mouseX, mouseY)) {
+                g.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.powerfactor.multiblock.hint"),
+                        Component.translatable("gui.powerfactor.multiblock.auto_hint")), mouseX, mouseY);
             }
         }
     }

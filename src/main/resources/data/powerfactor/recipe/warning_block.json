@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " Y ",
+    "YRY",
+    " S "
+  ],
+  "key": {
+    "Y": "#c:dyes/yellow",
+    "R": "#c:dyes/red",
+    "S": "powerfactor:riveted_steel"
+  },
+  "result": {
+    "id": "powerfactor:warning_block",
+    "count": 1
+  }
+}

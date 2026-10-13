@@ -17,6 +17,7 @@ public final class Skin {
 
     /** The main body: gunmetal gradient, light top/left edge, dark bottom/right, black outline, rivets. */
     public static void panel(GuiGraphicsExtractor g, int x, int y, int w, int h) {
+        g.fill(x + 2, y + 3, x + w + 2, y + h + 3, 0x60000000);
         g.fill(x, y, x + w, y + h, 0xFF0B0D0F);
         g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF4A535B, 0xFF2E353B);
         g.fill(x + 1, y + 1, x + w - 1, y + 2, 0xFF7C8790);
@@ -25,7 +26,7 @@ public final class Skin {
         g.fill(x + w - 2, y + 1, x + w - 1, y + h - 1, 0xFF1C2125);
         // Brushed-metal streaks.
         for (int i = 0; i < h - 4; i += 3) {
-            int a = ((i * 37) % 7) * 3;
+            int a = ((i * 37) % 7) * 2;
             g.fill(x + 2, y + 2 + i, x + w - 2, y + 3 + i, (a << 24) | 0xFFFFFF);
         }
         for (int[] c : new int[][] {{x + 4, y + 4}, {x + w - 7, y + 4}, {x + 4, y + h - 7}, {x + w - 7, y + h - 7}}) {
@@ -44,7 +45,15 @@ public final class Skin {
         g.fill(x + 3, y + 3, x + w - 3, y + 15, 0xFF1B2024);
         g.fill(x + 3, y + 15, x + w - 3, y + 16, TEAL);
         g.fill(x + 3, y + 16, x + w - 3, y + 17, 0x6030D0A8);
-        g.text(font, title, x + 10, y + 5, TEXT, true);
+        g.text(font, fit(font, title, w - 32), x + 10, y + 5, TEXT, false);
+    }
+
+    /** Keep translated titles and live readouts inside their panel. */
+    public static Component fit(Font font, Component text, int width) {
+        if (font.width(text) <= width) {
+            return text;
+        }
+        return Component.literal(font.substrByWidth(text, Math.max(0, width - font.width("…"))).getString() + "…");
     }
 
     /** A recessed well: dark inside, shadowed top/left, catching light bottom/right. */
@@ -113,8 +122,11 @@ public final class Skin {
                 g.fill(x + 1, s, x + w - 1, s + 1, 0x60000000);
             }
             // Bright liquid surface, shimmering while charging.
-            int shimmer = charging ? (int) (Util.getMillis() / 80 % 3) : 0;
-            g.fill(x + 1, top, x + w - 1, top + 1, 0xFFFFD0B0 - shimmer * 0x101010);
+            g.fill(x + 1, top, x + w - 1, top + 1, 0xFFFFD0B0);
+            if (charging) {
+                int pulseY = y + h - 2 - (int) (Util.getMillis() / 45 % Math.max(1, fill));
+                g.fill(x + 1, pulseY, x + w - 1, Math.min(y + h - 1, pulseY + 2), 0x50FFE4C0);
+            }
         }
         // Glass highlight down the left.
         g.fill(x + 2, y + 2, x + 3, y + h - 2, 0x40FFFFFF);
@@ -127,13 +139,14 @@ public final class Skin {
     /** Process progress as a row of chevrons that light up in turn, pulsing at the head while running. */
     public static void chevrons(GuiGraphicsExtractor g, int x, int y, int count, float progress, boolean running) {
         long t = Util.getMillis();
-        int lit = Math.round(progress * count);
+        int lit = (int) (Mth.clamp(progress, 0, 1) * count);
         for (int i = 0; i < count; i++) {
             int cx = x + i * 7;
             boolean on = i < lit;
             int color = on ? 0xFF3FE0FF : 0xFF27313A;
-            if (running && i == lit && (t / 150) % 2 == 0) {
-                color = 0xFF1F7E90;
+            if (running && i == lit) {
+                float pulse = (float) (0.5 + 0.5 * Math.sin(t / 140.0));
+                color = 0xFF000000 | ((int) (28 + 32 * pulse) << 16) | ((int) (90 + 100 * pulse) << 8) | (int) (108 + 116 * pulse);
             }
             for (int k = 0; k < 4; k++) {
                 g.fill(cx + k, y + k, cx + k + 2, y + k + 1, color);
@@ -161,8 +174,12 @@ public final class Skin {
             g.fill(gx, y + 2, gx + 1, y + h - 2, 0x1830FF90);
         }
         g.fill(x + 2, mid, x + w - 2, mid + 1, 0x3030FF90);
-        float amp = running ? Math.max(0.15F, Math.min(1F, load)) * (h / 2F - 3) : 0.8F;
-        double t = Util.getMillis() / 200.0;
+        if (!running) {
+            g.fill(x + 2, mid, x + w - 2, mid + 1, DIM);
+            return;
+        }
+        float amp = running ? Math.max(0.15F, Math.min(1F, load)) * (h / 2F - 3) : 0;
+        double t = running ? Util.getMillis() / 200.0 : 0;
         int[] colors = {0xFFFF5A4A, 0xFFFFD040, 0xFF4FA8FF};
         for (int ph = 0; ph < 3; ph++) {
             int prev = Integer.MIN_VALUE;

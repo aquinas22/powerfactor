@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PWP",
+    "CHC",
+    "PKP"
+  ],
+  "key": {
+    "P": "#c:plates/iron",
+    "W": "powerfactor:fine_copper_wire",
+    "C": "powerfactor:copper_coil",
+    "H": "powerfactor:heating_coil",
+    "K": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:thermoelectric_generator",
+    "count": 1
+  }
+}

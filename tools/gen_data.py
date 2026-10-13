@@ -680,7 +680,36 @@ PLATE_METALS = ["iron", "copper", "gold", "zinc", "brass"] + NEW_METALS
 INGOT_REF = {"iron": "#c:ingots/iron", "copper": "#c:ingots/copper", "gold": "#c:ingots/gold"}
 NEW_ITEMS = ["graphite", "graphite_electrode", "silicon", "mica", "latex", "rubber", "tree_tap", "advanced_circuit", "steel_gear",
              "heating_coil", "fine_copper_wire", "fine_silver_wire", "fine_aluminum_wire"]
-RECIPE_MACHINES = ["alloy_furnace", "arc_furnace", "wire_drawer", "rolling_mill", "ore_washer"]
+WORKSHOP_MACHINES = ["mechanical_press", "mixer", "centrifuge", "sawmill"]
+RECIPE_MACHINES = ["alloy_furnace", "arc_furnace", "wire_drawer", "rolling_mill", "ore_washer"] + WORKSHOP_MACHINES
+
+
+def workshop_models():
+    six = ("north", "east", "south", "west", "up", "down")
+    def box(frm, to, texture):
+        return {"from": frm, "to": to, "faces": {f: {"texture": texture, "uv": [0, 0, 16, 16]} for f in six}}
+    for machine in WORKSHOP_MACHINES:
+        body = [box([0, 0, 0], [16, 5, 16], "#body")]
+        if machine == "mechanical_press":
+            body += [box([1, 5, 1], [4, 16, 4], "#steel"), box([12, 5, 1], [15, 16, 4], "#steel"),
+                     box([1, 5, 12], [4, 16, 15], "#steel"), box([12, 5, 12], [15, 16, 15], "#steel"),
+                     box([0, 15, 0], [16, 18, 16], "#body"), box([4, 5, 4], [12, 6, 12], "#steel")]
+        elif machine in ("mixer", "centrifuge"):
+            body += [box([0, 5, 0], [16, 11, 2], "#body"), box([0, 5, 14], [16, 11, 16], "#body"),
+                     box([0, 5, 2], [2, 11, 14], "#body"), box([14, 5, 2], [16, 11, 14], "#body")]
+            if machine == "mixer":
+                body += [box([1, 11, 6], [3, 16, 10], "#steel"), box([13, 11, 6], [15, 16, 10], "#steel"),
+                         box([1, 15, 6], [15, 18, 10], "#body")]
+        else:
+            body += [box([0, 5, 0], [6, 11, 16], "#steel"), box([10, 5, 0], [16, 11, 16], "#steel"),
+                     box([6, 5, 0], [10, 9, 3], "#body"), box([6, 5, 13], [10, 9, 16], "#body"),
+                     box([2, 11, 0], [3, 12, 16], "#body"), box([13, 11, 0], [14, 12, 16], "#body")]
+        for suffix in ("", "_on"):
+            textures = {"body": pf("block/" + machine + "_body" + suffix), "steel": pf("block/workshop_steel"),
+                        "particle": pf("block/" + machine + "_body")}
+            write(asset("models", "block", machine + suffix + ".json"), {"parent": "minecraft:block/block", "textures": textures, "elements": body})
+        machine_states(machine, pf("block/" + machine), pf("block/" + machine + "_on"))
+        item_def(machine)
 
 
 def phase_b_models():
@@ -698,7 +727,9 @@ def phase_b_models():
     for i in NEW_ITEMS:
         flat_item(i, "minecraft:item/handheld" if i == "tree_tap" else "minecraft:item/generated")
     for m in RECIPE_MACHINES:
-        orientable_machine(m, bottom=f"{m}_side")
+        if m not in WORKSHOP_MACHINES:
+            orientable_machine(m, bottom=f"{m}_side")
+    workshop_models()
     # Pump: intake grate underneath, no animation.
     write(asset("models", "block", "electric_pump.json"), {"parent": "minecraft:block/orientable_with_bottom", "textures": {
         "top": pf("block/electric_pump_top"), "bottom": pf("block/electric_pump_bottom"), "side": pf("block/electric_pump_side"),
@@ -813,7 +844,7 @@ def phase_b_loot():
                        {"function": "minecraft:copy_components", "source": "block_entity", "include": [pf("fluid")]}]}]}]})
 
 
-def machine_recipe(kind, file, inputs, results, fluid=None, time=None, conditions=None):
+def machine_recipe(kind, file, inputs, results, fluid=None, time=None, conditions=None, tool=None):
     r = {"type": pf(kind), "inputs": [{"ingredient": i[0], "count": i[1]} for i in inputs], "results": results}
     if fluid:
         r["fluid"] = {"ingredient": fluid[0], "amount": fluid[1]}
@@ -821,10 +852,37 @@ def machine_recipe(kind, file, inputs, results, fluid=None, time=None, condition
         r["time"] = time
     if conditions:
         r["neoforge:conditions"] = conditions
+    if tool:
+        r["tool"] = tool
     write(data(NS, "recipe", kind, f"{file}.json"), r)
 
 
 def phase_b_recipes():
+    for m in PLATE_METALS:
+        machine_recipe("pressing", f"{m}_plate", [(f"#c:ingots/{m}", 1)], [out(f"{m}_plate")], tool=pf("plate_die"))
+    for metal, ingredient in (("iron", "#c:ingots/iron"), ("brass", "#c:ingots/brass"), ("steel", "#c:ingots/steel")):
+        machine_recipe("pressing", f"{metal}_gear", [(ingredient, 4)], [out(f"{metal}_gear")], time=160, tool=pf("gear_die"))
+    for alloy, components in (("brass", (("copper", 3), ("zinc", 1))), ("bronze", (("copper", 3), ("tin", 1))),
+                              ("electrum", (("gold", 1), ("silver", 1)))):
+        machine_recipe("mixing", f"{alloy}_dust", [(f"#c:dusts/{m}", n) for m, n in components],
+                       [out(f"{alloy}_dust", sum(n for _, n in components))])
+    machine_recipe("centrifuging", "clay_from_dirt", [("minecraft:dirt", 4)], [out("minecraft:clay_ball", 1), out("minecraft:sand", 1)])
+    machine_recipe("centrifuging", "gravel", [("minecraft:gravel", 4)], [out("minecraft:flint", 1), out("minecraft:sand", 2)])
+    for wood in ("oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak", "crimson", "warped"):
+        machine_recipe("sawing", wood, [(f"#minecraft:{wood}_" + ("stems" if wood in ("crimson", "warped") else "logs"), 1)],
+                       [out(f"minecraft:{wood}_planks", 6), out("minecraft:stick", 1)])
+    machine_recipe("sawing", "rubber", [(pf("rubber_log"), 1)], [out("rubber_planks", 6), out("minecraft:stick", 1)])
+    for m in WORKSHOP_MACHINES:
+        shaped(m, ["PXP", "GMG", "PKP"], {"P": "#c:plates/steel", "X": "minecraft:piston" if m == "mechanical_press" else
+               "minecraft:iron_bars" if m == "centrifuge" else "minecraft:cauldron" if m == "mixer" else "#c:gears/iron",
+               "G": "#c:gears/iron", "M": pf("electric_motor"), "K": pf("control_circuit")}, category="redstone")
+    for pattern in ("plate", "gear"):
+        flat_item(pattern + "_die")
+        shaped(pattern + "_die", ["PPP", "PXP", "PPP"], {"P": "#c:plates/steel", "X": "#c:plates/iron" if pattern == "plate" else "#c:gears/iron"}, category="equipment")
+        LANG[f"item.{NS}.{pattern}_die"] = pattern.title() + " Press Die"
+    LANG.update({"tooltip.powerfactor.press_die": "Fit in the press's purple tool slot; lasts 512 jobs.",
+                 "tooltip.powerfactor.press_die.plate": "Press ingots into plates",
+                 "tooltip.powerfactor.press_die.gear": "Press four ingots into a gear"})
     for m in NEW_METALS:
         shaped(f"{m}_block", ["###", "###", "###"], {"#": f"#c:ingots/{m}"}, category="building")
         shapeless(f"{m}_ingot", [pf(f"{m}_block")], 9, file=f"{m}_ingot_from_block")
@@ -1424,6 +1482,8 @@ def finishing():
         LANG[f"handbook.powerfactor.{cid}.text"] = text
     LANG.update({"jei.powerfactor.crushing": "Crushing", "jei.powerfactor.alloying": "Alloying", "jei.powerfactor.arc_smelting": "Arc Smelting",
                  "jei.powerfactor.wire_drawing": "Wire Drawing", "jei.powerfactor.rolling": "Rolling", "jei.powerfactor.washing": "Ore Washing",
+                 "jei.powerfactor.pressing": "Pressing", "jei.powerfactor.mixing": "Mixing",
+                 "jei.powerfactor.centrifuging": "Centrifuging", "jei.powerfactor.sawing": "Sawing",
                  "jei.powerfactor.chance": "%s%% chance"})
     for aid, parent, item, title, desc, frame, bg in ADVANCEMENTS:
         adv = {"display": {"icon": {"id": pf(item) if ":" not in item else item},
@@ -1630,7 +1690,7 @@ def devices_data():
         "tooltip.powerfactor.clamp_meter": "Look at a wire or machine to measure it",
         "tooltip.powerfactor.jetpack.hover_on": "Hover: ON",
         "tooltip.powerfactor.jetpack.hover_off": "Hover: off",
-        "tooltip.powerfactor.jetpack.help": "Hold Jump to climb · H toggles hover · Sneak to sink",
+        "tooltip.powerfactor.jetpack.help": "Hold Jump to climb · Hover key toggles hover · Sneak to sink",
         "message.powerfactor.jetpack.hover_on": "Jetpack hover ON",
         "message.powerfactor.jetpack.hover_off": "Jetpack hover off",
         "meter.powerfactor.flat": "Battery flat: charge the meter",
@@ -1658,7 +1718,7 @@ def devices_data():
         "handbook.powerfactor.power_tools.text":
             "Electric Chainsaw: an axe on FE. Cut one log of a tree and the whole tree comes down, and its leaves drop their saplings "
             "soon after. Sneak to cut a single log. It only fells real trees (logs with natural leaves), so your log cabin is safe.\n\n"
-            "Electric Jetpack: wear it in the chest slot. Hold Jump to climb; press H to toggle hover, which holds you in the air "
+            "Electric Jetpack: wear it in the chest slot. Hold Jump to climb; press J by default to toggle hover, which holds you in the air "
             "while you build. Sneak to sink. Thrust costs 50 FE/t, hover 18.\n\n"
             "Clamp Meter: hold it and look at any wire or machine for a live reading of voltage, frequency, FE, EE, CE and power "
             "factor, with a phasor diagram.\n\nInduction Charging Pad: stand on it and everything you carry charges.",
@@ -2108,12 +2168,21 @@ def phase_oil():
     tag("item", "c", "buckets/jet_fuel", [pf("jet_fuel_bucket")])
 
     # Pumpjack: concrete pad, wellhead, motor box; the moving parts are drawn by PumpjackRenderer.
-    t = {"pad": "minecraft:block/gray_concrete", "steel": pf("block/steel_block"), "motor": pf("block/refinery_base"),
-         "particle": "minecraft:block/gray_concrete"}
+    t = {"pad": pf("block/pumpjack_skid"), "steel": pf("block/pumpjack_wellhead"), "motor": pf("block/pumpjack_motor"),
+         "particle": pf("block/pumpjack_skid")}
     box = lambda frm, to, tex: {"from": frm, "to": to, "faces": {d: {"texture": tex} for d in six}}
-    els = [box([0, 0, 0], [16, 2, 16], "#pad"), box([6, 2, 0.5], [10, 6, 4.5], "#steel"), box([7, 6, 1.5], [9, 8, 3.5], "#steel"),
-           box([3, 2, 10], [13, 7, 15], "#motor"), box([2, 2, 7], [14, 3, 9], "#steel")]
-    write(asset("models", "block", "pumpjack.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els})
+    els = [box([-3, 0, -5], [19, 2, 22], "#pad"),
+           box([5, 2, -5], [11, 4, 1], "#steel"), box([6, 4, -4], [10, 6, 0], "#steel"),
+           box([7, 6, -3], [9, 8, -1], "#steel"),
+           box([3, 2, 15], [13, 7, 21], "#motor"), box([2, 2, 7], [14, 3, 9], "#steel"),
+           box([2, 3, 16], [4, 9, 18], "#steel"), box([12, 3, 16], [14, 9, 18], "#steel"),
+           box([0, 2, 4], [2, 3, 13], "#steel"), box([14, 2, 4], [16, 3, 13], "#steel")]
+    # Explicit UVs keep the extended skid within the atlas's 0..16 UV range.
+    for el in els:
+        for f in el["faces"].values():
+            f["uv"] = [0, 0, 16, 16]
+    write(asset("models", "block", "pumpjack.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els,
+        "display": {"gui": {"rotation": [30, 225, 0], "translation": [0, 1, 0], "scale": [0.45, 0.45, 0.45]}}})
     # Refinery multiblock: controller (front-centre of a 3x3 casing base) and a three-block column.
     for formed in (False, True):
         suf = "_formed" if formed else ""
@@ -2121,20 +2190,30 @@ def phase_oil():
         write(asset("models", "block", f"refinery_casing{suf}.json"), {"parent": "minecraft:block/cube_all", "textures": {"all": casing}})
         write(asset("models", "block", f"refinery{suf}.json"), {"parent": "minecraft:block/orientable", "textures": {
             "top": casing, "side": casing, "front": pf("block/refinery_controller_front")}})
+    write(asset("models", "block", "refinery_on.json"), {"parent": pf("block/refinery_formed"), "textures": {
+        "front": pf("block/refinery_controller_front_on")}})
     write(asset("blockstates", "refinery_casing.json"), {"variants": {f"formed={f}": {"model": pf("block/refinery_casing" + ("_formed" if f == "true" else ""))}
                                                                       for f in ("false", "true")}})
     item_def("refinery_casing")
-    t = {"col": pf("block/refinery_column"), "particle": pf("block/refinery_column")}
-    write(asset("models", "block", "distillation_column.json"), {"parent": "minecraft:block/block", "textures": t,
-        "elements": octagon(10, 0, 16, "#col", caps=("up", "down"))})
-    write(asset("blockstates", "distillation_column.json"), {"variants": {f"formed={f}": {"model": pf("block/distillation_column")}
+    for formed in (False, True):
+        suffix = "_formed" if formed else ""
+        t = {"col": pf("block/refinery_column" + suffix), "steel": pf("block/pumpjack_wellhead"), "particle": pf("block/refinery_column")}
+        els = octagon(10, 0, 16, "#col", caps=("up", "down"))
+        els += octagon(12, 1, 2, "#steel", caps=("up", "down"))
+        els += octagon(12, 14, 15, "#steel", caps=("up", "down"))
+        # Service ladder and an external return pipe, joining seamlessly between column sections.
+        els += [box([4, 0, 14], [5, 16, 15], "#steel"), box([11, 0, 14], [12, 16, 15], "#steel"),
+                box([14, 0, 7], [15, 16, 9], "#steel")]
+        els += [box([5, y, 14], [11, y + 1, 15], "#steel") for y in (2, 6, 10, 14)]
+        write(asset("models", "block", "distillation_column" + suffix + ".json"), {"parent": "minecraft:block/block", "textures": t, "elements": els})
+    write(asset("blockstates", "distillation_column.json"), {"variants": {f"formed={f}": {"model": pf("block/distillation_column" + ("_formed" if f == "true" else ""))}
                                                                           for f in ("false", "true")}})
     item_def("distillation_column")
     variants = {}
     for f, y in HORIZONTAL.items():
         for formed in ("false", "true"):
             for running in ("false", "true"):
-                m = {"model": pf("block/refinery" + ("_formed" if formed == "true" else ""))}
+                m = {"model": pf("block/refinery_on" if running == "true" and formed == "true" else "block/refinery" + ("_formed" if formed == "true" else ""))}
                 if y:
                     m["y"] = y
                 variants[f"facing={f},formed={formed},running={running}"] = m
@@ -2147,10 +2226,29 @@ def phase_oil():
     shaped("distillation_column", ["PGP", "P P", "PGP"], {"P": "#c:plates/steel", "G": "#c:glass_panes"}, 2, category="building")
     name(f"block.{NS}.refinery_casing", "Refinery Casing")
     name(f"block.{NS}.distillation_column", "Distillation Column")
+    for formed in (False, True):
+        suffix = "_formed" if formed else ""
+        write(asset("models", "block", "pumpjack_casing" + suffix + ".json"), {"parent": "minecraft:block/cube_all", "textures": {
+            "all": pf("block/pumpjack_casing" + suffix)}})
+    write(asset("blockstates", "pumpjack_casing.json"), {"variants": {f"formed={f}": {
+        "model": pf("block/pumpjack_casing" + ("_formed" if f == "true" else ""))} for f in ("false", "true")}})
+    item_def("pumpjack_casing")
+    drops_self("pumpjack_casing")
+    tag("block", "minecraft", "mineable/pickaxe", [pf("pumpjack_casing")])
+    shaped("pumpjack_casing", ["PPP", "SCS", "PPP"], {"P": "#c:plates/steel", "S": "#c:ingots/steel", "C": "minecraft:smooth_stone"}, 4, category="building")
+    name(f"block.{NS}.pumpjack_casing", "Pumpjack Foundation")
     LANG.update({
         "scada.powerfactor.multiblock.incomplete": "STRUCTURE INCOMPLETE",
         "gui.powerfactor.multiblock.incomplete": "STRUCTURE INCOMPLETE",
+        "gui.powerfactor.multiblock.short": "NO FRAME",
+        "gui.powerfactor.pumpjack.foundation": "Place nine Pumpjack Foundation blocks in a 3×3 layer directly below the pumpjack.",
         "gui.powerfactor.multiblock.hint": "Build the shape shown by the hologram",
+        "gui.powerfactor.multiblock.auto_hint": "Sneak-use the controller with an empty hand or a structure part to build from your inventory.",
+        "gui.powerfactor.multiblock.complete": "Structure is already complete",
+        "gui.powerfactor.multiblock.built": "Placed %s structure parts",
+        "gui.powerfactor.multiblock.blocked": "Build blocked: clear the hologram and check placement permissions",
+        "gui.powerfactor.multiblock.materials": "Need %s more %s to build this structure",
+        "gui.powerfactor.fuel": "Fuel",
         "scada.powerfactor.wind.short": "TOWER TOO SHORT: %s/%s sections",
     })
     for b in ("pumpjack",):
@@ -2163,6 +2261,7 @@ def phase_oil():
                     if y and half == "lower":
                         m["y"] = y
                     variants[f"facing={f},half={half},running={running}"] = m
+        variants = {f"{key},formed={formed}": model for key, model in variants.items() for formed in ("false", "true")}
         write(asset("blockstates", f"{b}.json"), {"variants": variants})
         item_def(b)
         write(data(NS, "loot_table", "blocks", f"{b}.json"), {"type": "minecraft:block", "random_sequence": pf(f"blocks/{b}"),
@@ -2192,11 +2291,13 @@ def phase_oil():
         "handbook.powerfactor.oil.title": "Oil",
         "handbook.powerfactor.oil.text":
             "Crude oil lies in reservoirs deep underground, and sometimes seeps up as tar pits in deserts and badlands. Build a "
-            "Pumpjack anywhere above a reservoir (it searches straight down, then up to 8 blocks sideways): the nodding donkey "
-            "lifts 25 mB of crude per tick for 60 FE/t until the reservoir runs dry.\\n\\nPipe the crude to an Oil Refinery, a multiblock: the "
+            "Pumpjack above a 3x3 layer of nine Pumpjack Foundation blocks, over a reservoir (it searches straight down, then up to 8 blocks sideways): the nodding donkey "
+            "lifts 25 mB of crude per tick for 60 FE/t until the reservoir runs dry.\n\nPipe the crude to an Oil Refinery, a multiblock: the "
             "controller sits front-centre of a 3x3 base of Refinery Casing, with three Distillation Column blocks stacked on the "
-            "middle casing; a hologram shows what's missing. Cables and pipes attach to any casing. The distillation column splits 10 mB of crude into 5 mB of diesel and 4 mB of jet fuel every tick (100 FE/t). Diesel "
-            "runs the Diesel Generator; jet fuel flies the airplane. Buckets work for all three.",
+            "middle casing; a hologram shows what's missing. Sneak-use the controller with an empty hand or a structure part to build from inventory. "
+            "The wind turbine can build its six tower sections the same way. Clear the hologram first; assembly never replaces obstructions. "
+            "Cables and pipes attach to any casing. The distillation column splits 10 mB of crude into 5 mB of diesel and 4 mB of jet fuel every tick (100 FE/t). Diesel "
+            "runs the Diesel Generator; jet fuel is available for future aircraft. Buckets work for all three.",
     })
     # Worldgen: deep reservoirs everywhere in the overworld, tar pits in dry biomes.
     oil_lake = {"type": "minecraft:lake", "config": {
@@ -2221,6 +2322,323 @@ def phase_oil():
         "features": pf("tar_pit"), "step": "lakes", "neoforge:conditions": cond})
 
 
+def industrial_building():
+    six = ("north", "east", "south", "west", "up", "down")
+    def box(frm, to):
+        return {"from": frm, "to": to, "faces": {f: {"texture": "#steel", "uv": [0, 0, 16, 16]} for f in six}}
+    for axis in ("x", "y", "z"):
+        elements = []
+        for frm, to in (([3, 0, 3], [13, 16, 5]), ([3, 0, 11], [13, 16, 13]), ([7, 0, 5], [9, 16, 11])):
+            if axis == "x":
+                frm, to = [frm[1], frm[0], frm[2]], [to[1], to[0], to[2]]
+            elif axis == "z":
+                frm, to = [frm[0], frm[2], frm[1]], [to[0], to[2], to[1]]
+            elements.append(box(frm, to))
+        write(asset("models", "block", "steel_beam" + ("" if axis == "y" else "_" + axis) + ".json"), {
+            "parent": "minecraft:block/block", "textures": {"steel": pf("block/industrial_steel"), "particle": pf("block/industrial_steel")},
+            "elements": elements})
+    write(asset("blockstates", "steel_beam.json"), {"variants": {
+        "axis=" + axis: {"model": pf("block/steel_beam" + ("" if axis == "y" else "_" + axis))} for axis in ("x", "y", "z")}})
+    item_def("steel_beam")
+    grid = [box([0, 0, 0], [16, 2, 1]), box([0, 0, 15], [16, 2, 16]),
+            box([0, 0, 1], [1, 2, 15]), box([15, 0, 1], [16, 2, 15])]
+    for p in (3, 6, 9, 12):
+        grid += [box([p, 0.5, 1], [p + 1, 1.5, 15]), box([1, 0.5, p], [15, 1.5, p + 1])]
+    write(asset("models", "block", "steel_catwalk.json"), {"parent": "minecraft:block/block", "textures": {
+        "steel": pf("block/industrial_steel"), "particle": pf("block/industrial_steel")}, "elements": grid})
+    write(asset("blockstates", "steel_catwalk.json"), {"variants": {"": {"model": pf("block/steel_catwalk")}}})
+    item_def("steel_catwalk")
+    for block in ("riveted_steel", "hazard_block", "warning_block"):
+        simple_block(block)
+    blocks = ("steel_beam", "steel_catwalk", "riveted_steel", "hazard_block", "warning_block")
+    for block in blocks:
+        drops_self(block)
+        name(f"block.{NS}.{block}", block.replace("_", " ").title())
+    tag("block", "minecraft", "mineable/pickaxe", [pf(b) for b in blocks])
+    tag("block", "minecraft", "needs_iron_tool", [pf(b) for b in blocks])
+    shaped("steel_beam", ["SSS", " S ", "SSS"], {"S": "#c:ingots/steel"}, 8, category="building")
+    shaped("steel_catwalk", ["BBB", "P P"], {"B": "minecraft:iron_bars", "P": "#c:plates/steel"}, 8, category="building")
+    shaped("riveted_steel", ["PP", "PP"], {"P": "#c:plates/steel"}, 4, category="building")
+    shaped("hazard_block", ["YBY", "SSS"], {"Y": "#c:dyes/yellow", "B": "#c:dyes/black", "S": pf("riveted_steel")}, 3, category="building")
+    shaped("warning_block", [" Y ", "YRY", " S "], {"Y": "#c:dyes/yellow", "R": "#c:dyes/red", "S": pf("riveted_steel")}, 1, category="building")
+    LANG["handbook.powerfactor.machines.text"] += (
+        "\n\nMechanical Press: fit a Plate Press Die for ingots to plates, or a Gear Press Die for four ingots to a gear. Dies wear once per job and last 512 jobs. Mixer: copper and zinc dust to brass, copper and tin to bronze, "
+        "or gold and silver to electrum; smelt the blended dust into ingots. Centrifuge: four dirt to a clay ball and sand, or four gravel "
+        "to flint and two sand. Sawmill: a log to six planks and a stick. All four accept upgrades and side configuration, and support automatic input and output.")
+    LANG["handbook.powerfactor.ores.text"] += (
+        "\n\nFactory construction: Steel Beams form columns and girders (place against a face to choose their axis). Steel Catwalks are thin grated floors. "
+        "Riveted Steel, Hazard Blocks and Warning Blocks finish walls and mark dangerous machinery. Find their crafting recipes in JEI.")
+
+
+STEAM_PARTS = ["boiler_casing", "boiler_firebox", "steam_drum", "turbine_casing", "steam_rotor", "generator_magnet"]
+THERMAL_MACHINES = ["steam_boiler", "steam_turbine", "cooling_tower", "geothermal_generator", "thermoelectric_generator", "rain_collector"]
+
+
+def steam_plant():
+    six = ("north", "east", "south", "west", "up", "down")
+    def box(frm, to, texture):
+        return {"from": frm, "to": to, "faces": {f: {"texture": texture, "uv": [0, 0, 16, 16]} for f in six}}
+    for part in STEAM_PARTS:
+        write(asset("models", "block", part + ".json"), {"parent": "minecraft:block/cube_all", "textures": {"all": pf("block/" + part)}})
+        # The controller renderer builds the assembled vessel and skid as one model.
+        # Rendering each part's frame left poles and instruments floating around the shell.
+        write(asset("models", "block", part + "_formed.json"), {"parent": "minecraft:block/block", "textures": {
+            "particle": pf("block/" + part)}, "elements": []})
+        write(asset("blockstates", part + ".json"), {"variants": {f"formed={f}": {
+            "model": pf("block/" + part + ("_formed" if f == "true" else ""))} for f in ("false", "true")}})
+        item_def(part)
+    for controller in ("steam_boiler", "steam_turbine"):
+        casing = "boiler_casing" if controller == "steam_boiler" else "turbine_casing"
+        for formed in (False, True):
+            for running in (False, True):
+                suffix = ("_formed" if formed else "") + ("_on" if running else "")
+                textures = {"frame": pf("block/" + casing), "front": pf("block/" + controller + "_front" + ("_on" if running else "")),
+                            "particle": pf("block/" + casing)}
+                elements = [box([3, 0, 0], [13, 10, 6], "#frame"), box([7, 0, 6], [9, 16, 8], "#frame")] if formed else [box([0, 0, 0], [16, 16, 16], "#frame")]
+                elements[0]["faces"]["north"]["texture"] = "#front"
+                write(asset("models", "block", controller + suffix + ".json"), {"parent": "minecraft:block/block", "textures": textures, "elements": elements})
+        variants = {}
+        for facing, rotation in HORIZONTAL.items():
+            for formed in ("false", "true"):
+                for running in ("false", "true"):
+                    suffix = ("_formed" if formed == "true" else "") + ("_on" if running == "true" else "")
+                    variants[f"facing={facing},formed={formed},running={running}"] = {"model": pf("block/" + controller + suffix), "y": rotation}
+        write(asset("blockstates", controller + ".json"), {"variants": variants})
+        item_def(controller)
+    for machine in ("geothermal_generator", "thermoelectric_generator"):
+        orientable_machine(machine, bottom=machine + "_side")
+    for on in (False, True):
+        textures = {"body": pf("block/cooling_tower_side"), "metal": pf("block/workshop_steel"), "particle": pf("block/cooling_tower_side")}
+        elements = [box([1, 0, 1], [15, 16, 15], "#body"), box([2, 16, 2], [4, 29, 14], "#body"),
+                    box([12, 16, 2], [14, 29, 14], "#body"), box([4, 16, 2], [12, 29, 4], "#body"),
+                    box([4, 16, 12], [12, 29, 14], "#body")]
+        elements += octagon(14, 29, 32, "#metal", caps=(), uv=[0, 0, 16, 16])
+        write(asset("models", "block", "cooling_tower" + ("_on" if on else "") + ".json"), {
+            "parent": "minecraft:block/block", "textures": textures, "elements": elements,
+            "display": {"gui": {"rotation": [25, 225, 0], "translation": [0, -3, 0], "scale": [0.45, 0.45, 0.45]}}})
+    write(asset("models", "block", "cooling_tower_top.json"), {"textures": {"particle": pf("block/cooling_tower_side")}})
+    variants = {}
+    for facing, rotation in HORIZONTAL.items():
+        for half in ("lower", "upper"):
+            for running in ("false", "true"):
+                model = "cooling_tower_top" if half == "upper" else "cooling_tower" + ("_on" if running == "true" else "")
+                variants[f"facing={facing},half={half},running={running}"] = {"model": pf("block/" + model), "y": rotation if half == "lower" else 0}
+    write(asset("blockstates", "cooling_tower.json"), {"variants": variants})
+    item_def("cooling_tower")
+    for on in (False, True):
+        elements = [box([0, 0, 0], [16, 4, 16], "#body"), box([0, 4, 0], [2, 12, 16], "#body"),
+                    box([14, 4, 0], [16, 12, 16], "#body"), box([2, 4, 0], [14, 12, 2], "#body"), box([2, 4, 14], [14, 12, 16], "#body")]
+        write(asset("models", "block", "rain_collector" + ("_on" if on else "") + ".json"), {"parent": "minecraft:block/block",
+            "textures": {"body": pf("block/rain_collector_side"), "particle": pf("block/rain_collector_side")}, "elements": elements})
+    machine_states("rain_collector", pf("block/rain_collector"), pf("block/rain_collector_on"))
+    item_def("rain_collector")
+    pipe_models("steam_pipe")
+    glass_pipe("steam_pipe")
+    for block in STEAM_PARTS + THERMAL_MACHINES + ["steam_pipe"]:
+        if block != "cooling_tower": drops_self(block)
+        name(f"block.{NS}.{block}", block.replace("_", " ").title())
+    write(data(NS, "loot_table", "blocks", "cooling_tower.json"), {"type": "minecraft:block", "pools": [{"rolls": 1,
+        "conditions": [{"condition": "minecraft:survives_explosion"}, {"condition": "minecraft:block_state_property", "block": pf("cooling_tower"), "properties": {"half": "lower"}}],
+        "entries": [{"type": "minecraft:item", "name": pf("cooling_tower")}]}]})
+    tag("block", "minecraft", "mineable/pickaxe", [pf(b) for b in STEAM_PARTS + THERMAL_MACHINES + ["steam_pipe"]])
+    tag("block", "minecraft", "needs_iron_tool", [pf(b) for b in STEAM_PARTS + THERMAL_MACHINES])
+    tag("fluid", "c", "steam", [pf("steam"), pf("flowing_steam")])
+    tag("fluid", "c", "hot_water", [pf("hot_water"), pf("flowing_hot_water")])
+    for gas in ("steam", "hot_water"):
+        write(asset("models", "block", gas + ".json"), {"textures": {"particle": pf("block/" + gas + "_still")}})
+        name(f"fluid.{NS}.{gas}", gas.replace("_", " ").title())
+    shaped("boiler_casing", ["PPP", "B B", "PPP"], {"P": "#c:plates/steel", "B": "minecraft:bricks"}, 4, category="building")
+    shaped("turbine_casing", ["PPP", "G G", "PPP"], {"P": "#c:plates/steel", "G": "#c:glass_blocks"}, 4, category="building")
+    shaped("boiler_firebox", ["PBP", "HFH", "PBP"], {"P": "#c:plates/steel", "B": "minecraft:bricks", "H": pf("heating_coil"), "F": "minecraft:furnace"})
+    shaped("steam_drum", ["PPP", "PTP", "PPP"], {"P": "#c:plates/steel", "T": pf("fluid_tank")})
+    shaped("steam_rotor", [" B ", "BGB", " B "], {"B": pf("turbine_blade"), "G": "#c:gears/steel"})
+    shaped("generator_magnet", ["WCW", "CIC", "WCW"], {"W": pf("fine_copper_wire"), "C": pf("copper_coil"), "I": "#c:ingots/iron"})
+    shaped("steam_boiler", ["PKP", "BFB", "PTP"], {"P": "#c:plates/steel", "K": pf("advanced_circuit"), "B": pf("boiler_casing"), "F": pf("boiler_firebox"), "T": pf("steam_drum")})
+    shaped("steam_turbine", ["PKP", "BRB", "PMP"], {"P": "#c:plates/steel", "K": pf("advanced_circuit"), "B": pf("turbine_casing"), "R": pf("steam_rotor"), "M": pf("generator_magnet")})
+    shaped("steam_pipe", ["PGP"], {"P": "#c:plates/steel", "G": "#c:glass_blocks"}, 8)
+    shaped("cooling_tower", ["PGP", "MTM", "PKP"], {"P": "#c:plates/steel", "G": "minecraft:iron_bars", "M": pf("electric_motor"), "T": pf("fluid_tank"), "K": pf("control_circuit")})
+    shaped("geothermal_generator", ["PCP", "HTH", "PKP"], {"P": "#c:plates/steel", "C": pf("copper_coil"), "H": pf("heating_coil"), "T": pf("fluid_tank"), "K": pf("control_circuit")})
+    shaped("thermoelectric_generator", ["PWP", "CHC", "PKP"], {"P": "#c:plates/iron", "W": pf("fine_copper_wire"), "C": pf("copper_coil"), "H": pf("heating_coil"), "K": pf("control_circuit")})
+    shaped("rain_collector", ["P P", "PTP", "PFP"], {"P": "#c:plates/iron", "T": "minecraft:cauldron", "F": pf("fluid_pipe")})
+    LANG.update({
+        "gui.powerfactor.heat": "Heat", "gui.powerfactor.pressure": "Pressure",
+        "gui.powerfactor.boiler.tripped": "THERMAL TRIP", "gui.powerfactor.boiler.boiling": "MAKING STEAM", "gui.powerfactor.boiler.warming": "WARMING UP",
+        "gui.powerfactor.boiler.dry": "NO WATER", "gui.powerfactor.boiler.off": "BURNER OFF",
+        "gui.powerfactor.boiler.pressure_hold": "PRESSURE HOLD", "scada.powerfactor.boiler.pressure_hold": "Pressure hold · burner paused",
+        "gui.powerfactor.boiler.trip_help": "Stop the burner, supply water and clear the steam outlet. The trip resets after the vessel cools below 70 °C.",
+        "gui.powerfactor.boiler.help": "Cold water and fuel in; steam out. The burner pauses at 60% pressure and resumes at 40%. Cool turbine condensate before returning it.",
+        "scada.powerfactor.boiler": "%s °C · steam %s mB · %s mB/t", "scada.powerfactor.boiler.tripped": "THERMAL TRIP: cool and clear the outlet",
+        "scada.powerfactor.steam_turbine": "%s RPM · steam %s · hot water %s mB",
+        "gui.powerfactor.steam_turbine.backed_up": "CONDENSATE FULL", "gui.powerfactor.steam_turbine.no_steam": "NO STEAM",
+        "gui.powerfactor.steam_turbine.idling": "SYNCHRONIZED",
+        "gui.powerfactor.cooling.blocked": "VENT BLOCKED", "gui.powerfactor.cooling.running": "COOLING", "gui.powerfactor.cooling.idle": "STANDBY",
+        "scada.powerfactor.cooling.blocked": "VENT BLOCKED: clear the space above the tower", "scada.powerfactor.cooling": "%s mB/t cooled · cold water %s mB",
+        "gui.powerfactor.geothermal.no_heat": "NO HEAT SOURCE", "gui.powerfactor.thermoelectric.no_gradient": "NO TEMPERATURE GAP",
+        "scada.powerfactor.geothermal": "Heat source available: %s FE/t", "scada.powerfactor.thermoelectric": "Thermal gradient available: %s FE/t",
+        "gui.powerfactor.thermal.available": "Max %s FE/t", "gui.powerfactor.rain.collecting": "COLLECTING", "gui.powerfactor.rain.waiting": "WAITING FOR RAIN",
+        "scada.powerfactor.rain_collector": "%s mB/t collected · water %s mB",
+        "subtitles.powerfactor.boiler_run": "Boiler burns and hisses", "subtitles.powerfactor.steam_turbine_run": "Steam turbine spins",
+        "subtitles.powerfactor.cooling_tower_run": "Cooling fan hums",
+    })
+    LANG["handbook.powerfactor.generators.text"] += (
+        "\n\nSteam power: form a 3x3x3 Steam Boiler with 23 Boiler Casings, one Firebox and two Steam Drums. Feed cold water and furnace fuel through its controller or formed ports. "
+        "Once hot it produces up to 80 mB/t of steam. Steam Pipes carry only steam, up to 4000 mB per extraction every ten ticks; sneak-use an endpoint to extract, as with fluid pipes. "
+        "The 3x2x5 Steam Turbine needs 26 Turbine Casings, two Steam Rotors and a Generator Magnet. It synchronizes over ten seconds and generates up to 800 FE/t, with EE support. "
+        "Use the hologram or sneak-use assembly for either structure. Hot condensate must leave the turbine: pipe it through a powered Cooling Tower, then return its cold water to the boiler. "
+        "Cooling towers need an open vent to the sky. The boiler pauses its burner at 60% pressure and resumes at 40%; blocked outlets hold safely. Dry firing can trip it: supply water and let it cool.\n\n"
+        "Geothermal Generator: any adjacent lava gives 64 FE/t; magma gives 24. Thermoelectric Generator: put a hot source and water or ice on opposite faces, for up to 48 FE/t. "
+        "A Rain Collector catches 2 mB/t of actual rain, or 6 during thunderstorms, without FE. A roof stops collection. Pipe its water into your boiler to replenish the loop.")
+
+
+def power_armor():
+    for item in ("power_helmet", "power_chestplate", "power_leggings", "power_boots", "jump_servo_module", "shock_absorber_module", "night_vision_module", "rebreather_module"):
+        flat_item(item)
+        name(f"item.{NS}.{item}", item.replace("_", " ").title())
+    write(asset("equipment", "power_armor.json"), {"layers": {
+        "humanoid": [{"texture": pf("power_armor")}], "humanoid_leggings": [{"texture": pf("power_armor")}]}})
+    shaped("power_helmet", ["PSP", "CIC", " P "], {"P": "#c:plates/steel", "S": pf("sensor_chip"), "C": pf("capacitor"), "I": "minecraft:iron_helmet"})
+    shaped("power_chestplate", ["PMP", "CIC", "PPP"], {"P": "#c:plates/steel", "M": pf("microprocessor"), "C": pf("capacitor"), "I": "minecraft:iron_chestplate"})
+    shaped("power_leggings", ["PKP", "MIM", "P P"], {"P": "#c:plates/steel", "K": pf("advanced_circuit"), "M": pf("electric_motor"), "I": "minecraft:iron_leggings"})
+    shaped("power_boots", ["P P", "MIM", "CSC"], {"P": "#c:plates/steel", "M": pf("electric_motor"), "I": "minecraft:iron_boots", "C": pf("capacitor"), "S": pf("sensor_chip")})
+    shaped("jump_servo_module", [" M ", "PKP", " M "], {"M": pf("electric_motor"), "P": "#c:plates/steel", "K": pf("control_circuit")})
+    shaped("shock_absorber_module", ["RPR", "PCP", "RPR"], {"R": pf("rubber"), "P": "#c:plates/steel", "C": pf("capacitor")})
+    shaped("night_vision_module", ["GSG", "PKP", " W "], {"G": "#c:glass_blocks", "S": pf("sensor_chip"), "P": "#c:plates/steel", "K": pf("advanced_circuit"), "W": pf("fine_copper_wire")})
+    shaped("rebreather_module", ["PFP", "RKR", " P "], {"P": "#c:plates/steel", "F": pf("fluid_tank"), "R": pf("rubber"), "K": pf("control_circuit")})
+    armor = [pf(i) for i in ("power_helmet", "power_chestplate", "power_leggings", "power_boots")]
+    tag("item", "minecraft", "enchantable/armor", armor)
+    tag("item", "minecraft", "armor", armor)
+    for role, item in (("head", "power_helmet"), ("chest", "power_chestplate"), ("leg", "power_leggings"), ("foot", "power_boots")):
+        tag("item", "minecraft", role + "_armor", [pf(item)])
+    LANG.update({
+        "key.powerfactor.armor_settings": "Power Armor Settings",
+        "tooltip.powerfactor.armor.shield": "Powered shield: absorbs up to %s%% of the hit · consumes FE",
+        "tooltip.powerfactor.armor.helmet": "Helmet accepts night vision and rebreather modules",
+        "tooltip.powerfactor.armor.chest": "Fit an Electric Jetpack in an upgrade-table socket",
+        "tooltip.powerfactor.armor.legs": "Powered servos: speed, higher jumps and one-block steps; sneak for normal movement",
+        "tooltip.powerfactor.armor.boots": "Powered landing cushion; shock modules absorb longer falls",
+        "tooltip.powerfactor.armor.jetpack": "Integrated jetpack · flight draws from the chest battery",
+        "tooltip.powerfactor.armor.controls": "B opens suit settings · charge at a Charger or Charging Pad",
+        "tooltip.powerfactor.drill_module.jump": "+0.08 jump strength per module · uses more FE per jump",
+        "tooltip.powerfactor.drill_module.shock": "+3 blocks of landing absorption per module",
+        "tooltip.powerfactor.drill_module.night_vision": "Powered night vision · 4 FE/t before efficiency",
+        "tooltip.powerfactor.drill_module.rebreather": "Restores air underwater · 2 FE/t before efficiency",
+        "tooltip.powerfactor.drill_module.speed": "+50% tool speed; +15% exoskeleton movement speed, each",
+        "tooltip.powerfactor.drill_module.plating": "+2 jetpack armor or +2% powered-suit shielding, each",
+        "gui.powerfactor.armor.hud": "POWER ARMOR",
+        "gui.powerfactor.armor.title": "POWER ARMOR · SUIT CONTROL",
+        "gui.powerfactor.armor.help": "Charge batteries · fit modules at an Upgrade Table",
+        "gui.powerfactor.armor.helmet": "Helmet", "gui.powerfactor.armor.chest": "Chest plate",
+        "gui.powerfactor.armor.legs": "Leggings", "gui.powerfactor.armor.boots": "Boots",
+        "gui.powerfactor.armor.helmet.short": "HEAD", "gui.powerfactor.armor.chest.short": "BODY",
+        "gui.powerfactor.armor.legs.short": "LEGS", "gui.powerfactor.armor.boots.short": "FEET",
+        "gui.powerfactor.armor.empty": "%s · not equipped",
+        "gui.powerfactor.armor.assists": "Movement assists: %s", "gui.powerfactor.armor.visor": "Night vision: %s",
+        "gui.powerfactor.armor.hover": "Jetpack hover: %s", "gui.powerfactor.armor.helmet.modules": "Night vision %s · Breathing %s",
+        "gui.powerfactor.armor.chest.jetpack": "Jetpack fitted · Jump climbs · %s toggles hover",
+        "gui.powerfactor.armor.chest.socket": "Fit an Electric Jetpack in the Upgrade Table",
+        "gui.powerfactor.armor.legs.stats": "Speed +%s%% · Jump %s · Step +0.5",
+        "gui.powerfactor.armor.boots.stats": "Absorbs up to %s blocks of a fall · uses FE",
+    })
+    for role in ("helmet", "chest", "legs", "boots"):
+        LANG[f"tool_kind.{NS}.power_{role}"] = "Power Armor " + {"helmet": "Helmet", "chest": "Chest Plate", "legs": "Leggings", "boots": "Boots"}[role]
+        LANG[f"tool_kind.{NS}.power_{role}.short"] = {"helmet": "POWER HELMET", "chest": "POWER CHEST", "legs": "EXOSKELETON", "boots": "POWER BOOTS"}[role]
+    LANG["handbook.powerfactor.power_tools.text"] += (
+        "\n\nPower Armor: helmet, chest plate, exoskeleton leggings and boots have individual FE batteries. Charge them in a Charger or by standing on a powered Charging Pad. "
+        "The hull supplies iron-level armor without power. Each charged piece shields 8% of damage remaining after armor, paying 120 FE per point absorbed; Plating adds 2% per module, capped at 50% for the suit. "
+        "Leg servos add 25% movement speed, higher jumps and one-block steps. Speed modules add 15% each; Jump Servo modules add height. Sneak or disable movement assists to move normally. "
+        "Boots spend FE to cushion five blocks of a fall beyond the safe distance; Shock Absorbers add three blocks each. Empty batteries stop powered abilities. "
+        "Open suit settings with B to see batteries and toggle movement assists, night vision or jetpack hover.\n\n"
+        "Put a chest plate in the Upgrade Table and fit an actual Electric Jetpack into a socket. It remains removable with its stored charge and upgrades; flight uses the chest battery. "
+        "Thruster and Efficiency modules in the chest and fitted jetpack combine up to the usual three-module limit. Hold Jump to climb, J toggles hover by default and Sneak descends. "
+        "All armor takes Battery, Efficiency and Plating modules. Helmets also take Night Vision and Rebreather modules for powered vision and underwater air. "
+        "The helmet utilities, locomotion, landing cushion and shield all consume FE; keep an eye on the four-battery HUD.")
+
+
+def movement_kit():
+    six = ("north", "east", "south", "west", "up", "down")
+    def box(frm, to, texture):
+        return {"from": frm, "to": to, "faces": {face: {"texture": texture, "uv": [0, 0, 16, 16]} for face in six}}
+    write(asset("models", "item", "grapple_hook.json"), {"parent": "minecraft:block/block", "textures": {
+        "body": pf("block/grapple_body"), "spool": pf("block/grapple_spool"), "particle": pf("block/grapple_body")}, "elements": [
+        box([4, 5, 2], [12, 10, 14], "#body"), box([3, 6, 4], [13, 9, 10], "#spool"),
+        box([6, 10, 3], [10, 13, 11], "#body"), box([5, 6, 0], [11, 9, 2], "#body")], "display": {
+        "gui": {"rotation": [30, 225, 0], "scale": [0.9, 0.9, 0.9]},
+        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.2, 3.4, 1], "scale": [0.7, 0.7, 0.7]},
+        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.2, 3.4, 1], "scale": [0.7, 0.7, 0.7]},
+        "thirdperson_righthand": {"rotation": [-90, 0, 0], "translation": [0, 2, 0], "scale": [0.7, 0.7, 0.7]},
+        "thirdperson_lefthand": {"rotation": [-90, 0, 0], "translation": [0, 2, 0], "scale": [0.7, 0.7, 0.7]}}})
+    item_def("grapple_hook", pf("item/grapple_hook")); flat_item("wingsuit")
+    shaped("grapple_hook", ["PIP", "WMW", "CKC"], {"P": "#c:plates/steel", "I": pf("iron_gear"), "W": pf("fine_aluminum_wire"),
+        "M": pf("electric_motor"), "C": pf("capacitor"), "K": pf("control_circuit")})
+    shaped("wingsuit", ["SLS", "WRW", " S "], {"S": "minecraft:string", "L": "minecraft:leather", "W": "#minecraft:wool", "R": "#c:plates/aluminum"})
+    LANG.update({
+        "item.powerfactor.grapple_hook": "Powered Grapple", "item.powerfactor.wingsuit": "Wingsuit",
+        "entity.powerfactor.grapple_hook": "Grapple Hook",
+        "key.powerfactor.grapple": "Grapple: Cast / Retract", "key.powerfactor.wingsuit": "Wingsuit: Deploy / Fold",
+        "tool_kind.powerfactor.grapple": "Powered Grapple", "tool_kind.powerfactor.grapple.short": "GRAPPLE",
+        "tooltip.powerfactor.grapple.range": "%s-block cable · powered reel",
+        "tooltip.powerfactor.grapple.controls": "G or right-click casts / retracts · Jump releases",
+        "tooltip.powerfactor.grapple.swing": "Reels by default · hold Sneak to swing with a fixed cable",
+        "tooltip.powerfactor.wingsuit.controls": "U deploys / folds in the air · Sneak airbrakes",
+        "tooltip.powerfactor.wingsuit.momentum": "Dive for speed · look up to trade speed for lift · A/D bank",
+        "tooltip.powerfactor.wingsuit.socket": "Wear in the chest slot, or fit a Power Chestplate socket",
+        "tooltip.powerfactor.armor.wingsuit": "Wingsuit fitted · deploy in the air with U",
+        "gui.powerfactor.grapple.ready": "GRAPPLE READY", "gui.powerfactor.grapple.firing": "FIRING",
+        "gui.powerfactor.grapple.reel": "REELING", "gui.powerfactor.grapple.swing": "SWING",
+        "gui.powerfactor.grapple.hud_help": "Jump off · Sneak swing",
+        "gui.powerfactor.wingsuit.open": "GLIDING", "gui.powerfactor.wingsuit.ready": "WINGSUIT READY",
+        "gui.powerfactor.wingsuit.hud_help": "%s deploy · Sneak brake",
+        "gui.powerfactor.armor.hover": "Hover: %s", "gui.powerfactor.armor.glide": "Wingsuit: %s",
+        "gui.powerfactor.armor.chest.both": "Jetpack + wingsuit · %s hover · %s glide",
+        "gui.powerfactor.armor.chest.wingsuit": "Wingsuit fitted · %2$s deploys / folds",
+        "gui.powerfactor.armor.chest.socket": "Fit a jetpack and/or wingsuit in the Upgrade Table",
+        "tooltip.powerfactor.drill_module.speed": "+50% tool speed; +15% leg speed; +20% grapple reel speed, each",
+        "subtitles.powerfactor.grapple_fire": "Grapple launches", "subtitles.powerfactor.grapple_attach": "Grapple catches",
+        "subtitles.powerfactor.wingsuit_open": "Wingsuit unfolds", "subtitles.powerfactor.wingsuit_wind": "Air rushes past wingsuit",
+    })
+    LANG["handbook.powerfactor.power_tools.text"] += (
+        "\n\nMovement kit: the Powered Grapple has a 64-block cable and 120,000 FE battery. G casts or retracts from your inventory; right-click works when held. "
+        "The hook attaches to solid terrain or a moving entity. It reels you toward the anchor for 12 FE/t; hold Sneak to stop the reel and swing on a fixed cable. "
+        "Jump releases without killing momentum. Broken anchors, obstructed cables, excessive range, empty batteries or dropping the device release the hook. "
+        "Fit Battery, Efficiency or Speed modules in the Upgrade Table to improve the grapple.\n\n"
+        "A Wingsuit can be worn directly or fitted into a Power Chestplate socket alongside a jetpack. Press U in the air to deploy or fold. "
+        "Look down to dive for speed; look up to trade speed for lift. A/D bank and Sneak airbrakes. Low airspeed stalls: the wingsuit needs altitude and momentum. "
+        "Release a swinging or reeling grapple into a glide to keep your speed. A fitted jetpack can regain altitude: Jump folds the wingsuit and resumes thrust. "
+        "Wingsuit fabric folds smoothly, stretches between the arms and hips, and has a leg membrane. Its gliding pose, camera bank and wind sound follow motion. "
+        "The suit screen controls both flight modes, and the movement HUD shows cable mode, charge, distance and airspeed.")
+
+
+def electric_rover():
+    six = ("north", "east", "south", "west", "up", "down")
+    def box(frm, to, texture):
+        return {"from": frm, "to": to, "faces": {d: {"texture": texture, "uv": [0, 0, 16, 16]} for d in six}}
+    write(asset("models", "item", "electric_rover.json"), {"parent": "minecraft:block/block", "textures": {
+        "body": pf("block/rover_body"), "tire": pf("block/rover_tire"), "particle": pf("block/rover_body")}, "elements": [
+        box([2, 4, 1], [14, 6, 15], "#body"), box([3, 6, 1], [13, 9, 5], "#body"), box([5, 6, 9], [11, 11, 11], "#body"),
+        box([1, 2, 2], [4, 7, 6], "#tire"), box([12, 2, 2], [15, 7, 6], "#tire"),
+        box([1, 2, 10], [4, 7, 14], "#tire"), box([12, 2, 10], [15, 7, 14], "#tire"),
+        box([2, 6, 10], [3, 14, 11], "#body"), box([13, 6, 10], [14, 14, 11], "#body"), box([2, 13, 10], [14, 14, 11], "#body")],
+        "display": {"gui": {"rotation": [25, 225, 0], "scale": [0.85, 0.85, 0.85]},
+            "thirdperson_righthand": {"rotation": [0, 90, 0], "scale": [0.5, 0.5, 0.5]},
+            "firstperson_righthand": {"rotation": [0, 0, 0], "scale": [0.6, 0.6, 0.6]}}})
+    item_def("electric_rover", pf("item/electric_rover"))
+    shaped("electric_rover", ["PCP", "MBM", "RGR"], {"P": "#c:plates/steel", "C": pf("control_circuit"),
+        "M": pf("electric_motor"), "B": pf("capacitor"), "R": pf("rubber"), "G": pf("steel_gear")})
+    LANG.update({"item.powerfactor.electric_rover": "Electric Rover", "entity.powerfactor.electric_rover": "Electric Rover",
+        "tooltip.powerfactor.rover.controls": "W/S drive · A/D steer · Jump brake · Sprint boost",
+        "tooltip.powerfactor.rover.pack": "Sneak-wrench to pack; charge on a Charging Pad",
+        "tooltip.powerfactor.rover.hull": "Hull: %s%% · steel ingot repairs 10 HP",
+        "gui.powerfactor.rover.title": "ELECTRIC ROVER", "gui.powerfactor.rover.help": "Jump brake · Sprint boost",
+        "gui.powerfactor.rover.braking": "BRAKES · Sneak to exit", "gui.powerfactor.rover.empty": "BATTERY EMPTY · Coast to a pad",
+        "gui.powerfactor.rover.hull": "Hull %s%% · Sneak exits", "subtitles.powerfactor.rover_motor": "Rover motor whines"})
+    LANG["handbook.powerfactor.power_tools.text"] += (
+        "\n\nThe Electric Rover is a fast single-seat off-road vehicle with a 500,000 FE battery. Place it on clear ground and right-click to sit. "
+        "W/S accelerate and reverse, A/D steer, Jump brakes and Sprint boosts. Sneak exits. It climbs one-block steps using collision handling, "
+        "and brakes automatically if the driver leaves or input stops. Drive uses 20 FE/t, boost 50 FE/t. Empty batteries coast but cannot accelerate. "
+        "Park above a powered Charging Pad to recharge; the packed vehicle also charges as an FE item. Sneak-use a wrench on a stopped, empty rover "
+        "to pack it without losing battery or hull state. Steel ingots repair 10 HP each. The chassis has 80 HP; a destroyed rover becomes scrap.")
+
+
 if __name__ == "__main__":
     models()
     loot()
@@ -2237,6 +2655,11 @@ if __name__ == "__main__":
     phase_i()
     phase_radio()
     phase_oil()
+    industrial_building()
+    steam_plant()
+    power_armor()
+    movement_kit()
+    electric_rover()
     flush_tags()
     lang()
     print("data written to", os.path.normpath(ROOT))

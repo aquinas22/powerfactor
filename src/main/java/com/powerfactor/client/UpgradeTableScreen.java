@@ -111,7 +111,7 @@ public class UpgradeTableScreen extends AbstractContainerScreen<UpgradeTableMenu
                 g.fill(sx + 2, sy + 2, sx + 18, sy + 18, 0x60000000);
                 continue;
             }
-            if (carried.getItem() instanceof DrillModule) {
+            if (carried.getItem() instanceof DrillModule || com.powerfactor.item.PowerArmorItem.fitsSocket(tool, carried)) {
                 if (menu.accepts(carried, i)) {
                     int pulse = (int) (0x80 + 0x7F * Math.sin(t * 6 + i));
                     g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, sx, sy, 0, 224, 20, 20, 256, 256, pulse << 24 | 0xFFFFFF);
@@ -253,6 +253,11 @@ public class UpgradeTableScreen extends AbstractContainerScreen<UpgradeTableMenu
         int cap = capacity(kind, tool);
         out.add(new Stat("CAP", compact(cap) + " FE", Math.min(1, cap / 480_000F)));
         switch (kind) {
+            case GRAPPLE -> {
+                out.add(new Stat("REEL", Math.round(com.powerfactor.item.GrappleItem.reelMultiplier(tool) * 100) + "%", (float) com.powerfactor.item.GrappleItem.reelMultiplier(tool) / 1.6F));
+                out.add(new Stat("RANGE", (int) com.powerfactor.item.GrappleItem.RANGE + "m", 1));
+                out.add(new Stat("COST", ToolModules.cost(tool, com.powerfactor.item.GrappleItem.REEL_FE) + "/t", 1 - ToolModules.cost(tool, 12) / 15F));
+            }
             case DRILL -> {
                 int speed = ToolModules.count(tool, DrillModule.Type.SPEED);
                 out.add(new Stat("COST", DrillItem.costPerBlock(tool) + " FE", 1 - DrillItem.costPerBlock(tool) / 120F));
@@ -277,6 +282,25 @@ public class UpgradeTableScreen extends AbstractContainerScreen<UpgradeTableMenu
                 out.add(new Stat("ARMOR", String.valueOf(3 + 2 * plates), (3 + 2 * plates) / 9F));
                 int cost = com.powerfactor.item.ToolModules.cost(tool, JetpackItem.THRUST_FE);
                 out.add(new Stat("COST", cost + "/t", 1 - cost / 60F));
+            }
+            case POWER_HELMET, POWER_CHEST, POWER_LEGS, POWER_BOOTS -> {
+                out.add(new Stat("SHIELD", Math.round(com.powerfactor.item.PowerArmorItem.shieldFraction(tool) * 100) + "%", (float) com.powerfactor.item.PowerArmorItem.shieldFraction(tool) / 0.14F));
+                if (kind == ToolKind.POWER_LEGS) {
+                    int speed = ToolModules.count(tool, DrillModule.Type.SPEED), jump = ToolModules.count(tool, DrillModule.Type.JUMP);
+                    out.add(new Stat("SPEED", "+" + Math.round(com.powerfactor.power.ArmorPower.speedBonus(speed) * 100) + "%", (float) com.powerfactor.power.ArmorPower.speedBonus(speed) / 0.7F));
+                    out.add(new Stat("JUMP", "+" + fmt(com.powerfactor.power.ArmorPower.jumpBonus(jump)), (float) com.powerfactor.power.ArmorPower.jumpBonus(jump) / 0.34F));
+                } else if (kind == ToolKind.POWER_CHEST) {
+                    out.add(new Stat("PACK", JetpackItem.worn(tool) ? "LINKED" : "EMPTY", JetpackItem.worn(tool) ? 1 : 0));
+                    out.add(new Stat("THRUST", Math.round(JetpackItem.thrust(tool) * 100) + "%", JetpackItem.thrust(tool) / 2.05F));
+                } else if (kind == ToolKind.POWER_BOOTS) {
+                    int shock = ToolModules.count(tool, DrillModule.Type.SHOCK);
+                    out.add(new Stat("LAND", (int) com.powerfactor.power.ArmorPower.landingLimit(shock) + "m", (float) com.powerfactor.power.ArmorPower.landingLimit(shock) / 14));
+                    out.add(new Stat("COST", ToolModules.cost(tool, 100) + "/m", 1 - ToolModules.cost(tool, 100) / 120F));
+                } else {
+                    int vision = ToolModules.count(tool, DrillModule.Type.NIGHT_VISION), air = ToolModules.count(tool, DrillModule.Type.REBREATHER);
+                    out.add(new Stat("VISION", vision > 0 ? "FITTED" : "EMPTY", vision));
+                    out.add(new Stat("AIR", air > 0 ? "FITTED" : "EMPTY", air));
+                }
             }
             case SABER -> {
                 float dmg = ArcSaberItem.LIT_DAMAGE + ToolModules.overcharge(tool, 3F);

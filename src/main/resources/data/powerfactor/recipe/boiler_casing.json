@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "B B",
+    "PPP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "B": "minecraft:bricks"
+  },
+  "result": {
+    "id": "powerfactor:boiler_casing",
+    "count": 4
+  }
+}

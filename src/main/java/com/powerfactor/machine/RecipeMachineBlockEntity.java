@@ -32,6 +32,20 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
     private final RecipeMachine machine;
     private final RecipeManager.CachedCheck<MachineRecipeInput, MachineRecipe> recipes;
     private final @Nullable FluidStacksResourceHandler tank;
+    private final com.powerfactor.animation.RotaryMotion workshopMotion = new com.powerfactor.animation.RotaryMotion();
+
+    @Override
+    public void clientTick() {
+        super.clientTick();
+        if (machine.animatedWorkshop()) {
+            workshopMotion.tick(isRunning() ? (machine == RecipeMachine.CENTRIFUGE ? 0.5 : machine == RecipeMachine.SAWMILL ? 0.7 : 0.12) : 0,
+                    0.08, 0.06);
+        }
+    }
+
+    public float workshopPhase(float partialTick) {
+        return workshopMotion.phase(partialTick);
+    }
 
     public RecipeMachineBlockEntity(RecipeMachine machine, BlockPos pos, BlockState state) {
         super(ModBlockEntities.RECIPE_MACHINES.get(machine).get(), pos, state, range(0, machine.inputs + (machine.electrode ? 0 : 0), machine),

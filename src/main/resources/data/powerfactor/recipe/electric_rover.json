@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PCP",
+    "MBM",
+    "RGR"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "C": "powerfactor:control_circuit",
+    "M": "powerfactor:electric_motor",
+    "B": "powerfactor:capacitor",
+    "R": "powerfactor:rubber",
+    "G": "powerfactor:steel_gear"
+  },
+  "result": {
+    "id": "powerfactor:electric_rover",
+    "count": 1
+  }
+}

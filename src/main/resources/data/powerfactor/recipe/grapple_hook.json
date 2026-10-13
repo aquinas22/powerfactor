@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PIP",
+    "WMW",
+    "CKC"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "I": "powerfactor:iron_gear",
+    "W": "powerfactor:fine_aluminum_wire",
+    "M": "powerfactor:electric_motor",
+    "C": "powerfactor:capacitor",
+    "K": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:grapple_hook",
+    "count": 1
+  }
+}

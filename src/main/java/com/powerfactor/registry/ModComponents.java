@@ -40,6 +40,14 @@ public final class ModComponents {
     /** Jetpack hover mode switched on. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> JETPACK_HOVER =
             COMPONENTS.registerComponentType("jetpack_hover", b -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> ARMOR_ASSIST =
+            COMPONENTS.registerComponentType("armor_assist", b -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> ARMOR_VISOR =
+            COMPONENTS.registerComponentType("armor_visor", b -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> WINGSUIT_OPEN =
+            COMPONENTS.registerComponentType("wingsuit_open", b -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Float>> VEHICLE_HEALTH =
+            COMPONENTS.registerComponentType("vehicle_health", b -> b.persistent(Codec.floatRange(0, 80)).networkSynchronized(ByteBufCodecs.FLOAT));
 
     /** Walkie-talkie channel (1-16) and power switch. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> RADIO_CHANNEL =

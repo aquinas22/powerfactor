@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " B ",
+    "BGB",
+    " B "
+  ],
+  "key": {
+    "B": "powerfactor:turbine_blade",
+    "G": "#c:gears/steel"
+  },
+  "result": {
+    "id": "powerfactor:steam_rotor",
+    "count": 1
+  }
+}

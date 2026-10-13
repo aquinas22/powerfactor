@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  * Fractional distillation column: heats crude oil and splits it into diesel (heavier, drawn off
  * low) and jet fuel (kerosene, drawn off higher). Pipe crude in, pipe the fuels out.
  */
-public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEntity implements ReactiveLoad, MachineAudio.Looping {
+public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEntity implements ReactiveLoad, MachineAudio.Looping, com.powerfactor.multiblock.Buildable {
     public static final int FE_PER_TICK = 100, CRUDE_PER_TICK = 10, DIESEL_PER_TICK = 5, JET_PER_TICK = 4, TANK = 16_000;
     public static final int CRUDE = 0, DIESEL = 1, JET = 2;
 
@@ -86,8 +86,9 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
     @Override
     public void serverTick(ServerLevel level, BlockPos pos, BlockState state) {
         lastFe = 0;
-        if (level.getGameTime() % 20 == pos.asLong() % 20 || linked.isEmpty() == formed) {
+        if (level.getGameTime() % 20 == Math.floorMod(pos.asLong(), 20) || linked.isEmpty() == formed) {
             checkStructure(level, pos, state);
+            state = getBlockState();
         }
         boolean run = formed && enabled(level, pos) && energy.getAmountAsInt() >= FE_PER_TICK && tanks.amount(CRUDE) >= CRUDE_PER_TICK
                 && tanks.amount(DIESEL) + DIESEL_PER_TICK <= TANK && tanks.amount(JET) + JET_PER_TICK <= TANK;
@@ -111,6 +112,11 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
 
     public boolean formed() {
         return formed;
+    }
+
+    @Override
+    public com.powerfactor.multiblock.Structure buildStructure() {
+        return STRUCTURE;
     }
 
     /** Form or break the structure, linking or releasing its casings. */

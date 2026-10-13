@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
  * (any depth, within {@link #REACH} blocks sideways) and lifts it, block by block, into its tank;
  * pipe it to a refinery. Reservoirs run dry.
  */
-public class PumpjackBlockEntity extends com.powerfactor.machine.MachineBlockEntity implements ReactiveLoad, MachineAudio.Looping {
+public class PumpjackBlockEntity extends com.powerfactor.machine.MachineBlockEntity implements ReactiveLoad, MachineAudio.Looping, com.powerfactor.multiblock.Buildable {
     public static final int FE_PER_TICK = 60, MB_PER_TICK = 25, TANK = 16_000, REACH = 8, SCAN_LIMIT = 4096;
 
     private final SimpleEnergyHandler energy = new SimpleEnergyHandler(12_000, 400, 0) {
@@ -50,6 +50,67 @@ public class PumpjackBlockEntity extends com.powerfactor.machine.MachineBlockEnt
             new boolean[] {true}, this::setChanged);
     private final List<BlockPos> reservoir = new ArrayList<>();
     private int drawn, lastFe, scanCooldown;
+    private boolean formed;
+    private final Set<BlockPos> linked = new HashSet<>();
+
+    @Override
+    public com.powerfactor.multiblock.Structure buildStructure() {
+        var parts = new ArrayList<com.powerfactor.multiblock.Structure.Part>();
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                parts.add(new com.powerfactor.multiblock.Structure.Part(new BlockPos(x, -1, z), com.powerfactor.registry.ModBlocks.PUMPJACK_CASING));
+            }
+        }
+        return new com.powerfactor.multiblock.Structure(parts);
+    }
+
+    public boolean formed() { return formed; }
+
+    private void checkStructure(ServerLevel level, BlockPos pos) {
+        var structure = buildStructure();
+        Direction facing = getBlockState().getValue(com.powerfactor.machine.MachineBlock.FACING);
+        boolean now = structure.complete(level, pos, facing);
+        Set<BlockPos> parts = new HashSet<>();
+        if (now) {
+            for (var part : structure.parts()) parts.add(structure.worldPos(pos, facing, part));
+        }
+        for (BlockPos part : linked) {
+            if (!parts.contains(part) && level.getBlockEntity(part) instanceof com.powerfactor.multiblock.CasingBlockEntity casing
+                    && pos.equals(casing.controllerPos())) casing.link(null);
+        }
+        for (BlockPos part : parts) {
+            if (level.getBlockEntity(part) instanceof com.powerfactor.multiblock.CasingBlockEntity casing) casing.link(pos);
+        }
+        linked.clear();
+        linked.addAll(parts);
+        formed = now;
+        BlockState current = getBlockState();
+        if (current.getValue(com.powerfactor.multiblock.CasingBlock.FORMED) != now) {
+            level.setBlock(pos, current.setValue(com.powerfactor.multiblock.CasingBlock.FORMED, now), 3);
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level != null && !level.isClientSide()) {
+            for (BlockPos part : linked) {
+                if (level.getBlockEntity(part) instanceof com.powerfactor.multiblock.CasingBlockEntity casing
+                        && worldPosition.equals(casing.controllerPos())) casing.link(null);
+            }
+        }
+    }
+    private final com.powerfactor.animation.RotaryMotion motion = new com.powerfactor.animation.RotaryMotion();
+
+    @Override
+    public void clientTick() {
+        super.clientTick();
+        motion.tick(isRunning() ? 0.09 : 0, 0.055, 0.085);
+    }
+
+    public float crankPhase(float partialTick) {
+        return motion.phase(partialTick);
+    }
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -59,7 +120,7 @@ public class PumpjackBlockEntity extends com.powerfactor.machine.MachineBlockEnt
                 case DieselMenu.DATA_EE -> (int) Math.round(eeDemand());
                 case DieselMenu.DATA_TANK -> tank.amount(0);
                 case DieselMenu.DATA_STORED -> energy.getAmountAsInt() / 10;
-                case DieselMenu.DATA_FLAGS -> (lastFe > 0 ? 1 : 0) | (reservoir.isEmpty() ? 2 : 0);
+                case DieselMenu.DATA_FLAGS -> (lastFe > 0 ? 1 : 0) | (reservoir.isEmpty() ? 2 : 0) | (formed ? 4 : 0);
                 case DieselMenu.DATA_REDSTONE -> redstoneMode().ordinal();
                 case DieselMenu.DATA_TANK2 -> Math.min(32767, reservoir.size());
                 default -> 0;
@@ -112,11 +173,15 @@ public class PumpjackBlockEntity extends com.powerfactor.machine.MachineBlockEnt
     @Override
     public void serverTick(ServerLevel level, BlockPos pos, BlockState state) {
         lastFe = 0;
+        if (level.getGameTime() % 20 == Math.floorMod(pos.asLong(), 20) || linked.isEmpty() == formed) {
+            checkStructure(level, pos);
+            state = getBlockState();
+        }
         if (reservoir.isEmpty() && --scanCooldown <= 0) {
             scan(level, pos);
             scanCooldown = 100;
         }
-        boolean run = !reservoir.isEmpty() && enabled(level, pos) && energy.getAmountAsInt() >= FE_PER_TICK
+        boolean run = formed && !reservoir.isEmpty() && enabled(level, pos) && energy.getAmountAsInt() >= FE_PER_TICK
                 && tank.amount(0) + MB_PER_TICK <= TANK;
         if (run) {
             energy.set(energy.getAmountAsInt() - FE_PER_TICK);
@@ -165,9 +230,9 @@ public class PumpjackBlockEntity extends com.powerfactor.machine.MachineBlockEnt
 
     @Override
     public ScadaReading scadaReading() {
-        return new ScadaReading(worldPosition, getDisplayName(), lastFe > 0 ? ScadaReading.Status.RUNNING
+        return new ScadaReading(worldPosition, getDisplayName(), !formed ? ScadaReading.Status.ALARM : lastFe > 0 ? ScadaReading.Status.RUNNING
                 : reservoir.isEmpty() ? ScadaReading.Status.WARNING : ScadaReading.Status.OFF, lastFe, (int) eeDemand(),
-                Component.translatable(reservoir.isEmpty() ? "scada.powerfactor.pumpjack.dry" : "scada.powerfactor.pumpjack",
+                Component.translatable(!formed ? "scada.powerfactor.multiblock.incomplete" : reservoir.isEmpty() ? "scada.powerfactor.pumpjack.dry" : "scada.powerfactor.pumpjack",
                         reservoir.size(), tank.amount(0)), true, remoteEnabled(), false, 1F, 60F);
     }
 

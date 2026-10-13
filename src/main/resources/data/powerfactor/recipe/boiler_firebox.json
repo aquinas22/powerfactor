@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PBP",
+    "HFH",
+    "PBP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "B": "minecraft:bricks",
+    "H": "powerfactor:heating_coil",
+    "F": "minecraft:furnace"
+  },
+  "result": {
+    "id": "powerfactor:boiler_firebox",
+    "count": 1
+  }
+}

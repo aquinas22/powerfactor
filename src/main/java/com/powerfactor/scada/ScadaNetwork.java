@@ -38,8 +38,9 @@ public final class ScadaNetwork {
                     queue.add(next);
                 } else {
                     BlockEntity be = level.getBlockEntity(next);
+                    if (be instanceof com.powerfactor.multiblock.MultiblockPart part) be = part.controller();
                     if (be instanceof ScadaDevice device && !(be instanceof ScadaTerminalBlockEntity)) {
-                        devices.put(next, device);
+                        devices.put(be.getBlockPos(), device);
                     }
                 }
             }

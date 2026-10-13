@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PSP",
+    "CIC",
+    " P "
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "S": "powerfactor:sensor_chip",
+    "C": "powerfactor:capacitor",
+    "I": "minecraft:iron_helmet"
+  },
+  "result": {
+    "id": "powerfactor:power_helmet",
+    "count": 1
+  }
+}

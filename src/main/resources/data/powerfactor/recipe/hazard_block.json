@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "YBY",
+    "SSS"
+  ],
+  "key": {
+    "Y": "#c:dyes/yellow",
+    "B": "#c:dyes/black",
+    "S": "powerfactor:riveted_steel"
+  },
+  "result": {
+    "id": "powerfactor:hazard_block",
+    "count": 3
+  }
+}

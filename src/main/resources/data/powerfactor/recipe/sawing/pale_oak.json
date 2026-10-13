@@ -1,0 +1,18 @@
+{
+  "type": "powerfactor:sawing",
+  "inputs": [
+    {
+      "ingredient": "#minecraft:pale_oak_logs",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "minecraft:pale_oak_planks",
+      "count": 6
+    },
+    {
+      "item": "minecraft:stick"
+    }
+  ]
+}

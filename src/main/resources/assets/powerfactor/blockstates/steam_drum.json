@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/steam_drum"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/steam_drum_formed"
+    }
+  }
+}

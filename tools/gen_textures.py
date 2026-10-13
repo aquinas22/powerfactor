@@ -5507,6 +5507,11 @@ def wrench_item():
     return pixmap(blank(), rows, pal)
 
 
+GUNMETAL = hexc("2e353c")
+HOLO = hexc("3fe0ff")
+HOLO_DIM = hexc("1d5a66")
+
+
 def upgrade_table_top():
     """Gunmetal bench top with a glowing cyan circuit inlay around a projector ring."""
     import math
@@ -6254,10 +6259,13 @@ def pumpjack_entity():
     box_uv(img, 0, 22, 6, 6, 2, solid("3a4046", "22272b"))                 # counterweight
     box_uv(img, 20, 22, 1, 10, 1, solid("aab4bc"))                         # pitman arm / polished rod
     box_uv(img, 32, 22, 2, 2, 2, solid("2a2e31"))                          # pivot bearing
+    box_uv(img, 40, 22, 1, 16, 1, solid("aab4bc", "58636c"))              # pitman arms
+    box_uv(img, 0, 36, 24, 1, 4, solid("b72f25", "ee7562"))              # I-beam flanges
+    box_uv(img, 0, 44, 12, 2, 2, solid("596670", "aab4bc"))              # pivot axle
     return img
 
 
-def refinery_column():
+def refinery_column(frame=None):
     """Distillation column skin: insulated steel with tray flanges every 4 px and a teal stripe."""
     img = Image.new("RGBA", (16, 16))
     for y in range(16):
@@ -6270,6 +6278,47 @@ def refinery_column():
             img.putpixel((x, y), c)
     for y in range(16):
         img.putpixel((12, y), hexc("1f8a6a"))
+        img.putpixel((13, y), hexc("24383b"))
+        if frame is not None and (y + frame * 2) % 16 < 4:
+            img.putpixel((12, y), hexc("70efd2"))
+    for x, y in ((3, 2), (9, 2), (3, 14), (9, 14)):
+        img.putpixel((x, y), hexc("d7e1e6"))
+        img.putpixel((x, y + 1), hexc("4c5862"))
+    return img
+
+
+def pumpjack_skid():
+    img = painted(941, hexc("56616b"))
+    d = ImageDraw.Draw(img)
+    for y in (0, 1, 14, 15):
+        for x in range(16):
+            img.putpixel((x, y), hexc("e7b738") if ((x + y) // 3) % 2 == 0 else hexc("252a2e"))
+    d.rectangle((2, 3, 13, 12), outline=hexc("283139"))
+    for x, y in ((2, 3), (13, 3), (2, 12), (13, 12)):
+        img.putpixel((x, y), hexc("c0cbd0"))
+    return img
+
+
+def pumpjack_motor():
+    img = painted(942, hexc("40576b"))
+    d = ImageDraw.Draw(img)
+    d.rectangle((1, 1, 14, 14), outline=hexc("7691a1"))
+    for x in range(3, 14, 2):
+        d.line((x, 4, x, 11), fill=hexc("1a2c39"))
+        d.line((x + 1, 4, x + 1, 11), fill=hexc("526f83"))
+    d.rectangle((3, 12, 10, 14), fill=hexc("b4c1c7"))
+    d.line((4, 13, 8, 13), fill=hexc("445562"))
+    rivets(img, CORNERS)
+    return img
+
+
+def pumpjack_wellhead():
+    img = painted(943, hexc("727e86"))
+    d = ImageDraw.Draw(img)
+    d.rectangle((1, 1, 14, 14), outline=hexc("bac7cf"))
+    d.rectangle((3, 5, 12, 10), fill=hexc("465059"))
+    d.line((3, 5, 12, 5), fill=hexc("dce5e8"))
+    rivets(img, ((2, 2), (13, 2), (2, 13), (13, 13)))
     return img
 
 
@@ -6290,6 +6339,11 @@ def phase_oil():
     save(pumpjack_entity(), "entity/pumpjack.png")
     save(refinery_column(), "block/refinery_column.png")
     save(refinery_base(), "block/refinery_base.png")
+    save(pumpjack_skid(), "block/pumpjack_skid.png")
+    save(pumpjack_motor(), "block/pumpjack_motor.png")
+    save(pumpjack_wellhead(), "block/pumpjack_wellhead.png")
+    save(anim([refinery_column(frame) for frame in range(8)]), "block/refinery_column_formed.png")
+    write_mcmeta_interp("block/refinery_column_formed.png", 4)
 
 
 # ---------------------------------------------------------------- multiblock casings
@@ -6317,16 +6371,16 @@ def refinery_casing(formed=False):
     return img
 
 
-def refinery_controller_front():
+def refinery_controller_front(frame=None):
     """Controller face: a control panel with an LCD, gauges and a big start button."""
     img = refinery_casing()
     d = ImageDraw.Draw(img)
     d.rectangle((3, 3, 12, 8), fill=hexc("0b2016"), outline=hexc("1b1d20"))
     for x in range(4, 12):
-        img.putpixel((x, 5 + (x % 3 == 0)), hexc("7cffb0"))
+        img.putpixel((x, 5 + ((x + (frame or 0)) % 3 == 0)), hexc("7cffb0") if frame is not None else hexc("42755c"))
     d.ellipse((3, 10, 6, 13), fill=hexc("d0d6da"), outline=hexc("2c3238"))
     img.putpixel((5, 11), hexc("d8382c"))
-    d.ellipse((9, 10, 12, 13), fill=hexc("2fb04a"), outline=hexc("1b1d20"))
+    d.ellipse((9, 10, 12, 13), fill=hexc("2fb04a") if frame is not None else hexc("32443a"), outline=hexc("1b1d20"))
     return img
 
 
@@ -6334,6 +6388,317 @@ def phase_multiblock():
     save(refinery_casing(), "block/refinery_casing.png")
     save(refinery_casing(True), "block/refinery_casing_formed.png")
     save(refinery_controller_front(), "block/refinery_controller_front.png")
+    save(anim([refinery_controller_front(frame) for frame in range(6)]), "block/refinery_controller_front_on.png")
+    write_mcmeta("block/refinery_controller_front_on.png", 5)
+    for formed in (False, True):
+        img = painted(4810, hexc("485563")); d = ImageDraw.Draw(img)
+        d.rectangle((1, 1, 14, 14), outline=hexc("899aa5"))
+        d.rectangle((3, 3, 12, 12), outline=hexc("28343d"))
+        for y in (4, 7, 10):
+            d.line((4, y, 11, y), fill=hexc("1f2a32"))
+        for x in range(16):
+            img.putpixel((x, 15), hexc("e7bb43") if (x // 3) % 2 else hexc("252a31"))
+        rivets(img, ((2, 2), (13, 2), (2, 13), (13, 13)))
+        img.putpixel((13, 7), hexc("6fffbd") if formed else hexc("354d45"))
+        save(img, "block/pumpjack_casing" + ("_formed" if formed else "") + ".png")
+
+
+def workshop_body(machine, running=False):
+    colors = {"mechanical_press": "886837", "mixer": "3c6a66", "centrifuge": "4f617d", "sawmill": "87603d"}
+    img = painted(5000 + list(colors).index(machine), hexc(colors[machine]))
+    d = ImageDraw.Draw(img)
+    d.rectangle((2, 2, 13, 13), outline=hexc("263039"))
+    for x, y in ((2, 2), (13, 2), (2, 13), (13, 13)):
+        img.putpixel((x, y), hexc("b8c5cb"))
+    for x in range(3, 13):
+        img.putpixel((x, 12), hexc("e9bd43") if (x // 2) % 2 else hexc("252c32"))
+    d.rectangle((4, 4, 11, 8), fill=hexc("122029"))
+    for x in range(5, 11):
+        img.putpixel((x, 6), hexc("69efcf") if running else hexc("3a6260"))
+    img.putpixel((12, 10), hexc("67ffab") if running else hexc("293b34"))
+    return img
+
+
+def workshop_sheet():
+    img = Image.new("RGBA", (64, 64), CLEAR)
+    def steel(face, w, h):
+        t = Image.new("RGBA", (w, h))
+        for y in range(h):
+            for x in range(w):
+                t.putpixel((x, y), shade(hexc("99a9b5"), 0.75 + 0.25 * (x % 4) / 3))
+        return face_edges(t, hexc("53616b"))
+    for u, v, w, h, depth in ((0, 0, 8, 2, 8), (0, 12, 3, 6, 3), (16, 12, 1, 9, 1),
+                            (0, 24, 10, 2, 1), (24, 12, 4, 2, 4), (24, 24, 2, 4, 3), (0, 32, 1, 7, 7)):
+        box_uv(img, u, v, w, h, depth, steel)
+    box_uv_f(img, 20, 32, 1.3, 1.5, 1, steel)
+    return img
+
+
+def phase_workshop():
+    for machine in ("mechanical_press", "mixer", "centrifuge", "sawmill"):
+        save(workshop_body(machine), "block/" + machine + "_body.png")
+        save(workshop_body(machine, True), "block/" + machine + "_body_on.png")
+    save(steel_plate(5005), "block/workshop_steel.png")
+    save(workshop_sheet(), "entity/workshop.png")
+    for pattern in ("plate", "gear"):
+        img = Image.new("RGBA", (16, 16), CLEAR); d = ImageDraw.Draw(img)
+        d.rectangle((1, 1, 14, 14), fill=hexc("5a6771"), outline=hexc("a8bac7"))
+        d.rectangle((2, 2, 13, 13), outline=hexc("2b3942"))
+        if pattern == "plate":
+            d.rectangle((4, 5, 11, 10), fill=hexc("17242d"), outline=hexc("8b9ba8"))
+        else:
+            d.ellipse((4, 4, 11, 11), fill=hexc("17242d"), outline=hexc("8b9ba8"))
+            for x, y in ((7, 3), (7, 11), (3, 7), (11, 7)):
+                d.rectangle((x, y, x + 1, y + 1), fill=hexc("17242d"))
+        rivets(img, ((3, 3), (12, 3), (3, 12), (12, 12)))
+        save(img, "item/" + pattern + "_die.png")
+
+
+def phase_industrial():
+    img = steel_plate(5100)
+    d = ImageDraw.Draw(img)
+    for x in (3, 12):
+        d.line((x, 2, x, 13), fill=hexc("46515b"))
+    save(img, "block/industrial_steel.png")
+    img = steel_plate(5101)
+    rivets(img, ((2, 2), (13, 2), (2, 13), (13, 13), (7, 2), (7, 13)))
+    ImageDraw.Draw(img).rectangle((4, 4, 11, 11), outline=hexc("596570"))
+    save(img, "block/riveted_steel.png")
+    img = steel_plate(5102)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            img.putpixel((x, y), hexc("edbd3b") if ((x + y) // 4) % 2 == 0 else hexc("242b31"))
+    rivets(img, CORNERS)
+    save(img, "block/hazard_block.png")
+    img = steel_plate(5103); d = ImageDraw.Draw(img)
+    d.polygon(((8, 2), (14, 13), (2, 13)), fill=hexc("e8b934"), outline=hexc("1f272d"))
+    d.rectangle((7, 6, 8, 9), fill=hexc("d33929")); d.rectangle((7, 11, 8, 11), fill=hexc("252b30"))
+    rivets(img, CORNERS)
+    save(img, "block/warning_block.png")
+
+
+def steam_panel(seed, hue, active=False):
+    img = painted(seed, hexc(hue)); d = ImageDraw.Draw(img)
+    d.rectangle((1, 1, 14, 14), outline=hexc("93a5ad"))
+    d.rectangle((3, 3, 12, 8), fill=hexc("10242a"), outline=hexc("283d45"))
+    for x in range(4, 12):
+        img.putpixel((x, 5 + (x % 3 == 0)), hexc("87f2c5") if active else hexc("426a63"))
+    d.ellipse((3, 10, 6, 13), fill=hexc("bdcbd0"), outline=hexc("33454e"))
+    img.putpixel((5, 11), hexc("e2a943"))
+    img.putpixel((11, 11), hexc("68efad") if active else hexc("374e45"))
+    rivets(img, CORNERS)
+    return img
+
+
+def phase_steam():
+    palette = {"boiler_casing": "666854", "boiler_firebox": "786042", "steam_drum": "657e88", "turbine_casing": "3e6777",
+               "steam_rotor": "7d858d", "generator_magnet": "876337"}
+    for name, color in palette.items():
+        img = painted(5500 + list(palette).index(name), hexc(color)); d = ImageDraw.Draw(img)
+        d.rectangle((1, 1, 14, 14), outline=hexc("a7b8bb")); d.rectangle((3, 3, 12, 12), outline=hexc("28343b"))
+        for y in (4, 7, 10): d.line((4, y, 11, y), fill=hexc("344850"))
+        for x in range(16): img.putpixel((x, 15), hexc("e8bb44") if (x // 3) % 2 else hexc("253239"))
+        if name == "steam_rotor":
+            d.ellipse((4, 4, 11, 11), fill=hexc("b1c1c9"), outline=hexc("28343b")); d.ellipse((7, 7, 8, 8), fill=hexc("394b54"))
+        if name == "generator_magnet":
+            for x in (4, 6, 8, 10): d.line((x, 4, x, 11), fill=hexc("d29f60"))
+        rivets(img, CORNERS); save(img, "block/" + name + ".png")
+    for name, color in (("steam_boiler", "686957"), ("steam_turbine", "3e6777")):
+        save(steam_panel(5520, color), "block/" + name + "_front.png")
+        save(steam_panel(5520, color, True), "block/" + name + "_front_on.png")
+    img = painted(5521, hexc("48616c")); d = ImageDraw.Draw(img)
+    d.rectangle((2, 2, 13, 13), outline=hexc("91d9ce")); d.ellipse((4, 4, 11, 11), fill=hexc("253b43"))
+    d.ellipse((6, 6, 9, 9), fill=hexc("75b7c5")); save(img, "block/steam_port.png")
+    # The full entity sheet stays in the same metal palette so the large cylindrical faces join the frame.
+    img = Image.new("RGBA", (256, 256)); d = ImageDraw.Draw(img)
+    for y in range(256):
+        for x in range(256):
+            img.putpixel((x, y), shade(hexc("aebac2"), 0.87 + 0.10 * ((y * 13 + x * 3) % 7) / 6))
+    for y in (12, 24, 60, 96, 122, 147):
+        d.line((0, y, 255, y), fill=hexc("677984")); d.line((0, y + 1, 255, y + 1), fill=hexc("d0dce1"))
+    for x in range(8, 256, 24):
+        for y in (8, 56, 104, 152, 200):
+            d.rectangle((x, y, x + 1, y + 1), fill=hexc("5b6c76")); img.putpixel((x, y), hexc("e0e8ec"))
+    save(img, "entity/steam_plant.png")
+    for name in ("geothermal_generator", "thermoelectric_generator"):
+        save(steam_panel(5530, "536366"), "block/" + name + "_front.png")
+        img = steam_panel(5530, "536366", True); d = ImageDraw.Draw(img)
+        d.rectangle((3, 10, 7, 13), fill=hexc("f0873e")); d.rectangle((8, 10, 12, 13), fill=hexc("69aede") if name == "thermoelectric_generator" else hexc("b95825"))
+        save(img, "block/" + name + "_front_on.png")
+        img = painted(5531, hexc("536366")); d = ImageDraw.Draw(img)
+        for x in range(3, 14, 2): d.line((x, 3, x, 12), fill=hexc("2a3c44"))
+        rivets(img, CORNERS); save(img, "block/" + name + "_side.png")
+        img = steel_plate(5532); d = ImageDraw.Draw(img)
+        d.ellipse((4, 4, 11, 11), fill=hexc("30404a"), outline=hexc("d4e0e4")); save(img, "block/" + name + "_top.png")
+    img = painted(5540, hexc("607c80")); d = ImageDraw.Draw(img)
+    for y in (3, 5, 7, 9, 11):
+        d.line((2, y, 13, y), fill=hexc("2b474e")); d.line((2, y + 1, 13, y + 1), fill=hexc("91aaa9"))
+    rivets(img, CORNERS); save(img, "block/cooling_tower_side.png")
+    img = painted(5541, hexc("527e8b")); d = ImageDraw.Draw(img)
+    d.rectangle((2, 2, 13, 13), outline=hexc("a9d0d5")); rivets(img, CORNERS); save(img, "block/rain_collector_side.png")
+    save(glass_pipe(hexc("bcd2df", 42), [hexc("d2d7db"), hexc("8e9ea8"), hexc("637782"), hexc("354952")]), "block/steam_pipe.png")
+    save(pipe_flange([hexc("d2d7db"), hexc("8e9ea8"), hexc("637782"), hexc("354952")]), "block/steam_pipe_flange.png")
+    for name, base, bright in (("steam", "9baebc", "e7f1f6"), ("hot_water", "448f9b", "81c9d4")):
+        frames = []
+        for frame in range(8):
+            img = Image.new("RGBA", (16, 16))
+            for y in range(16):
+                for x in range(16):
+                    wave = ((x * 3 + y * 2 + frame * 2) % 16) / 15
+                    img.putpixel((x, y), mix_rgb(hexc(base), hexc(bright), wave))
+            frames.append(img)
+        save(anim(frames), "block/" + name + "_still.png"); write_mcmeta_interp("block/" + name + "_still.png", 4)
+
+
+def phase_power_armor():
+    edge, dark, metal, light, cyan, amber = [hexc(c) for c in ("1c303b", "344d5d", "658190", "b9ccd5", "45d9eb", "e6b454")]
+    for part in ("helmet", "chestplate", "leggings", "boots"):
+        img = Image.new("RGBA", (16, 16)); d = ImageDraw.Draw(img)
+        if part == "helmet":
+            d.rounded_rectangle((2, 2, 13, 13), 2, fill=metal, outline=edge)
+            d.rectangle((4, 2, 11, 3), fill=light); d.rectangle((3, 5, 12, 8), fill=dark)
+            d.line((4, 6, 11, 6), fill=cyan); d.line((5, 7, 10, 7), fill=hexc("22819a"))
+            d.rectangle((5, 10, 10, 12), fill=edge); d.line((6, 11, 9, 11), fill=light)
+            d.point((3, 10), fill=amber); d.point((12, 10), fill=amber)
+        elif part == "chestplate":
+            d.polygon([(1, 3), (4, 1), (6, 3), (9, 3), (11, 1), (14, 3), (13, 7), (12, 7), (12, 14), (3, 14), (3, 7), (2, 7)], fill=metal, outline=edge)
+            d.line((2, 3, 4, 2), fill=light); d.line((11, 2, 13, 3), fill=light)
+            d.rectangle((4, 5, 11, 10), fill=dark); d.rectangle((5, 5, 10, 8), fill=light)
+            d.line((6, 7, 9, 7), fill=cyan); d.rectangle((4, 12, 11, 13), fill=edge)
+            d.point((4, 10), fill=amber); d.point((11, 10), fill=amber)
+        elif part == "leggings":
+            d.rectangle((3, 1, 12, 5), fill=metal, outline=edge); d.line((4, 2, 11, 2), fill=light)
+            for x in (3, 9):
+                d.rectangle((x, 5, x + 3, 14), fill=metal, outline=edge)
+                d.line((x + 1, 6, x + 1, 12), fill=light); d.line((x, 9, x + 3, 9), fill=amber)
+                d.point((x + 2, 6), fill=cyan)
+        else:
+            for x in (3, 9):
+                d.rectangle((x, 3, x + 3, 12), fill=metal, outline=edge)
+                d.rectangle((x - 1, 11, x + 3, 14), fill=dark, outline=edge)
+                d.line((x, 6, x + 2, 6), fill=amber); d.line((x, 12, x + 2, 12), fill=light)
+        save(img, "item/power_" + part + ".png")
+    for name, motif in (("jump_servo_module", "jump"), ("shock_absorber_module", "shock"), ("night_vision_module", "vision"), ("rebreather_module", "air")):
+        img = Image.new("RGBA", (16, 16)); d = ImageDraw.Draw(img)
+        d.rectangle((2, 1, 13, 14), fill=dark, outline=edge); d.rectangle((3, 2, 12, 12), fill=metal, outline=light)
+        d.rectangle((4, 3, 11, 10), fill=edge)
+        for x in (4, 7, 10): d.rectangle((x, 13, x + 1, 14), fill=amber)
+        if motif == "jump":
+            d.line([(5, 7), (8, 4), (10, 7)], fill=cyan, width=1); d.line((8, 5, 8, 9), fill=cyan)
+        elif motif == "shock":
+            d.line([(5, 4), (10, 5), (5, 6), (10, 7), (5, 8), (10, 9)], fill=amber)
+        elif motif == "vision":
+            d.ellipse((5, 5, 10, 8), outline=cyan); d.point((8, 6), fill=light)
+        else:
+            d.rectangle((5, 4, 10, 8), fill=cyan); d.rectangle((6, 3, 9, 4), fill=light); d.line((7, 9, 10, 9), fill=amber)
+        save(img, "item/" + name + ".png")
+    # Native humanoid UVs. Transparent gaps keep the articulated armor readable over a player's skin.
+    for layer in ("humanoid", "humanoid_leggings"):
+        img = Image.new("RGBA", (64, 32)); d = ImageDraw.Draw(img)
+        for x0, y0, x1, y1 in ((0, 0, 31, 15), (16, 16, 39, 31), (40, 16, 55, 31), (0, 16, 15, 31)):
+            d.rectangle((x0, y0, x1, y1), fill=metal)
+            for x in range(x0, x1 + 1):
+                for y in range(y0, y1 + 1):
+                    if (x * 5 + y * 3) % 17 == 0: img.putpixel((x, y), dark)
+        for x0, y0, x1, y1 in ((8, 8, 15, 15), (20, 20, 27, 31), (44, 20, 47, 31), (4, 20, 7, 31)):
+            d.rectangle((x0, y0, x1, y1), outline=edge)
+            d.line((x0 + 1, y0 + 1, x1 - 1, y0 + 1), fill=light)
+        d.rectangle((9, 10, 14, 12), fill=dark); d.line((9, 11, 14, 11), fill=cyan)
+        d.rectangle((10, 14, 13, 15), fill=edge)
+        d.rectangle((21, 23, 26, 26), fill=dark); d.line((22, 24, 25, 24), fill=cyan)
+        d.line((20, 29, 27, 29), fill=amber)
+        d.line((44, 23, 47, 23), fill=amber); d.rectangle((45, 26, 46, 29), fill=dark)
+        d.line((4, 27, 7, 27), fill=amber); d.rectangle((5, 21, 6, 25), fill=dark)
+        d.line((4, 31, 7, 31), fill=edge)
+        if layer == "humanoid_leggings":
+            d.rectangle((4, 20, 7, 25), fill=dark); d.line((5, 20, 5, 25), fill=light)
+            d.line((4, 26, 7, 26), fill=amber); d.line((4, 30, 7, 30), fill=light)
+        save(img, "entity/equipment/" + layer + "/power_armor.png")
+    img = Image.new("RGBA", (128, 64), metal); d = ImageDraw.Draw(img)
+    for x in range(128):
+        for y in range(64):
+            img.putpixel((x, y), shade(metal, 0.92 + ((x * 7 + y * 3) % 11) * 0.015))
+    for y in (0, 18, 20, 39, 42, 62):
+        d.line((0, y, 127, y), fill=edge); d.line((0, y + 1, 127, y + 1), fill=light)
+    for x in range(4, 128, 12):
+        for y in (4, 24, 46): d.point((x, y), fill=light); d.point((x + 1, y + 1), fill=edge)
+    d.rectangle((80, 0, 95, 8), fill=hexc("dbfaff")); d.line((82, 2, 92, 2), fill=hexc("ffffff"))
+    for x in (44, 48, 52, 56): d.line((x, 7, x + 2, 9), fill=amber)
+    d.rectangle((70, 22, 76, 30), fill=light)
+    save(img, "entity/power_armor_parts.png")
+
+
+def phase_rover():
+    body = steel_plate(1201); d = ImageDraw.Draw(body)
+    d.rectangle((1, 3, 14, 12), fill=hexc("315462")); d.line((2, 4, 13, 4), fill=hexc("728b8f"));
+    d.rectangle((5, 7, 10, 10), fill=hexc("19262e")); d.line((6, 8, 9, 8), fill=hexc("e5b54b")); rivets(body, CORNERS); save(body, "block/rover_body.png")
+    tire = Image.new("RGBA", (16, 16), hexc("252c30")); d = ImageDraw.Draw(tire)
+    for y in range(0, 16, 4):
+        d.line((0, y, 15, y + 3), fill=hexc("4a5357"), width=2)
+    d.ellipse((4, 4, 11, 11), fill=STEEL_DARK, outline=STEEL_LIGHT); d.ellipse((6, 6, 9, 9), fill=STEEL); save(tire, "block/rover_tire.png")
+    img = Image.new("RGBA", (128, 128)); d = ImageDraw.Draw(img); r = random.Random(1202)
+    for x in range(128):
+        for y in range(128): img.putpixel((x, y), shade(STEEL, 0.7 + r.random() * 0.18 + (y % 3) * 0.025))
+    d.rectangle((0, 42, 63, 63), fill=hexc("315462")); d.line((1, 43, 62, 43), fill=hexc("6c929b"));
+    for y in (46, 49, 52, 55, 58): d.line((6, y, 21, y), fill=hexc("182f37")); d.line((34, y, 50, y), fill=hexc("182f37"))
+    d.rectangle((0, 64, 36, 100), fill=hexc("222d31"));
+    for x in (3, 8, 13, 18, 23, 28, 33): d.line((x, 66, x, 98), fill=hexc("4f6064"))
+    d.rectangle((64, 44, 127, 74), fill=hexc("4e6067"));
+    for y in (46, 50, 54, 58, 62, 66): d.line((65, y, 126, y), fill=hexc("899b9e"))
+    d.rectangle((64, 90, 78, 104), fill=hexc("cf9c38"));
+    for y in range(91, 104, 3): d.line((64, y, 78, y), fill=hexc("614b23"))
+    d.rectangle((0, 105, 46, 118), fill=hexc("3b535c"));
+    for x in range(2, 45, 4): d.line((x, 107, x, 116), fill=hexc("a5b3b5"))
+    for x,y in [(3,3),(22,3),(37,3),(55,3),(3,36),(54,36),(28,46),(60,46)]:
+        d.rectangle((x,y,x+1,y+1), fill=STEEL_LIGHT)
+    save(img, "entity/rover_body.png")
+    img = Image.new("RGBA", (128, 128), hexc("252c30")); d = ImageDraw.Draw(img)
+    for y in range(0, 128, 4):
+        for x in range(0, 128, 8): d.polygon([(x,y),(x+3,y),(x+7,y+2),(x+4,y+2)], fill=hexc("485459"))
+    d.rectangle((32, 0, 54, 16), fill=hexc("718188"));
+    for x in range(34, 54, 4): d.line((x,1,x,14), fill=hexc("c2cbd0"));
+    save(img, "entity/rover_tire.png")
+    img = Image.new("RGBA", (128, 128), hexc("29363c")); d = ImageDraw.Draw(img)
+    d.rectangle((0,0,32,7), fill=hexc("eaf9f4"));
+    for x in range(0, 32, 3): d.line((x,0,x,6), fill=hexc("a9d6d6"));
+    d.rectangle((0,8,32,15), fill=hexc("ed5444")); d.line((0,9,32,9), fill=hexc("ffb38d")); save(img, "entity/rover_lights.png")
+
+
+def phase_movement():
+    metal, light, dark, amber = [hexc(c) for c in ("647d8c", "b9cbd3", "243e4c", "dfaa42")]
+    img = painted(5700, metal); d = ImageDraw.Draw(img)
+    d.rectangle((1, 1, 14, 14), outline=light); d.rectangle((3, 4, 12, 11), fill=dark)
+    d.line((4, 5, 11, 5), fill=amber); d.ellipse((6, 6, 9, 9), fill=light, outline=dark)
+    rivets(img, CORNERS); save(img, "block/grapple_body.png")
+    img = painted(5701, dark); d = ImageDraw.Draw(img)
+    d.ellipse((2, 2, 13, 13), fill=metal, outline=light); d.ellipse((4, 4, 11, 11), outline=amber)
+    for x in (5, 7, 9): d.line((x, 5, x, 10), fill=light)
+    save(img, "block/grapple_spool.png")
+    img = Image.new("RGBA", (16, 16)); d = ImageDraw.Draw(img)
+    d.polygon([(7, 1), (9, 1), (12, 5), (15, 12), (11, 11), (9, 8), (9, 14), (6, 14), (6, 8), (4, 11), (0, 12), (3, 5)], fill=dark, outline=light)
+    d.line([(3, 6), (5, 10), (7, 6), (9, 10), (12, 6)], fill=amber); d.rectangle((6, 2, 9, 6), fill=metal)
+    save(img, "item/wingsuit.png")
+    img = Image.new("RGBA", (64, 32), dark); d = ImageDraw.Draw(img)
+    for x in range(64):
+        for y in range(32):
+            img.putpixel((x, y), shade(dark, 0.90 + ((x * 3 + y * 7) % 11) * 0.02))
+    for x in (2, 10, 20, 29): d.line((x, 0, x, 15), fill=light)
+    d.rectangle((2, 2, 7, 8), outline=amber)
+    # Lower right quarter supplies the stretched membrane UVs, with stitched ribs and orange edging.
+    d.rectangle((32, 16, 63, 31), fill=hexc("dfb451"), outline=hexc("ffe0a0"))
+    for x in (36, 43, 50, 57): d.line((x, 17, 34, 30), fill=hexc("766039"))
+    d.line((34, 17, 61, 29), fill=hexc("f5d790")); save(img, "entity/wingsuit.png")
+    for name in ("grapple_hook", "grapple_wrist"):
+        img = Image.new("RGBA", (32, 32), metal); d = ImageDraw.Draw(img)
+        for y in (0, 10, 15, 23):
+            d.line((0, y, 31, y), fill=dark); d.line((0, y + 1, 31, y + 1), fill=light)
+        for x in (4, 12, 20, 28): d.point((x, 5), fill=light)
+        d.rectangle((18, 0, 23, 5), fill=amber); d.rectangle((0, 12, 7, 18), fill=light)
+        save(img, "entity/" + name + ".png")
+    img = Image.new("RGBA", (16, 16));
+    for x in range(16):
+        for y in range(16): img.putpixel((x, y), light if (x + y * 2) % 4 == 0 else dark if (x + y) % 4 == 0 else metal)
+    save(img, "entity/grapple_cable.png")
 
 
 if __name__ == "__main__":
@@ -6404,4 +6769,10 @@ if __name__ == "__main__":
     save(gui_engine(), "gui/engine.png")
     phase_b()
     phaseC_F()
+    phase_workshop()
+    phase_industrial()
+    phase_steam()
+    phase_power_armor()
+    phase_movement()
+    phase_rover()
     print("textures written to", os.path.normpath(ROOT))

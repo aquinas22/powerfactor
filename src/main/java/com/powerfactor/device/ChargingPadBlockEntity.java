@@ -39,6 +39,7 @@ public class ChargingPadBlockEntity extends com.powerfactor.machine.MachineBlock
         }
     };
     private int lastOut, items;
+    private int chargeCursor;
 
     public ChargingPadBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CHARGING_PAD.get(), pos, state);
@@ -49,19 +50,33 @@ public class ChargingPadBlockEntity extends com.powerfactor.machine.MachineBlock
         lastOut = 0;
         items = 0;
         if (enabled(level, pos) && energy.getAmountAsInt() > 0) {
-            for (Entity e : level.getEntities((Entity) null, new AABB(pos).setMaxY(pos.getY() + 1.2), e -> e instanceof Player || e instanceof ItemEntity)) {
+            record Target(EnergyHandler energy, Runnable commit) {}
+            var targets = new java.util.ArrayList<Target>();
+            for (Entity e : level.getEntities((Entity) null, new AABB(pos).setMaxY(pos.getY() + 1.2), e -> e instanceof Player || e instanceof ItemEntity || e instanceof com.powerfactor.vehicle.RoverEntity)) {
                 if (e instanceof Player player) {
                     ResourceHandler<ItemResource> inv = PlayerInventoryWrapper.of(player);
-                    for (int i = 0; i < inv.size() && lastOut < RATE; i++) {
-                        charge(ItemAccess.forHandlerIndex(inv, i).getCapability(Capabilities.Energy.ITEM));
+                    for (int i = 0; i < inv.size(); i++) {
+                        var handler = ItemAccess.forHandlerIndex(inv, i).getCapability(Capabilities.Energy.ITEM);
+                        if (handler != null && handler.getAmountAsLong() < handler.getCapacityAsLong()) targets.add(new Target(handler, () -> {}));
                     }
-                } else if (e instanceof ItemEntity item && lastOut < RATE) {
+                } else if (e instanceof ItemEntity item) {
                     // Charge a copy, then put the charged stack back on the entity.
                     ItemAccess access = ItemAccess.forStack(item.getItem().copy());
-                    if (charge(access.getCapability(Capabilities.Energy.ITEM))) {
-                        item.setItem(access.getResource().toStack(access.getAmount()));
-                    }
+                    var handler = access.getCapability(Capabilities.Energy.ITEM);
+                    if (handler != null && handler.getAmountAsLong() < handler.getCapacityAsLong()) targets.add(new Target(handler,
+                            () -> item.setItem(access.getResource().toStack(access.getAmount()))));
+                } else {
+                    var handler = e.getCapability(Capabilities.Energy.ENTITY, null);
+                    if (handler != null && handler.getAmountAsLong() < handler.getCapacityAsLong()) targets.add(new Target(handler, () -> {}));
                 }
+            }
+            if (!targets.isEmpty()) {
+                int share = Math.max(1, Math.min(PER_ITEM, Math.min(RATE, energy.getAmountAsInt()) / targets.size()));
+                for (int i = 0; i < targets.size() && lastOut < RATE; i++) {
+                    var target = targets.get((i + chargeCursor) % targets.size());
+                    if (charge(target.energy(), share)) target.commit().run();
+                }
+                chargeCursor = (chargeCursor + 1) % targets.size();
             }
         }
         setRunning(level, pos, state, lastOut > 0);
@@ -70,11 +85,11 @@ public class ChargingPadBlockEntity extends com.powerfactor.machine.MachineBlock
         }
     }
 
-    private boolean charge(EnergyHandler target) {
+    private boolean charge(EnergyHandler target, int maximum) {
         if (target == null || target.getAmountAsLong() >= target.getCapacityAsLong()) {
             return false;
         }
-        int moved = com.powerfactor.machine.EnergyOut.give(energy, target, Math.min(PER_ITEM, RATE - lastOut));
+        int moved = com.powerfactor.machine.EnergyOut.give(energy, target, Math.min(maximum, RATE - lastOut));
         lastOut += moved;
         if (moved > 0) {
             items++;

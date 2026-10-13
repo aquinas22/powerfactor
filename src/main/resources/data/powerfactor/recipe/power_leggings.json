@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PKP",
+    "MIM",
+    "P P"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "K": "powerfactor:advanced_circuit",
+    "M": "powerfactor:electric_motor",
+    "I": "minecraft:iron_leggings"
+  },
+  "result": {
+    "id": "powerfactor:power_leggings",
+    "count": 1
+  }
+}

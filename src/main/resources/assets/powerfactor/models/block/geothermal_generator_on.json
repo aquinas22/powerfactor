@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "powerfactor:block/geothermal_generator_top",
+    "bottom": "powerfactor:block/geothermal_generator_side",
+    "side": "powerfactor:block/geothermal_generator_side",
+    "front": "powerfactor:block/geothermal_generator_front_on"
+  }
+}

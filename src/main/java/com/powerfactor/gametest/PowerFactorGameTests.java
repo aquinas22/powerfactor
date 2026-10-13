@@ -69,6 +69,49 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("mining_drill_instamines_dirt", () -> PowerFactorGameTests::drillInstaminesDirt);
         FUNCTIONS.register("woodcutter_drill_and_wrench", () -> PowerFactorGameTests::woodcutterAndWrench);
         FUNCTIONS.register("pumpjack_and_refinery", () -> PowerFactorGameTests::pumpjackAndRefinery);
+        FUNCTIONS.register("multiblock_auto_build", () -> PowerFactorGameTests::multiblockAutoBuild);
+        FUNCTIONS.register("wind_tower_auto_build", () -> PowerFactorGameTests::windTowerAutoBuild);
+        FUNCTIONS.register("press_makes_plate", () -> h -> workshopRecipe(h, com.powerfactor.machine.RecipeMachine.MECHANICAL_PRESS,
+                new net.minecraft.world.item.ItemStack[] {new net.minecraft.world.item.ItemStack(Items.IRON_INGOT)},
+                com.powerfactor.registry.ModMaterials.PLATES.get("iron").get(), 1, null, 0));
+        FUNCTIONS.register("press_gear_die", () -> h -> workshopRecipe(h, com.powerfactor.machine.RecipeMachine.MECHANICAL_PRESS,
+                new net.minecraft.world.item.ItemStack[] {new net.minecraft.world.item.ItemStack(Items.IRON_INGOT, 4)},
+                ModItems.IRON_GEAR.get(), 1, null, 0));
+        FUNCTIONS.register("press_requires_die", () -> PowerFactorGameTests::pressRequiresDie);
+        FUNCTIONS.register("steam_plant_recycles_water", () -> PowerFactorGameTests::steamPlantRecyclesWater);
+        FUNCTIONS.register("steam_pipe_rejects_water", () -> PowerFactorGameTests::steamPipeRejectsWater);
+        FUNCTIONS.register("steam_turbine_preserves_backed_up_steam", () -> PowerFactorGameTests::steamTurbinePreservesSteam);
+        FUNCTIONS.register("steam_structure_ownership", () -> PowerFactorGameTests::steamStructureOwnership);
+        FUNCTIONS.register("cooling_tower_needs_open_vent", () -> PowerFactorGameTests::coolingTowerNeedsVent);
+        FUNCTIONS.register("ambient_generators_need_heat", () -> PowerFactorGameTests::ambientGeneratorsNeedHeat);
+        FUNCTIONS.register("rain_collector_needs_rain_and_sky", () -> PowerFactorGameTests::rainCollectorNeedsRain);
+        FUNCTIONS.register("power_armor_shield_and_landing", () -> PowerFactorGameTests::powerArmorShieldAndLanding);
+        FUNCTIONS.register("power_armor_servo_shutdown", () -> PowerFactorGameTests::powerArmorServoShutdown);
+        FUNCTIONS.register("power_armor_jetpack_socket", () -> PowerFactorGameTests::powerArmorJetpackSocket);
+        FUNCTIONS.register("power_armor_charges_worn_equipment", () -> PowerFactorGameTests::powerArmorChargesEquipment);
+        FUNCTIONS.register("power_armor_visor_preserves_potions", () -> PowerFactorGameTests::powerArmorVisor);
+        FUNCTIONS.register("power_armor_damage_event", () -> PowerFactorGameTests::powerArmorDamageEvent);
+        FUNCTIONS.register("power_armor_rebreather", () -> PowerFactorGameTests::powerArmorRebreather);
+        FUNCTIONS.register("grapple_hits_and_reels", () -> PowerFactorGameTests::grappleHitsAndReels);
+        FUNCTIONS.register("grapple_swing_and_empty_battery", () -> PowerFactorGameTests::grappleSwingAndBattery);
+        FUNCTIONS.register("grapple_releases_broken_anchor", () -> PowerFactorGameTests::grappleBrokenAnchor);
+        FUNCTIONS.register("grapple_tracks_moving_entity", () -> PowerFactorGameTests::grappleMovingAnchor);
+        FUNCTIONS.register("grapple_requires_device_and_preserves_release", () -> PowerFactorGameTests::grappleDeviceAndRelease);
+        FUNCTIONS.register("wingsuit_deploy_and_fold", () -> PowerFactorGameTests::wingsuitDeployAndFold);
+        FUNCTIONS.register("wingsuit_dual_armor_socket", () -> PowerFactorGameTests::wingsuitArmorSocket);
+        FUNCTIONS.register("wingsuit_equipment_change_and_restore", () -> PowerFactorGameTests::wingsuitChangeAndRestore);
+        FUNCTIONS.register("rover_climbs_and_pays", () -> PowerFactorGameTests::roverClimbsAndPays);
+        FUNCTIONS.register("rover_rejects_input_and_stops", () -> PowerFactorGameTests::roverInputAndShutdown);
+        FUNCTIONS.register("rover_pad_charges_entity", () -> PowerFactorGameTests::roverPadCharges);
+        FUNCTIONS.register("rover_pack_and_restore", () -> PowerFactorGameTests::roverPackAndRestore);
+        FUNCTIONS.register("rover_submerged_stops_motor", () -> PowerFactorGameTests::roverSubmergedStops);
+        FUNCTIONS.register("mixer_makes_brass_dust", () -> h -> workshopRecipe(h, com.powerfactor.machine.RecipeMachine.MIXER,
+                new net.minecraft.world.item.ItemStack[] {new net.minecraft.world.item.ItemStack(ModItems.COPPER_DUST.get(), 3),
+                        new net.minecraft.world.item.ItemStack(ModItems.ZINC_DUST.get())}, ModItems.BRASS_DUST.get(), 4, null, 0));
+        FUNCTIONS.register("centrifuge_separates_dirt", () -> h -> workshopRecipe(h, com.powerfactor.machine.RecipeMachine.CENTRIFUGE,
+                new net.minecraft.world.item.ItemStack[] {new net.minecraft.world.item.ItemStack(Items.DIRT, 4)}, Items.CLAY_BALL, 1, Items.SAND, 1));
+        FUNCTIONS.register("sawmill_improves_log_yield", () -> h -> workshopRecipe(h, com.powerfactor.machine.RecipeMachine.SAWMILL,
+                new net.minecraft.world.item.ItemStack[] {new net.minecraft.world.item.ItemStack(Items.OAK_LOG)}, Items.OAK_PLANKS, 6, Items.STICK, 1));
     }
 
     public static void register(IEventBus modBus) {
@@ -84,7 +127,10 @@ public final class PowerFactorGameTests {
         var env = event.registerEnvironment(PowerFactor.id("default"));
         java.util.Set<String> wide = java.util.Set.of("long_transformer_chain", "breaker_splits_grid", "tesla_coil_zaps_zombie",
                 "bare_wire_shocks_coated_does_not");
-        java.util.Set<String> tall = java.util.Set.of("chainsaw_fells_tree", "pumpjack_and_refinery");
+        java.util.Set<String> tall = java.util.Set.of("chainsaw_fells_tree", "pumpjack_and_refinery", "multiblock_auto_build", "wind_tower_auto_build",
+                "steam_plant_recycles_water", "steam_turbine_preserves_backed_up_steam", "steam_structure_ownership", "cooling_tower_needs_open_vent",
+                "grapple_hits_and_reels", "grapple_swing_and_empty_battery", "grapple_releases_broken_anchor", "grapple_tracks_moving_entity", "wingsuit_deploy_and_fold",
+                "rover_climbs_and_pays", "rover_rejects_input_and_stops", "rover_pad_charges_entity", "rover_pack_and_restore", "rover_submerged_stops_motor");
         for (var fn : FUNCTIONS.getEntries()) {
             String structure = wide.contains(fn.getId().getPath()) ? "empty_9x3x3" : tall.contains(fn.getId().getPath()) ? "empty_7x8x7"
                     : "empty_3x3x3";
@@ -749,6 +795,9 @@ public final class PowerFactorGameTests {
         helper.setBlock(jack.above(), ModBlocks.PUMPJACK.get().defaultBlockState().setValue(com.powerfactor.machine.TallMachineBlock.HALF,
                 net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
         var pump = helper.getBlockEntity(jack, com.powerfactor.oil.PumpjackBlockEntity.class);
+        for (int x = 3; x <= 5; x++) {
+            for (int z = 3; z <= 5; z++) helper.setBlock(new BlockPos(x, 2, z), ModBlocks.PUMPJACK_CASING.get().defaultBlockState());
+        }
         feed(helper, pump.getEnergy(), 400);
         // Refinery multiblock: controller front-centre of a 3x3 casing base (extending +Z), column on the middle.
         BlockPos col = new BlockPos(1, 3, 0);
@@ -768,6 +817,9 @@ public final class PowerFactorGameTests {
         helper.runAfterDelay(60, () -> helper.assertTrue(refinery.formed(), "complete structure didn't form"));
         feed(helper, refinery.getEnergy(), 500);
         helper.runAfterDelay(120, () -> {
+            helper.assertTrue(pump.formed(), "pumpjack foundation did not form");
+            helper.assertTrue(helper.getLevel().getCapability(Capabilities.Energy.BLOCK, helper.absolutePos(new BlockPos(3, 2, 3)), Direction.NORTH)
+                    == pump.getEnergy(), "foundation did not expose controller energy");
             int crude = pump.getTank().amount(0);
             helper.assertTrue(crude >= 1000, "pumpjack lifted only " + crude + " mB");
             int left = 0;
@@ -778,11 +830,701 @@ public final class PowerFactorGameTests {
             // Hand the crude to the refinery, as a pipe would.
             refinery.getTanks().add(com.powerfactor.oil.RefineryBlockEntity.CRUDE, crude);
         });
+        final int[] stoppedOil = {0};
+        helper.runAfterDelay(140, () -> {
+            helper.setBlock(new BlockPos(3, 2, 3), Blocks.AIR);
+        });
+        helper.runAfterDelay(170, () -> {
+            helper.assertFalse(pump.formed(), "pumpjack kept operating after foundation was broken");
+            stoppedOil[0] = pump.getTank().amount(0);
+        });
         helper.runAfterDelay(220, () -> {
+            helper.assertValueEqual(pump.getTank().amount(0), stoppedOil[0], "oil pumped with broken foundation");
             helper.assertTrue(refinery.getTanks().amount(com.powerfactor.oil.RefineryBlockEntity.DIESEL) > 200, "no diesel");
             helper.assertTrue(refinery.getTanks().amount(com.powerfactor.oil.RefineryBlockEntity.JET) > 150, "no jet fuel");
             helper.succeed();
         });
+    }
+
+    private static void workshopRecipe(GameTestHelper helper, com.powerfactor.machine.RecipeMachine kind,
+            net.minecraft.world.item.ItemStack[] inputs, net.minecraft.world.item.Item product, int count,
+            net.minecraft.world.item.Item secondary, int secondaryCount) {
+        var machine = placeRecipeMachine(helper, CENTER, kind);
+        for (var input : inputs) insert(helper, CENTER, input.getItem(), input.getCount());
+        if (kind == com.powerfactor.machine.RecipeMachine.MECHANICAL_PRESS) {
+            insert(helper, CENTER, product == ModItems.IRON_GEAR.get() ? ModItems.GEAR_DIE.get() : ModItems.PLATE_DIE.get(), 1);
+        }
+        helper.runAfterDelay(240, () -> {
+            for (int i = 0; i < kind.inputs; i++) helper.assertTrue(machine.slot(i).isEmpty(), "input not consumed");
+            helper.assertTrue(machine.slot(kind.inputs).is(product), "wrong main product: " + machine.slot(kind.inputs));
+            helper.assertValueEqual(machine.slot(kind.inputs).getCount(), count, "main product count");
+            if (kind == com.powerfactor.machine.RecipeMachine.MECHANICAL_PRESS) {
+                helper.assertValueEqual(machine.slot(kind.electrodeSlot()).getDamageValue(), 1, "press die wear");
+            }
+            if (secondary != null) {
+                helper.assertTrue(machine.slot(kind.inputs + 1).is(secondary), "wrong secondary product");
+                helper.assertValueEqual(machine.slot(kind.inputs + 1).getCount(), secondaryCount, "secondary product count");
+            }
+            helper.succeed();
+        });
+    }
+
+    private static void pressRequiresDie(GameTestHelper helper) {
+        var machine = placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.MECHANICAL_PRESS);
+        insert(helper, CENTER, Items.IRON_INGOT, 4);
+        helper.runAfterDelay(100, () -> {
+            helper.assertValueEqual(machine.slot(0).getCount(), 4, "press used input without a die");
+            helper.assertTrue(machine.slot(1).isEmpty(), "press produced output without a die");
+            insert(helper, CENTER, ModItems.PLATE_DIE.get(), 1);
+        });
+        helper.runAfterDelay(450, () -> {
+            helper.assertTrue(machine.slot(1).is(com.powerfactor.registry.ModMaterials.PLATES.get("iron").get()), "bulk input chose gears with a plate die");
+            helper.assertValueEqual(machine.slot(1).getCount(), 4, "bulk plate count");
+            helper.assertValueEqual(machine.slot(2).getDamageValue(), 4, "bulk die wear");
+            helper.succeed();
+        });
+    }
+
+    private static void multiblockAutoBuild(GameTestHelper helper) {
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        BlockPos origin = new BlockPos(4, 1, 3), absolute = helper.absolutePos(origin);
+        helper.setBlock(origin, ModBlocks.REFINERY.get().defaultBlockState().setValue(MachineBlock.FACING, Direction.EAST));
+        var structure = com.powerfactor.oil.RefineryBlockEntity.STRUCTURE;
+        var inventory = player.getInventory();
+        inventory.setItem(0, new net.minecraft.world.item.ItemStack(ModBlocks.REFINERY_CASING.get(), 7));
+        inventory.setItem(1, new net.minecraft.world.item.ItemStack(ModBlocks.DISTILLATION_COLUMN.get(), 3));
+        helper.assertFalse(com.powerfactor.multiblock.StructureBuilder.assemble(helper.getLevel(), absolute, Direction.EAST, player, structure),
+                "built with too few casings");
+        helper.assertValueEqual(structure.missing(helper.getLevel(), absolute, Direction.EAST).size(), 11, "parts missing after shortage");
+        inventory.getItem(0).grow(1);
+        BlockPos obstruction = structure.worldPos(absolute, Direction.EAST, structure.parts().getFirst());
+        helper.getLevel().setBlock(obstruction, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3);
+        helper.assertFalse(com.powerfactor.multiblock.StructureBuilder.assemble(helper.getLevel(), absolute, Direction.EAST, player, structure),
+                "overwrote obstruction");
+        helper.assertValueEqual(inventory.getItem(0).getCount(), 8, "casings after obstruction");
+        helper.getLevel().removeBlock(obstruction, false);
+        java.util.function.Consumer<net.neoforged.neoforge.event.level.BlockEvent.EntityMultiPlaceEvent> deny = event -> {
+            if (event.getEntity() == player) event.setCanceled(true);
+        };
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(deny);
+        try {
+            helper.assertFalse(com.powerfactor.multiblock.StructureBuilder.assemble(helper.getLevel(), absolute, Direction.EAST, player, structure),
+                    "ignored placement protection");
+            helper.assertValueEqual(structure.missing(helper.getLevel(), absolute, Direction.EAST).size(), 11, "rollback after denied placement");
+            helper.assertValueEqual(inventory.getItem(0).getCount(), 8, "casings after denied placement");
+        } finally {
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.unregister(deny);
+        }
+        helper.assertTrue(com.powerfactor.multiblock.StructureBuilder.assemble(helper.getLevel(), absolute, Direction.EAST, player, structure),
+                "valid rotated structure did not build");
+        helper.assertTrue(inventory.getItem(0).isEmpty() && inventory.getItem(1).isEmpty(), "did not consume exactly the needed parts");
+        helper.runAfterDelay(25, () -> {
+            helper.assertTrue(helper.getBlockEntity(origin, com.powerfactor.oil.RefineryBlockEntity.class).formed(), "auto-built refinery did not form");
+            helper.succeed();
+        });
+    }
+
+    private static void windTowerAutoBuild(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(3, 7, 3), absolute = helper.absolutePos(origin);
+        helper.setBlock(origin, ModBlocks.WIND_TURBINE.get().defaultBlockState());
+        var turbine = helper.getBlockEntity(origin, com.powerfactor.generator.WindTurbineBlockEntity.class);
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.getInventory().setItem(0, new net.minecraft.world.item.ItemStack(ModBlocks.WIND_TURBINE_TOWER.get(), 8));
+        helper.assertTrue(com.powerfactor.multiblock.StructureBuilder.assemble(helper.getLevel(), absolute, Direction.NORTH, player,
+                turbine.buildStructure()), "tower did not build");
+        helper.assertValueEqual(player.getInventory().getItem(0).getCount(), 2, "tower sections remaining");
+        helper.assertValueEqual(helper.getBlockState(origin.below(6)).getValue(com.powerfactor.generator.WindTowerBlock.TAPER), 5, "bottom taper");
+        helper.assertTrue(helper.getBlockState(origin.below(6)).getValue(com.powerfactor.generator.WindTowerBlock.BASE), "bottom lacks footing");
+        helper.assertFalse(helper.getBlockState(origin.below()).getValue(com.powerfactor.generator.WindTowerBlock.BASE), "top has a footing");
+        helper.succeed();
+    }
+
+    private static void formStructure(GameTestHelper helper, BlockPos origin, com.powerfactor.multiblock.Structure structure) {
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE);
+        helper.assertTrue(com.powerfactor.multiblock.StructureBuilder.assemble(helper.getLevel(), helper.absolutePos(origin), Direction.NORTH, player, structure),
+                "structure did not assemble");
+    }
+
+    private static void fluidPipe(GameTestHelper helper, BlockPos pos, boolean steam, java.util.Map<Direction, com.powerfactor.logistics.PipeSide> sides) {
+        var state = (steam ? ModBlocks.STEAM_PIPE : ModBlocks.FLUID_PIPE).get().defaultBlockState();
+        for (var entry : sides.entrySet()) state = state.setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(entry.getKey()), entry.getValue());
+        helper.setBlock(pos, state);
+    }
+
+    private static void steamPlantRecyclesWater(GameTestHelper helper) {
+        var boilerPos = new BlockPos(1, 0, 1); var turbinePos = new BlockPos(5, 0, 1); var coolerPos = new BlockPos(3, 0, 6);
+        helper.setBlock(boilerPos, ModBlocks.STEAM_BOILER.get().defaultBlockState());
+        helper.setBlock(turbinePos, ModBlocks.STEAM_TURBINE.get().defaultBlockState());
+        formStructure(helper, boilerPos, com.powerfactor.steam.SteamBoilerBlockEntity.STRUCTURE);
+        formStructure(helper, turbinePos, com.powerfactor.steam.SteamTurbineBlockEntity.STRUCTURE);
+        helper.setBlock(coolerPos, ModBlocks.COOLING_TOWER.get().defaultBlockState());
+        helper.setBlock(coolerPos.above(), ModBlocks.COOLING_TOWER.get().defaultBlockState().setValue(com.powerfactor.machine.TallMachineBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+        var boiler = helper.getBlockEntity(boilerPos, com.powerfactor.steam.SteamBoilerBlockEntity.class);
+        var turbine = helper.getBlockEntity(turbinePos, com.powerfactor.steam.SteamTurbineBlockEntity.class);
+        var cooling = helper.getBlockEntity(coolerPos, com.powerfactor.steam.CoolingTowerBlockEntity.class);
+        boiler.getTanks().add(0, 16000);
+        insert(helper, boilerPos, Items.COAL, 8);
+        var crusherPos = new BlockPos(6, 0, 6);
+        var crusher = placeCrusher(helper, crusherPos);
+        insert(helper, crusherPos, Items.RAW_IRON, 16);
+        helper.setBlock(new BlockPos(4, 0, 6), ModBlocks.ALUMINUM_CABLE.get().defaultBlockState());
+        helper.setBlock(new BlockPos(5, 0, 6), ModBlocks.BATTERY_BANK.get().defaultBlockState());
+        helper.runAfterDelay(25, () -> {
+            var ex = com.powerfactor.logistics.PipeSide.EXTRACT; var in = com.powerfactor.logistics.PipeSide.INSERT; var pipe = com.powerfactor.logistics.PipeSide.PIPE;
+            fluidPipe(helper, new BlockPos(3, 0, 2), true, java.util.Map.of(Direction.WEST, ex, Direction.EAST, in));
+            fluidPipe(helper, new BlockPos(3, 0, 3), false, java.util.Map.of(Direction.WEST, in, Direction.SOUTH, pipe));
+            fluidPipe(helper, new BlockPos(3, 0, 4), false, java.util.Map.of(Direction.NORTH, pipe, Direction.SOUTH, pipe));
+            fluidPipe(helper, new BlockPos(3, 0, 5), false, java.util.Map.of(Direction.NORTH, pipe, Direction.SOUTH, in, Direction.EAST, ex, Direction.WEST, pipe));
+            fluidPipe(helper, new BlockPos(2, 0, 5), false, java.util.Map.of(Direction.EAST, pipe, Direction.SOUTH, pipe));
+            fluidPipe(helper, new BlockPos(2, 0, 6), false, java.util.Map.of(Direction.NORTH, pipe, Direction.EAST, ex));
+            helper.assertTrue(boiler.formed() && turbine.formed(), "plant did not form");
+            helper.assertTrue(helper.getLevel().getCapability(Capabilities.Item.BLOCK, helper.absolutePos(new BlockPos(2, 0, 1)), Direction.NORTH)
+                    == boiler.getFuelHandler(), "boiler casing does not expose fuel input");
+            var devices = com.powerfactor.scada.ScadaNetwork.discover(helper.getLevel(), helper.absolutePos(new BlockPos(3, 0, 2)));
+            helper.assertTrue(devices.get(helper.absolutePos(boilerPos)) == boiler && devices.get(helper.absolutePos(turbinePos)) == turbine,
+                    "SCADA could not discover the steam controllers through casing ports");
+            helper.assertValueEqual(devices.size(), 2, "SCADA duplicated multiblock controllers");
+            var fiber = ModBlocks.FIBER_OPTIC_CABLE.get();
+            var connections = fiber.withConnections(helper.getLevel(), helper.absolutePos(new BlockPos(3, 0, 2)), fiber.defaultBlockState());
+            helper.assertTrue(connections.getValue(com.powerfactor.grid.ConnectorBlock.CONNECTIONS.get(Direction.WEST))
+                    && connections.getValue(com.powerfactor.grid.ConnectorBlock.CONNECTIONS.get(Direction.EAST)), "fiber did not render its casing connections");
+        });
+        helper.runAfterDelay(650, () -> {
+            helper.assertTrue(turbine.model().breakerClosed(), "steam turbine did not synchronize");
+            helper.assertTrue(crusher.slot(1).getCount() > 0, "turbine casing did not power the crusher");
+            helper.assertTrue(turbine.model().lastOutput().ee() > 0, "steam alternator supplied no reactive power");
+            helper.assertTrue(cooling.getEnergy().getAmountAsInt() > 0, "steam generator did not power the cooling loop");
+            double water = boiler.getTanks().amount(0) + boiler.getTanks().amount(1) / 10.0
+                    + turbine.getTanks().amount(0) / 10.0 + turbine.getTanks().amount(1)
+                    + turbine.model().fuelEnergy() / 200.0 + turbine.condensateRemainderFe() / 200.0
+                    + cooling.getTanks().amount(0) + cooling.getTanks().amount(1);
+            helper.assertTrue(Math.abs(water - 16000) < 0.001, "steam loop lost or created water: " + water);
+            helper.assertTrue(cooling.getTanks().amount(0) < 1000, "hot water never reached cooling");
+            var registries = helper.getLevel().registryAccess();
+            var savedBoiler = (com.powerfactor.steam.SteamBoilerBlockEntity) net.minecraft.world.level.block.entity.BlockEntity.loadStatic(
+                    boiler.getBlockPos(), boiler.getBlockState(), boiler.saveWithFullMetadata(registries), registries);
+            var savedTurbine = (com.powerfactor.steam.SteamTurbineBlockEntity) net.minecraft.world.level.block.entity.BlockEntity.loadStatic(
+                    turbine.getBlockPos(), turbine.getBlockState(), turbine.saveWithFullMetadata(registries), registries);
+            helper.assertTrue(savedBoiler != null && savedTurbine != null, "steam controllers could not load saved data");
+            helper.assertValueEqual(savedBoiler.model().heat(), boiler.model().heat(), "saved boiler heat");
+            helper.assertTrue(savedBoiler.model().fuel() == boiler.model().fuel(), "saved boiler fuel");
+            helper.assertValueEqual(savedBoiler.getTanks().amount(0), boiler.getTanks().amount(0), "saved boiler water");
+            helper.assertValueEqual(savedTurbine.model().rpm(), turbine.model().rpm(), "saved turbine RPM");
+            helper.assertTrue(savedTurbine.model().fuelEnergy() == turbine.model().fuelEnergy()
+                    && savedTurbine.condensateRemainderFe() == turbine.condensateRemainderFe(), "saved fractional condensate energy");
+            helper.assertValueEqual(savedTurbine.getTanks().amount(1), turbine.getTanks().amount(1), "saved hot water");
+            helper.setBlock(turbinePos.offset(-1, 1, 2), Blocks.AIR);
+        });
+        helper.runAfterDelay(690, () -> {
+            helper.assertFalse(turbine.formed(), "turbine kept its formed state after a rotor frame was broken");
+            helper.assertTrue(turbine.ratedCe() == 0, "broken turbine still supplies a grid");
+            helper.succeed();
+        });
+    }
+
+    private static void steamPipeRejectsWater(GameTestHelper helper) {
+        var from = new BlockPos(0, 1, 1); var to = new BlockPos(2, 1, 1);
+        helper.setBlock(from, ModBlocks.FLUID_TANK.get().defaultBlockState());
+        helper.setBlock(to, ModBlocks.FLUID_TANK.get().defaultBlockState());
+        var source = helper.getBlockEntity(from, com.powerfactor.logistics.FluidTankBlockEntity.class);
+        var target = helper.getBlockEntity(to, com.powerfactor.logistics.FluidTankBlockEntity.class);
+        try (var tx = Transaction.openRoot()) {
+            source.getTank().insert(net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER), 1000, tx); tx.commit();
+        }
+        fluidPipe(helper, CENTER, true, java.util.Map.of(Direction.WEST, com.powerfactor.logistics.PipeSide.EXTRACT, Direction.EAST, com.powerfactor.logistics.PipeSide.INSERT));
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(target.fluid().isEmpty(), "steam pipe transported water");
+            try (var tx = Transaction.openRoot()) {
+                source.getTank().extract(net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER), 1000, tx);
+                source.getTank().insert(net.neoforged.neoforge.transfer.fluid.FluidResource.of(com.powerfactor.registry.ModFluids.STEAM.get()), 6000, tx); tx.commit();
+            }
+        });
+        helper.runAfterDelay(70, () -> {
+            helper.assertTrue(target.fluid().is(com.powerfactor.registry.ModFluids.STEAM.get()) && target.fluid().getAmount() == 6000,
+                    "steam pipe failed to move its gas");
+            helper.succeed();
+        });
+    }
+
+    private static void steamTurbinePreservesSteam(GameTestHelper helper) {
+        var at = new BlockPos(3, 0, 1);
+        helper.setBlock(at, ModBlocks.STEAM_TURBINE.get().defaultBlockState());
+        formStructure(helper, at, com.powerfactor.steam.SteamTurbineBlockEntity.STRUCTURE);
+        var turbine = helper.getBlockEntity(at, com.powerfactor.steam.SteamTurbineBlockEntity.class);
+        turbine.getTanks().add(0, 10000); turbine.getTanks().add(1, 32000);
+        helper.runAfterDelay(40, () -> {
+            helper.assertValueEqual(turbine.getTanks().amount(0), 10000, "steam consumed with full condensate output");
+            helper.assertValueEqual(turbine.getEnergy().getAmountAsInt(), 0, "energy created with blocked exhaust");
+            turbine.getTanks().add(1, -32000);
+        });
+        helper.runAfterDelay(300, () -> {
+            helper.assertTrue(turbine.getEnergy().getAmountAsInt() > 1000, "turbine failed to restart after condensate drained");
+            helper.assertTrue(turbine.getTanks().amount(1) > 0, "no condensate returned");
+            helper.succeed();
+        });
+    }
+
+    private static void steamStructureOwnership(GameTestHelper helper) {
+        var a = new BlockPos(1, 0, 1); var b = new BlockPos(4, 0, 1);
+        helper.setBlock(a, ModBlocks.STEAM_BOILER.get().defaultBlockState());
+        helper.setBlock(b, ModBlocks.STEAM_BOILER.get().defaultBlockState());
+        formStructure(helper, a, com.powerfactor.steam.SteamBoilerBlockEntity.STRUCTURE);
+        formStructure(helper, b, com.powerfactor.steam.SteamBoilerBlockEntity.STRUCTURE);
+        var second = helper.getBlockEntity(b, com.powerfactor.steam.SteamBoilerBlockEntity.class);
+        helper.runAfterDelay(25, () -> {
+            var claimed = helper.getBlockEntity(b.offset(1, 0, 0), com.powerfactor.multiblock.CasingBlockEntity.class);
+            claimed.link(helper.absolutePos(a));
+        });
+        helper.runAfterDelay(55, () -> {
+            helper.assertFalse(second.formed(), "controller stole another structure's part");
+            helper.assertFalse(com.powerfactor.multiblock.StructureBuilder.assemble(helper.getLevel(), helper.absolutePos(b), Direction.NORTH,
+                    helper.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE), second.buildStructure()), "auto-build reused a claimed part");
+            helper.succeed();
+        });
+    }
+
+    private static void coolingTowerNeedsVent(GameTestHelper helper) {
+        BlockPos origin = helper.absolutePos(new BlockPos(3, 0, 3));
+        // Test markers may themselves obstruct the vent; test above them, with an explicit glass roof.
+        int height = helper.getLevel().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                origin.getX(), origin.getZ()) - origin.getY() + 1;
+        var at = new BlockPos(3, height, 3);
+        helper.setBlock(at, ModBlocks.COOLING_TOWER.get().defaultBlockState());
+        helper.setBlock(at.above(), ModBlocks.COOLING_TOWER.get().defaultBlockState().setValue(com.powerfactor.machine.TallMachineBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+        var cooling = helper.getBlockEntity(at, com.powerfactor.steam.CoolingTowerBlockEntity.class);
+        cooling.getTanks().add(0, 1000);
+        feed(helper, cooling.getEnergy(), 400);
+        helper.setBlock(at.above(2), Blocks.GLASS);
+        helper.runAfterDelay(25, () -> {
+            helper.assertValueEqual(cooling.getTanks().amount(0), 1000, "cooler worked with a blocked vent");
+            helper.setBlock(at.above(2), Blocks.AIR);
+        });
+        helper.runAfterDelay(125, () -> {
+            helper.assertValueEqual(cooling.getTanks().amount(0), 0, "cooler did not drain hot water");
+            helper.assertValueEqual(cooling.getTanks().amount(1), 1000, "cooler did not conserve water");
+            helper.succeed();
+        });
+    }
+
+    private static void ambientGeneratorsNeedHeat(GameTestHelper helper) {
+        var geo = new BlockPos(0, 1, 1); var thermo = new BlockPos(2, 1, 1);
+        helper.setBlock(geo, ModBlocks.GEOTHERMAL_GENERATOR.get().defaultBlockState());
+        helper.setBlock(thermo, ModBlocks.THERMOELECTRIC_GENERATOR.get().defaultBlockState());
+        var geothermal = helper.getBlockEntity(geo, com.powerfactor.generator.AmbientGeneratorBlockEntity.class);
+        var thermoelectric = helper.getBlockEntity(thermo, com.powerfactor.generator.AmbientGeneratorBlockEntity.class);
+        helper.runAfterDelay(10, () -> {
+            helper.assertValueEqual(geothermal.getEnergy().getAmountAsInt(), 0, "geothermal generated without heat");
+            helper.setBlock(geo.below(), Blocks.MAGMA_BLOCK); helper.setBlock(thermo.below(), Blocks.MAGMA_BLOCK);
+        });
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(geothermal.getEnergy().getAmountAsInt() > 0, "magma did not power geothermal generator");
+            helper.assertValueEqual(thermoelectric.getEnergy().getAmountAsInt(), 0, "thermoelectric worked without a cold face");
+            helper.setBlock(thermo.above(), Blocks.PACKED_ICE);
+        });
+        helper.runAfterDelay(50, () -> {
+            helper.assertTrue(thermoelectric.getEnergy().getAmountAsInt() > 0, "opposite hot/cold faces did not generate");
+            helper.succeed();
+        });
+    }
+
+    private static void rainCollectorNeedsRain(GameTestHelper helper) {
+        // The test harness's transparent markers can block precipitation while admitting sky light.
+        // Put both catchments above the actual column height, then give one a deliberate roof.
+        BlockPos origin = helper.absolutePos(new BlockPos(0, 0, 1));
+        BlockPos other = helper.absolutePos(new BlockPos(2, 0, 1));
+        int height = Math.max(helper.getLevel().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, origin.getX(), origin.getZ()),
+                helper.getLevel().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, other.getX(), other.getZ())) - origin.getY() + 1;
+        var open = new BlockPos(0, height, 1); var covered = new BlockPos(2, height, 1);
+        helper.setBlock(open, ModBlocks.RAIN_COLLECTOR.get().defaultBlockState());
+        helper.setBlock(covered, ModBlocks.RAIN_COLLECTOR.get().defaultBlockState());
+        helper.setBlock(covered.above(), Blocks.STONE);
+        var collector = helper.getBlockEntity(open, com.powerfactor.device.RainCollectorBlockEntity.class);
+        var roofed = helper.getBlockEntity(covered, com.powerfactor.device.RainCollectorBlockEntity.class);
+        helper.getLevel().getServer().setWeatherParameters(0, 100, true, false);
+        final int[] before = {0};
+        helper.runAfterDelay(25, () -> {
+            helper.assertTrue(collector.getTank().amount(0) > 0, "open collector caught no rain");
+            helper.assertValueEqual(roofed.getTank().amount(0), 0, "roofed collector generated water");
+            helper.getLevel().getServer().setWeatherParameters(1000, 0, false, false);
+        });
+        helper.runAfterDelay(60, () -> before[0] = collector.getTank().amount(0));
+        helper.runAfterDelay(85, () -> {
+            helper.assertValueEqual(collector.getTank().amount(0), before[0], "collector generated water in clear weather");
+            helper.succeed();
+        });
+    }
+
+    private static net.minecraft.world.item.ItemStack armor(net.minecraft.world.item.Item item, int energy) {
+        var stack = new net.minecraft.world.item.ItemStack(item); stack.set(com.powerfactor.registry.ModComponents.ENERGY.get(), energy); return stack;
+    }
+    private static void modules(GameTestHelper helper, net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.ItemStack... modules) {
+        var items = net.minecraft.core.NonNullList.withSize(com.powerfactor.item.ToolModules.SLOTS, net.minecraft.world.item.ItemStack.EMPTY);
+        for (int i = 0; i < modules.length; i++) items.set(i, modules[i]);
+        com.powerfactor.item.ToolModules.install(stack, items, helper.getLevel().registryAccess());
+    }
+    private static void powerArmorShieldAndLanding(GameTestHelper helper) {
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var chest = armor(ModItems.POWER_CHESTPLATE.get(), 1000);
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, chest);
+        float damage = com.powerfactor.item.PowerArmorServer.shield(player, 10);
+        helper.assertTrue(Math.abs(damage - 9.2F) < 0.001, "charged chest shield did not absorb 8%: " + damage);
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(chest), 904, "shield energy cost");
+        chest.set(com.powerfactor.registry.ModComponents.ENERGY.get(), 12);
+        helper.assertTrue(Math.abs(com.powerfactor.item.PowerArmorServer.shield(player, 10) - 9.9F) < 0.001, "partial battery granted full shield");
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(chest), 0, "partial shield budget");
+        helper.assertTrue(com.powerfactor.item.PowerArmorServer.shield(player, 10) == 10, "flat armor shielded for free");
+        var boots = armor(ModItems.POWER_BOOTS.get(), 500);
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, boots);
+        helper.assertTrue(com.powerfactor.item.PowerArmorServer.landing(player, 10) == 5, "landing cushion distance");
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(boots), 0, "landing cushion cost");
+        helper.assertTrue(com.powerfactor.item.PowerArmorServer.landing(player, 10) == 10, "empty boots cushioned a fall");
+        helper.succeed();
+    }
+    private static void powerArmorServoShutdown(GameTestHelper helper) {
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        double baseSpeed = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        double baseJump = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH);
+        var legs = armor(ModItems.POWER_LEGGINGS.get(), 1000);
+        modules(helper, legs, new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.SPEED).get(), 2),
+                new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.JUMP).get(), 2));
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, legs);
+        com.powerfactor.item.PowerArmorServer.tick(player);
+        helper.assertTrue(Math.abs(player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED) - baseSpeed * 1.55) < 0.001, "servo speed attribute");
+        helper.assertTrue(Math.abs(player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH) - baseJump - 0.26) < 0.001, "servo jump attribute");
+        com.powerfactor.item.PowerArmorServer.control(player, 0); com.powerfactor.item.PowerArmorServer.tick(player);
+        helper.assertTrue(player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED) == baseSpeed, "disabled servos left a speed modifier");
+        com.powerfactor.item.PowerArmorServer.control(player, 0);
+        legs.set(com.powerfactor.registry.ModComponents.ENERGY.get(), 0); com.powerfactor.item.PowerArmorServer.tick(player);
+        helper.assertTrue(player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH) == baseJump, "empty servo battery left a jump modifier");
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.item.ItemStack.EMPTY);
+        com.powerfactor.item.PowerArmorServer.tick(player);
+        helper.assertTrue(player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT) == 0.6, "removed leggings left a step modifier");
+        helper.succeed();
+    }
+    private static void powerArmorJetpackSocket(GameTestHelper helper) {
+        helper.setBlock(CENTER, ModBlocks.UPGRADE_TABLE.get().defaultBlockState());
+        var table = helper.getBlockEntity(CENTER, com.powerfactor.upgrade.UpgradeTableBlockEntity.class);
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var chest = armor(ModItems.POWER_CHESTPLATE.get(), 600000);
+        var pack = armor(ModItems.ELECTRIC_JETPACK.get(), 12345);
+        modules(helper, pack, new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.THRUSTER).get(), 2));
+        table.tool().setItem(0, chest);
+        var menu = new com.powerfactor.upgrade.UpgradeTableMenu(1, player.getInventory(), table);
+        helper.assertTrue(menu.accepts(pack, 0), "chest does not accept a jetpack socket");
+        menu.modules().setItem(0, pack.copy());
+        helper.assertFalse(menu.accepts(pack, 1), "second jetpack accepted");
+        helper.assertTrue(com.powerfactor.item.JetpackItem.worn(chest), "fitted jetpack did not enable flight");
+        helper.assertTrue(Math.abs(com.powerfactor.item.JetpackItem.thrust(chest) - 1.7) < 0.001, "fitted jetpack lost its thruster upgrades");
+        var saved = net.minecraft.world.level.block.entity.BlockEntity.loadStatic(table.getBlockPos(), table.getBlockState(),
+                table.saveWithFullMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
+        var loaded = ((com.powerfactor.upgrade.UpgradeTableBlockEntity) saved).tool().getItem(0);
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(com.powerfactor.item.PowerArmorItem.jetpack(loaded)), 12345, "saved nested jetpack charge");
+        var removed = menu.modules().removeItem(0, 1);
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(removed), 12345, "removed jetpack charge");
+        helper.assertFalse(com.powerfactor.item.JetpackItem.worn(chest), "removed jetpack still enables flight");
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(chest), 600000, "jetpack insertion changed chest charge");
+        helper.succeed();
+    }
+    private static void powerArmorChargesEquipment(GameTestHelper helper) {
+        helper.setBlock(CENTER, ModBlocks.CHARGING_PAD.get().defaultBlockState());
+        var pad = helper.getBlockEntity(CENTER, com.powerfactor.device.ChargingPadBlockEntity.class);
+        var player = helper.makeMockServerPlayerInLevel(); player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        var absolute = helper.absolutePos(CENTER); player.setPos(absolute.getX() + 0.5, absolute.getY() + 0.26, absolute.getZ() + 0.5);
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, armor(ModItems.POWER_HELMET.get(), 0));
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, armor(ModItems.POWER_CHESTPLATE.get(), 0));
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, armor(ModItems.POWER_LEGGINGS.get(), 0));
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, armor(ModItems.POWER_BOOTS.get(), 0));
+        feed(helper, pad.getEnergy(), 4000);
+        helper.runAfterDelay(35, () -> {
+            for (var part : com.powerfactor.item.PowerArmorItem.Part.values()) {
+                helper.assertTrue(com.powerfactor.item.PoweredItem.energy(com.powerfactor.item.PowerArmorServer.piece(player, part)) > 0,
+                        "charging pad missed worn " + part);
+            }
+            player.discard(); helper.succeed();
+        });
+    }
+    private static void powerArmorVisor(GameTestHelper helper) {
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var head = armor(ModItems.POWER_HELMET.get(), 1000);
+        modules(helper, head, new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.NIGHT_VISION).get()));
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, head);
+        com.powerfactor.item.PowerArmorServer.tick(player);
+        helper.assertTrue(player.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION), "powered visor gave no vision");
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(head), 996, "visor cost");
+        com.powerfactor.item.PowerArmorServer.control(player, 1); com.powerfactor.item.PowerArmorServer.tick(player);
+        helper.assertFalse(player.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION), "disabled visor left its effect");
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.NIGHT_VISION, 1200));
+        com.powerfactor.item.PowerArmorServer.control(player, 1); com.powerfactor.item.PowerArmorServer.tick(player);
+        com.powerfactor.item.PowerArmorServer.control(player, 1); com.powerfactor.item.PowerArmorServer.tick(player);
+        helper.assertTrue(player.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION), "visor removed an external night-vision potion");
+        helper.succeed();
+    }
+
+    private static void powerArmorDamageEvent(GameTestHelper helper) {
+        var charged = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var flat = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var powered = armor(ModItems.POWER_CHESTPLATE.get(), 5000);
+        charged.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, powered);
+        flat.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, armor(ModItems.POWER_CHESTPLATE.get(), 0));
+        charged.tick(); flat.tick();
+        charged.hurtServer(helper.getLevel(), charged.damageSources().cactus(), 10);
+        flat.hurtServer(helper.getLevel(), flat.damageSources().cactus(), 10);
+        helper.assertTrue(charged.getHealth() > flat.getHealth(), "damage event did not apply the powered shield: charged="
+                + charged.getHealth() + ", flat=" + flat.getHealth() + ", FE=" + com.powerfactor.item.PoweredItem.energy(powered));
+        helper.assertTrue(com.powerfactor.item.PoweredItem.energy(powered) < 5000, "actual damage did not spend shield FE");
+        int energy = com.powerfactor.item.PoweredItem.energy(powered);
+        charged.invulnerableTime = 0;
+        charged.hurtServer(helper.getLevel(), charged.damageSources().magic(), 1);
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(powered), energy, "armor shield intercepted bypassing damage");
+        var boots = armor(ModItems.POWER_BOOTS.get(), 500);
+        charged.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, boots);
+        charged.setHealth(20); charged.invulnerableTime = 0;
+        charged.causeFallDamage(8, 1, charged.damageSources().fall());
+        helper.assertTrue(charged.getHealth() == 20, "powered boots did not intercept the actual fall event");
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(boots), 0, "fall event energy cost");
+        charged.causeFallDamage(8, 1, charged.damageSources().fall());
+        helper.assertTrue(charged.getHealth() < 20, "empty boots still canceled the fall event");
+        helper.succeed();
+    }
+
+    private static void powerArmorRebreather(GameTestHelper helper) {
+        helper.setBlock(CENTER, Blocks.WATER); helper.setBlock(CENTER.above(), Blocks.WATER);
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var pos = helper.absolutePos(CENTER);
+        player.setPos(pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5);
+        var head = armor(ModItems.POWER_HELMET.get(), 1000);
+        modules(helper, head, new net.minecraft.world.item.ItemStack(ModItems.DRILL_MODULES.get(com.powerfactor.item.DrillModule.Type.REBREATHER).get()));
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, head);
+        player.tick(); player.setAirSupply(100);
+        helper.assertTrue(player.isEyeInFluid(net.minecraft.tags.FluidTags.WATER), "rebreather fixture is not underwater");
+        com.powerfactor.item.PowerArmorServer.tick(player);
+        helper.assertTrue(player.getAirSupply() > 100, "powered rebreather restored no air");
+        helper.assertTrue(com.powerfactor.item.PoweredItem.energy(head) < 1000, "rebreather consumed no FE");
+        head.set(com.powerfactor.registry.ModComponents.ENERGY.get(), 0); player.setAirSupply(100);
+        com.powerfactor.item.PowerArmorServer.tick(player);
+        helper.assertValueEqual(player.getAirSupply(), 100, "empty helmet restored air");
+        helper.succeed();
+    }
+
+    private static net.minecraft.world.entity.player.Player movementPlayer(GameTestHelper helper, BlockPos pos) {
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var at = helper.absolutePos(pos); player.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, armor(ModItems.GRAPPLE_HOOK.get(), 10000));
+        return player;
+    }
+    private static com.powerfactor.movement.GrappleHookEntity anchoredHook(GameTestHelper helper, net.minecraft.world.entity.player.Player player, BlockPos anchor) {
+        helper.setBlock(anchor, Blocks.STONE);
+        var hook = new com.powerfactor.movement.GrappleHookEntity(helper.getLevel(), player);
+        helper.getLevel().addFreshEntity(hook);
+        var at = helper.absolutePos(anchor);
+        hook.attach(new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(at).add(-0.5, 0, 0), Direction.WEST, at, false));
+        return hook;
+    }
+    private static void grappleHitsAndReels(GameTestHelper helper) {
+        var player = movementPlayer(helper, new BlockPos(1, 1, 3));
+        var anchor = new BlockPos(5, 2, 3); helper.setBlock(anchor, Blocks.STONE);
+        var hook = new com.powerfactor.movement.GrappleHookEntity(helper.getLevel(), player);
+        var aim = net.minecraft.world.phys.Vec3.atCenterOf(helper.absolutePos(anchor)).subtract(hook.position());
+        hook.shoot(aim.x, aim.y, aim.z, 3, 0); helper.getLevel().addFreshEntity(hook);
+        helper.runAfterDelay(5, () -> {
+            helper.assertTrue(hook.anchored(), "projectile did not catch the solid anchor");
+            helper.assertTrue(hook.shouldRenderAtSqrDistance(64 * 64), "small hook culling hides a full-range cable");
+            helper.assertTrue(player.getDeltaMovement().x > 0, "reel supplied no motion toward the anchor");
+            helper.assertTrue(com.powerfactor.item.PoweredItem.energy(player.getMainHandItem()) < 10000, "reeling consumed no FE");
+            hook.discard(); helper.succeed();
+        });
+    }
+    private static void grappleSwingAndBattery(GameTestHelper helper) {
+        var player = movementPlayer(helper, new BlockPos(1, 1, 3)); player.setShiftKeyDown(true);
+        var hook = anchoredHook(helper, player, new BlockPos(5, 4, 3));
+        float length = hook.ropeLength();
+        hook.tick();
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(player.getMainHandItem()), 10000, "swing ran the reel motor");
+        helper.assertTrue(hook.ropeLength() == length, "swing shortened the fixed cable");
+        player.setShiftKeyDown(false); player.getMainHandItem().set(com.powerfactor.registry.ModComponents.ENERGY.get(), 0);
+        hook.tick(); helper.assertTrue(hook.isRemoved(), "empty grapple kept its powered reel active");
+        helper.succeed();
+    }
+    private static void grappleBrokenAnchor(GameTestHelper helper) {
+        var player = movementPlayer(helper, new BlockPos(1, 1, 3)); var at = new BlockPos(5, 4, 3);
+        var hook = anchoredHook(helper, player, at); helper.setBlock(at, Blocks.AIR); hook.tick();
+        helper.assertTrue(hook.isRemoved(), "broken terrain anchor kept the cable alive");
+        var blocked = anchoredHook(helper, player, at);
+        helper.setBlock(new BlockPos(3, 3, 3), Blocks.STONE); blocked.tick();
+        helper.assertTrue(blocked.isRemoved(), "obstructed cable kept pulling through terrain");
+        helper.setBlock(new BlockPos(3, 3, 3), Blocks.AIR);
+        var dropped = anchoredHook(helper, player, at);
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, net.minecraft.world.item.ItemStack.EMPTY); dropped.tick();
+        helper.assertTrue(dropped.isRemoved(), "dropping grapple left an active cable"); helper.succeed();
+    }
+    private static void grappleMovingAnchor(GameTestHelper helper) {
+        var player = movementPlayer(helper, new BlockPos(1, 1, 3));
+        var target = helper.spawn(net.minecraft.world.entity.EntityTypes.PIG, new BlockPos(5, 2, 3));
+        target.setNoAi(true); target.setNoGravity(true);
+        var hook = new com.powerfactor.movement.GrappleHookEntity(helper.getLevel(), player);
+        var aim = target.getBoundingBox().getCenter().subtract(hook.position()); hook.shoot(aim.x, aim.y, aim.z, 3, 0);
+        helper.getLevel().addFreshEntity(hook);
+        helper.runAfterDelay(4, () -> {
+            helper.assertTrue(hook.anchored() && hook.targetId() == target.getId(), "hook did not attach to the moving entity");
+            var before = hook.position(); target.setPos(target.position().add(0, 0, 1)); hook.tick();
+            helper.assertTrue(Math.abs(hook.getZ() - before.z - 1) < 0.001, "entity anchor did not carry the hook");
+            target.discard(); hook.tick(); helper.assertTrue(hook.isRemoved(), "removed moving anchor kept its hook"); helper.succeed();
+        });
+    }
+    private static void grappleDeviceAndRelease(GameTestHelper helper) {
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var at = helper.absolutePos(CENTER); player.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+        helper.assertFalse(com.powerfactor.movement.GrappleServer.toggle(player), "grapple cast without the device");
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, armor(ModItems.GRAPPLE_HOOK.get(), 99));
+        helper.assertFalse(com.powerfactor.movement.GrappleServer.toggle(player), "grapple cast without launch energy");
+        player.getMainHandItem().set(com.powerfactor.registry.ModComponents.ENERGY.get(), 10000);
+        helper.assertTrue(com.powerfactor.movement.GrappleServer.toggle(player), "charged grapple did not launch");
+        helper.assertValueEqual(com.powerfactor.item.PoweredItem.energy(player.getMainHandItem()), 9900, "launch cost");
+        player.setDeltaMovement(0.4, 0.3, 0.7);
+        com.powerfactor.movement.GrappleServer.release(player);
+        helper.assertTrue(player.getDeltaMovement().equals(new net.minecraft.world.phys.Vec3(0.4, 0.3, 0.7)), "release destroyed momentum");
+        helper.succeed();
+    }
+    private static void wingsuitDeployAndFold(GameTestHelper helper) {
+        var player = movementPlayer(helper, new BlockPos(3, 4, 3));
+        helper.assertFalse(com.powerfactor.movement.WingsuitServer.toggle(player), "wingsuit deployed without equipment");
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new net.minecraft.world.item.ItemStack(ModItems.WINGSUIT.get()));
+        player.setOnGround(true); helper.assertFalse(com.powerfactor.movement.WingsuitServer.toggle(player), "wingsuit opened on the ground");
+        player.setOnGround(false); helper.assertTrue(com.powerfactor.movement.WingsuitServer.toggle(player), "airborne wingsuit did not deploy");
+        helper.assertTrue(player.isFallFlying(), "deployed wingsuit gave no glide state");
+        helper.assertTrue(player.getAttributeValue(net.neoforged.neoforge.common.NeoForgeMod.GLIDING_FLIGHT) > 0, "wingsuit gave no flight attribute");
+        player.setOnGround(true); com.powerfactor.movement.WingsuitServer.tick(player);
+        helper.assertFalse(player.isFallFlying(), "grounded wingsuit kept gliding");
+        helper.assertTrue(player.getAttributeValue(net.neoforged.neoforge.common.NeoForgeMod.GLIDING_FLIGHT) == 0, "grounded wingsuit left a flight modifier");
+        helper.succeed();
+    }
+    private static void wingsuitArmorSocket(GameTestHelper helper) {
+        helper.setBlock(CENTER, ModBlocks.UPGRADE_TABLE.get().defaultBlockState());
+        var table = helper.getBlockEntity(CENTER, com.powerfactor.upgrade.UpgradeTableBlockEntity.class);
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var chest = armor(ModItems.POWER_CHESTPLATE.get(), 500000); table.tool().setItem(0, chest);
+        var menu = new com.powerfactor.upgrade.UpgradeTableMenu(1, player.getInventory(), table);
+        player.getInventory().setItem(0, new net.minecraft.world.item.ItemStack(ModItems.WINGSUIT.get()));
+        menu.quickMoveStack(player, com.powerfactor.upgrade.UpgradeTableMenu.FIRST_INV + 27);
+        helper.assertTrue(com.powerfactor.item.WingsuitItem.worn(chest), "shift-moving wingsuit did not fit its socket");
+        var pack = armor(ModItems.ELECTRIC_JETPACK.get(), 12345);
+        helper.assertTrue(menu.accepts(pack, 1), "jetpack could not coexist with wingsuit"); menu.modules().setItem(1, pack);
+        helper.assertFalse(menu.accepts(new net.minecraft.world.item.ItemStack(ModItems.WINGSUIT.get()), 2), "second wingsuit accepted");
+        var saved = (com.powerfactor.upgrade.UpgradeTableBlockEntity) net.minecraft.world.level.block.entity.BlockEntity.loadStatic(table.getBlockPos(),
+                table.getBlockState(), table.saveWithFullMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
+        var loaded = saved.tool().getItem(0);
+        helper.assertTrue(com.powerfactor.item.WingsuitItem.worn(loaded) && com.powerfactor.item.JetpackItem.worn(loaded), "saved chest lost a flight device");
+        menu.modules().removeItem(0, 1);
+        helper.assertFalse(com.powerfactor.item.WingsuitItem.worn(chest), "removed wingsuit still grants a glide device");
+        helper.assertTrue(com.powerfactor.item.JetpackItem.worn(chest), "removing wingsuit removed jetpack too");
+        helper.succeed();
+    }
+    private static void wingsuitChangeAndRestore(GameTestHelper helper) {
+        var player = movementPlayer(helper, CENTER.above(4));
+        var suit = new net.minecraft.world.item.ItemStack(ModItems.WINGSUIT.get()); player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, suit);
+        com.powerfactor.movement.WingsuitServer.toggle(player);
+        helper.assertTrue(suit.getOrDefault(com.powerfactor.registry.ModComponents.WINGSUIT_OPEN.get(), false), "deployed flag was not stored on equipment");
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.item.ItemStack.EMPTY);
+        com.powerfactor.movement.WingsuitServer.tick(player);
+        helper.assertFalse(player.isFallFlying(), "removing equipment left glide active");
+        helper.assertTrue(player.getAttributeValue(net.neoforged.neoforge.common.NeoForgeMod.GLIDING_FLIGHT) == 0, "removing equipment left its flight attribute");
+        var restored = movementPlayer(helper, CENTER.above(4)); restored.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, suit.copy());
+        restored.tick();
+        helper.assertTrue(restored.isFallFlying(), "stored deployment did not restore before the movement tick");
+        com.powerfactor.movement.WingsuitServer.fold(restored); helper.succeed();
+    }
+
+    private static com.powerfactor.vehicle.RoverEntity testRover(GameTestHelper helper, int energy) {
+        for (int x = 0; x < 7; x++) for (int z = 0; z < 7; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        var rover = new com.powerfactor.vehicle.RoverEntity(com.powerfactor.registry.ModEntities.ELECTRIC_ROVER.get(), helper.getLevel());
+        var at = helper.absolutePos(new BlockPos(3, 1, 1)); rover.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+        rover.restore(armor(ModItems.ELECTRIC_ROVER.get(), energy)); rover.setOnGround(true); helper.getLevel().addFreshEntity(rover); return rover;
+    }
+    private static void roverClimbsAndPays(GameTestHelper helper) {
+        var rover = testRover(helper, 10000); var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.startRiding(rover); double initialY = rover.getY();
+        for (int x = 0; x < 7; x++) helper.setBlock(new BlockPos(x, 1, 4), Blocks.STONE);
+        for (int i = 0; i < 11; i++) { helper.assertTrue(rover.input(player, 1, 0, false, false), "driver input rejected"); rover.tick(); }
+        helper.assertTrue(rover.getY() >= initialY + 0.99, "rover did not climb the one-block slope: " + rover.position());
+        helper.assertValueEqual(rover.charge(), 10000 - 11 * com.powerfactor.vehicle.RoverEntity.DRIVE_FE, "motor did not pay exact FE");
+        var front = rover.position();
+        for (int x = 0; x < 7; x++) { helper.setBlock(new BlockPos(x, 2, 5), Blocks.STONE); helper.setBlock(new BlockPos(x, 3, 5), Blocks.STONE); }
+        for (int i = 0; i < 5; i++) { rover.input(player, 1, 0, false, false); rover.tick(); }
+        helper.assertTrue(rover.getZ() < helper.absolutePos(new BlockPos(3, 1, 5)).getZ(), "rover drove through a two-block wall");
+        player.stopRiding(); rover.discard(); helper.succeed();
+    }
+    private static void roverInputAndShutdown(GameTestHelper helper) {
+        var rover = testRover(helper, 500); var driver = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var stranger = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL); driver.startRiding(rover);
+        helper.assertFalse(rover.input(stranger, 1, 1, false, true), "non-driver could control rover");
+        helper.assertFalse(rover.input(driver, Float.NaN, 0, false, false), "non-finite input accepted");
+        helper.assertFalse(rover.isClientAuthoritative(), "rider can submit vehicle positions");
+        rover.input(driver, 100, 0, false, true); rover.tick();
+        helper.assertValueEqual(rover.charge(), 450, "boost cost wrong");
+        rover.restore(armor(ModItems.ELECTRIC_ROVER.get(), 0)); rover.setDeltaMovement(0, 0, 0.2);
+        rover.input(driver, 1, 0, false, true); rover.tick();
+        helper.assertFalse(rover.motorActive(), "empty battery ran the motor"); helper.assertTrue(rover.speed() < 0.2, "empty battery accelerated");
+        rover.restore(armor(ModItems.ELECTRIC_ROVER.get(), 10000)); rover.setDeltaMovement(0, 0, 0);
+        rover.input(driver, 1, 0, false, false);
+        for (int i = 0; i < 11; i++) rover.tick();
+        helper.assertTrue(rover.braking() && !rover.motorActive(), "stale input did not stop the motor");
+        driver.stopRiding(); rover.tick(); helper.assertTrue(rover.braking(), "unoccupied rover did not brake");
+        rover.discard(); helper.succeed();
+    }
+    private static void roverPadCharges(GameTestHelper helper) {
+        var rover = testRover(helper, 0); var padPos = new BlockPos(3, 0, 3);
+        helper.setBlock(padPos, ModBlocks.CHARGING_PAD.get().defaultBlockState());
+        var at = helper.absolutePos(padPos); rover.setPos(at.getX() + 0.5, at.getY() + 0.2, at.getZ() + 0.5);
+        var pad = helper.getBlockEntity(padPos, com.powerfactor.device.ChargingPadBlockEntity.class);
+        try (var tx = Transaction.openRoot()) { pad.getEnergy().insert(2500, tx); tx.commit(); }
+        helper.assertTrue(rover.getCapability(Capabilities.Energy.ENTITY, null) == rover.energyHandler(), "vehicle FE capability missing");
+        pad.serverTick(helper.getLevel(), at, pad.getBlockState());
+        helper.assertValueEqual(rover.charge(), 1000, "parked rover did not charge");
+        helper.assertValueEqual(pad.getEnergy().getAmountAsInt(), 1500, "pad transfer lost or created energy");
+        var handler = net.neoforged.neoforge.transfer.access.ItemAccess.forStack(rover.packed()).getCapability(Capabilities.Energy.ITEM);
+        helper.assertTrue(handler != null && handler.getAmountAsInt() == 1000, "packed rover lost rechargeable battery");
+        rover.discard(); helper.succeed();
+    }
+    private static void roverPackAndRestore(GameTestHelper helper) {
+        var rover = testRover(helper, 123456); var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        rover.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 17);
+        var restored = new com.powerfactor.vehicle.RoverEntity(com.powerfactor.registry.ModEntities.ELECTRIC_ROVER.get(), helper.getLevel());
+        restored.restoreFrom(rover);
+        helper.assertValueEqual(restored.charge(), 123456, "entity save/load lost synchronized charge");
+        helper.assertTrue(restored.health() == 63, "entity save/load lost hull damage");
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new net.minecraft.world.item.ItemStack(ModItems.WRENCH.get()));
+        helper.assertTrue(player.startRiding(rover), "packing fixture failed to mount"); player.setShiftKeyDown(true);
+        rover.interact(player, net.minecraft.world.InteractionHand.MAIN_HAND, rover.position());
+        helper.assertFalse(rover.isRemoved(), "occupied rover packed away"); player.stopRiding();
+        var packed = rover.packed(); rover.interact(player, net.minecraft.world.InteractionHand.MAIN_HAND, rover.position());
+        helper.assertTrue(rover.isRemoved(), "wrench did not pack stopped empty rover");
+        var unpacked = new com.powerfactor.vehicle.RoverEntity(com.powerfactor.registry.ModEntities.ELECTRIC_ROVER.get(), helper.getLevel()); unpacked.restore(packed);
+        helper.assertTrue(unpacked.charge() == 123456 && unpacked.health() == 63, "packing changed battery or hull");
+        player.setShiftKeyDown(false); player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new net.minecraft.world.item.ItemStack(com.powerfactor.registry.ModMaterials.INGOTS.get("steel").get(), 2));
+        unpacked.interact(player, net.minecraft.world.InteractionHand.MAIN_HAND, unpacked.position());
+        helper.assertTrue(unpacked.health() == 73 && player.getMainHandItem().getCount() == 1, "steel repair payment wrong");
+        unpacked.setPos(rover.position()); helper.getLevel().addFreshEntity(unpacked); player.startRiding(unpacked);
+        unpacked.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 100);
+        helper.assertTrue(unpacked.isRemoved() && !player.isPassenger(), "destroyed rover retained driver");
+        var drops = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, unpacked.getBoundingBox().inflate(3));
+        helper.assertValueEqual(drops.stream().filter(e -> e.getItem().is(ModItems.RUBBER.get())).mapToInt(e -> e.getItem().getCount()).sum(), 2, "wreck creates extra rubber");
+        helper.assertValueEqual(drops.stream().filter(e -> e.getItem().is(com.powerfactor.registry.ModMaterials.INGOTS.get("steel").get())).mapToInt(e -> e.getItem().getCount()).sum(), 4, "wreck steel salvage wrong");
+        helper.succeed();
+    }
+
+    private static void roverSubmergedStops(GameTestHelper helper) {
+        var rover = testRover(helper, 1000); var driver = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL); driver.startRiding(rover);
+        for (int x = 0; x < 7; x++) for (int y = 1; y < 4; y++) for (int z = 0; z < 7; z++) helper.setBlock(new BlockPos(x, y, z), Blocks.WATER);
+        rover.setDeltaMovement(0, 0, 0.6); rover.input(driver, 1, 0, false, true); rover.tick();
+        helper.assertTrue(rover.isInWater(), "wet rover fixture is dry");
+        helper.assertTrue(rover.braking() && !rover.motorActive(), "submerged rover ran propulsion");
+        helper.assertTrue(rover.speed() < 0.5, "submerged rover lacked drag");
+        helper.assertValueEqual(rover.charge(), 1000, "disabled submerged motor consumed FE");
+        driver.stopRiding(); rover.discard();
+        for (int x = 0; x < 7; x++) for (int y = 1; y < 4; y++) for (int z = 0; z < 7; z++) helper.setBlock(new BlockPos(x, y, z), Blocks.AIR);
+        helper.succeed();
     }
 
     private PowerFactorGameTests() {}

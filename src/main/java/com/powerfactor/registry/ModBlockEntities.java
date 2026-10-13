@@ -87,13 +87,28 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("refinery", () -> new BlockEntityType<>(com.powerfactor.oil.RefineryBlockEntity::new, ModBlocks.REFINERY.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.multiblock.CasingBlockEntity>> CASING =
             BLOCK_ENTITIES.register("casing", () -> new BlockEntityType<>(com.powerfactor.multiblock.CasingBlockEntity::new,
-                    ModBlocks.REFINERY_CASING.get(), ModBlocks.DISTILLATION_COLUMN.get()));
+                    ModBlocks.REFINERY_CASING.get(), ModBlocks.DISTILLATION_COLUMN.get(), ModBlocks.PUMPJACK_CASING.get(),
+                    ModBlocks.BOILER_CASING.get(), ModBlocks.BOILER_FIREBOX.get(), ModBlocks.STEAM_DRUM.get(), ModBlocks.TURBINE_CASING.get(),
+                    ModBlocks.STEAM_ROTOR.get(), ModBlocks.GENERATOR_MAGNET.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FluidTankBlockEntity>> FLUID_TANK = BLOCK_ENTITIES.register("fluid_tank",
             () -> new BlockEntityType<>(FluidTankBlockEntity::new, ModBlocks.FLUID_TANK.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PumpBlockEntity>> ELECTRIC_PUMP = BLOCK_ENTITIES.register("electric_pump",
             () -> new BlockEntityType<>(PumpBlockEntity::new, ModBlocks.ELECTRIC_PUMP.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PipeBlockEntity>> PIPE = BLOCK_ENTITIES.register("pipe",
-            () -> new BlockEntityType<>(PipeBlockEntity::new, ModBlocks.FLUID_PIPE.get(), ModBlocks.ITEM_PIPE.get()));
+            () -> new BlockEntityType<>(PipeBlockEntity::new, ModBlocks.FLUID_PIPE.get(), ModBlocks.ITEM_PIPE.get(), ModBlocks.STEAM_PIPE.get()));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.steam.SteamBoilerBlockEntity>> STEAM_BOILER =
+            BLOCK_ENTITIES.register("steam_boiler", () -> new BlockEntityType<>(com.powerfactor.steam.SteamBoilerBlockEntity::new, ModBlocks.STEAM_BOILER.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.steam.SteamTurbineBlockEntity>> STEAM_TURBINE =
+            BLOCK_ENTITIES.register("steam_turbine", () -> new BlockEntityType<>(com.powerfactor.steam.SteamTurbineBlockEntity::new, ModBlocks.STEAM_TURBINE.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.steam.CoolingTowerBlockEntity>> COOLING_TOWER =
+            BLOCK_ENTITIES.register("cooling_tower", () -> new BlockEntityType<>(com.powerfactor.steam.CoolingTowerBlockEntity::new, ModBlocks.COOLING_TOWER.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.AmbientGeneratorBlockEntity>> GEOTHERMAL_GENERATOR =
+            BLOCK_ENTITIES.register("geothermal_generator", () -> new BlockEntityType<>((pos, state) -> new com.powerfactor.generator.AmbientGeneratorBlockEntity(false, pos, state), ModBlocks.GEOTHERMAL_GENERATOR.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.generator.AmbientGeneratorBlockEntity>> THERMOELECTRIC_GENERATOR =
+            BLOCK_ENTITIES.register("thermoelectric_generator", () -> new BlockEntityType<>((pos, state) -> new com.powerfactor.generator.AmbientGeneratorBlockEntity(true, pos, state), ModBlocks.THERMOELECTRIC_GENERATOR.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.powerfactor.device.RainCollectorBlockEntity>> RAIN_COLLECTOR =
+            BLOCK_ENTITIES.register("rain_collector", () -> new BlockEntityType<>(com.powerfactor.device.RainCollectorBlockEntity::new, ModBlocks.RAIN_COLLECTOR.get()));
 
     public static final java.util.Map<RecipeMachine, DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>>> RECIPE_MACHINES =
             new java.util.EnumMap<>(RecipeMachine.class);

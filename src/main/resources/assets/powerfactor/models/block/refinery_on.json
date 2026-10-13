@@ -1,0 +1,6 @@
+{
+  "parent": "powerfactor:block/refinery_formed",
+  "textures": {
+    "front": "powerfactor:block/refinery_controller_front_on"
+  }
+}

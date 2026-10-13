@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PP",
+    "PP"
+  ],
+  "key": {
+    "P": "#c:plates/steel"
+  },
+  "result": {
+    "id": "powerfactor:riveted_steel",
+    "count": 4
+  }
+}

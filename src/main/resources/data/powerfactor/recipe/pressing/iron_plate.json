@@ -1,0 +1,15 @@
+{
+  "type": "powerfactor:pressing",
+  "inputs": [
+    {
+      "ingredient": "#c:ingots/iron",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:iron_plate"
+    }
+  ],
+  "tool": "powerfactor:plate_die"
+}

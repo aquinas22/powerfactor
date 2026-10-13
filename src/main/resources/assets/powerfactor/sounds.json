@@ -458,6 +458,51 @@
     ],
     "subtitle": "subtitles.powerfactor.refinery_run"
   },
+  "boiler_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:boiler_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.boiler_run"
+  },
+  "steam_turbine_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:steam_turbine_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.steam_turbine_run"
+  },
+  "cooling_tower_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:cooling_tower_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.cooling_tower_run"
+  },
+  "wingsuit_wind": {
+    "sounds": [
+      {
+        "name": "powerfactor:wingsuit_wind",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wingsuit_wind"
+  },
+  "rover_motor": {
+    "sounds": [
+      {
+        "name": "powerfactor:rover_motor",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.rover_motor"
+  },
   "tree_fall": {
     "sounds": [
       {
@@ -529,5 +574,29 @@
       }
     ],
     "subtitle": "subtitles.powerfactor.radio_squelch"
+  },
+  "grapple_fire": {
+    "sounds": [
+      {
+        "name": "powerfactor:grapple_fire"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.grapple_fire"
+  },
+  "grapple_attach": {
+    "sounds": [
+      {
+        "name": "powerfactor:grapple_attach"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.grapple_attach"
+  },
+  "wingsuit_open": {
+    "sounds": [
+      {
+        "name": "powerfactor:wingsuit_open"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wingsuit_open"
   }
 }

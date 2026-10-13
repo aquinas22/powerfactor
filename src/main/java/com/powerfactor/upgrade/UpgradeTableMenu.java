@@ -111,6 +111,12 @@ public class UpgradeTableMenu extends AbstractContainerMenu {
 
     /** Whether {@code stack} could go in socket {@code index} of the current tool. */
     public boolean accepts(ItemStack stack, int index) {
+        if (com.powerfactor.item.PowerArmorItem.fitsSocket(toolStack(), stack)) {
+            for (int j = 0; j < ToolModules.SLOTS; j++) {
+                if (j != index && modules.getItem(j).is(stack.getItem())) return false;
+            }
+            return true;
+        }
         if (!(stack.getItem() instanceof DrillModule m) || !m.type().fits(kind())) {
             return false;
         }
@@ -193,7 +199,7 @@ public class UpgradeTableMenu extends AbstractContainerMenu {
             if (!moveItemStackTo(stack, TOOL_SLOT, TOOL_SLOT + 1, false)) {
                 return ItemStack.EMPTY;
             }
-        } else if (stack.getItem() instanceof DrillModule) {
+        } else if (stack.getItem() instanceof DrillModule || com.powerfactor.item.PowerArmorItem.fitsSocket(toolStack(), stack)) {
             boolean moved = false;
             for (int i = 0; i < ToolModules.SLOTS && !stack.isEmpty(); i++) {
                 Slot s = slots.get(FIRST_MODULE + i);

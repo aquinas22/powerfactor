@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SSS",
+    " S ",
+    "SSS"
+  ],
+  "key": {
+    "S": "#c:ingots/steel"
+  },
+  "result": {
+    "id": "powerfactor:steel_beam",
+    "count": 8
+  }
+}

@@ -68,4 +68,15 @@ public final class ModMenus {
     }
 
     private ModMenus() {}
+
+    public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.steam.SteamBoilerMenu>> STEAM_BOILER = MENUS.register("steam_boiler",
+            () -> IMenuTypeExtension.create(com.powerfactor.steam.SteamBoilerMenu::new));
+    public static final java.util.Map<com.powerfactor.steam.ThermalMenu.Device, DeferredHolder<MenuType<?>, MenuType<com.powerfactor.steam.ThermalMenu>>> THERMAL =
+            new java.util.EnumMap<>(com.powerfactor.steam.ThermalMenu.Device.class);
+    static {
+        for (var device : com.powerfactor.steam.ThermalMenu.Device.values()) {
+            THERMAL.put(device, MENUS.register(device.id, () -> IMenuTypeExtension.create((id, inventory, data) ->
+                    new com.powerfactor.steam.ThermalMenu(device, id, inventory, data))));
+        }
+    }
 }

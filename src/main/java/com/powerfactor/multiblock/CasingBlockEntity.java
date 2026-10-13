@@ -19,13 +19,15 @@ public class CasingBlockEntity extends BlockEntity implements MultiblockPart {
 
     /** Join (or, with null, leave) a formed structure. */
     public void link(@Nullable BlockPos controller) {
-        if (java.util.Objects.equals(controller, controllerPos)) {
+        boolean changed = !java.util.Objects.equals(controller, controllerPos);
+        if (!changed && getBlockState().getValue(CasingBlock.FORMED) == (controller != null)) {
             return;
         }
         controllerPos = controller;
         setChanged();
         if (level != null && getBlockState().hasProperty(CasingBlock.FORMED)) {
             level.setBlock(worldPosition, getBlockState().setValue(CasingBlock.FORMED, controller != null), Block.UPDATE_ALL);
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }
 
@@ -35,7 +37,8 @@ public class CasingBlockEntity extends BlockEntity implements MultiblockPart {
 
     @Override
     public @Nullable BlockEntity controller() {
-        return controllerPos == null || level == null ? null : level.getBlockEntity(controllerPos);
+        return controllerPos == null || level == null || !level.hasChunkAt(controllerPos)
+                || !getBlockState().getValue(CasingBlock.FORMED) ? null : level.getBlockEntity(controllerPos);
     }
 
     @Override
@@ -50,5 +53,17 @@ public class CasingBlockEntity extends BlockEntity implements MultiblockPart {
         if (controllerPos != null) {
             output.putLong("controller", controllerPos.asLong());
         }
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+        var tag = new net.minecraft.nbt.CompoundTag();
+        if (controllerPos != null) tag.putLong("controller", controllerPos.asLong());
+        return tag;
+    }
+
+    @Override
+    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
     }
 }

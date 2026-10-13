@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PMP",
+    "CIC",
+    "PPP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "M": "powerfactor:microprocessor",
+    "C": "powerfactor:capacitor",
+    "I": "minecraft:iron_chestplate"
+  },
+  "result": {
+    "id": "powerfactor:power_chestplate",
+    "count": 1
+  }
+}

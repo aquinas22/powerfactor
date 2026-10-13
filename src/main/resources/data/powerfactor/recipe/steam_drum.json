@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PTP",
+    "PPP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "T": "powerfactor:fluid_tank"
+  },
+  "result": {
+    "id": "powerfactor:steam_drum",
+    "count": 1
+  }
+}

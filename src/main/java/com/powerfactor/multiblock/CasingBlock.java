@@ -48,6 +48,19 @@ public class CasingBlock extends BaseEntityBlock {
     }
 
     @Override
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, net.minecraft.world.level.Level level, BlockPos pos,
+            net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
+        if (level.getBlockEntity(pos) instanceof CasingBlockEntity casing && casing.controller() instanceof com.powerfactor.machine.MachineBlockEntity machine) {
+            if (!level.isClientSide()) {
+                if (machine.hasMenu()) player.openMenu(machine, machine.getBlockPos());
+                else player.sendOverlayMessage(machine.describe());
+            }
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
+        return net.minecraft.world.InteractionResult.PASS;
+    }
+
+    @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return shape;
     }

@@ -4,6 +4,7 @@ import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 
 /** Unit colors and the vertical FE gauge every machine GUI shares. */
 public final class GuiUtil {
@@ -22,22 +23,21 @@ public final class GuiUtil {
         // Glass tank: recessed, with tick marks and a highlight down the side.
         Skin.well(graphics, x, y, w, h);
         graphics.fill(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF0B1418);
+        int filled = capacity <= 0 ? 0 : (int) ((long) (h - 2) * Math.clamp(amount, 0, capacity) / capacity);
+        int bottom = y + h - 1;
+        if (filled > 0) {
+            graphics.fillGradient(x + 1, bottom - filled, x + w - 1, bottom, color, darker(color));
+            for (int i = x + 1; i < x + w - 1; i++) {
+                int wave = filled > 2 && filled < h - 2 ? (int) Math.round(Math.sin((i - x) * 0.8 + Util.getMillis() / 350.0)) : 0;
+                int surface = Math.clamp(bottom - filled + wave, y + 1, bottom - 1);
+                graphics.fill(i, surface, i + 1, surface + 1, 0x90FFFFFF);
+            }
+        }
+        // Glass and calibration marks stay visible over a full tank.
         for (int t = 1; t < 4; t++) {
             graphics.fill(x + w - 4, y + h * t / 4, x + w - 1, y + h * t / 4 + 1, 0x70FFFFFF);
         }
-        graphics.fill(x + 2, y + 2, x + 3, y + h - 2, 0x30FFFFFF);
-        if (capacity <= 0 || amount <= 0) {
-            return;
-        }
-        int filled = (int) ((long) (h - 2) * Math.min(amount, capacity) / capacity);
-        int bottom = y + h - 1;
-        graphics.fillGradient(x + 1, bottom - filled, x + w - 1, bottom, color, darker(color));
-        long t = System.currentTimeMillis() / 120;
-        for (int i = x + 1; i < x + w - 1; i++) {
-            if ((i + t) % 4 == 0) {
-                graphics.fill(i, bottom - filled, i + 1, bottom - filled + 1, 0xFFFFFFFF);
-            }
-        }
+        graphics.fill(x + 2, y + 2, x + 3, y + h - 2, 0x40FFFFFF);
     }
 
     private static int darker(int argb) {
@@ -59,7 +59,7 @@ public final class GuiUtil {
         x += font.width(feText) + 8;
         graphics.text(font, eeText, x, y, EE_COLOR, false);
         x += font.width(eeText) + 8;
-        graphics.text(font, pfText, x, y, 0xFF404040, false);
+        graphics.text(font, pfText, x, y, Skin.TEXT, false);
     }
 
     private GuiUtil() {}

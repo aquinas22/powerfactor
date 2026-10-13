@@ -33,10 +33,19 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil;
  * turbine's controller does (cut-in, rated, storm cut-out). Power runs down the tower: cable it from
  * the nacelle or from the tower's base. Inverter-fed, so FE only, no EE support.
  */
-public class WindTurbineBlockEntity extends PushingGenerator implements MachineAudio.Looping {
+public class WindTurbineBlockEntity extends PushingGenerator implements MachineAudio.Looping, com.powerfactor.multiblock.Buildable {
     public static final int PEAK = 160;
     /** The turbine is a multiblock: it forms only on a tower of at least this many sections. */
     public static final int MIN_TOWER = 6;
+
+    @Override
+    public com.powerfactor.multiblock.Structure buildStructure() {
+        var parts = new java.util.ArrayList<com.powerfactor.multiblock.Structure.Part>();
+        for (int y = 1; y <= MIN_TOWER; y++) {
+            parts.add(new com.powerfactor.multiblock.Structure.Part(new BlockPos(0, -y, 0), com.powerfactor.registry.ModBlocks.WIND_TURBINE_TOWER));
+        }
+        return new com.powerfactor.multiblock.Structure(parts);
+    }
     /** Blade length, in blocks from the hub centre. */
     public static final double ROTOR_RADIUS = 6.5;
     /** Hub centre above the nacelle block's floor, and ahead of its centre, in blocks. */

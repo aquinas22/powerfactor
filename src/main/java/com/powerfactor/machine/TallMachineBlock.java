@@ -96,7 +96,11 @@ public class TallMachineBlock extends MachineBlock {
             }
             // Keep the top's RUNNING (and facing) in step, for its model.
             if (half == DoubleBlockHalf.UPPER) {
-                return state.setValue(RUNNING, neighbourState.getValue(RUNNING)).setValue(FACING, neighbourState.getValue(FACING));
+                BlockState next = state.setValue(RUNNING, neighbourState.getValue(RUNNING)).setValue(FACING, neighbourState.getValue(FACING));
+                if (next.hasProperty(com.powerfactor.multiblock.CasingBlock.FORMED)) {
+                    next = next.setValue(com.powerfactor.multiblock.CasingBlock.FORMED, neighbourState.getValue(com.powerfactor.multiblock.CasingBlock.FORMED));
+                }
+                return next;
             }
         }
         return super.updateShape(state, level, ticks, pos, direction, neighbourPos, neighbourState, random);

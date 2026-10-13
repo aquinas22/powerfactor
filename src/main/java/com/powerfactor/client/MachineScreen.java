@@ -36,12 +36,12 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
 
     protected static final int MAIN_W = 176;
     private static final int TAB_X = MAIN_W - 1, TAB_W = 26, TAB_H = 24, TAB_GAP = 2;
-    private static final int PANEL_X = MAIN_W + TAB_W - 1;
     private static final int BG = 0xFF0A100D, TEXT = 0xFFB8F5C0, DIM = 0xFF5F8A66;
     private static @Nullable Tab lastOpen;
 
     private @Nullable Tab open;
     private final ElectricalPanel panel = new ElectricalPanel();
+    protected float framePartialTick;
 
     protected MachineScreen(M menu, Inventory inventory, Component title, int height) {
         super(menu, inventory, title, MAIN_W, height);
@@ -77,15 +77,25 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
     /** Slide the whole GUI left when an open panel would run off the right edge of the screen. */
     private void reposition() {
         leftPos = (width - imageWidth) / 2;
-        int right = leftPos + (open == null ? TAB_X + TAB_W : PANEL_X + panelWidth(open)) + 2;
+        int right = leftPos + (open == null ? TAB_X + tabWidth() : panelX() + panelWidth(open));
         if (right > width) {
-            leftPos = Math.max(2, leftPos - (right - width));
+            leftPos = Math.max(0, leftPos - (right - width));
         }
+    }
+
+    /** Compact the tabs just enough to fit the 320-unit minimum GUI width. */
+    private int tabWidth() {
+        return open == null ? TAB_W : Math.clamp(width - MAIN_W - panelWidth(open) + 1, 20, TAB_W);
+    }
+
+    private int panelX() {
+        return MAIN_W + tabWidth() - 1;
     }
 
     @Override
     public final void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
         super.extractBackground(g, mouseX, mouseY, a);
+        framePartialTick = a;
         if (menu instanceof ProcessingMenu pm) {
             pm.setUpgradeSlotsActive(open == Tab.UPGRADES);
         }
@@ -95,7 +105,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             tabButton(g, tabs.get(i), leftPos + TAB_X, topPos + 4 + i * (TAB_H + TAB_GAP), tabs.get(i) == open, mouseX, mouseY);
         }
         if (open != null) {
-            int x = leftPos + PANEL_X, y = topPos;
+            int x = leftPos + panelX(), y = topPos;
             switch (open) {
                 case ELECTRICAL -> {
                     Electrical e = electrical();
@@ -108,21 +118,22 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
     }
 
     private void tabButton(GuiGraphicsExtractor g, Tab tab, int x, int y, boolean selected, int mx, int my) {
-        boolean hover = mx >= x && mx < x + TAB_W && my >= y && my < y + TAB_H;
+        int w = tabWidth();
+        boolean hover = mx >= x && mx < x + w && my >= y && my < y + TAB_H;
         // Gunmetal tab, teal edge when open, like the v2 panels.
-        g.fill(x, y, x + TAB_W, y + TAB_H, 0xFF0B0D0F);
-        g.fillGradient(x, y + 1, x + TAB_W - 1, y + TAB_H - 1, hover ? 0xFF5A646C : 0xFF4A535B, 0xFF2E353B);
-        g.fill(x, y + 1, x + TAB_W - 1, y + 2, 0xFF7C8790);
-        g.fill(x + 3, y + 3, x + TAB_W - 4, y + TAB_H - 3, selected ? 0xFF10241C : 0xFF1A2026);
+        g.fill(x, y, x + w, y + TAB_H, 0xFF0B0D0F);
+        g.fillGradient(x, y + 1, x + w - 1, y + TAB_H - 1, hover ? 0xFF5A646C : 0xFF4A535B, 0xFF2E353B);
+        g.fill(x, y + 1, x + w - 1, y + 2, 0xFF7C8790);
+        g.fill(x + 3, y + 3, x + w - 4, y + TAB_H - 3, selected ? 0xFF10241C : 0xFF1A2026);
         if (selected) {
-            g.fill(x + TAB_W - 3, y + 2, x + TAB_W - 1, y + TAB_H - 2, Skin.TEAL);
+            g.fill(x + w - 3, y + 2, x + w - 1, y + TAB_H - 2, Skin.TEAL);
         }
         ItemStack icon = switch (tab) {
             case ELECTRICAL -> new ItemStack(ModItems.COPPER_COIL.get());
             case UPGRADES -> new ItemStack(ModItems.SPEED_UPGRADE.get());
             case CONFIG -> new ItemStack(Items.REDSTONE_TORCH);
         };
-        g.item(icon, x + 4, y + 4);
+        g.item(icon, x + (w - 16) / 2, y + 4);
     }
 
     private int panelWidth(Tab tab) {
@@ -156,9 +167,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
         for (Slot slot : menu.slots) {
             if (slot instanceof ProcessingMenu.UpgradeSlot) {
                 int sx = leftPos + slot.x - 1, sy = topPos + slot.y - 1;
-                g.fill(sx, sy, sx + 18, sy + 18, 0xFF373737);
-                g.fill(sx + 1, sy + 1, sx + 18, sy + 18, 0xFFFFFFFF);
-                g.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF1B2B23);
+                Skin.slot(g, sx, sy, 0xFFB070FF);
             }
         }
         // Live summary of what the installed cards do.
@@ -262,7 +271,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             }
             g.fill(b.x(), b.y(), b.x() + b.w(), b.y() + b.h(), hover ? 0xFF2A5A3A : 0xFF16362A);
             g.outline(b.x(), b.y(), b.w(), b.h(), 0xFF5F8A66);
-            g.centeredText(font, b.label(), b.x() + b.w() / 2, b.y() + 2, TEXT);
+            g.centeredText(font, Skin.fit(font, b.label(), b.w() - 6), b.x() + b.w() / 2, b.y() + 2, TEXT);
         }
         if (menu instanceof ProcessingMenu pm && configBlock() != null) {
             int vx = x + 6, vy = y + DIAGRAM_Y;
@@ -314,9 +323,9 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
     /** Screen areas outside the main panel that we draw on: the tab column and any open panel. For JEI. */
     public List<net.minecraft.client.renderer.Rect2i> extraAreas() {
         List<net.minecraft.client.renderer.Rect2i> areas = new ArrayList<>();
-        areas.add(new net.minecraft.client.renderer.Rect2i(leftPos + TAB_X, topPos, TAB_W, 4 + tabs().size() * (TAB_H + TAB_GAP)));
+        areas.add(new net.minecraft.client.renderer.Rect2i(leftPos + TAB_X, topPos, tabWidth(), 4 + tabs().size() * (TAB_H + TAB_GAP)));
         if (open != null) {
-            areas.add(new net.minecraft.client.renderer.Rect2i(leftPos + PANEL_X, topPos, panelWidth(open), panelHeight(open)));
+            areas.add(new net.minecraft.client.renderer.Rect2i(leftPos + panelX(), topPos, panelWidth(open), panelHeight(open)));
         }
         return areas;
     }
@@ -329,7 +338,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
         List<Tab> tabs = tabs();
         for (int i = 0; i < tabs.size(); i++) {
             int tx = leftPos + TAB_X, ty = topPos + 4 + i * (TAB_H + TAB_GAP);
-            if (mx >= tx && mx < tx + TAB_W && my >= ty && my < ty + TAB_H) {
+            if ((event.button() == 0 || event.button() == 1) && mx >= tx && mx < tx + tabWidth() && my >= ty && my < ty + TAB_H) {
                 open = open == tabs.get(i) ? null : tabs.get(i);
                 lastOpen = open;
                 reposition();
@@ -338,7 +347,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             }
         }
         if (open == Tab.CONFIG && configBlock() != null) {
-            int vx = leftPos + PANEL_X + 6, vy = topPos + DIAGRAM_Y;
+            int vx = leftPos + panelX() + 6, vy = topPos + DIAGRAM_Y;
             var face = sideView.pick(mx, my, vx, vy, vx + VIEW, vy + VIEW);
             if (face != null) {
                 int base = event.button() == 1 ? ProcessingMenu.BUTTON_SIDE_PREV : ProcessingMenu.BUTTON_SIDE_NEXT;
@@ -352,7 +361,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             }
         }
         if (open == Tab.CONFIG) {
-            for (Button b : configButtons(leftPos + PANEL_X, topPos)) {
+            for (Button b : configButtons(leftPos + panelX(), topPos)) {
                 if (mx >= b.x() && mx < b.x() + b.w() && my >= b.y() && my < b.y() + b.h()) {
                     int id = b.id();
                     // Right-click cycles a face backwards.
@@ -390,13 +399,35 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
 
     @Override
     protected boolean hasClickedOutside(double mx, double my, int xo, int yo) {
-        if (mx >= xo + TAB_X && mx < xo + TAB_X + TAB_W && my >= yo && my < yo + 4 + tabs().size() * (TAB_H + TAB_GAP)) {
+        if (mx >= xo + TAB_X && mx < xo + TAB_X + tabWidth() && my >= yo && my < yo + 4 + tabs().size() * (TAB_H + TAB_GAP)) {
             return false;
         }
-        if (open != null && mx >= xo + PANEL_X && mx < xo + PANEL_X + panelWidth(open) && my >= yo && my < yo + panelHeight(open)) {
+        if (open != null && mx >= xo + panelX() && mx < xo + panelX() + panelWidth(open) && my >= yo && my < yo + panelHeight(open)) {
             return false;
         }
         return super.hasClickedOutside(mx, my, xo, yo);
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
+        super.extractRenderState(g, mouseX, mouseY, a);
+        for (int i = 0; i < tabs().size(); i++) {
+            if (isHovering(TAB_X, 4 + i * (TAB_H + TAB_GAP), tabWidth(), TAB_H, mouseX, mouseY)) {
+                g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.tab." + tabs().get(i).name().toLowerCase(java.util.Locale.ROOT)),
+                        mouseX, mouseY);
+                return;
+            }
+        }
+        if (isHovering(3, 3, MAIN_W - 24, 12, mouseX, mouseY) && font.width(title) > MAIN_W - 32) {
+            g.setTooltipForNextFrame(font, title, mouseX, mouseY);
+        } else if (open == Tab.CONFIG) {
+            for (Button b : configButtons(leftPos + panelX(), topPos)) {
+                if (mouseX >= b.x() && mouseX < b.x() + b.w() && mouseY >= b.y() && mouseY < b.y() + b.h()
+                        && font.width(b.label()) > b.w() - 6) {
+                    g.setTooltipForNextFrame(font, b.label(), mouseX, mouseY);
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------ shared drawing

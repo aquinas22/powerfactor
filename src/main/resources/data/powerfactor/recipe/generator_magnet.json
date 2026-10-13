@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WCW",
+    "CIC",
+    "WCW"
+  ],
+  "key": {
+    "W": "powerfactor:fine_copper_wire",
+    "C": "powerfactor:copper_coil",
+    "I": "#c:ingots/iron"
+  },
+  "result": {
+    "id": "powerfactor:generator_magnet",
+    "count": 1
+  }
+}

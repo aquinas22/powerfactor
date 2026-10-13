@@ -1,0 +1,16 @@
+{
+  "type": "powerfactor:pressing",
+  "inputs": [
+    {
+      "ingredient": "#c:ingots/iron",
+      "count": 4
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:iron_gear"
+    }
+  ],
+  "time": 160,
+  "tool": "powerfactor:gear_die"
+}

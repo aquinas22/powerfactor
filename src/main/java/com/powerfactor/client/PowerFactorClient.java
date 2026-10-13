@@ -23,6 +23,7 @@ public final class PowerFactorClient {
         ScadaPayloads.displayHandler = ScadaDisplayRenderer::receive;
         com.powerfactor.item.ToolPayloads.meterHandler = ClampMeterHud::onReading;
         com.powerfactor.item.ToolPayloads.jetpackHandler = JetpackClient::onSync;
+        com.powerfactor.movement.MovementPayloads.wingHandler = MovementClient::wingSync;
         com.powerfactor.logistics.PipeTraffic.clientHandler = PipeTrafficClient::receive;
         com.powerfactor.radio.RadioPayload.clientHandler = RadioHud::receive;
         com.powerfactor.api.MachineAudio.handler = MachineSoundLoop::update;
@@ -40,12 +41,23 @@ public final class PowerFactorClient {
         SaberHum.clientTick();
         ChainsawSound.clientTick();
         JetpackClient.clientTick();
+        MovementClient.tick();
+        RoverClient.tick();
+        PowerArmorClient.tick();
         ClampMeterHud.clientTick();
         PipeTrafficClient.clientTick();
     }
 
     @SubscribeEvent
     static void onFluidModels(net.neoforged.neoforge.client.event.RegisterFluidModelsEvent event) {
+        for (var fluid : java.util.List.of(com.powerfactor.registry.ModFluids.STEAM, com.powerfactor.registry.ModFluids.FLOWING_STEAM,
+                com.powerfactor.registry.ModFluids.HOT_WATER, com.powerfactor.registry.ModFluids.FLOWING_HOT_WATER)) {
+            boolean steam = fluid == com.powerfactor.registry.ModFluids.STEAM || fluid == com.powerfactor.registry.ModFluids.FLOWING_STEAM;
+            event.register(new net.minecraft.client.renderer.block.FluidModel.Unbaked(
+                    new net.minecraft.client.resources.model.sprite.Material(com.powerfactor.PowerFactor.id(steam ? "block/steam_still" : "block/hot_water_still")),
+                    new net.minecraft.client.resources.model.sprite.Material(com.powerfactor.PowerFactor.id(steam ? "block/steam_still" : "block/hot_water_still")), null,
+                    (net.neoforged.neoforge.client.fluid.FluidTintSource) null), fluid);
+        }
         event.register(new net.minecraft.client.renderer.block.FluidModel.Unbaked(
                 new net.minecraft.client.resources.model.sprite.Material(com.powerfactor.PowerFactor.id("block/hydrogen_still")),
                 new net.minecraft.client.resources.model.sprite.Material(com.powerfactor.PowerFactor.id("block/hydrogen_flow")), null,
@@ -75,10 +87,37 @@ public final class PowerFactorClient {
     static void onKeys(net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent event) {
         event.registerCategory(JetpackClient.CATEGORY);
         event.register(JetpackClient.HOVER_KEY);
+        event.register(PowerArmorClient.SETTINGS);
+        event.register(MovementClient.GRAPPLE); event.register(MovementClient.GLIDE);
+    }
+
+    @SubscribeEvent
+    static void onRenderStates(net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent event) {
+        event.registerAvatarEntityModifier(new net.neoforged.neoforge.client.renderstate.AvatarRenderStateModifier() {
+            @Override public <T extends net.minecraft.world.entity.Avatar & net.minecraft.client.entity.ClientAvatarEntity> void accept(T avatar,
+                    net.minecraft.client.renderer.entity.state.AvatarRenderState state) {
+                if (com.powerfactor.item.WingsuitItem.worn(avatar.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST))) {
+                    float open = MovementClient.wingOpen(state.id, state.partialTick);
+                    state.setRenderData(WingsuitPose.OPEN, open);
+                    if (open > 0.02F) state.leftArmPose = state.rightArmPose = WingsuitPose.POSE.getValue();
+                } else state.setRenderData(WingsuitPose.OPEN, null);
+            }
+        });
+    }
+
+    @SubscribeEvent
+    static void onCamera(net.neoforged.neoforge.client.event.ViewportEvent.ComputeCameraAngles event) {
+        var player = net.minecraft.client.Minecraft.getInstance().player;
+        if (player != null && player.isFallFlying() && com.powerfactor.item.WingsuitItem.worn(player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST))) {
+            event.setRoll(event.getRoll() + MovementClient.bank((float) event.getPartialTick()) * 0.35F);
+        }
     }
 
     @SubscribeEvent
     static void onGuiLayers(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent event) {
+        event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("power_armor"), PowerArmorClient::render);
+        event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("movement"), MovementClient::render);
+        event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("rover"), RoverClient::render);
         event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("jetpack"),
                 JetpackClient::renderHud);
         event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.CROSSHAIR, com.powerfactor.PowerFactor.id("clamp_meter"),
@@ -93,6 +132,9 @@ public final class PowerFactorClient {
                     event.getPlayerRenderer(skin);
             if (renderer != null) {
                 renderer.addLayer(new JetpackLayer(renderer, event.getEntityModels()));
+                renderer.addLayer(new PowerArmorLayer(renderer, event.getEntityModels()));
+                renderer.addLayer(new WingsuitLayer(renderer, event.getEntityModels()));
+                renderer.addLayer(new GrappleWristLayer(renderer, event.getEntityModels()));
             }
         }
     }
@@ -101,7 +143,14 @@ public final class PowerFactorClient {
     static void onLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(EngineRenderer.LAYER, EngineRenderer::createLayer);
         event.registerLayerDefinition(JetpackLayer.LAYER, JetpackLayer::createLayer);
+        event.registerLayerDefinition(PowerArmorLayer.LAYER, PowerArmorLayer::createLayer);
+        event.registerLayerDefinition(WingsuitLayer.LAYER, WingsuitLayer::createLayer);
+        event.registerLayerDefinition(GrappleHookRenderer.LAYER, GrappleHookRenderer::createLayer);
+        event.registerLayerDefinition(GrappleWristLayer.LAYER, GrappleWristLayer::createLayer);
+        event.registerLayerDefinition(RoverRenderer.LAYER, RoverRenderer::createLayer);
         event.registerLayerDefinition(PumpjackRenderer.LAYER, PumpjackRenderer::createLayer);
+        event.registerLayerDefinition(WorkshopRenderer.LAYER, WorkshopRenderer::createLayer);
+        event.registerLayerDefinition(SteamPlantRenderer.LAYER, SteamPlantRenderer::createLayer);
         event.registerLayerDefinition(LaserEngraverRenderer.LAYER, LaserEngraverRenderer::createLayer);
         event.registerLayerDefinition(TurbineRotorRenderer.LAYER, TurbineRotorRenderer::createLayer);
         event.registerLayerDefinition(EnderCoreRenderer.LAYER, EnderCoreRenderer::createLayer);
@@ -113,6 +162,12 @@ public final class PowerFactorClient {
 
     @SubscribeEvent
     static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(com.powerfactor.registry.ModEntities.GRAPPLE_HOOK.get(), GrappleHookRenderer::new);
+        event.registerEntityRenderer(com.powerfactor.registry.ModEntities.ELECTRIC_ROVER.get(), RoverRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.STEAM_BOILER.get(), SteamPlantRenderer::boiler);
+        event.registerBlockEntityRenderer(ModBlockEntities.STEAM_TURBINE.get(), SteamPlantRenderer::turbine);
+        event.registerBlockEntityRenderer(ModBlockEntities.COOLING_TOWER.get(), CoolingTowerRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.RAIN_COLLECTOR.get(), RainCollectorRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ENGINE.get(), EngineRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.COAL_TURBINE.get(), TurbineRotorRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.FLUID_TANK.get(), FluidTankRenderer::new);
@@ -127,6 +182,11 @@ public final class PowerFactorClient {
         event.registerBlockEntityRenderer(ModBlockEntities.UPGRADE_TABLE.get(), UpgradeTableRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.PIPE.get(), PipeRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.PUMPJACK.get(), PumpjackRenderer::new);
+        for (var machine : com.powerfactor.machine.RecipeMachine.values()) {
+            if (machine.animatedWorkshop()) {
+                event.registerBlockEntityRenderer(ModBlockEntities.RECIPE_MACHINES.get(machine).get(), WorkshopRenderer::new);
+            }
+        }
         event.registerBlockEntityRenderer(ModBlockEntities.REFINERY.get(), RefineryRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.RECIPE_MACHINES.get(com.powerfactor.machine.RecipeMachine.LASER_ENGRAVER).get(),
                 LaserEngraverRenderer::new);
@@ -134,6 +194,8 @@ public final class PowerFactorClient {
 
     @SubscribeEvent
     static void onMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(ModMenus.STEAM_BOILER.get(), SteamBoilerScreen::new);
+        for (var device : com.powerfactor.steam.ThermalMenu.Device.values()) event.register(ModMenus.THERMAL.get(device).get(), ThermalScreen::new);
         event.register(ModMenus.COAL_TURBINE.get(), CoalTurbineScreen::new);
         event.register(ModMenus.CRUSHER.get(), (CrusherMenu m, Inventory inv, Component t) ->
                 new ProcessingScreen<>(m, inv, t, null, 93, 39, 25, true, com.powerfactor.registry.ModBlocks.CRUSHER.get()));

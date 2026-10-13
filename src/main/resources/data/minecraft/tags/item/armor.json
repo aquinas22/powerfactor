@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:power_helmet",
+    "powerfactor:power_chestplate",
+    "powerfactor:power_leggings",
+    "powerfactor:power_boots"
+  ]
+}

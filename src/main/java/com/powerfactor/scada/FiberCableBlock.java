@@ -17,8 +17,10 @@ public class FiberCableBlock extends ConnectorBlock {
     protected boolean connectsTo(BlockGetter level, BlockPos pos, Direction side) {
         BlockPos other = pos.relative(side);
         var block = level.getBlockState(other).getBlock();
+        var entity = level.getBlockEntity(other);
+        if (entity instanceof com.powerfactor.multiblock.MultiblockPart part) entity = part.controller();
         return block == this || block instanceof ScadaTerminalBlock || block instanceof ScadaDisplayBlock
-                || level.getBlockEntity(other) instanceof ScadaDevice;
+                || entity instanceof ScadaDevice;
     }
 
     @Override
