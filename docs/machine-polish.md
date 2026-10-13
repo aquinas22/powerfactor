@@ -56,6 +56,11 @@ Crusher jaws and ore-washer rotation use continuous phases without a jump at eac
 
 [Blocked output](previews/processing-blocked.png) · [Missing water](previews/processing-water.png)
 
+Whole output batches reserve space together, including multiple byproducts sharing a slot.
+Zero-chance products reserve no space. Oversized stacks and incompatible products pause
+the recipe instead of truncating or changing its output. A missing required tagged product
+shows **Recipe unavailable** and preserves the inputs and partial work.
+
 | Crafting | Output |
 | --- | --- |
 | Two ingots + Forge Hammer | One plate |
@@ -93,6 +98,9 @@ handlers, transaction rollback, cached capabilities and a cancelling protection 
 Client checks include JEI and Simple Voice Chat. Create/Mekanism runtime integration and
 the existing 26.1.2 ATM11 port remain separate, unverified work.
 
+Hand coating accepts any item in `c:rubbers`, including another mod's material. Coating
+uses one item and does not consume another when the cable is already coated.
+
 ## Flat testing launcher
 
 `launch.bat` builds the current checkout and opens `PowerFactorFlatTest`: a separate flat
@@ -113,9 +121,13 @@ python3 tools/check_resources.py
 ./gradlew test build runGameTestServer --offline
 ```
 
-The completed checks passed 54 unit tests and 82 required in-world GameTests. Resource
-validation passed for 1,363 JSON resources and 24 animation sheets. Native client checks
+The completed checks passed 54 unit tests and 87 required in-world GameTests. Resource
+validation passed for 1,368 JSON resources and 24 animation sheets. Native client checks
 cover machine models, processing and generator animations, empty/full washer water,
 closed panels, face and redstone selection, compact layout, pause/resume messages and Creative/Survival commands.
 The world's preparation and Java helper were exercised on Linux; Windows batch execution
 still needs a Windows machine.
+
+`runGameTestServer` alone enables the fixture pack in `gametest-fixtures`: custom recipe
+edge cases and a non-PowerFactor item added to the rubber tag. Its five JSON files are
+included in resource validation. Ordinary client and server runs do not register this pack.

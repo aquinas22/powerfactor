@@ -1,0 +1,6 @@
+{
+  "type": "powerfactor:rolling",
+  "inputs": [{"ingredient": "minecraft:paper", "count": 1}],
+  "results": [{"tag": "c:powerfactor_test_missing_product"}],
+  "time": 5
+}

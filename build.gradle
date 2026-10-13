@@ -83,6 +83,7 @@ neoForge {
         gameTestServer {
             type = "gameTestServer"
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'powerfactor.testFixtures', 'true'
         }
 
         data {

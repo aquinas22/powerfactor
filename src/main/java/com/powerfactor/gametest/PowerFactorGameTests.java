@@ -63,6 +63,13 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("wire_cutters_respect_permissions", () -> PowerFactorGameTests::wireCuttersPermissions);
         FUNCTIONS.register("wrench_respects_protection_mods", () -> PowerFactorGameTests::wrenchRespectsProtection);
         FUNCTIONS.register("rubber_tree_canopy_and_latex", () -> PowerFactorGameTests::rubberTreeCanopy);
+        FUNCTIONS.register("wire_coating_uses_common_rubber_tag", () -> PowerFactorGameTests::wireCommonRubber);
+        if (Boolean.getBoolean("powerfactor.testFixtures")) {
+            FUNCTIONS.register("crusher_reserves_whole_output_batch", () -> h -> outputBatch(h, true));
+            FUNCTIONS.register("centrifuge_reserves_whole_output_batch", () -> h -> outputBatch(h, false));
+            FUNCTIONS.register("recipe_rejects_oversized_product", () -> h -> unavailableProduct(h, false));
+            FUNCTIONS.register("recipe_waits_for_missing_tagged_product", () -> h -> unavailableProduct(h, true));
+        }
         FUNCTIONS.register("alloy_furnace_makes_brass", () -> PowerFactorGameTests::alloyFurnaceMakesBrass);
         FUNCTIONS.register("arc_furnace_makes_steel", () -> PowerFactorGameTests::arcFurnaceMakesSteel);
         FUNCTIONS.register("ore_washer_triples", () -> PowerFactorGameTests::oreWasherTriples);
@@ -136,6 +143,14 @@ public final class PowerFactorGameTests {
         }
         FUNCTIONS.register(modBus);
         modBus.addListener(PowerFactorGameTests::onRegisterTests);
+        if (Boolean.getBoolean("powerfactor.testFixtures")) modBus.addListener(PowerFactorGameTests::onFixturePacks);
+    }
+
+    /** Extra recipes and an external rubber stand-in are enabled only by runGameTestServer. */
+    private static void onFixturePacks(net.neoforged.neoforge.event.AddPackFindersEvent event) {
+        event.addPackFinders(PowerFactor.id("gametest-fixtures"), net.minecraft.server.packs.PackType.SERVER_DATA,
+                net.minecraft.network.chat.Component.literal("PowerFactor GameTest fixtures"),
+                net.minecraft.server.packs.repository.PackSource.BUILT_IN, true, net.minecraft.server.packs.repository.Pack.Position.TOP);
     }
 
     private static void onRegisterTests(RegisterGameTestsEvent event) {
@@ -1694,6 +1709,58 @@ public final class PowerFactorGameTests {
             if(state.is(ModBlocks.RUBBER_LOG.get()) && state.getValue(com.powerfactor.world.RubberLogBlock.NATURAL)){natural++;if(state.getValue(com.powerfactor.world.RubberLogBlock.LATEX))latex++;}
         }
         helper.assertTrue(leaves>40 && xs.size()>=5 && natural>=6 && latex>0,"rubber canopy or renewable latex missing");helper.succeed();
+    }
+
+    private static void wireCommonRubber(GameTestHelper helper) {
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        for (var block : java.util.List.of(ModBlocks.COPPER_WIRE.get(), ModBlocks.ALUMINUM_CABLE.get())) {
+            for (var item : Boolean.getBoolean("powerfactor.testFixtures") ? java.util.List.of(ModItems.RUBBER.get(), Items.HONEYCOMB) : java.util.List.of(ModItems.RUBBER.get())) {
+                helper.setBlock(CENTER, block.defaultBlockState());
+                var rubber = new net.minecraft.world.item.ItemStack(item, 2);
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, rubber);
+                helper.useBlock(CENTER, player);
+                helper.assertTrue(helper.getBlockState(CENTER).getValue(WireBlock.COATED), "tagged rubber did not coat " + block + ": " + item);
+                helper.assertValueEqual(rubber.getCount(), 1, "coating did not consume exactly one rubber");
+                helper.useBlock(CENTER, player);
+                helper.assertValueEqual(rubber.getCount(), 1, "already-coated cable consumed extra rubber");
+            }
+        }
+        helper.setBlock(CENTER, ModBlocks.COPPER_WIRE.get().defaultBlockState());
+        var wrong = new net.minecraft.world.item.ItemStack(Items.SLIME_BALL, 2);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, wrong);
+        helper.useBlock(CENTER, player);
+        helper.assertTrue(!helper.getBlockState(CENTER).getValue(WireBlock.COATED) && wrong.getCount() == 2, "untagged slime coated a cable");
+        helper.succeed();
+    }
+
+    private static void outputBatch(GameTestHelper helper, boolean crusher) {
+        com.powerfactor.machine.ProcessingBlockEntity machine = crusher ? placeCrusher(helper, CENTER)
+                : placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.CENTRIFUGE);
+        helper.onEachTick(() -> fillEnergy(machine));
+        machine.setSlot(0, new net.minecraft.world.item.ItemStack(Items.PAPER, 2));
+        machine.setSlot(2, new net.minecraft.world.item.ItemStack(Items.FLINT, 30));
+        helper.runAfterDelay(10, () -> {
+            helper.assertTrue(machine.workState() == com.powerfactor.machine.ProcessingBlockEntity.WorkState.OUTPUT_FULL, "combined bonuses did not block an overflowing batch");
+            helper.assertTrue(machine.slot(0).getCount() == 2 && machine.slot(1).isEmpty() && machine.slot(2).getCount() == 30, "blocked batch consumed input or modified output");
+            machine.setSlot(2, net.minecraft.world.item.ItemStack.EMPTY);
+            helper.runAfterDelay(10, () -> {
+                helper.assertTrue(machine.slot(1).is(Items.STONE) && machine.slot(1).getCount() == 1, "batch did not produce exactly one main product");
+                helper.assertTrue(machine.slot(2).is(Items.FLINT) && machine.slot(2).getCount() == 40, "bonus batch lost, changed or overfilled items");
+                helper.assertValueEqual(machine.slot(0).getCount(), 1, "second overflowing batch consumed input");
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void unavailableProduct(GameTestHelper helper, boolean missingTag) {
+        var machine = placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.ROLLING_MILL);
+        machine.setSlot(0, new net.minecraft.world.item.ItemStack(missingTag ? Items.PAPER : Items.FEATHER, 2));
+        helper.runAfterDelay(20, () -> {
+            helper.assertTrue(machine.workState() == (missingTag ? com.powerfactor.machine.ProcessingBlockEntity.WorkState.OUTPUT_UNAVAILABLE
+                    : com.powerfactor.machine.ProcessingBlockEntity.WorkState.OUTPUT_FULL), "invalid product did not report its blocker");
+            helper.assertTrue(machine.slot(0).getCount() == 2 && machine.slot(1).isEmpty() && machine.workProgress() == 0, "invalid product consumed materials or accumulated work");
+            helper.succeed();
+        });
     }
 
     private static void processingAnimationSpeed(GameTestHelper helper) {

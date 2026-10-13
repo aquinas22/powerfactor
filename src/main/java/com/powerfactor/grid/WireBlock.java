@@ -43,6 +43,8 @@ import net.neoforged.neoforge.capabilities.Capabilities;
  */
 public class WireBlock extends ConnectorBlock {
     public static final BooleanProperty COATED = BooleanProperty.create("coated");
+    private static final net.minecraft.tags.TagKey<net.minecraft.world.item.Item> RUBBERS = net.minecraft.tags.ItemTags.create(
+            net.minecraft.resources.Identifier.fromNamespaceAndPath("c", "rubbers"));
     public static final ResourceKey<DamageType> ELECTROCUTION = ResourceKey.create(Registries.DAMAGE_TYPE,
             com.powerfactor.PowerFactor.id("electrocution"));
     private final CableTier tier;
@@ -67,7 +69,7 @@ public class WireBlock extends ConnectorBlock {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
-        if (!stack.is(ModItems.RUBBER.get()) || !coatable() || state.getValue(COATED)) {
+        if (!stack.is(RUBBERS) || !coatable() || state.getValue(COATED)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (!level.isClientSide()) {

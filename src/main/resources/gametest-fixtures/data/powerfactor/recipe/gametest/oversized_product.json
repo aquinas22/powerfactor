@@ -1,0 +1,6 @@
+{
+  "type": "powerfactor:rolling",
+  "inputs": [{"ingredient": "minecraft:feather", "count": 1}],
+  "results": [{"item": "minecraft:water_bucket", "count": 2}],
+  "time": 5
+}

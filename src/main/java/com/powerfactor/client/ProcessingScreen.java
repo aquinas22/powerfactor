@@ -135,7 +135,7 @@ public class ProcessingScreen<M extends ProcessingMenu> extends MachineScreen<M>
     private int workColor() {
         if (menu.driveState() == Drive.State.TRIPPED) return 0xFFFF4040;
         return switch (menu.workState()) {
-            case OUTPUT_FULL, NEEDS_FLUID, NO_ENERGY -> 0xFFFFB020;
+            case OUTPUT_FULL, OUTPUT_UNAVAILABLE, NEEDS_FLUID, NO_ENERGY -> 0xFFFFB020;
             case DISABLED, NO_RECIPE -> Skin.DIM;
             case READY -> driveColor(menu.driveState(), menu.speed());
         };

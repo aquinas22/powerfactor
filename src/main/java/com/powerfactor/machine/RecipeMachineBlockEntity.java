@@ -139,13 +139,17 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
         }
         // Main product to the first output; byproducts to the last.
         List<CrushingOutput> results = recipe.results();
+        var resolved = results.stream().map(CrushingOutput::resolve).toList();
         int mainSlot = machine.inputs, byproductSlot = machine.inputs + machine.outputs - 1;
-        boolean fits = true;
+        var planned = new ArrayList<PlannedOutput>();
+        boolean unavailable = results.getFirst().chance() > 0 && resolved.getFirst().isEmpty();
         for (int r = 0; r < results.size(); r++) {
-            fits &= fits(results.get(r).resolve(), r == 0 ? mainSlot : byproductSlot);
+            if (results.get(r).chance() > 0) planned.add(new PlannedOutput(r == 0 ? mainSlot : byproductSlot, resolved.get(r)));
+            unavailable |= results.get(r).chance() >= 1 && resolved.get(r).isEmpty();
         }
         return new Job(holder.id().identifier(), recipe.time(), inputs.get(slots[0]).getHoverName(),
-                needsWater ? WorkState.NEEDS_FLUID : fits ? WorkState.READY : WorkState.OUTPUT_FULL, () -> {
+                unavailable ? WorkState.OUTPUT_UNAVAILABLE : needsWater ? WorkState.NEEDS_FLUID
+                        : fitsOutputs(planned) ? WorkState.READY : WorkState.OUTPUT_FULL, () -> {
             for (int k = 0; k < slots.length; k++) {
                 items.getItem(slots[k]).shrink(recipe.inputs().get(k).count());
             }
@@ -163,7 +167,7 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
             for (int r = 0; r < results.size(); r++) {
                 CrushingOutput out = results.get(r);
                 if (out.chance() >= 1 || level.getRandom().nextFloat() < out.chance()) {
-                    merge(out.resolve(), r == 0 ? mainSlot : byproductSlot);
+                    merge(resolved.get(r).copy(), r == 0 ? mainSlot : byproductSlot);
                 }
             }
         });

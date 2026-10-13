@@ -46,17 +46,22 @@ public class CrusherBlockEntity extends ProcessingBlockEntity {
         }
         CrushingRecipe recipe = holder.value();
         ItemStack result = recipe.result().resolve();
-        if (result.isEmpty()) return null;
-        boolean fits = fits(result, OUTPUT);
-        for (CrushingOutput bonus : recipe.bonus()) {
-            fits &= fits(bonus.resolve(), BONUS);
+        var bonuses = recipe.bonus().stream().map(CrushingOutput::resolve).toList();
+        var planned = new java.util.ArrayList<PlannedOutput>();
+        planned.add(new PlannedOutput(OUTPUT, result));
+        boolean unavailable = result.isEmpty();
+        for (int i = 0; i < bonuses.size(); i++) {
+            var bonus = recipe.bonus().get(i);
+            if (bonus.chance() > 0) planned.add(new PlannedOutput(BONUS, bonuses.get(i)));
+            unavailable |= bonus.chance() >= 1 && bonuses.get(i).isEmpty();
         }
-        return new Job(holder.id().identifier(), recipe.time(), input.getHoverName(), fits ? WorkState.READY : WorkState.OUTPUT_FULL, () -> {
+        WorkState state = unavailable ? WorkState.OUTPUT_UNAVAILABLE : fitsOutputs(planned) ? WorkState.READY : WorkState.OUTPUT_FULL;
+        return new Job(holder.id().identifier(), recipe.time(), input.getHoverName(), state, () -> {
             input.shrink(1);
             merge(result, OUTPUT);
-            for (CrushingOutput bonus : recipe.bonus()) {
-                if (level.getRandom().nextFloat() < bonus.chance()) {
-                    merge(bonus.resolve(), BONUS);
+            for (int i = 0; i < bonuses.size(); i++) {
+                if (level.getRandom().nextFloat() < recipe.bonus().get(i).chance()) {
+                    merge(bonuses.get(i).copy(), BONUS);
                 }
             }
         });

@@ -387,6 +387,8 @@
   "gui.powerfactor.work.no_recipe.help": "Check the inputs and any required tooling.",
   "gui.powerfactor.work.output_full": "OUTPUT BLOCKED",
   "gui.powerfactor.work.output_full.help": "Clear or extract the output. Progress is preserved.",
+  "gui.powerfactor.work.output_unavailable": "RECIPE UNAVAILABLE",
+  "gui.powerfactor.work.output_unavailable.help": "Missing product. Check this recipe's required mods.",
   "gui.powerfactor.work.ready": "PROCESSING",
   "gui.powerfactor.work.ready.help": "Processing the current recipe.",
   "handbook.powerfactor.chips.text": "Electronics start as silicon. Roll silicon into wafers in the Rolling Mill. The Laser Engraver patterns a wafer through a photomask: the mask in its tool slot decides the chip. It isn't used up, but every die wears it a little.\n\nLogic mask + 2 gold nuggets: Microprocessor. Memory mask + 2 redstone: 2 Memory Chips. Power mask + copper dust: 2 Power Transistors. Sensor mask + quartz: Sensor Chip.\n\nAdvanced Circuits now need a microprocessor and memory on a printed circuit board. VFD upgrades use power transistors, the clamp meter a sensor chip, the Upgrade Table a microprocessor.",

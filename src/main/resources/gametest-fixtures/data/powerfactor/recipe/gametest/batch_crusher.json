@@ -1,0 +1,11 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "minecraft:paper",
+  "result": {"item": "minecraft:stone"},
+  "bonus": [
+    {"item": "minecraft:flint", "count": 20},
+    {"item": "minecraft:flint", "count": 20},
+    {"item": "minecraft:stick", "chance": 0}
+  ],
+  "time": 5
+}

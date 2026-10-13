@@ -32,6 +32,7 @@
 - [x] Fair generator output, cached fluid-face filtering, common resource/tool tags and wrench protection events.
 - [x] Recipe-specific saved progress, pause/resume for blocked outputs and missing supplies, clear GUI/SCADA stop reasons,
       and animation speed tied to actual processing and upgrades.
+- [x] Whole output-batch reservations, stack-limit checks, missing-product protection and common-tag hand insulation.
 - [x] Flat Creative test launcher with cheats and mode switching. See [update notes](docs/machine-polish.md).
 
 The feature backlog below is paused while testing this polish update.

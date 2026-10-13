@@ -41,7 +41,7 @@ import org.jspecify.annotations.Nullable;
  * behavior of its {@link Drive}; subclasses only say what a job is.
  */
 public abstract class ProcessingBlockEntity extends MachineBlockEntity implements ReactiveLoad, com.powerfactor.api.MachineAudio.Looping {
-    public enum WorkState { NO_RECIPE, READY, OUTPUT_FULL, NEEDS_FLUID, DISABLED, NO_ENERGY }
+    public enum WorkState { NO_RECIPE, READY, OUTPUT_FULL, NEEDS_FLUID, DISABLED, NO_ENERGY, OUTPUT_UNAVAILABLE }
     /** Matching recipe and its current requirements; blocked work keeps its paid progress. */
     public record Job(net.minecraft.resources.Identifier id, int duration, Component description, WorkState state, Runnable complete) {}
 
@@ -278,8 +278,26 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
             return true;
         }
         ItemStack existing = items.getItem(slot);
-        return existing.isEmpty()
-                || ItemStack.isSameItemSameComponents(existing, stack) && existing.getCount() + stack.getCount() <= existing.getMaxStackSize();
+        int limit = Math.min(items.getMaxStackSize(), stack.getMaxStackSize());
+        return stack.getCount() <= limit && (existing.isEmpty()
+                || ItemStack.isSameItemSameComponents(existing, stack) && (long) existing.getCount() + stack.getCount() <= limit);
+    }
+
+    protected record PlannedOutput(int slot, ItemStack stack) {}
+
+    /** Reserve the whole possible batch, including outputs sharing one physical slot. */
+    protected boolean fitsOutputs(java.util.List<PlannedOutput> outputs) {
+        var reserved = new java.util.HashMap<Integer, ItemStack>();
+        for (var output : outputs) {
+            ItemStack stack = output.stack();
+            if (stack.isEmpty()) continue;
+            ItemStack existing = reserved.getOrDefault(output.slot(), items.getItem(output.slot()));
+            if (!existing.isEmpty() && !ItemStack.isSameItemSameComponents(existing, stack)) return false;
+            long total = (long) existing.getCount() + stack.getCount();
+            if (total > Math.min(items.getMaxStackSize(), stack.getMaxStackSize())) return false;
+            reserved.put(output.slot(), stack.copyWithCount((int) total));
+        }
+        return true;
     }
 
     protected void merge(ItemStack stack, int slot) {
@@ -409,7 +427,8 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
                             duration == 0 ? 0 : (int) (100 * progress / duration), (int) Math.round(drive.speed() * 100));
             case OFF -> Component.translatable("scada.powerfactor.idle");
         };
-        if (s != Drive.State.TRIPPED && (workState == WorkState.OUTPUT_FULL || workState == WorkState.NEEDS_FLUID || workState == WorkState.NO_ENERGY)) {
+        if (s != Drive.State.TRIPPED && (workState == WorkState.OUTPUT_FULL || workState == WorkState.OUTPUT_UNAVAILABLE
+                || workState == WorkState.NEEDS_FLUID || workState == WorkState.NO_ENERGY)) {
             status = ScadaReading.Status.WARNING;
             detail = Component.translatable("gui.powerfactor.work." + workState.name().toLowerCase(java.util.Locale.ROOT));
         } else if (s != Drive.State.TRIPPED && workState == WorkState.DISABLED) {
