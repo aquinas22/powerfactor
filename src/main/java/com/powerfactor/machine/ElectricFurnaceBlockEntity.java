@@ -45,11 +45,9 @@ public class ElectricFurnaceBlockEntity extends ProcessingBlockEntity {
             return null;
         }
         ItemStack result = holder.value().assemble(recipeInput);
-        if (result.isEmpty() || !fits(result, OUTPUT)) {
-            return null;
-        }
+        if (result.isEmpty()) return null;
         int time = Math.max(1, (int) Math.round(holder.value().cookingTime() * SPEEDUP));
-        return new Job(time, input.getHoverName(), () -> {
+        return new Job(holder.id().identifier(), time, input.getHoverName(), fits(result, OUTPUT) ? WorkState.READY : WorkState.OUTPUT_FULL, () -> {
             input.shrink(1);
             merge(result, OUTPUT);
         });

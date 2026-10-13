@@ -71,7 +71,7 @@ public final class IndustrialRenderer<T extends MachineBlockEntity> implements B
             case "wire_drawer" -> part(wheel,s,pose,collector,0,0.61,0.34,0,s.phase);
             case "rolling_mill" -> {part(roll,s,pose,collector,0,7/16.0,0.2,s.phase,0);part(roll,s,pose,collector,0,12/16.0,0.2,-s.phase,0);}
             case "ore_washer" -> {
-                part(drum,s,pose,collector,0,9/16.0,0.35,0,s.phase*0.6F);
+                part(drum,s,pose,collector,0,9/16.0,0.35,0,s.phase);
                 if (s.fluid > 0) {pose.pushPose();pose.translate(0,13.1/16,-0.03125);pose.scale(1,s.fluid*2.7F,1);part(fluid,s,pose,collector,0,0,0,0,0);pose.popPose();}
             }
             case "arc_furnace" -> {for(int i=-1;i<=1;i++)part(electrode,s,pose,collector,i*0.25,0.7+(s.running?Math.sin(s.phase+i)*0.014:0),0,0,0);}

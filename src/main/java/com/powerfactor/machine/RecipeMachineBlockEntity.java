@@ -39,13 +39,17 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
     public void clientTick() {
         super.clientTick();
         if (machine.animatedWorkshop()) {
-            workshopMotion.tick(isRunning() ? (machine == RecipeMachine.CENTRIFUGE ? 0.5 : machine == RecipeMachine.SAWMILL ? 0.7 : 0.12) : 0,
+            workshopMotion.tick(animationSpeed() * (machine == RecipeMachine.CENTRIFUGE ? 0.5 : machine == RecipeMachine.SAWMILL ? 0.7 : 0.12),
                     0.08, 0.06);
         }
     }
 
     public float workshopPhase(float partialTick) {
         return workshopMotion.phase(partialTick);
+    }
+
+    @Override protected double animationRate() {
+        return super.animationRate() * (machine == RecipeMachine.ORE_WASHER ? 0.6 : 1);
     }
 
     public RecipeMachineBlockEntity(RecipeMachine machine, BlockPos pos, BlockState state) {
@@ -119,6 +123,12 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
         FluidStack fluid = tank == null ? FluidStack.EMPTY : tank.copyToList().getFirst();
         MachineRecipeInput input = new MachineRecipeInput(inputs, fluid, machine.electrode ? items.getItem(machine.electrodeSlot()) : ItemStack.EMPTY);
         RecipeHolder<MachineRecipe> holder = recipes.getRecipeFor(input, level).orElse(null);
+        boolean needsWater = false;
+        if (holder == null && tank != null) {
+            input = new MachineRecipeInput(inputs, new FluidStack(Fluids.WATER, TANK_CAPACITY), input.tool());
+            holder = recipes.getRecipeFor(input, level).orElse(null);
+            needsWater = holder != null;
+        }
         if (holder == null) {
             return null;
         }
@@ -130,12 +140,12 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
         // Main product to the first output; byproducts to the last.
         List<CrushingOutput> results = recipe.results();
         int mainSlot = machine.inputs, byproductSlot = machine.inputs + machine.outputs - 1;
+        boolean fits = true;
         for (int r = 0; r < results.size(); r++) {
-            if (!fits(results.get(r).resolve(), r == 0 ? mainSlot : byproductSlot)) {
-                return null;
-            }
+            fits &= fits(results.get(r).resolve(), r == 0 ? mainSlot : byproductSlot);
         }
-        return new Job(recipe.time(), inputs.get(slots[0]).getHoverName(), () -> {
+        return new Job(holder.id().identifier(), recipe.time(), inputs.get(slots[0]).getHoverName(),
+                needsWater ? WorkState.NEEDS_FLUID : fits ? WorkState.READY : WorkState.OUTPUT_FULL, () -> {
             for (int k = 0; k < slots.length; k++) {
                 items.getItem(slots[k]).shrink(recipe.inputs().get(k).count());
             }
@@ -233,7 +243,7 @@ public class RecipeMachineBlockEntity extends ProcessingBlockEntity {
 
     @Override
     public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
-        net.minecraft.nbt.CompoundTag tag = saveCustomOnly(registries);
+        net.minecraft.nbt.CompoundTag tag = super.getUpdateTag(registries);
         if (machine == RecipeMachine.LASER_ENGRAVER) {
             tag.putString("shown_input", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(items.getItem(0).getItem()).toString());
         }

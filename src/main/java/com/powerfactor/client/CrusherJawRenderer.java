@@ -38,7 +38,7 @@ public class CrusherJawRenderer implements BlockEntityRenderer<CrusherBlockEntit
 
     public static class State extends BlockEntityRenderState {
         public Direction facing = Direction.NORTH;
-        public float time;
+        public float phase;
         public float swing;
         public final ItemStackRenderState item = new ItemStackRenderState();
     }
@@ -73,7 +73,7 @@ public class CrusherJawRenderer implements BlockEntityRenderer<CrusherBlockEntit
         BlockEntityRenderer.super.extractRenderState(be, state, partialTicks, camera, breakProgress);
         state.facing = be.getBlockState().getValueOrElse(MachineBlock.FACING, Direction.NORTH);
         boolean running = be.getBlockState().getValueOrElse(MachineBlock.RUNNING, false);
-        state.time = be.getLevel() == null ? 0 : (be.getLevel().getGameTime() % 24000) + partialTicks;
+        state.phase = be.industrialPhase(partialTicks);
         // The swing jaw eases in and out as the motor starts and stops.
         state.swing = be.jawSwing(partialTicks, running);
         if (be.getLevel() != null) {
@@ -86,7 +86,7 @@ public class CrusherJawRenderer implements BlockEntityRenderer<CrusherBlockEntit
 
     @Override
     public void submit(State state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
-        float phase = (float) Math.sin(state.time * 0.9F);
+        float phase = (float) Math.sin(state.phase);
         pose.pushPose();
         pose.translate(0.5F, 0, 0.5F);
         pose.mulPose(Axis.YP.rotationDegrees(-state.facing.toYRot()));
@@ -109,9 +109,9 @@ public class CrusherJawRenderer implements BlockEntityRenderer<CrusherBlockEntit
         // The ore in the nip, rattling while it's crushed.
         if (!state.item.isEmpty()) {
             pose.pushPose();
-            float rattle = state.swing * (float) Math.sin(state.time * 2.3F) * 0.02F;
+            float rattle = state.swing * (float) Math.sin(state.phase * 3F) * 0.02F;
             pose.translate(0, 12.8F / 16F + Math.abs(rattle), rattle * 0.5F);
-            pose.mulPose(Axis.YP.rotationDegrees(state.swing * (float) Math.sin(state.time * 1.7F) * 12F));
+            pose.mulPose(Axis.YP.rotationDegrees(state.swing * (float) Math.sin(state.phase * 2F) * 12F));
             pose.scale(0.4F, 0.4F, 0.4F);
             state.item.submit(pose, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
             pose.popPose();

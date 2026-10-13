@@ -42,10 +42,11 @@ public class PumpBlockEntity extends ProcessingBlockEntity {
     @Override
     protected @Nullable Job findJob(ServerLevel level) {
         BlockPos below = worldPosition.below();
-        if (!level.getFluidState(below).isSourceOfType(Fluids.WATER) || CAPACITY - tank.getAmountAsInt(0) < PER_STROKE) {
+        if (!level.getFluidState(below).isSourceOfType(Fluids.WATER)) {
             return null;
         }
-        return new Job(STROKE_TICKS, Component.translatable("block.minecraft.water"),
+        return new Job(com.powerfactor.PowerFactor.id("pumping/water"), STROKE_TICKS, Component.translatable("block.minecraft.water"),
+                CAPACITY - tank.getAmountAsInt(0) < PER_STROKE ? WorkState.OUTPUT_FULL : WorkState.READY,
                 () -> tank.set(0, FluidResource.of(Fluids.WATER), tank.getAmountAsInt(0) + PER_STROKE));
     }
 

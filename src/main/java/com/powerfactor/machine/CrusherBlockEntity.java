@@ -13,7 +13,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,20 +40,18 @@ public class CrusherBlockEntity extends ProcessingBlockEntity {
         if (input.isEmpty()) {
             return null;
         }
-        CrushingRecipe recipe = recipes.getRecipeFor(new SingleRecipeInput(input), level).map(RecipeHolder::value).orElse(null);
-        if (recipe == null) {
+        var holder = recipes.getRecipeFor(new SingleRecipeInput(input), level).orElse(null);
+        if (holder == null) {
             return null;
         }
+        CrushingRecipe recipe = holder.value();
         ItemStack result = recipe.result().resolve();
-        if (result.isEmpty() || !fits(result, OUTPUT)) {
-            return null;
-        }
+        if (result.isEmpty()) return null;
+        boolean fits = fits(result, OUTPUT);
         for (CrushingOutput bonus : recipe.bonus()) {
-            if (!fits(bonus.resolve(), BONUS)) {
-                return null;
-            }
+            fits &= fits(bonus.resolve(), BONUS);
         }
-        return new Job(recipe.time(), input.getHoverName(), () -> {
+        return new Job(holder.id().identifier(), recipe.time(), input.getHoverName(), fits ? WorkState.READY : WorkState.OUTPUT_FULL, () -> {
             input.shrink(1);
             merge(result, OUTPUT);
             for (CrushingOutput bonus : recipe.bonus()) {
@@ -109,6 +106,8 @@ public class CrusherBlockEntity extends ProcessingBlockEntity {
         return clientInput;
     }
 
+    @Override protected double animationRate() { return 0.9 * animationSpeed(); }
+
     @Override
     public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
         return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
@@ -116,7 +115,7 @@ public class CrusherBlockEntity extends ProcessingBlockEntity {
 
     @Override
     public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
-        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        net.minecraft.nbt.CompoundTag tag = super.getUpdateTag(registries);
         tag.putString("shown_input", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(items.getItem(INPUT).getItem()).toString());
         return tag;
     }

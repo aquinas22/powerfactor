@@ -57,7 +57,7 @@ public class ProcessingScreen<M extends ProcessingMenu> extends MachineScreen<M>
         int x = leftPos, y = topPos;
         Skin.panel(g, x, y, MAIN_W, H);
         Skin.title(g, font, title, x, y, MAIN_W);
-        int color = driveColor(menu.driveState(), menu.speed());
+        int color = workColor();
         Skin.lamp(g, x + MAIN_W - 14, y + 6, color);
 
         // Power scope where the machine's waves and numbers live; the 3D model is in the Config tab.
@@ -127,7 +127,18 @@ public class ProcessingScreen<M extends ProcessingMenu> extends MachineScreen<M>
             case TRIPPED -> Component.translatable("gui.powerfactor.panel.motor_tripped");
             case OFF -> Component.translatable(motor ? "gui.powerfactor.panel.motor_off" : "gui.powerfactor.panel.heater_off");
         };
-        return new Electrical(menu.volts(), menu.hertz(), menu.fe(), menu.ee(), ratedCe, status, driveColor(s, menu.speed()));
+        if (s != Drive.State.TRIPPED && menu.workState() != com.powerfactor.machine.ProcessingBlockEntity.WorkState.READY)
+            status = Component.translatable("gui.powerfactor.work." + menu.workState().name().toLowerCase(java.util.Locale.ROOT));
+        return new Electrical(menu.volts(), menu.hertz(), menu.fe(), menu.ee(), ratedCe, status, workColor());
+    }
+
+    private int workColor() {
+        if (menu.driveState() == Drive.State.TRIPPED) return 0xFFFF4040;
+        return switch (menu.workState()) {
+            case OUTPUT_FULL, NEEDS_FLUID, NO_ENERGY -> 0xFFFFB020;
+            case DISABLED, NO_RECIPE -> Skin.DIM;
+            case READY -> driveColor(menu.driveState(), menu.speed());
+        };
     }
 
     @Override
@@ -136,5 +147,7 @@ public class ProcessingScreen<M extends ProcessingMenu> extends MachineScreen<M>
         if (isHovering(BAR_X, BAR_Y, BAR_W, BAR_H, mouseX, mouseY)) {
             GuiUtil.energyTooltip(g, font, menu.stored(), menu.capacity(), mouseX, mouseY);
         }
+        if (isHovering(8, STRIP_Y, 160, 23, mouseX, mouseY)) g.setTooltipForNextFrame(font,
+                Component.translatable("gui.powerfactor.work." + menu.workState().name().toLowerCase(java.util.Locale.ROOT) + ".help"), mouseX, mouseY);
     }
 }

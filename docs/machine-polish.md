@@ -44,6 +44,18 @@ The controls fit at the minimum 320-unit GUI width.
 
 ## Early workshop and recipes
 
+Processing now tracks the active recipe across ticks and saves. Changing to another recipe
+resets its progress. Blocked outputs, missing water, redstone shutdown and loss of power
+pause the current recipe without losing progress; freeing the output or restoring supplies
+resumes it. The GUI and SCADA show the stop reason, and status-strip tooltips explain the
+action needed. Output blocking checks both stack capacity and item compatibility.
+
+Machine animations follow actual operating speed, including speed upgrades and changes
+in the electrical supply. Blocked work stops the tooling and lets rotating parts coast down.
+Crusher jaws and ore-washer rotation use continuous phases without a jump at each wrap.
+
+[Blocked output](previews/processing-blocked.png) · [Missing water](previews/processing-water.png)
+
 | Crafting | Output |
 | --- | --- |
 | Two ingots + Forge Hammer | One plate |
@@ -101,9 +113,9 @@ python3 tools/check_resources.py
 ./gradlew test build runGameTestServer --offline
 ```
 
-The completed checks passed 54 unit tests and 77 required in-world GameTests. Resource
+The completed checks passed 54 unit tests and 82 required in-world GameTests. Resource
 validation passed for 1,363 JSON resources and 24 animation sheets. Native client checks
 cover machine models, processing and generator animations, empty/full washer water,
-closed panels, face and redstone selection, compact layout and Creative/Survival commands.
+closed panels, face and redstone selection, compact layout, pause/resume messages and Creative/Survival commands.
 The world's preparation and Java helper were exercised on Linux; Windows batch execution
 still needs a Windows machine.

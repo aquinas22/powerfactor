@@ -666,6 +666,18 @@ def lang():
         "message.powerfactor.capacitor.off": "Capacitor bank switched out",
         "tooltip.powerfactor.energy": "%s / %s FE",
         "tooltip.powerfactor.drill.cost": "%s FE per block",
+        "gui.powerfactor.work.no_recipe": "NO MATCHING RECIPE",
+        "gui.powerfactor.work.ready": "PROCESSING",
+        "gui.powerfactor.work.output_full": "OUTPUT BLOCKED",
+        "gui.powerfactor.work.needs_fluid": "NEEDS WATER",
+        "gui.powerfactor.work.disabled": "DISABLED",
+        "gui.powerfactor.work.no_energy": "WAITING FOR POWER",
+        "gui.powerfactor.work.no_recipe.help": "Check the inputs and any required tooling.",
+        "gui.powerfactor.work.ready.help": "Processing the current recipe.",
+        "gui.powerfactor.work.output_full.help": "Clear or extract the output. Progress is preserved.",
+        "gui.powerfactor.work.needs_fluid.help": "Supply water to resume this recipe.",
+        "gui.powerfactor.work.disabled.help": "Enable the machine or change its redstone control to resume.",
+        "gui.powerfactor.work.no_energy.help": "Supply FE. Progress is preserved while power is unavailable.",
     })
     write(asset("lang", "en_us.json"), dict(sorted(LANG.items())))
 

@@ -18,7 +18,7 @@ public abstract class ProcessingMenu extends MachineMenu {
     public static final int DATA_PROGRESS = 0, DATA_DURATION = 1, DATA_FE = 2, DATA_EE = 3;
     public static final int DATA_STORED_LO = 4, DATA_STORED_HI = 5, DATA_CAPACITY_LO = 6, DATA_CAPACITY_HI = 7;
     public static final int DATA_VOLTS = 8, DATA_HERTZ = 9, DATA_STATE = 10, DATA_SPEED = 11, DATA_FLAGS = 12, DATA_SIDES = 13, DATA_TANK = 14;
-    public static final int DATA_COUNT = 15;
+    public static final int DATA_WORK_STATE = 15, DATA_COUNT = 16;
 
     public static final int BUTTON_REDSTONE = 0, BUTTON_AUTO_EJECT = 1, BUTTON_AUTO_INPUT = 2;
     /** Cycle a face forward: BUTTON_SIDE_NEXT + face ordinal; backward: BUTTON_SIDE_PREV + ordinal. */
@@ -119,6 +119,10 @@ public abstract class ProcessingMenu extends MachineMenu {
 
     public boolean stalled() {
         return (data.get(DATA_STATE) & 4) != 0;
+    }
+
+    public ProcessingBlockEntity.WorkState workState() {
+        return ProcessingBlockEntity.WorkState.values()[Math.clamp(unsigned(DATA_WORK_STATE), 0, ProcessingBlockEntity.WorkState.values().length - 1)];
     }
 
     public double speed() {

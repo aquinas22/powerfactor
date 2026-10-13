@@ -41,8 +41,9 @@ import org.jspecify.annotations.Nullable;
  * behavior of its {@link Drive}; subclasses only say what a job is.
  */
 public abstract class ProcessingBlockEntity extends MachineBlockEntity implements ReactiveLoad, com.powerfactor.api.MachineAudio.Looping {
-    /** A ready-to-run job: how long it takes at speed 1.0, and what finishing it does. */
-    public record Job(int duration, Component description, Runnable complete) {}
+    public enum WorkState { NO_RECIPE, READY, OUTPUT_FULL, NEEDS_FLUID, DISABLED, NO_ENERGY }
+    /** Matching recipe and its current requirements; blocked work keeps its paid progress. */
+    public record Job(net.minecraft.resources.Identifier id, int duration, Component description, WorkState state, Runnable complete) {}
 
     private static final int EJECT_INTERVAL = 10;
 
@@ -55,6 +56,9 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
     private final ResourceHandler<ItemResource>[] sidedItems;
 
     private double progress;
+    private net.minecraft.resources.@Nullable Identifier activeRecipe;
+    private WorkState workState = WorkState.NO_RECIPE;
+    private double visualSpeed = 1, lastSyncedSpeed = -1;
     private int duration;
     private int lastFe;
     private boolean stalled, autoEject, autoInput;
@@ -81,6 +85,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
                 case ProcessingMenu.DATA_FLAGS -> (autoEject ? 1 : 0) | redstoneMode().ordinal() << 1 | (autoInput ? 8 : 0);
                 case ProcessingMenu.DATA_SIDES -> sides.pack();
                 case ProcessingMenu.DATA_TANK -> tankAmount();
+                case ProcessingMenu.DATA_WORK_STATE -> workState.ordinal();
                 default -> 0;
             };
         }
@@ -113,7 +118,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
         sidedItems[6] = new WorldlyContainerWrapper(items, null);
     }
 
-    /** The job the inputs allow right now, if its outputs fit; null otherwise. */
+    /** Matching inputs, including a blocked output or missing fluid; null when no recipe matches. */
     protected abstract @Nullable Job findJob(ServerLevel level);
 
     protected abstract boolean isValidInput(int slot, ItemStack stack);
@@ -134,18 +139,30 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
 
         Job job = findJob(level);
         if (job == null) {
+            if (progress != 0 || activeRecipe != null) setChanged();
             progress = 0;
+            activeRecipe = null;
             duration = 0;
             jobDescription = null;
+        } else {
+            if (activeRecipe != null && (!activeRecipe.equals(job.id()) || duration > 0 && duration != job.duration())) {
+                progress = 0;
+                setChanged();
+            }
+            if (!job.id().equals(activeRecipe)) setChanged();
+            activeRecipe = job.id();
+            duration = job.duration();
+            jobDescription = job.description();
         }
         boolean enabled = enabled(level, pos);
-        if (drive.tick(volts, hertz, job != null, enabled, energy.getAmountAsInt() > 3, up)) {
+        boolean ready = job != null && job.state() == WorkState.READY;
+        workState = !enabled ? WorkState.DISABLED : job == null ? WorkState.NO_RECIPE : job.state();
+        if (ready && enabled && energy.getAmountAsInt() <= 3) workState = WorkState.NO_ENERGY;
+        if (drive.tick(volts, hertz, ready, enabled, energy.getAmountAsInt() > 3, up)) {
             level.playSound(null, pos, ModSounds.MOTOR_TRIP.get(), SoundSource.BLOCKS, 0.7F, 1.0F);
         }
 
-        if (drive.state() == Drive.State.RUNNING && job != null) {
-            duration = job.duration();
-            jobDescription = job.description();
+        if (drive.state() == Drive.State.RUNNING && ready) {
             double speed = drive.speed();
             // FE per operation is fixed, so the draw per tick scales with how fast it's going.
             int cost = (int) Math.ceil(baseFePerTick * up.energyPerOperation() * speed);
@@ -160,6 +177,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
                 }
             } else {
                 stalled = true;
+                workState = WorkState.NO_ENERGY;
             }
             setChanged();
         } else {
@@ -167,7 +185,14 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
             energy.set(energy.getAmountAsInt() - idle);
             lastFe = idle;
         }
-        setRunning(level, pos, state, drive.state() == Drive.State.RUNNING && !stalled);
+        boolean working = ready && drive.state() == Drive.State.RUNNING && !stalled;
+        visualSpeed = working ? drive.speed() : 0;
+        setRunning(level, pos, state, working);
+        boolean stoppedChanged = (visualSpeed == 0) != (lastSyncedSpeed == 0);
+        if (stoppedChanged || level.getGameTime() % 4 == 0 && Math.abs(visualSpeed - lastSyncedSpeed) >= 0.05) {
+            lastSyncedSpeed = visualSpeed;
+            level.sendBlockUpdated(pos, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        }
 
         if (level.getGameTime() % EJECT_INTERVAL == 0) {
             if (autoEject) {
@@ -290,6 +315,19 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
         return drive;
     }
 
+    public WorkState workState() { return workState; }
+    public double workProgress() { return progress; }
+
+    protected double animationSpeed() { return isRunning() ? visualSpeed : 0; }
+    @Override protected double animationRate() { return 0.35 * animationSpeed(); }
+
+    @Override public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+    @Override public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider lookup) {
+        var tag = saveCustomOnly(lookup); tag.putDouble("visual_speed", animationSpeed()); return tag;
+    }
+
     public void setSlot(int index, ItemStack stack) {
         items.setItem(index, stack);
     }
@@ -371,6 +409,13 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
                             duration == 0 ? 0 : (int) (100 * progress / duration), (int) Math.round(drive.speed() * 100));
             case OFF -> Component.translatable("scada.powerfactor.idle");
         };
+        if (s != Drive.State.TRIPPED && (workState == WorkState.OUTPUT_FULL || workState == WorkState.NEEDS_FLUID || workState == WorkState.NO_ENERGY)) {
+            status = ScadaReading.Status.WARNING;
+            detail = Component.translatable("gui.powerfactor.work." + workState.name().toLowerCase(java.util.Locale.ROOT));
+        } else if (s != Drive.State.TRIPPED && workState == WorkState.DISABLED) {
+            status = ScadaReading.Status.OFF;
+            detail = Component.translatable("gui.powerfactor.work.disabled");
+        }
         return new ScadaReading(worldPosition, getDisplayName(), status, lastFe, (int) Math.round(drive.ee()), detail, true, remoteEnabled(),
                 false, (float) volts, (float) hertz);
     }
@@ -383,6 +428,9 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
         energy.setCapacity((int) (baseCapacity * upgrades.effects().bufferMultiplier()));
         energy.deserialize(input);
         progress = input.getDoubleOr("progress", 0);
+        duration = input.getIntOr("recipe_duration", 0);
+        activeRecipe = input.getString("active_recipe").map(net.minecraft.resources.Identifier::tryParse).orElse(null);
+        visualSpeed = input.getDoubleOr("visual_speed", 1);
         autoEject = input.getBooleanOr("auto_eject", false);
         autoInput = input.getBooleanOr("auto_input", false);
         sides.load(input);
@@ -396,6 +444,8 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity implement
         upgrades.save(output);
         energy.serialize(output);
         output.putDouble("progress", progress);
+        output.putInt("recipe_duration", duration);
+        if (activeRecipe != null) output.putString("active_recipe", activeRecipe.toString());
         output.putBoolean("auto_eject", autoEject);
         output.putBoolean("auto_input", autoInput);
         sides.save(output);

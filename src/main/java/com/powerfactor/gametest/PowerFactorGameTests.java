@@ -49,6 +49,11 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("capacitor_upgrades_correct_motor_pf", () -> PowerFactorGameTests::capacitorUpgradesCorrectPf);
         FUNCTIONS.register("side_config_controls_faces", () -> PowerFactorGameTests::sideConfigControlsFaces);
         FUNCTIONS.register("fluid_faces_follow_configuration", () -> PowerFactorGameTests::fluidFacesFollowConfiguration);
+        FUNCTIONS.register("processing_output_pause_and_reload", () -> PowerFactorGameTests::processingOutputPause);
+        FUNCTIONS.register("processing_recipe_swap_resets_progress", () -> PowerFactorGameTests::processingRecipeSwap);
+        FUNCTIONS.register("washer_pauses_for_water_and_resumes", () -> PowerFactorGameTests::washerWaterPause);
+        FUNCTIONS.register("processing_redstone_and_power_pause", () -> PowerFactorGameTests::processingControlPause);
+        FUNCTIONS.register("processing_animation_tracks_upgrades", () -> PowerFactorGameTests::processingAnimationSpeed);
         FUNCTIONS.register("hand_tool_plate_and_wire", () -> PowerFactorGameTests::handToolRecipes);
         FUNCTIONS.register("synthetic_rubber_coal_and_charcoal", () -> PowerFactorGameTests::syntheticRubber);
         FUNCTIONS.register("graphite_bootstrap_in_alloy_furnace", () -> PowerFactorGameTests::graphiteBootstrap);
@@ -1689,6 +1694,118 @@ public final class PowerFactorGameTests {
             if(state.is(ModBlocks.RUBBER_LOG.get()) && state.getValue(com.powerfactor.world.RubberLogBlock.NATURAL)){natural++;if(state.getValue(com.powerfactor.world.RubberLogBlock.LATEX))latex++;}
         }
         helper.assertTrue(leaves>40 && xs.size()>=5 && natural>=6 && latex>0,"rubber canopy or renewable latex missing");helper.succeed();
+    }
+
+    private static void processingAnimationSpeed(GameTestHelper helper) {
+        var machine = placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.ROLLING_MILL);
+        insert(helper, CENTER, Items.IRON_INGOT, 16);
+        helper.runAfterDelay(10, () -> {
+            double normal = machine.getUpdateTag(helper.getLevel().registryAccess()).getDoubleOr("visual_speed", -1);
+            helper.assertTrue(normal > 0.9 && normal < 1.1, "normal drive speed missing from animation packet");
+            machine.upgrades().setItem(0, new net.minecraft.world.item.ItemStack(ModItems.SPEED_UPGRADE.get(), 2));
+            helper.runAfterDelay(10, () -> {
+                double boosted = machine.getUpdateTag(helper.getLevel().registryAccess()).getDoubleOr("visual_speed", -1);
+                helper.assertTrue(boosted > normal * 1.8 && Math.abs(boosted - machine.drive().speed()) < 0.001, "upgraded processing speed is not sent to the renderer");
+                machine.setSlot(1, new net.minecraft.world.item.ItemStack(com.powerfactor.registry.ModMaterials.PLATES.get("iron").get(), 64));
+                helper.runAfterDelay(5, () -> {
+                    helper.assertTrue(machine.getUpdateTag(helper.getLevel().registryAccess()).getDoubleOr("visual_speed", -1) == 0, "blocked upgraded machine did not stop its animation");
+                    helper.succeed();
+                });
+            });
+        });
+    }
+
+    private static void processingOutputPause(GameTestHelper helper) {
+        var machine = placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.ROLLING_MILL);
+        insert(helper, CENTER, Items.IRON_INGOT, 4);
+        helper.runAfterDelay(25, () -> {
+            double paid = machine.workProgress();
+            helper.assertTrue(paid > 10, "rolling mill never began work");
+            machine.setSlot(1, new net.minecraft.world.item.ItemStack(com.powerfactor.registry.ModMaterials.PLATES.get("iron").get(), 64));
+            helper.runAfterDelay(20, () -> {
+                helper.assertTrue(machine.workProgress() == paid, "blocked output erased or advanced paid progress");
+                helper.assertTrue(machine.workState() == com.powerfactor.machine.ProcessingBlockEntity.WorkState.OUTPUT_FULL && !machine.getBlockState().getValue(MachineBlock.RUNNING), "blocked output still runs");
+                helper.assertTrue(machine.getUpdateTag(helper.getLevel().registryAccess()).getDoubleOr("visual_speed", -1) == 0, "blocked machine still sends moving animation");
+                helper.assertValueEqual(machine.slot(0).getCount(), 4, "blocked machine consumed input");
+                var level = helper.getLevel();
+                var restored = (com.powerfactor.machine.RecipeMachineBlockEntity) net.minecraft.world.level.block.entity.BlockEntity.loadStatic(
+                        machine.getBlockPos(), machine.getBlockState(), machine.saveWithFullMetadata(level.registryAccess()), level.registryAccess());
+                helper.assertTrue(restored != null && restored.workProgress() == paid, "saved blocked progress was lost");
+                restored.setLevel(level); level.setBlockEntity(restored);
+                helper.onEachTick(() -> fillEnergy(restored));
+                restored.setSlot(1, net.minecraft.world.item.ItemStack.EMPTY);
+                helper.runAfterDelay(80, () -> {
+                    helper.assertValueEqual(restored.slot(1).getCount(), 1, "resumed recipe did not finish once");
+                    helper.assertValueEqual(restored.slot(0).getCount(), 3, "resumed recipe lost or duplicated input");
+                    helper.succeed();
+                });
+            });
+        });
+    }
+
+    private static void processingRecipeSwap(GameTestHelper helper) {
+        var machine = placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.WIRE_DRAWER);
+        insert(helper, CENTER, Items.COPPER_INGOT, 2);
+        helper.runAfterDelay(70, () -> {
+            helper.assertTrue(machine.workProgress() > 40 && machine.slot(1).isEmpty(), "wire drawer did not reach partial work");
+            machine.setSlot(0, new net.minecraft.world.item.ItemStack(com.powerfactor.registry.ModMaterials.INGOTS.get("silver").get(), 2));
+            helper.runAfterDelay(40, () -> {
+                helper.assertTrue(machine.slot(1).isEmpty() && machine.workProgress() < 50, "new recipe inherited copper progress");
+                helper.runAfterDelay(70, () -> {
+                    helper.assertTrue(machine.slot(1).is(ModItems.FINE_SILVER_WIRE.get()), "replacement recipe did not run");
+                    helper.assertValueEqual(machine.slot(1).getCount(), 3, "replacement recipe yield");
+                    helper.assertValueEqual(machine.slot(0).getCount(), 1, "replacement recipe input count");
+                    helper.succeed();
+                });
+            });
+        });
+    }
+
+    private static void washerWaterPause(GameTestHelper helper) {
+        var machine = placeRecipeMachine(helper, CENTER, com.powerfactor.machine.RecipeMachine.ORE_WASHER);
+        machine.getTank().set(0, net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER), 1000);
+        insert(helper, CENTER, Items.RAW_IRON, 2);
+        helper.runAfterDelay(35, () -> {
+            double paid = machine.workProgress();
+            helper.assertTrue(paid > 10, "washer never began work");
+            machine.getTank().set(0, net.neoforged.neoforge.transfer.fluid.FluidResource.EMPTY, 0);
+            helper.runAfterDelay(20, () -> {
+                helper.assertTrue(machine.workProgress() == paid && !machine.getBlockState().getValue(MachineBlock.RUNNING), "water shortage erased progress or kept the drum running");
+                helper.assertTrue(machine.workState() == com.powerfactor.machine.ProcessingBlockEntity.WorkState.NEEDS_FLUID, "washer did not report missing water");
+                helper.assertValueEqual(machine.slot(0).getCount(), 2, "dry washer consumed ore");
+                machine.getTank().set(0, net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER), 250);
+                helper.runAfterDelay(140, () -> {
+                    helper.assertTrue(machine.slot(1).is(ModItems.IRON_DUST.get()) && machine.slot(1).getCount() == 3, "refilled washer did not finish once");
+                    helper.assertValueEqual(machine.slot(0).getCount(), 1, "refilled washer input count");
+                    helper.assertValueEqual(machine.getTank().getAmountAsInt(0), 0, "washer fluid cost");
+                    helper.succeed();
+                });
+            });
+        });
+    }
+
+    private static void processingControlPause(GameTestHelper helper) {
+        var crusher = placeCrusher(helper, CENTER); fillEnergy(crusher);
+        insert(helper, CENTER, Items.RAW_IRON, 1);
+        helper.runAfterDelay(20, () -> {
+            double paid = crusher.workProgress(); int energy = crusher.getEnergy().getAmountAsInt();
+            helper.assertTrue(paid > 5, "crusher never began work");
+            crusher.setRedstoneMode(com.powerfactor.machine.MachineBlockEntity.RedstoneMode.HIGH);
+            helper.runAfterDelay(15, () -> {
+                helper.assertTrue(crusher.workState() == com.powerfactor.machine.ProcessingBlockEntity.WorkState.DISABLED && crusher.workProgress() == paid, "redstone pause lost paid work");
+                helper.assertValueEqual(crusher.getEnergy().getAmountAsInt(), energy, "disabled crusher consumed FE");
+                ((net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler)crusher.getEnergy()).set(0);
+                crusher.setRedstoneMode(com.powerfactor.machine.MachineBlockEntity.RedstoneMode.IGNORE);
+                helper.runAfterDelay(10, () -> {
+                    helper.assertTrue(crusher.workState() == com.powerfactor.machine.ProcessingBlockEntity.WorkState.NO_ENERGY && crusher.workProgress() == paid, "power pause lost work or status");
+                    fillEnergy(crusher);
+                    helper.runAfterDelay(110, () -> {
+                        helper.assertTrue(crusher.slot(1).is(ModItems.IRON_DUST.get()) && crusher.slot(1).getCount() == 2, "crusher did not resume after controls and power returned");
+                        helper.succeed();
+                    });
+                });
+            });
+        });
     }
 
     private PowerFactorGameTests() {}
