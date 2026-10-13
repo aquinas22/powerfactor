@@ -39,6 +39,8 @@
       machine consumption and saving retain external fluid identity, with rollback and port restrictions tested.
 - [x] Live voltage/current meter needles, cold-grid status, actual battery charge segments and transfer activity;
       external battery extraction appears in readouts, with committed/aborted transfer and snapshot checks.
+- [x] Source-role filtering prevents grid-support feedback; ordinary loads take priority over reserve charging;
+      exact battery menu energy and disabled/empty states, including redstone and surplus-routing checks.
 - [x] Flat Creative test launcher with cheats and mode switching. See [update notes](docs/machine-polish.md).
 
 The feature backlog below is paused while testing this polish update.

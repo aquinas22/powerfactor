@@ -27,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  * One connected run at a single voltage, limited by its weakest wire and solved each tick.
  *
  * <p>Generators push FE in through any wire; the grid loses some as line heat, then splits the
- * rest evenly between everything connected that will take it. Motor EE less capacitor EE is the
+ * rest between ordinary loads first and storage second. Motor EE less capacitor EE is the
  * net reactive flow; turbines supply (or absorb) it in proportion to their spare capacity, and
  * whatever they can't cover collapses the voltage. Frequency is set by the turbines; a grid fed
  * only by engines and other mods' generators runs at a nominal 60 Hz.
@@ -181,18 +181,37 @@ public final class PowerGrid implements Bus {
         // Line heat comes off the top.
         buffer.take(Math.min(buffer.amount(), (int) Math.ceil(state.lossFe())));
 
-        // Split the rest evenly; whatever a full consumer can't take goes round again.
+        // Share between ordinary loads, then charge storage from what remains. Source faces receive nothing.
         List<EnergyHandler> targets = new ArrayList<>();
-        Map<EnergyHandler, Boolean> unique = new IdentityHashMap<>();
-        for (var cache : caches) {
-            EnergyHandler h = cache.getCapability();
-            if (h != null && h != buffer && unique.put(h, Boolean.TRUE) == null) {
-                targets.add(h);
-            }
+        Map<EnergyHandler, Boolean> storage = new IdentityHashMap<>();
+        for (int i = 0; i < caches.size(); i++) {
+            Endpoint endpoint = endpoints.get(i);
+            if (!level.isLoaded(endpoint.pos())) continue;
+            BlockEntity be = level.getBlockEntity(endpoint.pos());
+            if (be instanceof com.powerfactor.multiblock.MultiblockPart part) be = part.controller();
+            var role = be instanceof com.powerfactor.api.SidedGridDevice sided ? sided.role(endpoint.side())
+                    : com.powerfactor.api.SidedGridDevice.Role.BOTH;
+            if (role != com.powerfactor.api.SidedGridDevice.Role.LOAD && role != com.powerfactor.api.SidedGridDevice.Role.BOTH) continue;
+            EnergyHandler h = caches.get(i).getCapability();
+            if (h == null || h == buffer) continue;
+            boolean reserve = be instanceof com.powerfactor.api.GridStorage;
+            if (storage.putIfAbsent(h, reserve) == null) targets.add(h);
+            // An ordinary load wins if aliases expose the same handler in different roles.
+            if (!reserve) storage.put(h, false);
         }
+        List<EnergyHandler> loads = new ArrayList<>(), reserves = new ArrayList<>();
+        for (EnergyHandler target : targets) (storage.get(target) ? reserves : loads).add(target);
+        int order = rotation++;
+        lastDelivered = deliver(loads, order) + deliver(reserves, order);
+
+        // Next tick's FE headroom: the current rating at this voltage, less what EE uses.
+        buffer.setLimit((int) PowerTriangle.maxFeFor(ratingCe * Math.min(1, state.volts()), state.netEe()));
+    }
+
+    private int deliver(List<EnergyHandler> targets, int order) {
         int delivered = 0;
         if (!targets.isEmpty()) {
-            Collections.rotate(targets, rotation++ % targets.size());
+            Collections.rotate(targets, Math.floorMod(order, targets.size()));
             for (int pass = 0; pass < 2 && buffer.amount() > 0; pass++) {
                 for (int i = 0; i < targets.size() && buffer.amount() > 0; i++) {
                     int share = Math.max(1, buffer.amount() / (targets.size() - i));
@@ -205,10 +224,7 @@ public final class PowerGrid implements Bus {
                 }
             }
         }
-        lastDelivered = delivered;
-
-        // Next tick's FE headroom: the current rating at this voltage, less what EE uses.
-        buffer.setLimit((int) PowerTriangle.maxFeFor(ratingCe * Math.min(1, state.volts()), state.netEe()));
+        return delivered;
     }
 
     private final class Buffer extends SimpleEnergyHandler {

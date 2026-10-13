@@ -29,8 +29,9 @@ import org.jspecify.annotations.Nullable;
  * Grid battery. Soaks up surplus FE like any load; when its grid sags (frequency under 59.7 Hz or
  * voltage under 0.95 pu) it pushes power back in to hold it up. Inverter-fed: FE only.
  */
-public class BatteryBankBlockEntity extends MachineBlockEntity {
+public class BatteryBankBlockEntity extends MachineBlockEntity implements com.powerfactor.api.GridStorage {
     public static final int CAPACITY = 2_000_000, RATE = 1_024;
+    public static final int FLAG_DISABLED = 2;
     private final SimpleEnergyHandler energy = new SimpleEnergyHandler(CAPACITY, RATE, RATE) {
         @Override
         protected void onEnergyChanged(int previousAmount) {
@@ -50,8 +51,9 @@ public class BatteryBankBlockEntity extends MachineBlockEntity {
             return switch (i) {
                 case DieselMenu.DATA_FE -> lastOut;
                 case DieselMenu.DATA_EE -> lastIn;
-                case DieselMenu.DATA_STORED -> energy.getAmountAsInt() / 1000;
-                case DieselMenu.DATA_FLAGS -> supporting ? 1 : 0;
+                case DieselMenu.Battery.DATA_STORED_LO -> energy.getAmountAsInt() & 0xFFFF;
+                case DieselMenu.Battery.DATA_STORED_HI -> energy.getAmountAsInt() >>> 16;
+                case DieselMenu.DATA_FLAGS -> (supporting ? 1 : 0) | (!controlEnabled() ? FLAG_DISABLED : 0);
                 case DieselMenu.DATA_REDSTONE -> redstoneMode().ordinal();
                 default -> 0;
             };
@@ -76,8 +78,9 @@ public class BatteryBankBlockEntity extends MachineBlockEntity {
         lastIn = Math.max(0, now - previous);
         lastOut = Math.max(0, previous - now);
         Bus bus = BusLocator.find(level, pos);
-        supporting = bus instanceof PowerGrid grid && grid.energized() && (grid.hertz() < 59.7 || grid.volts() < 0.95);
-        if (supporting && enabled(level, pos) && bus instanceof PowerGrid grid) {
+        supporting = now > 0 && enabled(level, pos) && bus instanceof PowerGrid grid && grid.energized()
+                && (grid.hertz() < 59.7 || grid.volts() < 0.95);
+        if (supporting && bus instanceof PowerGrid grid) {
             try (Transaction tx = Transaction.openRoot()) {
                 int moved = grid.handler().insert(Math.min(RATE, now), tx);
                 tx.commit();
@@ -116,6 +119,10 @@ public class BatteryBankBlockEntity extends MachineBlockEntity {
         return energy;
     }
 
+    @Override public Role role(net.minecraft.core.Direction face) { return supporting ? Role.SOURCE : Role.LOAD; }
+
+    private boolean controlEnabled() { return !(level instanceof ServerLevel server) || enabled(server, worldPosition); }
+
     @Override
     public int comparatorSignal() {
         return (int) (15L * energy.getAmountAsInt() / CAPACITY);
@@ -123,8 +130,11 @@ public class BatteryBankBlockEntity extends MachineBlockEntity {
 
     @Override
     public ScadaReading scadaReading() {
-        return new ScadaReading(worldPosition, getDisplayName(), supporting ? ScadaReading.Status.WARNING : ScadaReading.Status.RUNNING,
-                lastOut, 0, Component.translatable(supporting ? "scada.powerfactor.battery.support" : "scada.powerfactor.battery",
+        boolean enabled = controlEnabled(), empty = energy.getAmountAsInt() == 0;
+        return new ScadaReading(worldPosition, getDisplayName(), !enabled ? ScadaReading.Status.OFF : empty ? ScadaReading.Status.WARNING
+                : supporting && lastOut > 0 ? ScadaReading.Status.WARNING : ScadaReading.Status.RUNNING,
+                lastOut, 0, Component.translatable(!enabled ? "scada.powerfactor.battery.disabled" : empty ? "scada.powerfactor.battery.empty"
+                        : supporting && lastOut > 0 ? "scada.powerfactor.battery.support" : "scada.powerfactor.battery",
                         (int) (100L * energy.getAmountAsInt() / CAPACITY)), true, remoteEnabled(), lastOut > 0, 1F, 0F);
     }
 

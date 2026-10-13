@@ -74,6 +74,8 @@ public class DieselMenu extends AbstractContainerMenu {
 
     /** Battery bank GUI. */
     public static class Battery extends DieselMenu {
+        public static final int DATA_STORED_LO = DATA_STORED, DATA_STORED_HI = DATA_TANK2;
+        public int storedEnergy() { return unsigned(DATA_STORED_LO) | unsigned(DATA_STORED_HI) << 16; }
         public Battery(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
             super(ModMenus.BATTERY_BANK.get(), id, inventory, buf.readBlockPos(), new SimpleContainerData(DATA_COUNT), null);
         }

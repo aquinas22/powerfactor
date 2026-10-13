@@ -65,6 +65,8 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("generator_shared_energy_conserved", () -> PowerFactorGameTests::generatorSharesEnergy);
         FUNCTIONS.register("power_meter_tracks_live_and_cold_grid", () -> PowerFactorGameTests::meterTracksGrid);
         FUNCTIONS.register("battery_reports_committed_external_transfers", () -> PowerFactorGameTests::batteryTransferReadings);
+        FUNCTIONS.register("battery_support_does_not_recharge_itself", () -> PowerFactorGameTests::batterySupportRouting);
+        FUNCTIONS.register("battery_charges_from_surplus", () -> PowerFactorGameTests::batterySurplusCharging);
         FUNCTIONS.register("redstone_direct_selection", () -> PowerFactorGameTests::redstoneDirectSelection);
         FUNCTIONS.register("wire_cutters_respect_permissions", () -> PowerFactorGameTests::wireCuttersPermissions);
         FUNCTIONS.register("wrench_respects_protection_mods", () -> PowerFactorGameTests::wrenchRespectsProtection);
@@ -677,9 +679,84 @@ public final class PowerFactorGameTests {
         battery.serverTick(helper.getLevel(), helper.absolutePos(CENTER), battery.getBlockState());
         helper.assertValueEqual(menu.get(com.powerfactor.generator.DieselMenu.DATA_FE), 256, "external discharging readout");
         helper.assertValueEqual(handler.getAmountAsInt(), 768, "battery transfer conservation");
+        helper.assertValueEqual(menu.storedEnergy(), 768, "sub-thousand FE menu precision");
         helper.assertValueEqual(battery.getUpdateTag(helper.getLevel().registryAccess()).getIntOr("energy", -1), 768, "client battery charge snapshot");
         helper.assertValueEqual(battery.getUpdateTag(helper.getLevel().registryAccess()).getIntOr("battery_flow", 0), -1, "discharging animation direction");
         helper.succeed();
+    }
+
+    private static void batterySupportRouting(GameTestHelper helper) {
+        var at = CENTER.west();
+        helper.setBlock(at, ModBlocks.BATTERY_BANK.get().defaultBlockState());
+        var battery = helper.getBlockEntity(at, com.powerfactor.generator.BatteryBankBlockEntity.class);
+        try (var tx = Transaction.openRoot()) {
+            for (int i = 0; i < 32; i++) battery.getEnergy().insert(1024, tx);
+            tx.commit();
+        }
+        // Three transformer primaries give a sustained reactive load without another FE source.
+        for (var face : java.util.List.of(Direction.NORTH, Direction.SOUTH, Direction.EAST))
+            helper.setBlock(CENTER.relative(face), ModBlocks.TRANSFORMER.get().defaultBlockState().setValue(MachineBlock.FACING, face));
+        placeWire(helper, CENTER);
+        var grid = com.powerfactor.grid.GridManager.get(helper.getLevel()).gridAt(helper.absolutePos(CENTER));
+        try (var tx = Transaction.openRoot()) { grid.handler().insert(100, tx); tx.commit(); }
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var menu = (com.powerfactor.generator.DieselMenu.Battery) battery.createMenu(23, player.getInventory(), player);
+        final int[] export = {0}, recharge = {0};
+        long start = helper.getLevel().getGameTime();
+        helper.onEachTick(() -> {
+            long elapsed = helper.getLevel().getGameTime() - start;
+            if (elapsed >= 10 && elapsed <= 30) {
+                export[0] += menu.get(com.powerfactor.generator.DieselMenu.DATA_FE);
+                recharge[0] += menu.get(com.powerfactor.generator.DieselMenu.DATA_EE);
+            }
+        });
+        helper.runAfterDelay(35, () -> {
+            helper.assertTrue(export[0] > 0, "battery never supported the sagging grid");
+            helper.assertValueEqual(recharge[0], 0, "supporting battery accepted its own grid exports");
+            battery.setRedstoneMode(com.powerfactor.machine.MachineBlockEntity.RedstoneMode.HIGH);
+            helper.runAfterDelay(5, () -> {
+                helper.assertValueEqual(menu.get(com.powerfactor.generator.DieselMenu.DATA_FE), 0, "redstone-disabled battery exported to grid");
+                helper.assertTrue((menu.get(com.powerfactor.generator.DieselMenu.DATA_FLAGS) & com.powerfactor.generator.BatteryBankBlockEntity.FLAG_DISABLED) != 0,
+                        "battery menu failed to report disabled control");
+                helper.assertValueEqual(battery.role(Direction.EAST), com.powerfactor.api.SidedGridDevice.Role.LOAD, "disabled bank still claimed source role");
+                helper.assertValueEqual(battery.scadaReading().status(), com.powerfactor.scada.ScadaReading.Status.OFF, "disabled battery SCADA status");
+                try (var tx = Transaction.openRoot()) {
+                    for (int i = 0; i < 32; i++) battery.getEnergy().extract(1024, tx);
+                    tx.commit();
+                }
+                battery.setRedstoneMode(com.powerfactor.machine.MachineBlockEntity.RedstoneMode.IGNORE);
+                battery.serverTick(helper.getLevel(), helper.absolutePos(at), battery.getBlockState());
+                helper.assertTrue((menu.get(com.powerfactor.generator.DieselMenu.DATA_FLAGS) & 1) == 0, "empty bank claimed grid support");
+                helper.assertValueEqual(battery.scadaReading().status(), com.powerfactor.scada.ScadaReading.Status.WARNING, "empty battery SCADA status");
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void batterySurplusCharging(GameTestHelper helper) {
+        BlockPos at = CENTER.west(), consumer = CENTER.east();
+        helper.setBlock(at, ModBlocks.BATTERY_BANK.get().defaultBlockState());
+        helper.setBlock(consumer, ModBlocks.CHARGING_PAD.get().defaultBlockState());
+        var battery = helper.getBlockEntity(at, com.powerfactor.generator.BatteryBankBlockEntity.class);
+        var pad = helper.getBlockEntity(consumer, com.powerfactor.device.ChargingPadBlockEntity.class);
+        placeWire(helper, CENTER);
+        var grid = com.powerfactor.grid.GridManager.get(helper.getLevel()).gridAt(helper.absolutePos(CENTER));
+        try (var tx = Transaction.openRoot()) { grid.handler().insert(100, tx); tx.commit(); }
+        helper.runAfterDelay(2, () -> {
+            helper.assertValueEqual(pad.getEnergy().getAmountAsInt(), 100, "battery charging took power needed by another load");
+            helper.assertValueEqual(battery.getEnergy().getAmountAsInt(), 0, "battery received power before ordinary load filled");
+            try (var tx = Transaction.openRoot()) {
+                for (int i = 0; i <= com.powerfactor.device.ChargingPadBlockEntity.CAPACITY / com.powerfactor.device.ChargingPadBlockEntity.INTAKE; i++)
+                    pad.getEnergy().insert(com.powerfactor.device.ChargingPadBlockEntity.INTAKE, tx);
+                grid.handler().insert(100, tx); tx.commit();
+            }
+        });
+        helper.runAfterDelay(5, () -> {
+            helper.assertTrue(battery.getEnergy().getAmountAsInt() > 0 && battery.getEnergy().getAmountAsInt() <= 100,
+                    "surplus power did not reach battery");
+            helper.assertValueEqual(pad.getEnergy().getAmountAsInt(), pad.getEnergy().getCapacityAsInt(), "full ordinary load lost power");
+            helper.succeed();
+        });
     }
 
     private static void growLampBoostsCrops(GameTestHelper helper) {

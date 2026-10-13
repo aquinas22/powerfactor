@@ -115,17 +115,26 @@ public final class GeneratorScreens {
             super(menu, inventory, title);
         }
 
+        private boolean disabled() { return (menu.get(DieselMenu.DATA_FLAGS) & BatteryBankBlockEntity.FLAG_DISABLED) != 0; }
+        private boolean supporting() { return (menu.get(DieselMenu.DATA_FLAGS) & 1) != 0; }
+        private String statusKey() {
+            return disabled() ? "gui.powerfactor.work.disabled" : menu.storedEnergy() == 0 ? "gui.powerfactor.battery.empty"
+                    : menu.get(DieselMenu.DATA_FE) > 0 ? supporting() ? "gui.powerfactor.battery.support" : "gui.powerfactor.battery.discharging"
+                    : menu.get(DieselMenu.DATA_EE) > 0 ? "gui.powerfactor.battery.charging"
+                    : supporting() ? "gui.powerfactor.battery.reserve" : "gui.powerfactor.battery.standby";
+        }
+
         @Override
         protected Electrical electrical() {
-            return new Electrical(1.0, 60.0, menu.get(DieselMenu.DATA_FE), 0, BatteryBankBlockEntity.RATE,
-                    Component.translatable((menu.get(DieselMenu.DATA_FLAGS) & 1) != 0 ? "gui.powerfactor.battery.support"
-                            : "gui.powerfactor.battery.standby"), 0xFF55FF55);
+            boolean ready = !disabled() && menu.storedEnergy() > 0;
+            return new Electrical(ready ? 1.0 : 0, ready ? 60.0 : 0, menu.get(DieselMenu.DATA_FE), 0, BatteryBankBlockEntity.RATE,
+                    Component.translatable(statusKey()), disabled() ? Skin.DIM : menu.storedEnergy() == 0 ? 0xFFFFB020 : 0xFF55FF55);
         }
 
         @Override
         protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
             super.extractMain(g, mouseX, mouseY);
-            energy(g, 76, 24, menu.unsigned(DieselMenu.DATA_STORED) * 1000, BatteryBankBlockEntity.CAPACITY, menu.get(DieselMenu.DATA_EE) > 0);
+            energy(g, 76, 24, menu.storedEnergy(), BatteryBankBlockEntity.CAPACITY, menu.get(DieselMenu.DATA_EE) > 0);
             Skin.scope(g, leftPos + 8, topPos + 20, 62, 52, menu.get(DieselMenu.DATA_FE) / (float) BatteryBankBlockEntity.RATE,
                     menu.get(DieselMenu.DATA_FE) > 0);
             Skin.lcd(g, leftPos + 104, topPos + 20, 64, 52);
@@ -134,10 +143,21 @@ public final class GeneratorScreens {
         @Override
         protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
             super.extractLabels(g, xm, ym);
-            int pct = (int) (100L * menu.unsigned(DieselMenu.DATA_STORED) * 1000 / BatteryBankBlockEntity.CAPACITY);
+            int pct = (int) (100L * menu.storedEnergy() / BatteryBankBlockEntity.CAPACITY);
             g.text(font, pct + "%", 106, 24, Skin.TEXT, false);
             g.text(font, "+" + menu.get(DieselMenu.DATA_EE) + " FE/t", 106, 38, 0xFF7CFF8A, false);
             g.text(font, "-" + menu.get(DieselMenu.DATA_FE) + " FE/t", 106, 50, GuiUtil.FE_COLOR, false);
+            String compact = disabled() ? "gui.powerfactor.work.disabled" : menu.storedEnergy() == 0 ? "gui.powerfactor.battery.empty"
+                    : menu.get(DieselMenu.DATA_FE) > 0 ? "gui.powerfactor.battery.output"
+                    : menu.get(DieselMenu.DATA_EE) > 0 ? "gui.powerfactor.battery.input" : "gui.powerfactor.battery.standby";
+            g.text(font, Skin.fit(font, Component.translatable(compact), 60), 106, 62, electrical().statusColor(), false);
+        }
+
+        @Override public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
+            super.extractRenderState(g, mouseX, mouseY, a);
+            if (isHovering(104, 60, 64, 12, mouseX, mouseY))
+                g.setTooltipForNextFrame(font, java.util.List.of(Component.translatable(statusKey()),
+                        Component.translatable("gui.powerfactor.battery.control_help")), java.util.Optional.empty(), mouseX, mouseY);
         }
     }
 

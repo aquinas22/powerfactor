@@ -113,6 +113,16 @@ generator's front accepts an output connection consistently with its other energ
 Ore-washer fluid handlers follow the current input/output face configuration, including
 after a machine rotates or an external pipe retains a cached handler.
 
+Grids respect dynamic input/source roles, including cached endpoints. A battery in grid
+support mode exports power without receiving its own exports back in the same transfer
+loop. Ordinary loads get power before reserve storage charges from the surplus.
+Disabled and empty banks stop claiming active grid support. The battery GUI shows exact
+FE, including amounts below 1,000, and distinguishes standby, charging, output and disabled
+states. Its control tooltip explains that redstone and remote controls pause grid support;
+external cables can still charge or extract normally.
+
+[Exact battery charge readout](previews/battery-exact-charge.png)
+
 Materials, rubber, wires and hand tools use common `c:` tags. Machine integration uses
 NeoForge item, fluid and transactional energy capabilities. Wrench dismantling honors
 block-break protection events before returning drops. Checks exercise generic external
@@ -157,10 +167,11 @@ python3 tools/check_resources.py
 ./gradlew test build runGameTestServer --offline
 ```
 
-The completed checks passed 54 unit tests and 97 required in-world GameTests. Resource
+The completed checks passed 54 unit tests and 99 required in-world GameTests. Resource
 validation passed for 1,372 JSON resources and 24 animation sheets. Native client checks
 cover machine models, processing and generator animations, empty/full washer water,
 closed panels, face and redstone selection, compact layout, pause/resume messages and Creative/Survival commands.
+Battery client checks cover empty/disabled states and exact 768 FE and 2,000,000 FE readings.
 The world's preparation and Java helper were exercised on Linux; Windows batch execution
 still needs a Windows machine.
 
