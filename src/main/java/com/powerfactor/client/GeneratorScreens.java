@@ -159,9 +159,15 @@ public final class GeneratorScreens {
         protected Electrical electrical() {
             int tier = menu.get(PowerMeterBlockEntity.DATA_TIER);
             double rating = tier < 0 || tier >= CableTier.values().length ? 512 : CableTier.values()[tier].ratingCe;
+            double hz = menu.unsigned(PowerMeterBlockEntity.DATA_HZ) / 100.0;
+            boolean connected = tier >= 0 && tier < CableTier.values().length;
+            boolean powered = connected && hz > 0 && volts() > 0;
+            boolean warning = powered && (menu.get(PowerMeterBlockEntity.DATA_LOAD) > 1000 || volts() < 0.9 || volts() > 1.1);
             return new Electrical(tier < 0 ? 0 : volts(), menu.unsigned(PowerMeterBlockEntity.DATA_HZ) / 100.0,
                     menu.get(PowerMeterBlockEntity.DATA_FE), (short) menu.get(PowerMeterBlockEntity.DATA_EE), rating,
-                    Component.translatable("gui.powerfactor.meter.loading", menu.get(PowerMeterBlockEntity.DATA_LOAD) / 10), 0xFFB8F5C0);
+                    Component.translatable(!connected ? "gui.powerfactor.meter.no_grid" : !powered ? "gui.powerfactor.work.no_energy"
+                            : "gui.powerfactor.meter.loading", menu.get(PowerMeterBlockEntity.DATA_LOAD) / 10),
+                    !powered ? Skin.DIM : warning ? 0xFFFFB020 : 0xFFB8F5C0);
         }
 
         @Override

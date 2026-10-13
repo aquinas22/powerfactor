@@ -160,6 +160,7 @@ public final class PowerFactorClient {
         event.registerLayerDefinition(SpinningRenderers.CONDENSER, SpinningRenderers::condenserLayer);
         event.registerLayerDefinition(PowerConnections.LAYER, PowerConnections::createLayer);
         event.registerLayerDefinition(IndustrialRenderer.LAYER, IndustrialRenderer::createLayer);
+        event.registerLayerDefinition(InstrumentRenderer.LAYER, InstrumentRenderer::createLayer);
     }
 
     @SubscribeEvent
@@ -188,8 +189,8 @@ public final class PowerFactorClient {
         event.registerBlockEntityRenderer(ModBlockEntities.CHARGING_PAD.get(), PowerConnections.only());
         event.registerBlockEntityRenderer(ModBlockEntities.GROW_LAMP.get(), PowerConnections.only());
         event.registerBlockEntityRenderer(ModBlockEntities.RADIO_TOWER.get(), PowerConnections.only());
-        event.registerBlockEntityRenderer(ModBlockEntities.BATTERY_BANK.get(), PowerConnections.only());
-        event.registerBlockEntityRenderer(ModBlockEntities.POWER_METER.get(), PowerConnections.only());
+        event.registerBlockEntityRenderer(ModBlockEntities.BATTERY_BANK.get(), PowerConnections.wrap(InstrumentRenderer::new));
+        event.registerBlockEntityRenderer(ModBlockEntities.POWER_METER.get(), PowerConnections.wrap(InstrumentRenderer::new));
         event.registerBlockEntityRenderer(ModBlockEntities.GEOTHERMAL_GENERATOR.get(), PowerConnections.only());
         event.registerBlockEntityRenderer(ModBlockEntities.THERMOELECTRIC_GENERATOR.get(), PowerConnections.only());
         event.registerBlockEntityRenderer(ModBlockEntities.TRANSFORMER.get(), PowerConnections.only());

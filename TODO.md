@@ -37,6 +37,8 @@
       fresh wires require committed FE before energizing. Washer model updates include tiny empty/full transitions.
 - [x] Common-tag hydrogen, crude oil, steam and hot water; steam pipes preserve external fluid components;
       machine consumption and saving retain external fluid identity, with rollback and port restrictions tested.
+- [x] Live voltage/current meter needles, cold-grid status, actual battery charge segments and transfer activity;
+      external battery extraction appears in readouts, with committed/aborted transfer and snapshot checks.
 - [x] Flat Creative test launcher with cheats and mode switching. See [update notes](docs/machine-polish.md).
 
 The feature backlog below is paused while testing this polish update.

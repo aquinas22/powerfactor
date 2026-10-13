@@ -83,9 +83,12 @@ def generate(g):
                         e += cylinder(3.1,3.5,12.5,"#body",dx=x-8,dz=z-8)
                         e += [box([x-1,12.5,z-1],[x+1,13,z+1],"#dark"),box([x-0.5,13,z-0.5],[x+0.5,14,z+0.5],"#copper")]
                 e += [box([3,13.7,4.5],[13,14.3,5.5],"#copper"),box([3,13.7,9.5],[13,14.3,10.5],"#copper")]+control(4)
+                e += [box([2.8,3.8,0.4],[13.2,4.1,1.8]),box([2.8,9,0.4],[13.2,9.3,1.8])]
             elif name=="power_meter":
                 extra["front"] = pf("block/power_meter_front")
                 e = [box([3,0,4],[13,2,12]),box([7,2,6],[9,5,10],"#dark"),box([1,5,3],[15,16,11],"#body"),box([2,6,1.7],[14,15,3],"#dark","#front")]
+                e += [box([1.5,5.5,1.3],[14.5,6,3]),box([1.5,15,1.3],[14.5,15.5,3]),
+                      box([1.5,6,1.3],[2,15,3]),box([14,6,1.3],[14.5,15,3])]
                 e += [box([x,2,4],[x+1.5,5,6],"#copper") for x in (3,11.5)]
             elif name in ("hydro_turbine","synchronous_condenser"):
                 extra["body"] = pf("block/"+name+("_side"))

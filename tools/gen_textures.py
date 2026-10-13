@@ -3862,28 +3862,22 @@ def breaker_side():
 
 def power_meter_front():
     import math
-    img = steel_plate(142)
+    img = steel_plate(142).resize((32, 32), Image.Resampling.NEAREST)
     d = ImageDraw.Draw(img)
-    d.rectangle((1, 1, 14, 9), fill=hexc("2a2a2a"))
-    d.rectangle((2, 2, 13, 8), fill=hexc("ece8dc"))
-    # Scale arc with a red zone at the right, and the needle.
-    seen = set()
-    for i in range(40):
-        a = math.pi * (1 - i / 39)
-        p = (int(round(7.5 + 4.6 * math.cos(a))), int(round(8.4 - 4.6 * math.sin(a))))
-        if p not in seen and 2 <= p[1] <= 7:
-            seen.add(p)
-            img.putpixel(p, hexc("cc2222") if i > 32 else hexc("3a3a3a"))
-    for x, y in [(8, 7), (9, 6), (10, 5)]:
-        img.putpixel((x, y), hexc("111111"))
-    img.putpixel((7, 8), hexc("111111"))
-    img.putpixel((8, 8), hexc("111111"))
-    # Digital readout.
-    d.rectangle((3, 11, 12, 14), fill=hexc("1d2023"))
-    d.rectangle((4, 12, 11, 13), fill=hexc("0c2412"))
-    for x in (5, 6, 8, 9, 10):
-        img.putpixel((x, 12), SCADA_GREEN)
-    img.putpixel((7, 13), SCADA_GREEN)
+    d.rectangle((1, 5, 30, 23), fill=hexc("242c31"))
+    for center, label in ((9, "V"), (23, "I")):
+        d.rectangle((center-6, 7, center+6, 21), fill=hexc("e9e6d8"), outline=hexc("819494"))
+        for i in range(9):
+            a = math.radians(-70 + i * 17.5)
+            x, y = center + 4.5*math.sin(a), 17 - 6*math.cos(a)
+            d.line((round(x), round(y), round(center+3.7*math.sin(a)), round(17-5*math.cos(a))),
+                   fill=hexc("bf4934" if i >= 7 else "34454c"))
+        if label == "V": d.line((center-2, 2, center, 4, center+2, 2), fill=hexc("dce6df"))
+        else: d.line((center, 2, center, 4), fill=hexc("dce6df"))
+        d.line((center-4, 8, center+1, 8), fill=hexc("fffdf0"))
+    # Physical needles and the status light are supplied by the block entity renderer.
+    d.rectangle((10, 26, 22, 30), fill=hexc("17282e"), outline=hexc("526b70"))
+    d.rectangle((14, 27, 17, 29), fill=hexc("253c3f"))
     return img
 
 
@@ -3948,7 +3942,7 @@ def battery_bank_front(on):
     for i in range(5):
         x = 3 + i * 2
         for y in range(3, 8):
-            img.putpixel((x, y), (hexc("5cff6a") if y > 3 else hexc("b8ffc0")) if on else hexc("1f3a24"))
+            img.putpixel((x, y), hexc("1f3a24"))
         img.putpixel((x + 1, 3), hexc("17191b"))
     img.putpixel((12, 3), hexc("d03a2f"))
     img.putpixel((12, 7), hexc("222222"))
@@ -6765,6 +6759,11 @@ def phase_machine_polish():
     for x,y in ((1,1),(10,1),(1,9),(10,9)):d.rectangle((x,y,x+1,y+1),fill=hexc("d0d9cc"))
     d.rectangle((0,20,23,32),fill=hexc("bb8546"));d.line((1,22,22,22),fill=hexc("e6c38e"))
     d.rectangle((32,0,43,20),fill=hexc("455961"));d.line((35,0,35,20),fill=hexc("b9864a"));save(img,"entity/power_socket.png")
+    # Neutral instrument atlas; live parts receive their material tint from the renderer.
+    img=Image.new("RGBA",(32,32),hexc("ffffff"));d=ImageDraw.Draw(img)
+    d.rectangle((0,8,7,15),fill=hexc("819395"));d.rectangle((1,9,3,10),fill=hexc("c4d4d0"))
+    for y in (1,4): d.line((16,y,23,y),fill=hexc("e1eee7"))
+    save(img,"entity/instruments.png")
     for tool in ("forge_hammer","wire_cutters"):
         img=blank();d=ImageDraw.Draw(img)
         if tool=="forge_hammer":

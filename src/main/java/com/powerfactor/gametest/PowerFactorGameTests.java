@@ -63,6 +63,8 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("graphite_bootstrap_in_alloy_furnace", () -> PowerFactorGameTests::graphiteBootstrap);
         FUNCTIONS.register("wind_base_foreign_energy_and_broken_tower", () -> PowerFactorGameTests::windBaseEnergy);
         FUNCTIONS.register("generator_shared_energy_conserved", () -> PowerFactorGameTests::generatorSharesEnergy);
+        FUNCTIONS.register("power_meter_tracks_live_and_cold_grid", () -> PowerFactorGameTests::meterTracksGrid);
+        FUNCTIONS.register("battery_reports_committed_external_transfers", () -> PowerFactorGameTests::batteryTransferReadings);
         FUNCTIONS.register("redstone_direct_selection", () -> PowerFactorGameTests::redstoneDirectSelection);
         FUNCTIONS.register("wire_cutters_respect_permissions", () -> PowerFactorGameTests::wireCuttersPermissions);
         FUNCTIONS.register("wrench_respects_protection_mods", () -> PowerFactorGameTests::wrenchRespectsProtection);
@@ -634,6 +636,50 @@ public final class PowerFactorGameTests {
                 });
             });
         });
+    }
+
+    private static void meterTracksGrid(GameTestHelper helper) {
+        var source = new BlockPos(0, 1, 1); var at = CENTER.north();
+        placeTurbine(helper, source, Direction.NORTH); insert(helper, source, Items.COAL, 8);
+        var crusher = placeCrusher(helper, CENTER.east()); insert(helper, CENTER.east(), Items.RAW_IRON, 16);
+        helper.setBlock(at, ModBlocks.POWER_METER.get().defaultBlockState()); placeWire(helper, CENTER);
+        var meter = helper.getBlockEntity(at, com.powerfactor.generator.PowerMeterBlockEntity.class);
+        helper.runAfterDelay(RUN_TICKS, () -> {
+            var tag = meter.getUpdateTag(helper.getLevel().registryAccess());
+            helper.assertTrue(tag.getBooleanOr("meter_powered", false), "live grid did not light meter");
+            helper.assertTrue(tag.getFloatOr("meter_volts", 0) > 0 && tag.getFloatOr("meter_load", 0) > 0, "meter needles lack live voltage/current");
+            helper.assertBlockProperty(at, MachineBlock.RUNNING, true);
+            helper.setBlock(source, Blocks.AIR);
+        });
+        helper.runAfterDelay(RUN_TICKS + 30, () -> {
+            var tag = meter.getUpdateTag(helper.getLevel().registryAccess());
+            helper.assertFalse(tag.getBooleanOr("meter_powered", true), "cold grid left meter lit");
+            helper.assertTrue(tag.getFloatOr("meter_volts", -1) == 0 && tag.getFloatOr("meter_load", -1) == 0, "cold grid retained live needles");
+            helper.assertValueEqual(meter.scadaReading().status(), com.powerfactor.scada.ScadaReading.Status.OFF, "cold meter SCADA status");
+            helper.succeed();
+        });
+    }
+
+    private static void batteryTransferReadings(GameTestHelper helper) {
+        helper.setBlock(CENTER, ModBlocks.BATTERY_BANK.get().defaultBlockState());
+        var battery = helper.getBlockEntity(CENTER, com.powerfactor.generator.BatteryBankBlockEntity.class);
+        var handler = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, helper.absolutePos(CENTER), Direction.NORTH);
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var menu = (com.powerfactor.generator.DieselMenu.Battery) battery.createMenu(21, player.getInventory(), player);
+        try (var tx = Transaction.openRoot()) { helper.assertValueEqual(handler.insert(1024, tx), 1024, "battery insertion"); tx.commit(); }
+        battery.serverTick(helper.getLevel(), helper.absolutePos(CENTER), battery.getBlockState());
+        helper.assertValueEqual(menu.get(com.powerfactor.generator.DieselMenu.DATA_EE), 1024, "external charging readout");
+        helper.assertValueEqual(battery.getUpdateTag(helper.getLevel().registryAccess()).getIntOr("battery_flow", 0), 1, "charging animation direction");
+        try (var tx = Transaction.openRoot()) { handler.extract(256, tx); }
+        battery.serverTick(helper.getLevel(), helper.absolutePos(CENTER), battery.getBlockState());
+        helper.assertValueEqual(menu.get(com.powerfactor.generator.DieselMenu.DATA_FE), 0, "aborted extraction appeared in readout");
+        try (var tx = Transaction.openRoot()) { helper.assertValueEqual(handler.extract(256, tx), 256, "battery extraction"); tx.commit(); }
+        battery.serverTick(helper.getLevel(), helper.absolutePos(CENTER), battery.getBlockState());
+        helper.assertValueEqual(menu.get(com.powerfactor.generator.DieselMenu.DATA_FE), 256, "external discharging readout");
+        helper.assertValueEqual(handler.getAmountAsInt(), 768, "battery transfer conservation");
+        helper.assertValueEqual(battery.getUpdateTag(helper.getLevel().registryAccess()).getIntOr("energy", -1), 768, "client battery charge snapshot");
+        helper.assertValueEqual(battery.getUpdateTag(helper.getLevel().registryAccess()).getIntOr("battery_flow", 0), -1, "discharging animation direction");
+        helper.succeed();
     }
 
     private static void growLampBoostsCrops(GameTestHelper helper) {

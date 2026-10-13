@@ -9,6 +9,9 @@ import com.powerfactor.power.BusSolver;
 import com.powerfactor.registry.ModBlockEntities;
 import com.powerfactor.scada.ScadaReading;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
@@ -16,6 +19,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.ValueInput;
 import org.jspecify.annotations.Nullable;
 
 /** Clamps onto a wire and reports its grid: flow, power factor, voltage, frequency, losses, loading. */
@@ -26,6 +31,10 @@ public class PowerMeterBlockEntity extends MachineBlockEntity implements Reactiv
     private BusSolver.Result state = BusSolver.Result.NOMINAL;
     private double hertz, interference;
     private int tier = -1;
+    private float visualVolts, visualLoad, shownVolts, shownLoad, previousVolts, previousLoad;
+    private boolean visualPowered, visualsInitialized;
+    private int syncedVolts = -1, syncedLoad = -1;
+    private boolean syncedPowered;
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -64,7 +73,47 @@ public class PowerMeterBlockEntity extends MachineBlockEntity implements Reactiv
         hertz = bus.hertz();
         tier = bus instanceof PowerGrid grid ? grid.tier().ordinal() : -1;
         interference = bus instanceof PowerGrid grid ? grid.interference() : 0;
-        setRunning(level, pos, blockState, tier >= 0 && state.fe() > 0);
+        boolean powered = tier >= 0 && hertz > 0 && state.volts() > 0;
+        setRunning(level, pos, blockState, powered);
+        int volts = powered ? (int) Math.round(state.volts() * 100) : 0;
+        int load = powered ? (int) Math.round(state.current() * 100) : 0;
+        if (powered != syncedPowered || level.getGameTime() % 4 == 0 && (volts != syncedVolts || load != syncedLoad)) {
+            syncedVolts = volts; syncedLoad = load; syncedPowered = powered;
+            level.sendBlockUpdated(pos, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    @Override public void clientTick() {
+        super.clientTick();
+        previousVolts = shownVolts; previousLoad = shownLoad;
+        shownVolts += (visualVolts - shownVolts) * 0.18F;
+        shownLoad += (visualLoad - shownLoad) * 0.18F;
+    }
+
+    public float shownVoltage(float partial) { return previousVolts + (shownVolts - previousVolts) * Math.clamp(partial, 0, 1); }
+    public float shownLoad(float partial) { return previousLoad + (shownLoad - previousLoad) * Math.clamp(partial, 0, 1); }
+    public boolean visualPowered() { return visualPowered; }
+
+    @Override public CompoundTag getUpdateTag(HolderLookup.Provider lookup) {
+        var tag = saveCustomOnly(lookup);
+        boolean powered = tier >= 0 && hertz > 0 && state.volts() > 0;
+        tag.putFloat("meter_volts", powered ? (float) state.volts() : 0);
+        tag.putFloat("meter_load", powered ? (float) state.current() : 0);
+        tag.putBoolean("meter_powered", powered);
+        return tag;
+    }
+
+    @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
+
+    @Override protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        visualVolts = Math.clamp(input.getFloatOr("meter_volts", 0), 0, 1.25F);
+        visualLoad = Math.clamp(input.getFloatOr("meter_load", 0), 0, 1.25F);
+        visualPowered = input.getBooleanOr("meter_powered", false);
+        if (!visualsInitialized) {
+            previousVolts = shownVolts = visualVolts; previousLoad = shownLoad = visualLoad;
+            visualsInitialized = true;
+        }
     }
 
     /** Draws nothing; it only implements this so wires connect to it. */
@@ -76,8 +125,8 @@ public class PowerMeterBlockEntity extends MachineBlockEntity implements Reactiv
     @Override
     public ScadaReading scadaReading() {
         double pf = state.powerFactor();
-        ScadaReading.Status status = state.current() > 1 || state.volts() < 0.9 ? ScadaReading.Status.WARNING
-                : tier < 0 ? ScadaReading.Status.OFF : ScadaReading.Status.RUNNING;
+        ScadaReading.Status status = tier < 0 || hertz <= 0 ? ScadaReading.Status.OFF
+                : state.current() > 1 || state.volts() < 0.9 || state.volts() > 1.1 ? ScadaReading.Status.WARNING : ScadaReading.Status.RUNNING;
         // An instrument, not a load: its grid totals go in the detail line so they aren't counted twice.
         return new ScadaReading(worldPosition, getDisplayName(), status, 0, 0,
                 Component.translatable("scada.powerfactor.meter", (int) state.fe(), String.format("%.2f", pf), Math.round(state.current() * 100),

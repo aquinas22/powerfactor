@@ -18,6 +18,16 @@ heat exchangers, transformer windings and tilted photovoltaic panels. Existing w
 crusher, capacitor, workshop, steam and refinery mechanisms retain their animations.
 The small redstone and Stirling engines also have cooling ribs and bolted moving plates.
 
+Power meters have separate moving voltage and current needles in a raised instrument bezel.
+The needles settle smoothly as load changes and return to zero when the grid loses power.
+Their status light distinguishes a cold grid, normal operation and voltage/current warnings.
+Battery banks show actual charge across five segments, with a partial final segment and
+blue charging or amber discharging activity. Updates are throttled to changes in readings;
+initial chunk snapshots include the current charge and meter values.
+
+[Live meter](previews/live-meter.png) · [Disconnected meter](previews/cold-meter.png) ·
+[Empty, partial and full battery banks](previews/battery-charge-levels.png)
+
 [Machine models](previews/machine-models.png) · [Generator models](previews/machine-generators.png) ·
 [Running animation](previews/machine-animation.mp4)
 
@@ -147,7 +157,7 @@ python3 tools/check_resources.py
 ./gradlew test build runGameTestServer --offline
 ```
 
-The completed checks passed 54 unit tests and 95 required in-world GameTests. Resource
+The completed checks passed 54 unit tests and 97 required in-world GameTests. Resource
 validation passed for 1,372 JSON resources and 24 animation sheets. Native client checks
 cover machine models, processing and generator animations, empty/full washer water,
 closed panels, face and redstone selection, compact layout, pause/resume messages and Creative/Survival commands.
