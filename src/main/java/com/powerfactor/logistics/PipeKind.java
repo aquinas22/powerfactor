@@ -14,7 +14,7 @@ public enum PipeKind {
 
     public boolean accepts(net.neoforged.neoforge.transfer.resource.Resource resource) {
         return this != STEAM || resource instanceof net.neoforged.neoforge.transfer.fluid.FluidResource fluid
-                && fluid.getFluid().isSame(com.powerfactor.registry.ModFluids.STEAM.get());
+                && com.powerfactor.device.HydrogenTanks.isSteam(fluid);
     }
 
     public final BlockCapability<? extends ResourceHandler<?>, @Nullable Direction> capability;

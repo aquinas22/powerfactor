@@ -1740,9 +1740,11 @@ def devices_data():
         "gui.powerfactor.electrolyzer.idle": "IDLE",
         "gui.powerfactor.fuel_cell.online": "ONLINE · GRID-FORMING",
         "gui.powerfactor.fuel_cell.offline": "OFFLINE",
-        "gui.powerfactor.fuel_cell.grid_forming": "Grid-forming 60 Hz",
+        "gui.powerfactor.fuel_cell.grid_forming": "60 Hz · online",
         "gui.powerfactor.fuel_cell.warming": "Warming up...",
-        "gui.powerfactor.fuel_cell.ee": "%s EE/t available",
+        "gui.powerfactor.fuel_cell.no_hydrogen": "NO HYDROGEN",
+        "gui.powerfactor.fuel_cell.ee": "%s EE/t",
+        "gui.powerfactor.fuel_cell.ee.help": "Reactive reserve: %s EE/t. Supports motor loads on the grid.",
         "handbook.powerfactor.power_tools.title": "Power Tools",
         "handbook.powerfactor.power_tools.text":
             "Electric Chainsaw: an axe on FE. Cut one log of a tree and the whole tree comes down, and its leaves drop their saplings "
@@ -1764,7 +1766,7 @@ def devices_data():
             "(100 FE per 4 mB). Pipe water in and hydrogen out to a Fluid Tank, where it shows as a gas that thickens with pressure.\n\n"
             "The Hydrogen Fuel Cell turns it back into FE (about 11 FE per mB, so roughly 45% round trip, like real systems). Its "
             "inverter is grid-forming: it sets 60 Hz and supplies EE like a synchronous generator, so wind plus hydrogen can run "
-            "a whole grid with nothing spinning.",
+            "a whole grid with nothing spinning. The fuel cell also accepts other mods' fluids tagged c:hydrogen.",
     })
     ADV = [
         ("timber", "drill", "electric_chainsaw", "Timber!", "Build an Electric Chainsaw", "task"),
@@ -2326,7 +2328,8 @@ def phase_oil():
             "middle casing; a hologram shows what's missing. Sneak-use the controller with an empty hand or a structure part to build from inventory. "
             "The wind turbine can build its six tower sections the same way. Clear the hologram first; assembly never replaces obstructions. "
             "Cables and pipes attach to any casing. The distillation column splits 10 mB of crude into 5 mB of diesel and 4 mB of jet fuel every tick (100 FE/t). Diesel "
-            "runs the Diesel Generator; jet fuel is available for future aircraft. Buckets work for all three.",
+            "runs the Diesel Generator; jet fuel is available for future aircraft. Buckets work for all three. "
+            "The refinery accepts other mods' fluids tagged c:crude_oil.",
     })
     # Worldgen: deep reservoirs everywhere in the overworld, tar pits in dry biomes.
     oil_lake = {"type": "minecraft:lake", "config": {
@@ -2514,7 +2517,8 @@ def steam_plant():
         "Once hot it produces up to 80 mB/t of steam. Steam Pipes carry only steam, up to 4000 mB per extraction every ten ticks; sneak-use an endpoint to extract, as with fluid pipes. "
         "The 3x2x5 Steam Turbine needs 26 Turbine Casings, two Steam Rotors and a Generator Magnet. It synchronizes over ten seconds and generates up to 800 FE/t, with EE support. "
         "Use the hologram or sneak-use assembly for either structure. Hot condensate must leave the turbine: pipe it through a powered Cooling Tower, then return its cold water to the boiler. "
-        "Cooling towers need an open vent to the sky. The boiler pauses its burner at 60% pressure and resumes at 40%; blocked outlets hold safely. Dry firing can trip it: supply water and let it cool.\n\n"
+        "Cooling towers need an open vent to the sky. Steam pipes and turbines accept c:steam from other mods; cooling towers accept c:hot_water. "
+        "The boiler pauses its burner at 60% pressure and resumes at 40%; blocked outlets hold safely. Dry firing can trip it: supply water and let it cool.\n\n"
         "Geothermal Generator: any adjacent lava gives 64 FE/t; magma gives 24. Thermoelectric Generator: put a hot source and water or ice on opposite faces, for up to 48 FE/t. "
         "A Rain Collector catches 2 mB/t of actual rain, or 6 during thunderstorms, without FE. A roof stops collection. Pipe its water into your boiler to replenish the loop.")
 

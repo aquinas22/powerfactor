@@ -113,6 +113,20 @@ the existing 26.1.2 ATM11 port remain separate, unverified work.
 Hand coating accepts any item in `c:rubbers`, including another mod's material. Coating
 uses one item and does not consume another when the cable is already coated.
 
+Fuel cells accept `c:hydrogen`, refineries accept `c:crude_oil`, steam pipes and turbines
+accept `c:steam`, and cooling towers accept `c:hot_water`. Partial consumption preserves
+the original fluid and its components, including across saves. Distinct fluid variants
+remain separate: drain the tank before switching providers. Output ports retain their
+drain-only behavior, and aborted transfers leave tanks unchanged.
+
+Fuel-cell readouts distinguish missing hydrogen, warm-up, redstone shutdown and online
+operation. The compact EE readout fits its display, with a hover explanation of reactive reserve.
+
+On October 13, the official [Create](https://github.com/Creators-of-Create/Create/releases)
+and [Mekanism](https://github.com/mekanism/Mekanism/releases) release lists and Modrinth
+version queries provided no matching Minecraft 26.2/NeoForge download. Runtime testing
+with those projects remains unverified; common-tag tests use isolated fixture stand-ins.
+
 ## Flat testing launcher
 
 `launch.bat` builds the current checkout and opens `PowerFactorFlatTest`: a separate flat
@@ -133,13 +147,15 @@ python3 tools/check_resources.py
 ./gradlew test build runGameTestServer --offline
 ```
 
-The completed checks passed 54 unit tests and 91 required in-world GameTests. Resource
-validation passed for 1,368 JSON resources and 24 animation sheets. Native client checks
+The completed checks passed 54 unit tests and 95 required in-world GameTests. Resource
+validation passed for 1,372 JSON resources and 24 animation sheets. Native client checks
 cover machine models, processing and generator animations, empty/full washer water,
 closed panels, face and redstone selection, compact layout, pause/resume messages and Creative/Survival commands.
 The world's preparation and Java helper were exercised on Linux; Windows batch execution
 still needs a Windows machine.
 
 `runGameTestServer` alone enables the fixture pack in `gametest-fixtures`: custom recipe
-edge cases and a non-PowerFactor item added to the rubber tag. Its five JSON files are
+edge cases, an external rubber stand-in and tagged fluids with custom components. Its nine JSON files are
 included in resource validation. Ordinary client and server runs do not register this pack.
+Normal client checks confirm lava stays in its source tank when connected to a steam pipe
+or fuel cell; the same steam-pipe setup transports PowerFactor steam.

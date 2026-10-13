@@ -1,16 +1,27 @@
 package com.powerfactor.device;
 
+import com.powerfactor.PowerFactor;
 import com.powerfactor.registry.ModFluids;
+import java.util.Map;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 /**
- * Fluid storage for the hydrogen machines, seen from outside through one handler: slots that only
- * accept from pipes (inputs) and slots that only give (outputs).
+ * Material-specific storage for hydrogen, oil and steam machines: input-only and output-only slots.
+ * Inputs accept matching common tags and retain the original fluid and components while consumed.
  */
 public class HydrogenTanks extends FluidStacksResourceHandler {
+    private static final Map<String, TagKey<Fluid>> COMMON_FLUIDS = java.util.stream.Stream
+            .of("hydrogen", "crude_oil", "steam", "hot_water", "diesel", "jet_fuel")
+            .collect(java.util.stream.Collectors.toUnmodifiableMap(name -> name,
+                    name -> TagKey.create(Registries.FLUID, Identifier.fromNamespaceAndPath("c", name))));
     private final net.minecraft.world.level.material.Fluid[] fluids;
     private final boolean[] output;
     private final Runnable changed;
@@ -24,12 +35,24 @@ public class HydrogenTanks extends FluidStacksResourceHandler {
     }
 
     public static boolean isHydrogen(FluidResource resource) {
-        return resource.getFluid().isSame(ModFluids.HYDROGEN.get());
+        return matchesFluid(ModFluids.HYDROGEN.get(), resource);
+    }
+
+    public static boolean isSteam(FluidResource resource) {
+        return matchesFluid(ModFluids.STEAM.get(), resource);
+    }
+
+    /** Specific material tags allow external fluids; broad fuel/oil tags are not interchangeable. */
+    private static boolean matchesFluid(Fluid expected, FluidResource resource) {
+        if (resource.getFluid().isSame(expected)) return true;
+        Identifier id = BuiltInRegistries.FLUID.getKey(expected);
+        TagKey<Fluid> tag = id.getNamespace().equals(PowerFactor.MODID) ? COMMON_FLUIDS.get(id.getPath()) : null;
+        return tag != null && resource.getFluid().defaultFluidState().is(tag);
     }
 
     @Override
     public boolean isValid(int index, FluidResource resource) {
-        return resource.getFluid().isSame(fluids[index]);
+        return matchesFluid(fluids[index], resource);
     }
 
     @Override
@@ -49,7 +72,9 @@ public class HydrogenTanks extends FluidStacksResourceHandler {
     /** Machine-internal change, bypassing the in/out rules. */
     public void add(int index, int delta) {
         int now = Math.max(0, amount(index) + delta);
-        set(index, now == 0 ? FluidResource.EMPTY : FluidResource.of(fluids[index]), now);
+        // Consuming a foreign fluid must retain its identity and components until fully drained.
+        FluidResource stored = getResource(index);
+        set(index, now == 0 ? FluidResource.EMPTY : stored.isEmpty() ? FluidResource.of(fluids[index]) : stored, now);
     }
 
     @Override

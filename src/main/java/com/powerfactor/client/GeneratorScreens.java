@@ -249,11 +249,24 @@ public final class GeneratorScreens {
             return (menu.get(DieselMenu.DATA_FLAGS) & 1) != 0;
         }
 
+        private boolean disabled() {
+            return (menu.get(DieselMenu.DATA_FLAGS) & com.powerfactor.generator.FuelCellBlockEntity.FLAG_DISABLED) != 0;
+        }
+
+        private Component status(boolean compact) {
+            String key = disabled() ? "gui.powerfactor.work.disabled"
+                    : menu.unsigned(DieselMenu.DATA_TANK2) == 0 ? "gui.powerfactor.fuel_cell.no_hydrogen"
+                    : online() ? compact ? "gui.powerfactor.fuel_cell.grid_forming" : "gui.powerfactor.fuel_cell.online"
+                    : "gui.powerfactor.fuel_cell.warming";
+            return Component.translatable(key);
+        }
+
+        private int statusColor() { return disabled() ? 0xFF82929A : online() ? 0xFF7CFF8A : 0xFFFFB020; }
+
         @Override
         protected Electrical electrical() {
             return new Electrical(online() ? 1.0 : 0, online() ? 60.0 : 0, menu.get(DieselMenu.DATA_FE), 0, 200,
-                    Component.translatable(online() ? "gui.powerfactor.fuel_cell.online" : "gui.powerfactor.fuel_cell.offline"),
-                    online() ? 0xFF55FF55 : 0xFFFFB020);
+                    status(false), statusColor());
         }
 
         @Override
@@ -273,11 +286,17 @@ public final class GeneratorScreens {
         @Override
         protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
             super.extractLabels(g, xm, ym);
-            g.text(font, Skin.fit(font, Component.translatable(online() ? "gui.powerfactor.fuel_cell.grid_forming" : "gui.powerfactor.fuel_cell.warming"), 76), 70, 23,
-                    online() ? 0xFF7CFF8A : 0xFFFFB020, false);
+            g.text(font, Skin.fit(font, status(true), 76), 70, 23, statusColor(), false);
             g.text(font, menu.get(DieselMenu.DATA_FE) + " FE/t", 70, 34, GuiUtil.FE_COLOR, false);
             g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.fuel_cell.ee", menu.get(DieselMenu.DATA_EE)), 76), 70, 45, GuiUtil.EE_COLOR, false);
             g.text(font, menu.unsigned(DieselMenu.DATA_TANK2) + " mB H\u2082", 70, 56, Skin.TEXT, false);
+        }
+
+        @Override
+        public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
+            super.extractRenderState(g, mouseX, mouseY, a);
+            if (isHovering(70, 45, 76, 9, mouseX, mouseY))
+                g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.fuel_cell.ee.help", menu.get(DieselMenu.DATA_EE)), mouseX, mouseY);
         }
     }
 

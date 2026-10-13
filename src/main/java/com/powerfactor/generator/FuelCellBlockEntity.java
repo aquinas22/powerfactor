@@ -27,6 +27,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class FuelCellBlockEntity extends PushingGenerator implements GridGenerator, MachineAudio.Looping {
     public static final int RATED_FE = 160, TANK = 16_000, WARMUP = 20;
+    public static final int FLAG_DISABLED = 2;
     public static final double RATED_CE = 200, FE_PER_MB = 11.25;
 
     private final HydrogenTanks tank = new HydrogenTanks(TANK, new net.minecraft.world.level.material.Fluid[] {ModFluids.HYDROGEN.get()},
@@ -42,7 +43,8 @@ public class FuelCellBlockEntity extends PushingGenerator implements GridGenerat
                 case DieselMenu.DATA_EE -> (int) Math.round(eeCapacity());
                 case DieselMenu.DATA_TANK2 -> tank.amount(0);
                 case DieselMenu.DATA_STORED -> buffer.getAmountAsInt() / 10;
-                case DieselMenu.DATA_FLAGS -> online() ? 1 : 0;
+                case DieselMenu.DATA_FLAGS -> (online() ? 1 : 0)
+                        | (level instanceof ServerLevel server && !enabled(server, worldPosition) ? FLAG_DISABLED : 0);
                 case DieselMenu.DATA_REDSTONE -> redstoneMode().ordinal();
                 case DieselMenu.DATA_RPM -> warm * 100 / WARMUP;
                 default -> 0;

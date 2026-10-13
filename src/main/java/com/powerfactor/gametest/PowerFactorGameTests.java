@@ -69,6 +69,10 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("rubber_tree_canopy_and_latex", () -> PowerFactorGameTests::rubberTreeCanopy);
         FUNCTIONS.register("wire_coating_uses_common_rubber_tag", () -> PowerFactorGameTests::wireCommonRubber);
         if (Boolean.getBoolean("powerfactor.testFixtures")) {
+            FUNCTIONS.register("tagged_hydrogen_powers_fuel_cell", () -> PowerFactorGameTests::taggedHydrogenFuelCell);
+            FUNCTIONS.register("tagged_steam_pipes_to_turbine", () -> PowerFactorGameTests::taggedSteamTurbine);
+            FUNCTIONS.register("tagged_crude_runs_refinery", () -> PowerFactorGameTests::taggedCrudeRefinery);
+            FUNCTIONS.register("tagged_hot_water_cools", () -> PowerFactorGameTests::taggedHotWaterCooling);
             FUNCTIONS.register("crusher_reserves_whole_output_batch", () -> h -> outputBatch(h, true));
             FUNCTIONS.register("centrifuge_reserves_whole_output_batch", () -> h -> outputBatch(h, false));
             FUNCTIONS.register("recipe_rejects_oversized_product", () -> h -> unavailableProduct(h, false));
@@ -150,7 +154,7 @@ public final class PowerFactorGameTests {
         if (Boolean.getBoolean("powerfactor.testFixtures")) modBus.addListener(PowerFactorGameTests::onFixturePacks);
     }
 
-    /** Extra recipes and an external rubber stand-in are enabled only by runGameTestServer. */
+    /** Extra recipes and external material stand-ins are enabled only by runGameTestServer. */
     private static void onFixturePacks(net.neoforged.neoforge.event.AddPackFindersEvent event) {
         event.addPackFinders(PowerFactor.id("gametest-fixtures"), net.minecraft.server.packs.PackType.SERVER_DATA,
                 net.minecraft.network.chat.Component.literal("PowerFactor GameTest fixtures"),
@@ -162,6 +166,7 @@ public final class PowerFactorGameTests {
         java.util.Set<String> wide = java.util.Set.of("long_transformer_chain", "breaker_splits_grid", "tesla_coil_zaps_zombie",
                 "bare_wire_shocks_coated_does_not", "mixed_copper_cables_share_weakest_grid", "breaker_chain_rejects_mixed_voltages");
         java.util.Set<String> tall = java.util.Set.of("chainsaw_fells_tree", "pumpjack_and_refinery", "multiblock_auto_build", "wind_tower_auto_build",
+                "tagged_steam_pipes_to_turbine", "tagged_crude_runs_refinery", "tagged_hot_water_cools",
                 "steam_plant_recycles_water", "steam_turbine_preserves_backed_up_steam", "steam_structure_ownership", "cooling_tower_needs_open_vent",
                 "grapple_hits_and_reels", "grapple_swing_and_empty_battery", "grapple_releases_broken_anchor", "grapple_tracks_moving_entity", "wingsuit_deploy_and_fold",
                 "rover_climbs_and_pays", "rover_rejects_input_and_stops", "rover_pad_charges_entity", "rover_pack_and_restore", "rover_submerged_stops_motor");
@@ -611,7 +616,23 @@ public final class PowerFactorGameTests {
             helper.assertTrue(crusher.getEnergy().getAmountAsInt() > 500, "crusher got " + crusher.getEnergy().getAmountAsInt() + " FE");
             helper.assertTrue(cell.getTank().amount(0) < 2000, "no hydrogen used");
             helper.assertValueEqual(cell.hertz(), 60.0, "grid-forming at 60 Hz");
-            helper.succeed();
+            cell.setRedstoneMode(com.powerfactor.machine.MachineBlockEntity.RedstoneMode.HIGH);
+            var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+            var menu = (com.powerfactor.generator.DieselMenu.FuelCell) cell.createMenu(19, player.getInventory(), player);
+            helper.assertTrue((menu.get(com.powerfactor.generator.DieselMenu.DATA_FLAGS) & com.powerfactor.generator.FuelCellBlockEntity.FLAG_DISABLED) != 0,
+                    "fuel-cell menu failed to expose redstone shutdown");
+            int hydrogen = cell.getTank().amount(0);
+            helper.runAfterDelay(5, () -> {
+                helper.assertValueEqual(cell.getTank().amount(0), hydrogen, "disabled fuel cell consumed hydrogen");
+                helper.assertTrue((menu.get(com.powerfactor.generator.DieselMenu.DATA_FLAGS) & 1) == 0, "disabled fuel cell remained online");
+                cell.setRedstoneMode(com.powerfactor.machine.MachineBlockEntity.RedstoneMode.IGNORE);
+                helper.runAfterDelay(30, () -> {
+                    helper.assertTrue(cell.getTank().amount(0) < hydrogen, "fuel cell failed to resume after redstone changed");
+                    helper.assertTrue((menu.get(com.powerfactor.generator.DieselMenu.DATA_FLAGS) & com.powerfactor.generator.FuelCellBlockEntity.FLAG_DISABLED) == 0,
+                            "fuel-cell menu retained disabled state after resuming");
+                    helper.succeed();
+                });
+            });
         });
     }
 
@@ -1054,6 +1075,120 @@ public final class PowerFactorGameTests {
         helper.runAfterDelay(690, () -> {
             helper.assertFalse(turbine.formed(), "turbine kept its formed state after a rotor frame was broken");
             helper.assertTrue(turbine.ratedCe() == 0, "broken turbine still supplies a grid");
+            helper.succeed();
+        });
+    }
+
+    /** Lava is a tagged stand-in only inside the fixture pack; components identify its origin. */
+    private static net.neoforged.neoforge.transfer.fluid.FluidResource externalFluid() {
+        var stack = new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.LAVA, 1);
+        var data = new net.minecraft.nbt.CompoundTag(); data.putString("test_origin", "external");
+        stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(data));
+        return net.neoforged.neoforge.transfer.fluid.FluidResource.of(stack);
+    }
+
+    private static void taggedHydrogenFuelCell(GameTestHelper helper) {
+        helper.setBlock(CENTER, ModBlocks.FUEL_CELL.get().defaultBlockState());
+        var cell = helper.getBlockEntity(CENTER, com.powerfactor.generator.FuelCellBlockEntity.class);
+        var crusher = placeCrusher(helper, CENTER.east());
+        var input = helper.getLevel().getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(CENTER), Direction.NORTH);
+        var foreign = externalFluid();
+        try (var tx = Transaction.openRoot()) {
+            helper.assertValueEqual(input.insert(net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER), 10, tx), 0,
+                    "empty fuel cell accepted untagged water");
+            helper.assertValueEqual(input.insert(foreign, 2000, tx), 2000, "external hydrogen rejected");
+        }
+        helper.assertValueEqual(cell.getTank().amount(0), 0, "aborted hydrogen insertion changed tank");
+        try (var tx = Transaction.openRoot()) { input.insert(foreign, 2000, tx); tx.commit(); }
+        try (var tx = Transaction.openRoot()) {
+            helper.assertValueEqual(input.insert(net.neoforged.neoforge.transfer.fluid.FluidResource.of(com.powerfactor.registry.ModFluids.HYDROGEN.get()), 10, tx), 0,
+                    "fuel cell mixed distinct hydrogen fluids");
+            helper.assertValueEqual(input.extract(foreign, 10, tx), 0, "input-only hydrogen tank drained through pipe");
+        }
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(crusher.getEnergy().getAmountAsInt() > 500, "external hydrogen failed to power crusher");
+            helper.assertTrue(cell.getTank().amount(0) > 0 && cell.getTank().amount(0) < 2000, "external hydrogen was not consumed");
+            helper.assertTrue(cell.getTank().getResource(0).equals(foreign), "consumption converted foreign hydrogen or lost components");
+            var saved = (com.powerfactor.generator.FuelCellBlockEntity) net.minecraft.world.level.block.entity.BlockEntity.loadStatic(
+                    cell.getBlockPos(), cell.getBlockState(), cell.saveWithFullMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
+            helper.assertTrue(saved.getTank().getResource(0).equals(foreign) && saved.getTank().amount(0) == cell.getTank().amount(0),
+                    "saved foreign hydrogen lost its identity, components or amount");
+            cell.getTank().add(0, -cell.getTank().amount(0));
+            try (var tx = Transaction.openRoot()) {
+                helper.assertValueEqual(input.insert(net.neoforged.neoforge.transfer.fluid.FluidResource.of(com.powerfactor.registry.ModFluids.HYDROGEN.get()), 10, tx), 10,
+                        "drained tank could not switch hydrogen provider"); tx.commit();
+            }
+            helper.succeed();
+        });
+    }
+
+    private static void taggedSteamTurbine(GameTestHelper helper) {
+        var at = new BlockPos(3, 0, 2); var from = new BlockPos(3, 0, 0);
+        helper.setBlock(at, ModBlocks.STEAM_TURBINE.get().defaultBlockState());
+        formStructure(helper, at, com.powerfactor.steam.SteamTurbineBlockEntity.STRUCTURE);
+        var turbine = helper.getBlockEntity(at, com.powerfactor.steam.SteamTurbineBlockEntity.class);
+        helper.setBlock(from, ModBlocks.FLUID_TANK.get().defaultBlockState());
+        var source = helper.getBlockEntity(from, com.powerfactor.logistics.FluidTankBlockEntity.class);
+        var foreign = externalFluid();
+        try (var tx = Transaction.openRoot()) { source.getTank().insert(foreign, 24000, tx); tx.commit(); }
+        fluidPipe(helper, new BlockPos(3, 0, 1), true, java.util.Map.of(Direction.NORTH, com.powerfactor.logistics.PipeSide.EXTRACT,
+                Direction.SOUTH, com.powerfactor.logistics.PipeSide.INSERT));
+        helper.runAfterDelay(80, () -> {
+            helper.assertTrue(source.fluid().isEmpty(), "steam pipe failed to extract tagged steam");
+            helper.assertTrue(turbine.getTanks().getResource(0).equals(foreign), "steam pipe or turbine changed fluid components");
+        });
+        helper.runAfterDelay(300, () -> {
+            helper.assertTrue(turbine.getEnergy().getAmountAsInt() > 1000, "tagged steam failed to generate energy");
+            helper.assertTrue(turbine.getTanks().amount(0) > 0 && turbine.getTanks().getResource(0).equals(foreign), "consuming steam changed the remaining fluid");
+            helper.assertTrue(turbine.getTanks().amount(1) > 0 && turbine.getTanks().getResource(1).getFluid().isSame(com.powerfactor.registry.ModFluids.HOT_WATER.get()),
+                    "external steam failed to return native condensate");
+            helper.succeed();
+        });
+    }
+
+    private static void taggedCrudeRefinery(GameTestHelper helper) {
+        var at = new BlockPos(3, 0, 1);
+        helper.setBlock(at, ModBlocks.REFINERY.get().defaultBlockState());
+        formStructure(helper, at, com.powerfactor.oil.RefineryBlockEntity.STRUCTURE);
+        var refinery = helper.getBlockEntity(at, com.powerfactor.oil.RefineryBlockEntity.class);
+        var foreign = externalFluid();
+        var input = helper.getLevel().getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(at), Direction.NORTH);
+        try (var tx = Transaction.openRoot()) {
+            helper.assertValueEqual(input.insert(foreign, 1000, tx), 1000, "external crude oil rejected"); tx.commit();
+        }
+        try (var tx = Transaction.openRoot()) {
+            helper.assertValueEqual(refinery.getTanks().insert(1, net.neoforged.neoforge.transfer.fluid.FluidResource.of(com.powerfactor.registry.ModFluids.DIESEL.source().get()), 100, tx), 0,
+                    "refinery output accepted pipe insertion");
+        }
+        try (var tx = Transaction.openRoot()) { refinery.getEnergy().insert(500, tx); tx.commit(); }
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(refinery.formed(), "tagged-oil refinery did not form");
+            helper.assertValueEqual(refinery.getTanks().amount(0), 950, "external crude consumption");
+            helper.assertTrue(refinery.getTanks().getResource(0).equals(foreign), "remaining crude changed identity or components");
+            helper.assertValueEqual(refinery.getTanks().amount(1), 25, "diesel yield from external crude");
+            helper.assertValueEqual(refinery.getTanks().amount(2), 20, "jet-fuel yield from external crude");
+            helper.succeed();
+        });
+    }
+
+    private static void taggedHotWaterCooling(GameTestHelper helper) {
+        var origin = helper.absolutePos(new BlockPos(3, 0, 3));
+        int height = helper.getLevel().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                origin.getX(), origin.getZ()) - origin.getY() + 1;
+        var at = new BlockPos(3, height, 3);
+        helper.setBlock(at, ModBlocks.COOLING_TOWER.get().defaultBlockState());
+        helper.setBlock(at.above(), ModBlocks.COOLING_TOWER.get().defaultBlockState().setValue(com.powerfactor.machine.TallMachineBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+        var cooler = helper.getBlockEntity(at, com.powerfactor.steam.CoolingTowerBlockEntity.class);
+        var foreign = externalFluid();
+        var input = helper.getLevel().getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(at), Direction.NORTH);
+        try (var tx = Transaction.openRoot()) { helper.assertValueEqual(input.insert(foreign, 2000, tx), 2000, "external hot water rejected"); tx.commit(); }
+        feed(helper, cooler.getEnergy(), 1000);
+        helper.runAfterDelay(40, () -> {
+            int hot = cooler.getTanks().amount(0), cold = cooler.getTanks().amount(1);
+            helper.assertTrue(cold > 0 && hot > 0 && hot + cold == 2000, "cooling changed total water or failed to run");
+            helper.assertTrue(cooler.getTanks().getResource(0).equals(foreign), "remaining hot water changed identity or components");
+            helper.assertTrue(cooler.getTanks().getResource(1).getFluid().isSame(net.minecraft.world.level.material.Fluids.WATER), "cooler produced no cold water");
             helper.succeed();
         });
     }
