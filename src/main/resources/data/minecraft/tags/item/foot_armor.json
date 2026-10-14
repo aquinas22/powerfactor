@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "powerfactor:power_boots"
+    "powerfactor:power_boots",
+    "powerfactor:adamantium_boots",
+    "powerfactor:faradaenium_boots",
+    "powerfactor:cortanium_boots",
+    "powerfactor:quantum_boots"
   ]
 }

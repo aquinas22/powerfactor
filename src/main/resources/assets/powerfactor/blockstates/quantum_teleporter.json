@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=north,running=false": {
+      "model": "powerfactor:block/quantum_teleporter"
+    },
+    "facing=north,running=true": {
+      "model": "powerfactor:block/quantum_teleporter_on"
+    },
+    "facing=south,running=false": {
+      "model": "powerfactor:block/quantum_teleporter"
+    },
+    "facing=south,running=true": {
+      "model": "powerfactor:block/quantum_teleporter_on"
+    },
+    "facing=east,running=false": {
+      "model": "powerfactor:block/quantum_teleporter"
+    },
+    "facing=east,running=true": {
+      "model": "powerfactor:block/quantum_teleporter_on"
+    },
+    "facing=west,running=false": {
+      "model": "powerfactor:block/quantum_teleporter"
+    },
+    "facing=west,running=true": {
+      "model": "powerfactor:block/quantum_teleporter_on"
+    }
+  }
+}

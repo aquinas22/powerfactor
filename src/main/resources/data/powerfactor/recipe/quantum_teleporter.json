@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PEP",
+    "QCQ",
+    "AAA"
+  ],
+  "key": {
+    "P": "#c:ender_pearls",
+    "E": "powerfactor:entangled_pair",
+    "Q": "powerfactor:quantum_processor",
+    "C": "powerfactor:capacitor_bank",
+    "A": "#c:ingots/adamantium"
+  },
+  "result": {
+    "id": "powerfactor:quantum_teleporter",
+    "count": 1
+  }
+}

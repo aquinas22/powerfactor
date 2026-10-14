@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AQA",
+    "PXP",
+    "AEA"
+  ],
+  "key": {
+    "A": "#c:ingots/quantum_alloy",
+    "Q": "powerfactor:quantum_processor",
+    "P": "powerfactor:entangled_pair",
+    "X": "powerfactor:quarry",
+    "E": "#c:ender_pearls"
+  },
+  "result": {
+    "id": "powerfactor:quantum_quarry",
+    "count": 1
+  }
+}

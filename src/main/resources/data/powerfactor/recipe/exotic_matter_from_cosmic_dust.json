@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:cosmic_dust",
+    "powerfactor:cosmic_dust",
+    "powerfactor:cosmic_dust",
+    "powerfactor:cosmic_dust",
+    "powerfactor:cosmic_dust",
+    "powerfactor:cosmic_dust",
+    "powerfactor:cosmic_dust",
+    "powerfactor:cosmic_dust",
+    "powerfactor:cosmic_dust"
+  ],
+  "result": {
+    "id": "powerfactor:exotic_matter",
+    "count": 1
+  }
+}

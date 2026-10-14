@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:fluid_cell_64k",
+    "powerfactor:quantum_processor",
+    "powerfactor:exotic_matter",
+    "#c:ingots/quantum_alloy"
+  ],
+  "result": {
+    "id": "powerfactor:quantum_fluid_cell",
+    "count": 1
+  }
+}

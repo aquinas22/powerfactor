@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "powerfactor:power_chestplate"
+    "powerfactor:power_chestplate",
+    "powerfactor:adamantium_chestplate",
+    "powerfactor:faradaenium_chestplate",
+    "powerfactor:cortanium_chestplate",
+    "powerfactor:quantum_chestplate"
   ]
 }

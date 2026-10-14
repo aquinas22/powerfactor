@@ -1,0 +1,376 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "crucible": "powerfactor:block/starforge_crucible",
+    "molten": "powerfactor:block/starforge_crucible_top",
+    "dark": "powerfactor:block/finish_dark",
+    "particle": "powerfactor:block/starforge_frame"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        2,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#dark",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        2,
+        1
+      ],
+      "to": [
+        15,
+        12,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crucible",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#crucible",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#crucible",
+          "uv": [
+            1,
+            4,
+            2.5,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#crucible",
+          "uv": [
+            1,
+            4,
+            2.5,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#crucible",
+          "uv": [
+            1,
+            1,
+            15,
+            2.5
+          ]
+        },
+        "down": {
+          "texture": "#crucible",
+          "uv": [
+            1,
+            1,
+            15,
+            2.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        2,
+        13.5
+      ],
+      "to": [
+        15,
+        12,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crucible",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#crucible",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#crucible",
+          "uv": [
+            13.5,
+            4,
+            15.0,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#crucible",
+          "uv": [
+            13.5,
+            4,
+            15.0,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#crucible",
+          "uv": [
+            1,
+            13.5,
+            15,
+            15.0
+          ]
+        },
+        "down": {
+          "texture": "#crucible",
+          "uv": [
+            1,
+            13.5,
+            15,
+            15.0
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        2,
+        2.5
+      ],
+      "to": [
+        2.5,
+        12,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crucible",
+          "uv": [
+            1,
+            4,
+            2.5,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#crucible",
+          "uv": [
+            1,
+            4,
+            2.5,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#crucible",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#crucible",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#crucible",
+          "uv": [
+            1,
+            2.5,
+            2.5,
+            13.5
+          ]
+        },
+        "down": {
+          "texture": "#crucible",
+          "uv": [
+            1,
+            2.5,
+            2.5,
+            13.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        13.5,
+        2,
+        2.5
+      ],
+      "to": [
+        15,
+        12,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crucible",
+          "uv": [
+            13.5,
+            4,
+            15.0,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#crucible",
+          "uv": [
+            13.5,
+            4,
+            15.0,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#crucible",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#crucible",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#crucible",
+          "uv": [
+            13.5,
+            2.5,
+            15.0,
+            13.5
+          ]
+        },
+        "down": {
+          "texture": "#crucible",
+          "uv": [
+            13.5,
+            2.5,
+            15.0,
+            13.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        2,
+        2.5
+      ],
+      "to": [
+        13.5,
+        10,
+        13.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#molten",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "light_emission": 6
+    }
+  ]
+}

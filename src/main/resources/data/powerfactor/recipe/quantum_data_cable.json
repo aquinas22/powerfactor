@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CCC",
+    "CEC",
+    "CCC"
+  ],
+  "key": {
+    "C": "powerfactor:data_cable",
+    "E": "#c:ender_pearls"
+  },
+  "result": {
+    "id": "powerfactor:quantum_data_cable",
+    "count": 8
+  }
+}

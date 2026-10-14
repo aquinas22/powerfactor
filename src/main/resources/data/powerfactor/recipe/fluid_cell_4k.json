@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:cell_housing",
+    "powerfactor:data_core",
+    "powerfactor:data_core",
+    "minecraft:bucket",
+    "#c:gems/lapis"
+  ],
+  "result": {
+    "id": "powerfactor:fluid_cell_4k",
+    "count": 1
+  }
+}

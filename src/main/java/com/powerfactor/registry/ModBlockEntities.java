@@ -89,7 +89,9 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("casing", () -> new BlockEntityType<>(com.powerfactor.multiblock.CasingBlockEntity::new,
                     ModBlocks.REFINERY_CASING.get(), ModBlocks.DISTILLATION_COLUMN.get(), ModBlocks.PUMPJACK_CASING.get(),
                     ModBlocks.BOILER_CASING.get(), ModBlocks.BOILER_FIREBOX.get(), ModBlocks.STEAM_DRUM.get(), ModBlocks.TURBINE_CASING.get(),
-                    ModBlocks.STEAM_ROTOR.get(), ModBlocks.GENERATOR_MAGNET.get()));
+                    ModBlocks.STEAM_ROTOR.get(), ModBlocks.GENERATOR_MAGNET.get(), ModQuantum.STARFORGE_FRAME.get(), ModQuantum.STARFORGE_PYLON.get(),
+                    ModQuantum.STARFORGE_CRUCIBLE.get(), ModQuantum.FUSION_CASING.get(), ModQuantum.FUSION_MAGNET.get(),
+                    ModQuantum.FUSION_GLASS.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FluidTankBlockEntity>> FLUID_TANK = BLOCK_ENTITIES.register("fluid_tank",
             () -> new BlockEntityType<>(FluidTankBlockEntity::new, ModBlocks.FLUID_TANK.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PumpBlockEntity>> ELECTRIC_PUMP = BLOCK_ENTITIES.register("electric_pump",

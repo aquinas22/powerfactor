@@ -1,0 +1,21 @@
+{
+  "type": "powerfactor:laser_engraving",
+  "inputs": [
+    {
+      "ingredient": "powerfactor:microprocessor",
+      "count": 1
+    },
+    {
+      "ingredient": "powerfactor:entangled_pair",
+      "count": 1
+    }
+  ],
+  "tool": "powerfactor:quantum_photomask",
+  "results": [
+    {
+      "item": "powerfactor:quantum_processor",
+      "count": 1
+    }
+  ],
+  "time": 600
+}

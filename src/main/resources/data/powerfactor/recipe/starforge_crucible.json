@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CNC",
+    "CXC",
+    "CCC"
+  ],
+  "key": {
+    "C": "#c:ingots/cortanium",
+    "N": "minecraft:nether_star",
+    "X": "#c:storage_blocks/adamantium"
+  },
+  "result": {
+    "id": "powerfactor:starforge_crucible",
+    "count": 1
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,formed=false,running=false": {
+      "model": "powerfactor:block/starforge"
+    },
+    "facing=north,formed=true,running=false": {
+      "model": "powerfactor:block/starforge"
+    },
+    "facing=north,formed=false,running=true": {
+      "model": "powerfactor:block/starforge_on"
+    },
+    "facing=north,formed=true,running=true": {
+      "model": "powerfactor:block/starforge_on"
+    },
+    "facing=south,formed=false,running=false": {
+      "model": "powerfactor:block/starforge",
+      "y": 180
+    },
+    "facing=south,formed=true,running=false": {
+      "model": "powerfactor:block/starforge",
+      "y": 180
+    },
+    "facing=south,formed=false,running=true": {
+      "model": "powerfactor:block/starforge_on",
+      "y": 180
+    },
+    "facing=south,formed=true,running=true": {
+      "model": "powerfactor:block/starforge_on",
+      "y": 180
+    },
+    "facing=east,formed=false,running=false": {
+      "model": "powerfactor:block/starforge",
+      "y": 90
+    },
+    "facing=east,formed=true,running=false": {
+      "model": "powerfactor:block/starforge",
+      "y": 90
+    },
+    "facing=east,formed=false,running=true": {
+      "model": "powerfactor:block/starforge_on",
+      "y": 90
+    },
+    "facing=east,formed=true,running=true": {
+      "model": "powerfactor:block/starforge_on",
+      "y": 90
+    },
+    "facing=west,formed=false,running=false": {
+      "model": "powerfactor:block/starforge",
+      "y": 270
+    },
+    "facing=west,formed=true,running=false": {
+      "model": "powerfactor:block/starforge",
+      "y": 270
+    },
+    "facing=west,formed=false,running=true": {
+      "model": "powerfactor:block/starforge_on",
+      "y": 270
+    },
+    "facing=west,formed=true,running=true": {
+      "model": "powerfactor:block/starforge_on",
+      "y": 270
+    }
+  }
+}

@@ -116,6 +116,11 @@ after a machine rotates or an external pipe retains a cached handler.
 Grids respect dynamic input/source roles, including cached endpoints. A battery in grid
 support mode exports power without receiving its own exports back in the same transfer
 loop. Ordinary loads get power before reserve storage charges from the surplus.
+Backup dispatch moves energy directly into ordinary loads after generation has served them.
+This starts cold networks and resumes passive consumers after rewiring. Idle/full networks
+preserve charge, and banks do not discharge into one another. Shared backup stays within
+the wire rating and each bank's total output allowance, paying line heat only when useful
+power moves. Source extraction and recipient insertion commit in the same transaction.
 Disabled and empty banks stop claiming active grid support. The battery GUI shows exact
 FE, including amounts below 1,000, and distinguishes standby, charging, output and disabled
 states. Its control tooltip explains that redstone and remote controls pause grid support;
@@ -167,7 +172,7 @@ python3 tools/check_resources.py
 ./gradlew test build runGameTestServer --offline
 ```
 
-The completed checks passed 54 unit tests and 99 required in-world GameTests. Resource
+The completed checks passed 54 unit tests and 103 required in-world GameTests. Resource
 validation passed for 1,372 JSON resources and 24 animation sheets. Native client checks
 cover machine models, processing and generator animations, empty/full washer water,
 closed panels, face and redstone selection, compact layout, pause/resume messages and Creative/Survival commands.

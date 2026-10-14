@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QRQ",
+    "MTM",
+    "CSC"
+  ],
+  "key": {
+    "Q": "powerfactor:quantum_processor",
+    "R": "powerfactor:railgun",
+    "M": "powerfactor:electric_motor",
+    "T": "powerfactor:plasma_turret",
+    "C": "powerfactor:capacitor_bank",
+    "S": "#c:storage_blocks/cortanium"
+  },
+  "result": {
+    "id": "powerfactor:railgun_turret",
+    "count": 1
+  }
+}

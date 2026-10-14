@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "P H",
+    "HHH",
+    "HHH"
+  ],
+  "key": {
+    "H": "#c:ingots/quantum_alloy",
+    "P": "powerfactor:quantum_processor"
+  },
+  "result": {
+    "id": "powerfactor:quantum_chestplate",
+    "count": 1
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "powerfactor:alloying",
+  "inputs": [
+    {
+      "ingredient": "#c:ingots/adamantium",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:dusts/quantum",
+      "count": 4
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:quantum_alloy_ingot"
+    }
+  ],
+  "time": 600
+}

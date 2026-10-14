@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "RCR",
+    "PMP"
+  ],
+  "key": {
+    "R": "minecraft:repeater",
+    "C": "minecraft:comparator",
+    "P": "#c:plates/steel",
+    "M": "powerfactor:microprocessor"
+  },
+  "result": {
+    "id": "powerfactor:logic_controller",
+    "count": 1
+  }
+}

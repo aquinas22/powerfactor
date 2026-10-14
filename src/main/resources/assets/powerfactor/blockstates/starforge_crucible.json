@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/starforge_crucible"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/starforge_crucible_formed"
+    }
+  }
+}

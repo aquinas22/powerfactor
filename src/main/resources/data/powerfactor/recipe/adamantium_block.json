@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "III",
+    "III",
+    "III"
+  ],
+  "key": {
+    "I": "powerfactor:adamantium_ingot"
+  },
+  "result": {
+    "id": "powerfactor:adamantium_block",
+    "count": 1
+  }
+}

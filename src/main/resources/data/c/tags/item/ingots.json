@@ -9,6 +9,10 @@
     "#c:ingots/aluminum",
     "#c:ingots/steel",
     "#c:ingots/bronze",
-    "#c:ingots/electrum"
+    "#c:ingots/electrum",
+    "#c:ingots/adamantium",
+    "#c:ingots/faradaenium",
+    "#c:ingots/cortanium",
+    "#c:ingots/quantum_alloy"
   ]
 }

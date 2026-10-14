@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "powerfactor:power_leggings"
+    "powerfactor:power_leggings",
+    "powerfactor:adamantium_leggings",
+    "powerfactor:faradaenium_leggings",
+    "powerfactor:cortanium_leggings",
+    "powerfactor:quantum_leggings"
   ]
 }

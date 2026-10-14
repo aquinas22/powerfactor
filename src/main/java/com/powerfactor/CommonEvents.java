@@ -26,6 +26,29 @@ public final class CommonEvents {
     static void onCapabilities(RegisterCapabilitiesEvent event) {
         // Any mod's cables can pull FE from the turbine; hoppers and pipes can feed it coal.
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.COAL_TURBINE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModStorage.CONTROLLER_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModStorage.CONTROLLER_BE.get(), (be, side) -> be.getFluids());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.QUARRY_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.COLLIDER_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.STARFORGE_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModQuantum.STARFORGE_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModQuantum.COLLIDER_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.ZERO_POINT_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModDefense.PLASMA_TURRET_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.TELEPORTER_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.ROBOT_ARM_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.GRAVITY_LIFT_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.SPACE_ELEVATOR_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModQuantum.SPACE_ELEVATOR_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.ORBITAL_COLLECTOR_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModQuantum.ORBITAL_COLLECTOR_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.FUSION_REACTOR_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModQuantum.FUSION_REACTOR_BE.get(), (be, side) -> be.getTank());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModDefense.RAIL_TURRET_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModDefense.SHIELD_GENERATOR_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModQuantum.ZERO_POINT_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModQuantum.QUANTUM_QUARRY_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModStorage.PATTERN_PROVIDER_BE.get(), (be, side) -> be.returnHandler());
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.COAL_TURBINE.get(), (be, side) -> be.getFuelHandler());
 
         // Engines: extract from anywhere (pipes/cables can pull), push only from the plate face.
@@ -47,7 +70,11 @@ public final class CommonEvents {
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CHARGER.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.CHARGER.get(), (be, side) -> be.getItemHandler());
 
-        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.FLUID_TANK.get(), (be, side) -> be.getTank());
+        event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> stack.getCount() == 1
+                ? new net.neoforged.neoforge.transfer.fluid.ItemAccessFluidHandler(access, com.powerfactor.registry.ModComponents.FLUID.get(),
+                        com.powerfactor.logistics.FluidTankBlockEntity.CAPACITY) : null, ModItems.FLUID_TANK.get());
+
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.FLUID_TANK.get(), (be, side) -> be.getReservoir());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.ELECTRIC_PUMP.get(), (be, side) -> be.getTank());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.ELECTRIC_PUMP.get(), (be, side) -> be.getEnergy());
 
@@ -95,6 +122,8 @@ public final class CommonEvents {
             case com.powerfactor.oil.RefineryBlockEntity r -> r.getEnergy();
             case com.powerfactor.oil.PumpjackBlockEntity p -> p.getEnergy();
             case com.powerfactor.steam.SteamTurbineBlockEntity t -> t.getEnergy();
+            case com.powerfactor.quantum.StarforgeBlockEntity f -> f.getEnergy();
+            case com.powerfactor.quantum.FusionReactorBlockEntity r -> r.getEnergy();
             case null, default -> null;
         });
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.CASING.get(), (be, side) -> switch (be.controller()) {
@@ -102,6 +131,7 @@ public final class CommonEvents {
             case com.powerfactor.oil.PumpjackBlockEntity p -> p.getTank();
             case com.powerfactor.steam.SteamBoilerBlockEntity b -> b.getTanks();
             case com.powerfactor.steam.SteamTurbineBlockEntity t -> t.getTanks();
+            case com.powerfactor.quantum.FusionReactorBlockEntity r -> r.getTank();
             case null, default -> null;
         });
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.CASING.get(), (be, side) ->
@@ -146,6 +176,14 @@ public final class CommonEvents {
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.vehicle.RoverEntity.CAPACITY, 8_000),
                 ModItems.ELECTRIC_ROVER.get());
         event.registerEntity(Capabilities.Energy.ENTITY, com.powerfactor.registry.ModEntities.ELECTRIC_ROVER.get(), (rover, side) -> rover.energyHandler());
+        event.registerItem(Capabilities.Energy.ITEM,
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.vehicle.HoverBikeEntity.CAPACITY, 10_000),
+                ModItems.HOVER_BIKE.get());
+        event.registerEntity(Capabilities.Energy.ENTITY, com.powerfactor.registry.ModEntities.HOVER_BIKE.get(), (bike, side) -> bike.energyHandler());
+        event.registerItem(Capabilities.Energy.ITEM,
+                (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.vehicle.MechEntity.CAPACITY, 20_000),
+                ModItems.MECH.get());
+        event.registerEntity(Capabilities.Energy.ENTITY, com.powerfactor.registry.ModEntities.MECH.get(), (mech, side) -> mech.energyHandler());
         event.registerItem(Capabilities.Energy.ITEM,
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), DrillItem.capacity(stack), 5_000),
                 ModItems.ELECTRIC_DRILL.get());

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "  G",
+    "FCF",
+    "RBR"
+  ],
+  "key": {
+    "G": "#c:glass_panes",
+    "F": "#c:ingots/faradaenium",
+    "C": "powerfactor:electric_rover",
+    "R": "powerfactor:thruster_module",
+    "B": "powerfactor:capacitor_bank"
+  },
+  "result": {
+    "id": "powerfactor:hover_bike",
+    "count": 1
+  }
+}

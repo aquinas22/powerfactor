@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "RRR",
+    "FOF",
+    "RRR"
+  ],
+  "key": {
+    "R": "#c:rubbers",
+    "F": "powerfactor:fine_copper_wire",
+    "O": "powerfactor:optical_fiber"
+  },
+  "result": {
+    "id": "powerfactor:data_cable",
+    "count": 12
+  }
+}

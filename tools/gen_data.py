@@ -681,6 +681,12 @@ def lang():
         "gui.powerfactor.work.disabled.help": "Enable the machine or change its redstone control to resume.",
         "gui.powerfactor.work.no_energy.help": "Supply FE. Progress is preserved while power is unavailable.",
     })
+    from machine_finish import generate_lang as finish_lang
+    finish_lang(LANG)
+    from logistics_art import generate_lang as logistics_lang
+    logistics_lang(LANG)
+    from armor_finish import generate_lang as armor_lang
+    armor_lang(LANG)
     write(asset("lang", "en_us.json"), dict(sorted(LANG.items())))
 
 
@@ -1460,7 +1466,8 @@ HANDBOOK = {
         "The 13-block rotor needs clear air in front, so build at least 6 sections high; taller towers catch "
         "stronger wind. It starts at 3 m/s, reaches full output at 12 m/s and pitches its blades to hold it there. "
         "Above 25 m/s, in a storm, it feathers and brakes until the wind drops. Cable it at the foot of the tower.\n\nSynchronous Condenser: a spinning machine that only makes EE. "
-        "Battery Bank: stores 2M FE and automatically holds the grid up when frequency or voltage sags."),
+        "Battery Bank: stores 2M FE. Generation serves machines first; the bank supplies remaining demand, including on a cold or rebuilt grid. "
+        "Idle and full networks do not drain it. Multiple banks share backup duty within the wire's rating, including line losses."),
     "ender": ("Ender Energy",
         "Ender Transmitters turn FE into an EE carrier and beam it to Ender Receivers on the same channel, even across dimensions. The "
         "receiver rectifies it back to FE at 85%.\n\nThere's a catch. Sending makes the transmitter a big reactive load on its own grid, and "
@@ -2618,7 +2625,7 @@ def movement_kit():
         "tooltip.powerfactor.grapple.controls": "G or right-click casts / retracts · Jump releases",
         "tooltip.powerfactor.grapple.swing": "Reels by default · hold Sneak to swing with a fixed cable",
         "tooltip.powerfactor.wingsuit.controls": "U deploys / folds in the air · Sneak airbrakes",
-        "tooltip.powerfactor.wingsuit.momentum": "Dive for speed · look up to trade speed for lift · A/D bank",
+        "tooltip.powerfactor.wingsuit.momentum": "W/S dive / pull up · A/D bank · mouse sets heading",
         "tooltip.powerfactor.wingsuit.socket": "Wear in the chest slot, or fit a Power Chestplate socket",
         "tooltip.powerfactor.armor.wingsuit": "Wingsuit fitted · deploy in the air with U",
         "gui.powerfactor.grapple.ready": "GRAPPLE READY", "gui.powerfactor.grapple.firing": "FIRING",
@@ -2640,7 +2647,7 @@ def movement_kit():
         "Jump releases without killing momentum. Broken anchors, obstructed cables, excessive range, empty batteries or dropping the device release the hook. "
         "Fit Battery, Efficiency or Speed modules in the Upgrade Table to improve the grapple.\n\n"
         "A Wingsuit can be worn directly or fitted into a Power Chestplate socket alongside a jetpack. Press U in the air to deploy or fold. "
-        "Look down to dive for speed; look up to trade speed for lift. A/D bank and Sneak airbrakes. Low airspeed stalls: the wingsuit needs altitude and momentum. "
+        "W/S pitch down/up and A/D bank; mouse look also sets heading. Dive for speed, then pull up to trade momentum for altitude. Sneak airbrakes. Low airspeed stalls: the wingsuit needs altitude and momentum. "
         "Release a swinging or reeling grapple into a glide to keep your speed. A fitted jetpack can regain altitude: Jump folds the wingsuit and resumes thrust. "
         "Wingsuit fabric folds smoothly, stretches between the arms and hips, and has a leg membrane. Its gliding pose, camera bank and wind sound follow motion. "
         "The suit screen controls both flight modes, and the movement HUD shows cable mode, charge, distance and airspeed.")
@@ -2730,6 +2737,52 @@ if __name__ == "__main__":
     workshop_progression_polish()
     from machine_models import generate as polish_models
     polish_models(globals())
+    from machine_finish import generate_models as finish_models
+    finish_models(globals())
+    from logistics_art import generate_models as logistics_models
+    logistics_models(globals())
+    from armor_finish import generate_data as armor_data
+    armor_data(globals())
+    from storage_data import generate as storage_generate
+    storage_generate(globals())
+    from quantum_data import generate as quantum_generate
+    quantum_generate(globals())
+    from quantum_data import quarries
+    quarries(globals())
+    from quantum_data import weapons
+    weapons(globals())
+    from quantum_data import quantum_machines
+    quantum_machines(globals())
+    from quantum_data import starforge
+    starforge(globals())
+    from quantum_data import turrets
+    turrets(globals())
+    from quantum_data import teleporter
+    teleporter(globals())
+    from quantum_data import fusion
+    fusion(globals())
+    from quantum_data import meteors
+    meteors(globals())
+    from quantum_data import quantum_labs
+    quantum_labs(globals())
+    from quantum_data import robot_arm
+    robot_arm(globals())
+    from quantum_data import orbital_collector
+    orbital_collector(globals())
+    from quantum_data import hover_bike
+    hover_bike(globals())
+    from quantum_data import gravity_lift
+    gravity_lift(globals())
+    from quantum_data import logic_controller
+    logic_controller(globals())
+    from quantum_data import mech
+    mech(globals())
+    from quantum_data import space_elevator
+    space_elevator(globals())
+    from quantum_data import shield_generator
+    shield_generator(globals())
     flush_tags()
+    from pipe_routing_data import generate as routing_data
+    routing_data(LANG)
     lang()
     print("data written to", os.path.normpath(ROOT))

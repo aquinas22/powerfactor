@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CFC",
+    "CQC",
+    "CFC"
+  ],
+  "key": {
+    "C": "#c:ingots/cortanium",
+    "F": "#c:ingots/faradaenium",
+    "Q": "powerfactor:quantum_processor"
+  },
+  "result": {
+    "id": "powerfactor:starforge_pylon",
+    "count": 1
+  }
+}

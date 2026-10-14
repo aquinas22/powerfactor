@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "powerfactor:block/orbital_collector_item"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GTG",
+    "QCQ",
+    "AFA"
+  ],
+  "key": {
+    "G": "#c:glass_panes",
+    "T": "powerfactor:quantum_teleporter",
+    "Q": "powerfactor:quantum_processor",
+    "C": "powerfactor:capacitor_bank",
+    "A": "#c:ingots/adamantium",
+    "F": "#c:ingots/faradaenium"
+  },
+  "result": {
+    "id": "powerfactor:orbital_collector",
+    "count": 1
+  }
+}

@@ -26,6 +26,9 @@ public class PowerFactor {
 
     public PowerFactor(IEventBus modBus, ModContainer container) {
         ModMaterials.register();
+        com.powerfactor.registry.ModStorage.init();
+        com.powerfactor.registry.ModQuantum.init();
+        com.powerfactor.registry.ModDefense.init();
         ModConditions.CONDITIONS.register(modBus);
         container.registerConfig(ModConfig.Type.COMMON, PowerFactorCommonConfig.SPEC);
         ModComponents.COMPONENTS.register(modBus);
@@ -36,6 +39,7 @@ public class PowerFactor {
         com.powerfactor.registry.ModEntities.ENTITIES.register(modBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);
         ModMenus.MENUS.register(modBus);
+        com.powerfactor.registry.ModWorldgen.FEATURES.register(modBus);
         ModRecipes.register(modBus);
         ModTabs.TABS.register(modBus);
         container.registerConfig(ModConfig.Type.SERVER, PowerFactorConfig.SPEC);

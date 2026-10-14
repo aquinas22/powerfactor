@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "powerfactor:quantum"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "powerfactor:quantum"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "powerfactor:quantum"
+      }
+    ]
+  }
+}

@@ -52,7 +52,8 @@ public final class WorkshopRenderer implements BlockEntityRenderer<RecipeMachine
         var root = mesh.getRoot();
         root.addOrReplaceChild("press", CubeListBuilder.create()
                 .texOffs(0, 0).addBox(-4, -1, -4, 8, 2, 8)
-                .texOffs(0, 12).addBox(-1.5F, 1, -1.5F, 3, 6, 3), PartPose.ZERO);
+                .texOffs(0, 12).addBox(-1.5F, 1, -1.5F, 3, 6, 3)
+                .texOffs(32, 40).addBox(-2.5F, 1, -2.5F, 5, 1, 5), PartPose.ZERO);
         root.addOrReplaceChild("paddle", CubeListBuilder.create()
                 .texOffs(16, 12).addBox(-0.5F, 0, -0.5F, 1, 9, 1)
                 .texOffs(0, 24).addBox(-5, 1, -0.5F, 10, 2, 1)
@@ -62,11 +63,13 @@ public final class WorkshopRenderer implements BlockEntityRenderer<RecipeMachine
         for (int i = 0; i < 4; i++) {
             centrifuge.addOrReplaceChild("bucket" + i, CubeListBuilder.create()
                     .texOffs(0, 24).addBox(0, -0.5F, -0.5F, 5, 1, 1)
-                    .texOffs(24, 24).addBox(4, -2, -1.5F, 2, 4, 3),
+                    .texOffs(24, 24).addBox(4, -2, -1.5F, 2, 4, 3)
+                    .texOffs(48, 40).addBox(3.8F, 1.4F, -1.7F, 2.4F, 0.6F, 3.4F),
                     PartPose.rotation(0, (float) (i * Math.PI / 2), 0));
         }
         var blade = root.addOrReplaceChild("saw", CubeListBuilder.create()
-                .texOffs(0, 32).addBox(-0.5F, -3.5F, -3.5F, 1, 7, 7), PartPose.ZERO);
+                .texOffs(0, 32).addBox(-0.5F, -3.5F, -3.5F, 1, 7, 7)
+                .texOffs(32, 52).addBox(-1.6F, -1, -1, 3.2F, 2, 2), PartPose.ZERO);
         for (int i = 0; i < 12; i++) {
             blade.addOrReplaceChild("tooth" + i, CubeListBuilder.create().texOffs(20, 32).addBox(-0.65F, 3, -0.5F, 1.3F, 1.5F, 1),
                     PartPose.rotation((float) (i * Math.PI / 6), 0, 0));

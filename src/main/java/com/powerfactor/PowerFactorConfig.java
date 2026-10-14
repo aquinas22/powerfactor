@@ -73,7 +73,63 @@ public final class PowerFactorConfig {
             .define("engines_explode", false);
 
     static {
+        BUILDER.pop().comment("Super-weapons").push("weapons");
+    }
+
+    public static final ModConfigSpec.BooleanValue SUPERWEAPONS_BREAK_BLOCKS = BUILDER
+            .comment("If true, the Singularity Launcher's black hole swallows soft terrain and its collapse breaks blocks like TNT.",
+                    "If false (the default) super-weapons only affect creatures and items.")
+            .define("superweapons_break_blocks", false);
+
+    static {
+        BUILDER.pop().comment("Meteor showers").push("meteors");
+    }
+
+    public static final ModConfigSpec.BooleanValue METEORS = BUILDER
+            .comment("If true, meteors occasionally fall near players in the Overworld at night, carrying Meteorite and exotic ore.")
+            .define("meteors", true);
+    public static final ModConfigSpec.BooleanValue METEOR_CRATERS = BUILDER
+            .comment("If true, meteors blast a small crater (never touching block entities or unbreakable blocks).",
+                    "If false they shatter on impact and scatter their Meteorite and ore as items.")
+            .define("meteor_craters", true);
+    public static final ModConfigSpec.DoubleValue METEOR_CHANCE = BUILDER
+            .comment("Chance, per player per night, that a meteor falls somewhere near them.")
+            .defineInRange("meteor_chance_per_night", 0.3, 0.0, 1.0);
+
+    static {
         BUILDER.pop();
+    }
+
+    public static boolean meteors() {
+        try {
+            return METEORS.getAsBoolean();
+        } catch (IllegalStateException notLoaded) {
+            return false;
+        }
+    }
+
+    public static boolean meteorCraters() {
+        try {
+            return METEOR_CRATERS.getAsBoolean();
+        } catch (IllegalStateException notLoaded) {
+            return true;
+        }
+    }
+
+    public static double meteorChance() {
+        try {
+            return METEOR_CHANCE.getAsDouble();
+        } catch (IllegalStateException notLoaded) {
+            return 0;
+        }
+    }
+
+    public static boolean superweaponsBreakBlocks() {
+        try {
+            return SUPERWEAPONS_BREAK_BLOCKS.getAsBoolean();
+        } catch (IllegalStateException notLoaded) {
+            return false;
+        }
     }
 
     public static final ModConfigSpec SPEC = BUILDER.build();

@@ -7,11 +7,62 @@
     },
     {
       "when": {
+        "up": "pipe"
+      },
+      "apply": {
+        "model": "powerfactor:block/steam_pipe_arm"
+      }
+    },
+    {
+      "when": {
+        "up": "insert"
+      },
+      "apply": {
+        "model": "powerfactor:block/steam_pipe_insert"
+      }
+    },
+    {
+      "when": {
+        "up": "extract"
+      },
+      "apply": {
+        "model": "powerfactor:block/steam_pipe_extract"
+      }
+    },
+    {
+      "when": {
+        "down": "pipe"
+      },
+      "apply": {
+        "model": "powerfactor:block/steam_pipe_arm",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "down": "insert"
+      },
+      "apply": {
+        "model": "powerfactor:block/steam_pipe_insert",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "down": "extract"
+      },
+      "apply": {
+        "model": "powerfactor:block/steam_pipe_extract",
+        "x": 180
+      }
+    },
+    {
+      "when": {
         "north": "pipe"
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_arm",
-        "uvlock": true
+        "x": 90
       }
     },
     {
@@ -20,7 +71,7 @@
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_insert",
-        "uvlock": true
+        "x": 90
       }
     },
     {
@@ -29,37 +80,7 @@
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_extract",
-        "uvlock": true
-      }
-    },
-    {
-      "when": {
-        "east": "pipe"
-      },
-      "apply": {
-        "model": "powerfactor:block/steam_pipe_arm",
-        "uvlock": true,
-        "y": 90
-      }
-    },
-    {
-      "when": {
-        "east": "insert"
-      },
-      "apply": {
-        "model": "powerfactor:block/steam_pipe_insert",
-        "uvlock": true,
-        "y": 90
-      }
-    },
-    {
-      "when": {
-        "east": "extract"
-      },
-      "apply": {
-        "model": "powerfactor:block/steam_pipe_extract",
-        "uvlock": true,
-        "y": 90
+        "x": 90
       }
     },
     {
@@ -68,7 +89,7 @@
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_arm",
-        "uvlock": true,
+        "x": 90,
         "y": 180
       }
     },
@@ -78,7 +99,7 @@
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_insert",
-        "uvlock": true,
+        "x": 90,
         "y": 180
       }
     },
@@ -88,7 +109,7 @@
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_extract",
-        "uvlock": true,
+        "x": 90,
         "y": 180
       }
     },
@@ -98,7 +119,7 @@
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_arm",
-        "uvlock": true,
+        "x": 90,
         "y": 270
       }
     },
@@ -108,7 +129,7 @@
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_insert",
-        "uvlock": true,
+        "x": 90,
         "y": 270
       }
     },
@@ -118,68 +139,38 @@
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_extract",
-        "uvlock": true,
+        "x": 90,
         "y": 270
       }
     },
     {
       "when": {
-        "up": "pipe"
+        "east": "pipe"
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_arm",
-        "uvlock": true,
-        "x": 270
+        "x": 90,
+        "y": 90
       }
     },
     {
       "when": {
-        "up": "insert"
+        "east": "insert"
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_insert",
-        "uvlock": true,
-        "x": 270
+        "x": 90,
+        "y": 90
       }
     },
     {
       "when": {
-        "up": "extract"
+        "east": "extract"
       },
       "apply": {
         "model": "powerfactor:block/steam_pipe_extract",
-        "uvlock": true,
-        "x": 270
-      }
-    },
-    {
-      "when": {
-        "down": "pipe"
-      },
-      "apply": {
-        "model": "powerfactor:block/steam_pipe_arm",
-        "uvlock": true,
-        "x": 90
-      }
-    },
-    {
-      "when": {
-        "down": "insert"
-      },
-      "apply": {
-        "model": "powerfactor:block/steam_pipe_insert",
-        "uvlock": true,
-        "x": 90
-      }
-    },
-    {
-      "when": {
-        "down": "extract"
-      },
-      "apply": {
-        "model": "powerfactor:block/steam_pipe_extract",
-        "uvlock": true,
-        "x": 90
+        "x": 90,
+        "y": 90
       }
     }
   ]

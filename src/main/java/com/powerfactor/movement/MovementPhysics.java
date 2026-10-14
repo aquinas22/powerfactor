@@ -16,6 +16,8 @@ public final class MovementPhysics {
     }
     public record Cable(Vector velocity, double length, boolean taut) {}
     public record Drive(Vector velocity, double yaw) {}
+    /** Blocks/tick, at Minecraft's fixed 20 Hz. These are original tuning values, not JC engine constants. */
+    public static final double MAX_FLIGHT_SPEED = 5.5, MAX_REEL_SPEED = 3.4;
 
     /** Traction preserves inertia, damps lateral slip and brakes before changing drive direction. */
     public static Drive drive(Vector velocity, double yawDegrees, double throttle, double steer, boolean brake, boolean boost, boolean ground) {
@@ -37,38 +39,63 @@ public final class MovementPhysics {
         return new Drive(new Vector(sx * forward + sz * lateral, Math.max(-2.8, velocity.y - 0.08), sz * forward - sx * lateral), yawDegrees % 360);
     }
     public static Cable cable(Vector velocity, Vector toAnchor, double length, boolean reel, double reelMultiplier) {
+        if (!Double.isFinite(length) || !Double.isFinite(reelMultiplier)) throw new IllegalArgumentException("Non-finite cable input");
+        reelMultiplier = Math.clamp(reelMultiplier, 1, 1.6);
         double distance = toAnchor.length();
-        length = Math.max(2.0, length - (reel ? 0.45 * Math.clamp(reelMultiplier, 1, 1.6) : 0));
-        if (distance < 1e-6) return new Cable(velocity.limited(2.2), length, false);
+        // A motor pulls a slack line immediately. Shrink by the motor's actual closing speed,
+        // rather than a slow fixed spool rate which fights the player's accumulated momentum.
+        double radial = distance < 1e-6 ? 0 : velocity.dot(toAnchor.normalized());
+        double reelSpeed = MAX_REEL_SPEED * (.8 + .2 * reelMultiplier);
+        length = Math.max(2.0, length - (reel ? Math.max(.9 * reelMultiplier, Math.min(reelSpeed, radial)) : 0));
+        if (distance < 1e-6) return new Cable(velocity.limited(MAX_FLIGHT_SPEED), length, false);
         Vector normal = toAnchor.normalized();
         boolean taut = distance >= length - 0.15;
-        if (taut) {
-            double radial = velocity.dot(normal);
+        if (taut && !reel) {
             if (radial < 0) velocity = velocity.add(normal.scale(-radial));
             double stretch = Math.max(0, distance - length);
-            velocity = velocity.add(normal.scale(Math.min(0.45, stretch * 0.22 + Math.max(0, normal.y) * 0.08)));
-            if (!reel) velocity = new Vector(velocity.x * 1.045, velocity.y, velocity.z * 1.045);
+            velocity = velocity.add(normal.scale(Math.min(0.38, stretch * 0.2)));
         }
-        if (reel) velocity = velocity.add(normal.scale(0.13 * reelMultiplier));
-        return new Cable(velocity.limited(reel ? 2.2 : 2.4), length, taut);
+        if (reel) {
+            double pull = Math.min(.28 * reelMultiplier, Math.max(0, reelSpeed - radial));
+            // Keep tangent velocity: releasing a fast fly-by carries that speed into the wingsuit.
+            velocity = velocity.add(normal.scale(pull));
+        }
+        return new Cable(velocity.limited(MAX_FLIGHT_SPEED), length, taut);
     }
 
-    /** Complements native collision-aware gliding: controlled turns, dive speed, stall and airbrake. */
+    /** Complete flight step, replacing Elytra aerodynamics while retaining native movement/collisions. */
     public static Vector glide(Vector velocity, double yawDegrees, double pitchDegrees, boolean brake) {
+        if (!Double.isFinite(yawDegrees) || !Double.isFinite(pitchDegrees)) throw new IllegalArgumentException("Non-finite flight input");
+        velocity = velocity.limited(MAX_FLIGHT_SPEED);
         double speed = Math.hypot(velocity.x, velocity.z);
-        double yaw = Math.toRadians(yawDegrees), pitch = Math.toRadians(Math.clamp(pitchDegrees, -85, 85));
-        double turn = brake ? 0.055 : 0.025;
-        double vx = velocity.x + (-Math.sin(yaw) * speed - velocity.x) * turn;
-        double vz = velocity.z + (Math.cos(yaw) * speed - velocity.z) * turn;
-        double vy = velocity.y;
-        if (speed < 0.22) vy -= 0.025;
-        else vy += Math.min(0.014, speed * speed * 0.006) * Math.max(0, Math.cos(pitch));
-        if (pitch > 0.15 && !brake) {
-            double dive = Math.sin(pitch) * 0.022;
-            vx -= Math.sin(yaw) * dive; vz += Math.cos(yaw) * dive;
+        double yaw = Math.toRadians(yawDegrees), pitch = Math.toRadians(Math.clamp(pitchDegrees, -80, 85));
+        double dx = -Math.sin(yaw), dz = Math.cos(yaw);
+        double lift = Math.pow(Math.cos(pitch), 2) * Math.min(1, speed * speed / .25);
+        double vy = velocity.y + .06 * (-1 + .88 * lift);
+        double vx = velocity.x, vz = velocity.z;
+        if (vy < 0 && speed > .02) {
+            double recovery = -vy * .12 * lift;
+            vx += dx * recovery; vz += dz * recovery; vy += recovery;
         }
-        if (brake) { vx *= 0.90; vz *= 0.90; vy = Math.min(vy, -0.08); }
-        return new Vector(vx, Math.max(-1.8, vy), vz).limited(2.4);
+        if (pitch < 0 && speed > .02) {
+            double climb = speed * -Math.sin(pitch) * .045;
+            vx -= dx * climb; vz -= dz * climb; vy += climb * 2.6;
+        }
+        if (pitch > 0 && !brake) {
+            // Dive into the airstream; gravity supplies speed, never a powered forward thrust.
+            vy += (-speed * Math.sin(pitch) - vy) * .035;
+        }
+        double horizontal = Math.hypot(vx, vz);
+        if (horizontal > 1e-6) {
+            double heading = Math.atan2(-vx, vz);
+            double difference = Math.atan2(Math.sin(yaw-heading), Math.cos(yaw-heading));
+            // Bound turn rate, preserving speed through ordinary banks instead of lerp-braking.
+            heading += Math.clamp(difference * .16, -.065, .065);
+            vx = -Math.sin(heading) * horizontal; vz = Math.cos(heading) * horizontal;
+        }
+        double drag = brake ? .9 : .997;
+        if (brake) vy = Math.min(vy, -.08);
+        return new Vector(vx * drag, vy * .995, vz * drag).limited(MAX_FLIGHT_SPEED);
     }
     private MovementPhysics() {}
 }

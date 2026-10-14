@@ -8,10 +8,10 @@ import net.minecraft.util.Util;
 
 /** Unit colors and the vertical FE gauge every machine GUI shares. */
 public final class GuiUtil {
-    public static final int FE_COLOR = 0xFFFF5A4A;
+    public static final int FE_COLOR = Skin.FE;
     public static final int FE_DARK = 0xFF9A2018;
-    public static final int EE_COLOR = 0xFF33E0B0;
-    public static final int CE_COLOR = 0xFFE070FF;
+    public static final int EE_COLOR = Skin.EE;
+    public static final int CE_COLOR = 0xFFC6A1E6;
 
     /** The v2 glass energy tube. */
     public static void energyBar(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int stored, int capacity) {

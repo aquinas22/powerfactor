@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "CCC",
+    "FMS",
+    "PG "
+  ],
+  "key": {
+    "C": "powerfactor:copper_coil",
+    "F": "#c:ingots/faradaenium",
+    "M": "powerfactor:microprocessor",
+    "S": "powerfactor:sensor_chip",
+    "P": "#c:plates/steel",
+    "G": "powerfactor:capacitor"
+  },
+  "result": {
+    "id": "powerfactor:railgun",
+    "count": 1
+  }
+}

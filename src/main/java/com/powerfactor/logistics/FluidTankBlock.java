@@ -21,10 +21,17 @@ import org.jspecify.annotations.Nullable;
 /** A glass-and-steel fluid tank. Use a bucket on it; it keeps its fluid when broken. */
 public class FluidTankBlock extends BaseEntityBlock {
     public static final MapCodec<FluidTankBlock> CODEC = simpleCodec(FluidTankBlock::new);
-    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 16, 15);
+    private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
+    public static final java.util.Map<net.minecraft.core.Direction, net.minecraft.world.level.block.state.properties.BooleanProperty> JOINED =
+            new java.util.EnumMap<>(net.minecraft.core.Direction.class);
+    static { for (var direction : net.minecraft.core.Direction.values()) JOINED.put(direction,
+            net.minecraft.world.level.block.state.properties.BooleanProperty.create(direction.getSerializedName())); }
 
     public FluidTankBlock(Properties properties) {
         super(properties);
+        BlockState state = stateDefinition.any();
+        for (var property : JOINED.values()) state = state.setValue(property, false);
+        registerDefaultState(state);
     }
 
     @Override
@@ -35,6 +42,29 @@ public class FluidTankBlock extends BaseEntityBlock {
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new FluidTankBlockEntity(pos, state);
+    }
+
+    @Override protected void createBlockStateDefinition(net.minecraft.world.level.block.state.StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(JOINED.values().toArray(net.minecraft.world.level.block.state.properties.Property[]::new));
+    }
+    @Override public <T extends BlockEntity> net.minecraft.world.level.block.entity.@Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state,
+            net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        return level.isClientSide() ? null : createTickerHelper(type, com.powerfactor.registry.ModBlockEntities.FLUID_TANK.get(), (l,p,s,t) -> t.serverTick());
+    }
+    @Override protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block,
+            net.minecraft.world.level.redstone.@Nullable Orientation orientation, boolean moved) {
+        if (level.getBlockEntity(pos) instanceof FluidTankBlockEntity tank) tank.markStructureDirty();
+    }
+    @Override public void setPlacedBy(Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.@Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof FluidTankBlockEntity tank) tank.balance();
+    }
+
+    @Override protected ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+        ItemStack stack = new ItemStack(asItem());
+        if (includeData && level.getBlockEntity(pos) instanceof FluidTankBlockEntity tank && !tank.fluid().isEmpty())
+            stack.set(com.powerfactor.registry.ModComponents.FLUID.get(), net.neoforged.neoforge.fluids.SimpleFluidContent.copyOf(tank.fluid()));
+        return stack;
     }
 
     @Override
@@ -49,6 +79,7 @@ public class FluidTankBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof FluidTankBlockEntity tank) {
+            tank.balance();
             player.sendOverlayMessage(tank.describe());
         }
         return InteractionResult.SUCCESS;

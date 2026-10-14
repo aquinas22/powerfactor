@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PAP",
+    "ALA",
+    "PAP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "A": "#c:ingots/adamantium",
+    "L": "minecraft:obsidian"
+  },
+  "result": {
+    "id": "powerfactor:fusion_casing",
+    "count": 8
+  }
+}

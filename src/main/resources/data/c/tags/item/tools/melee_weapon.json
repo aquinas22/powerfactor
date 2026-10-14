@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:adamantium_sword",
+    "powerfactor:faradaenium_sword",
+    "powerfactor:cortanium_sword",
+    "powerfactor:quantum_sword"
+  ]
+}

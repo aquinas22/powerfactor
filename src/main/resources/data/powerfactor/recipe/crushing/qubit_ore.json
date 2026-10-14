@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "powerfactor:qubit_ore",
+  "result": {
+    "item": "powerfactor:qubit_crystal",
+    "count": 3
+  },
+  "bonus": [
+    {
+      "item": "powerfactor:quantum_dust",
+      "chance": 0.5
+    }
+  ]
+}

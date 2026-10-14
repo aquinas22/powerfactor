@@ -15,6 +15,9 @@ public class PumpScreen extends ProcessingScreen<PumpMenu> {
         super(menu, inventory, title, PowerFactor.id("textures/gui/electric_pump.png"), -100, -100, 17, true, ModBlocks.ELECTRIC_PUMP.get());
     }
 
+    @Override protected float progressValue() { return (float) menu.tank() / PumpBlockEntity.CAPACITY; }
+    @Override protected Component cycleLabel() { return Component.translatable("gui.powerfactor.console.tank", Math.round(progressValue() * 100)); }
+
     @Override
     protected void extractMain(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         super.extractMain(g, mouseX, mouseY);

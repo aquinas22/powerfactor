@@ -1,6 +1,16 @@
 {
   "replace": false,
   "values": [
-    "powerfactor:electric_drill"
+    "powerfactor:electric_drill",
+    "powerfactor:adamantium_pickaxe",
+    "powerfactor:faradaenium_pickaxe",
+    "powerfactor:cortanium_pickaxe",
+    "powerfactor:quantum_pickaxe",
+    "powerfactor:diamond_paxel",
+    "powerfactor:netherite_paxel",
+    "powerfactor:adamantium_paxel",
+    "powerfactor:faradaenium_paxel",
+    "powerfactor:cortanium_paxel",
+    "powerfactor:quantum_paxel"
   ]
 }

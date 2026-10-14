@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "#c:gems/qubit",
+  "result": {
+    "item": "powerfactor:quantum_dust",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "item": "powerfactor:quantum_dust",
+      "chance": 0.25
+    }
+  ]
+}

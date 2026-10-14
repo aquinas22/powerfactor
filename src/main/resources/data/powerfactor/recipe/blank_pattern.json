@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QGQ",
+    "GSG",
+    "PPP"
+  ],
+  "key": {
+    "Q": "#c:gems/quartz",
+    "G": "#c:dusts/glowstone",
+    "S": "powerfactor:silicon_wafer",
+    "P": "#c:plates/aluminum"
+  },
+  "result": {
+    "id": "powerfactor:blank_pattern",
+    "count": 4
+  }
+}

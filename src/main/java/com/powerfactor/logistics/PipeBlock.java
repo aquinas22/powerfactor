@@ -138,6 +138,13 @@ public class PipeBlock extends BaseEntityBlock {
         return refresh(context.getLevel(), context.getClickedPos(), defaultBlockState());
     }
 
+    @Override public void setPlacedBy(Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.@Nullable LivingEntity placer,
+            net.minecraft.world.item.ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        // Packed components are applied after getStateForPlacement; update arms using their saved mask.
+        level.setBlock(pos, refresh(level, pos, level.getBlockState(pos)), Block.UPDATE_ALL);
+    }
+
     @Override
     protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
             BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
@@ -163,6 +170,20 @@ public class PipeBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos) instanceof PipeBlockEntity pipe)) {
             return InteractionResult.PASS;
         }
+        if (!level.mayInteract(player, pos) || player.isSpectator() || player.blockActionRestricted(level, pos, player.gameMode())) return InteractionResult.FAIL;
+        if (player.isShiftKeyDown() && player.getMainHandItem().isEmpty()) {
+            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
+                serverPlayer.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inventory, owner) -> new PipeMenu(id, inventory, pipe, side),
+                        Component.translatable("gui.powerfactor.pipe.routing")), buffer -> { buffer.writeBlockPos(pos); buffer.writeEnum(side); });
+            return InteractionResult.SUCCESS;
+        }
+        return cycleSide(level, pos, player, side) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+    }
+
+    public boolean cycleSide(Level level, BlockPos pos, Player player, Direction side) {
+        if (!(level.getBlockEntity(pos) instanceof PipeBlockEntity pipe) || !level.mayInteract(player, pos)
+                || player.isSpectator() || player.blockActionRestricted(level, pos, player.gameMode())) return false;
+        BlockState state = level.getBlockState(pos);
         PipeSide current = state.getValue(SIDES.get(side));
         String key;
         if (pipe.disabled(side)) {
@@ -175,7 +196,7 @@ public class PipeBlock extends BaseEntityBlock {
             pipe.setDisabled(side, true);
             key = "message.powerfactor.pipe.disabled";
         } else {
-            return InteractionResult.PASS;
+            return false;
         }
         BlockState now = level.getBlockState(pos);
         level.setBlock(pos, refresh(level, pos, now), Block.UPDATE_ALL);
@@ -186,7 +207,7 @@ public class PipeBlock extends BaseEntityBlock {
             level.setBlock(other, ((PipeBlock) otherState.getBlock()).refresh(level, other, otherState), Block.UPDATE_ALL);
         }
         player.sendOverlayMessage(Component.translatable(key, Component.translatable("direction.powerfactor." + side.getSerializedName())));
-        return InteractionResult.SUCCESS;
+        return true;
     }
 
     /** The arm a click landed on: the axis the hit point sticks out along most, else the clicked face. */

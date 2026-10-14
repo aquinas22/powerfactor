@@ -46,7 +46,7 @@ public final class GrappleHookEntity extends Projectile {
     public boolean anchored() { return entityData.get(ANCHORED); }
     public float ropeLength() { return entityData.get(LENGTH); }
     public int targetId() { return entityData.get(TARGET); }
-    @Override public boolean shouldRenderAtSqrDistance(double distance) { return distance < 128 * 128; }
+    @Override public boolean shouldRenderAtSqrDistance(double distance) { return distance < 160 * 160; }
     @Override public void tick() {
         super.tick();
         if (level().isClientSide()) return;
@@ -112,7 +112,7 @@ public final class GrappleHookEntity extends Projectile {
     }
     @Override protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input); entityData.set(ANCHORED, input.getBooleanOr("anchored", false));
-        entityData.set(LENGTH, Math.clamp(input.getFloatOr("rope", 0), 0, 80)); age = input.getIntOr("age", 0);
+        entityData.set(LENGTH, Math.clamp(input.getFloatOr("rope", 0), 0, (float) GrappleItem.RANGE + 8)); age = input.getIntOr("age", 0);
         blockAnchor = input.getLong("anchor").map(BlockPos::of).orElse(null);
     }
 }

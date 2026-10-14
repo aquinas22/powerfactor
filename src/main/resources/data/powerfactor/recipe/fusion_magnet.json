@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "FCF",
+    "CIC",
+    "FCF"
+  ],
+  "key": {
+    "F": "#c:ingots/faradaenium",
+    "C": "minecraft:copper_block",
+    "I": "#c:storage_blocks/iron"
+  },
+  "result": {
+    "id": "powerfactor:fusion_magnet",
+    "count": 2
+  }
+}

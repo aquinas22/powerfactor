@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AQA",
+    "PCP",
+    "AQA"
+  ],
+  "key": {
+    "A": "#c:ingots/quantum_alloy",
+    "Q": "powerfactor:quantum_processor",
+    "P": "powerfactor:crafting_processor",
+    "C": "powerfactor:entangled_pair"
+  },
+  "result": {
+    "id": "powerfactor:quantum_crafting_processor",
+    "count": 1
+  }
+}

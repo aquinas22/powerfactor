@@ -3,8 +3,7 @@
   "random_sequence": "powerfactor:blocks/item_pipe",
   "pools": [
     {
-      "rolls": 1.0,
-      "bonus_rolls": 0.0,
+      "rolls": 1,
       "conditions": [
         {
           "condition": "minecraft:survives_explosion"
@@ -13,7 +12,16 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "powerfactor:item_pipe"
+          "name": "powerfactor:item_pipe",
+          "functions": [
+            {
+              "function": "minecraft:copy_components",
+              "source": "block_entity",
+              "include": [
+                "powerfactor:pipe_settings"
+              ]
+            }
+          ]
         }
       ]
     }

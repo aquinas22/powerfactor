@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 /** Wrist launcher with an electric reel. The cable keeps tangential momentum when released. */
 public final class GrappleItem extends PoweredItem {
     public static final int CAPACITY = 120000, FIRE_FE = 100, REEL_FE = 12;
-    public static final double RANGE = 64;
+    public static final double RANGE = 96;
     public GrappleItem(Properties properties) { super(properties); }
     @Override public int capacity() { return CAPACITY; }
     public static double reelMultiplier(ItemStack stack) { return 1 + 0.2 * ToolModules.count(stack, DrillModule.Type.SPEED); }

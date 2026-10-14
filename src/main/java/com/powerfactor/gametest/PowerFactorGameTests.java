@@ -38,6 +38,13 @@ public final class PowerFactorGameTests {
     private static final int MAX_TICKS = 800;
 
     static {
+        StorageGameTests.register(FUNCTIONS);
+        QuantumGameTests.register(FUNCTIONS);
+        FUNCTIONS.register("reservoir_joins_balances_and_rolls_back", () -> PowerFactorGameTests::reservoirJoinsAndBalances);
+        FUNCTIONS.register("reservoir_break_split_metadata_and_rejoin", () -> PowerFactorGameTests::reservoirBreakSplitAndRejoin);
+        FUNCTIONS.register("reservoir_preserves_distinct_components", () -> PowerFactorGameTests::reservoirRejectsMixedComponents);
+        FUNCTIONS.register("reservoir_saves_and_reloads", () -> PowerFactorGameTests::reservoirSaveAndReload);
+        FUNCTIONS.register("portable_reservoir_capability_rolls_back", () -> PowerFactorGameTests::portableReservoirCapability);
         FUNCTIONS.register("turbine_burns_coal_and_exports_fe", () -> PowerFactorGameTests::burnsCoalAndExportsFe);
         FUNCTIONS.register("turbine_redstone_shutdown", () -> PowerFactorGameTests::redstoneShutdown);
         FUNCTIONS.register("crusher_doubles_raw_iron", () -> PowerFactorGameTests::crusherDoublesRawIron);
@@ -67,6 +74,10 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("battery_reports_committed_external_transfers", () -> PowerFactorGameTests::batteryTransferReadings);
         FUNCTIONS.register("battery_support_does_not_recharge_itself", () -> PowerFactorGameTests::batterySupportRouting);
         FUNCTIONS.register("battery_charges_from_surplus", () -> PowerFactorGameTests::batterySurplusCharging);
+        FUNCTIONS.register("battery_starts_cold_grid", () -> PowerFactorGameTests::batteryColdGrid);
+        FUNCTIONS.register("battery_preserves_charge_on_idle_grid", () -> PowerFactorGameTests::batteryIdleGrid);
+        FUNCTIONS.register("battery_backup_shares_wire_limit_and_losses", () -> PowerFactorGameTests::batterySharedBackup);
+        FUNCTIONS.register("battery_powers_passive_consumer_and_rebuilt_grid", () -> PowerFactorGameTests::batteryPassiveBackup);
         FUNCTIONS.register("redstone_direct_selection", () -> PowerFactorGameTests::redstoneDirectSelection);
         FUNCTIONS.register("wire_cutters_respect_permissions", () -> PowerFactorGameTests::wireCuttersPermissions);
         FUNCTIONS.register("wrench_respects_protection_mods", () -> PowerFactorGameTests::wrenchRespectsProtection);
@@ -86,6 +97,12 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("arc_furnace_makes_steel", () -> PowerFactorGameTests::arcFurnaceMakesSteel);
         FUNCTIONS.register("ore_washer_triples", () -> PowerFactorGameTests::oreWasherTriples);
         FUNCTIONS.register("item_pipe_moves_items", () -> PowerFactorGameTests::itemPipeMovesItems);
+        FUNCTIONS.register("pipe_sorts_and_overflows_by_priority", () -> PowerFactorGameTests::pipeSortsAndOverflows);
+        FUNCTIONS.register("pipe_exact_filter_and_packing", () -> PowerFactorGameTests::pipeExactFilterAndPacking);
+        FUNCTIONS.register("pipe_fluid_filter_preserves_components", () -> PowerFactorGameTests::pipeFluidFilter);
+        FUNCTIONS.register("pipe_ghost_menu_cannot_move_items", () -> PowerFactorGameTests::pipeGhostMenu);
+        FUNCTIONS.register("pipe_disabled_link_stops_transfer", () -> PowerFactorGameTests::pipeDisabledLink);
+        FUNCTIONS.register("pipe_equal_priority_is_fair", () -> PowerFactorGameTests::pipeEqualPriority);
         FUNCTIONS.register("pump_fills_tank_through_pipe", () -> PowerFactorGameTests::pumpFillsTank);
         FUNCTIONS.register("ender_link_beams_power", () -> PowerFactorGameTests::enderLinkBeamsPower);
         FUNCTIONS.register("long_transformer_chain", () -> PowerFactorGameTests::transformerChain);
@@ -132,6 +149,7 @@ public final class PowerFactorGameTests {
         FUNCTIONS.register("grapple_tracks_moving_entity", () -> PowerFactorGameTests::grappleMovingAnchor);
         FUNCTIONS.register("grapple_requires_device_and_preserves_release", () -> PowerFactorGameTests::grappleDeviceAndRelease);
         FUNCTIONS.register("wingsuit_deploy_and_fold", () -> PowerFactorGameTests::wingsuitDeployAndFold);
+        FUNCTIONS.register("wingsuit_native_flight_and_launch_momentum", () -> PowerFactorGameTests::wingsuitNativeFlight);
         FUNCTIONS.register("wingsuit_dual_armor_socket", () -> PowerFactorGameTests::wingsuitArmorSocket);
         FUNCTIONS.register("wingsuit_equipment_change_and_restore", () -> PowerFactorGameTests::wingsuitChangeAndRestore);
         FUNCTIONS.register("rover_climbs_and_pays", () -> PowerFactorGameTests::roverClimbsAndPays);
@@ -167,20 +185,140 @@ public final class PowerFactorGameTests {
 
     private static void onRegisterTests(RegisterGameTestsEvent event) {
         var env = event.registerEnvironment(PowerFactor.id("default"));
-        java.util.Set<String> wide = java.util.Set.of("long_transformer_chain", "breaker_splits_grid", "tesla_coil_zaps_zombie",
-                "bare_wire_shocks_coated_does_not", "mixed_copper_cables_share_weakest_grid", "breaker_chain_rejects_mixed_voltages");
-        java.util.Set<String> tall = java.util.Set.of("chainsaw_fells_tree", "pumpjack_and_refinery", "multiblock_auto_build", "wind_tower_auto_build",
+        java.util.Set<String> wide = new java.util.HashSet<>(StorageGameTests.NAMES);
+        wide.addAll(QuantumGameTests.NAMES);
+        wide.addAll(java.util.Set.of("long_transformer_chain", "breaker_splits_grid", "tesla_coil_zaps_zombie",
+                "bare_wire_shocks_coated_does_not", "mixed_copper_cables_share_weakest_grid", "breaker_chain_rejects_mixed_voltages"));
+        java.util.Set<String> tall = new java.util.HashSet<>(QuantumGameTests.TALL);
+        tall.addAll(java.util.Set.of("chainsaw_fells_tree", "pumpjack_and_refinery", "multiblock_auto_build", "wind_tower_auto_build",
                 "tagged_steam_pipes_to_turbine", "tagged_crude_runs_refinery", "tagged_hot_water_cools",
                 "steam_plant_recycles_water", "steam_turbine_preserves_backed_up_steam", "steam_structure_ownership", "cooling_tower_needs_open_vent",
                 "grapple_hits_and_reels", "grapple_swing_and_empty_battery", "grapple_releases_broken_anchor", "grapple_tracks_moving_entity", "wingsuit_deploy_and_fold",
-                "rover_climbs_and_pays", "rover_rejects_input_and_stops", "rover_pad_charges_entity", "rover_pack_and_restore", "rover_submerged_stops_motor");
+                "rover_climbs_and_pays", "rover_rejects_input_and_stops", "rover_pad_charges_entity", "rover_pack_and_restore", "rover_submerged_stops_motor",
+                "pipe_sorts_and_overflows_by_priority", "pipe_exact_filter_and_packing", "pipe_fluid_filter_preserves_components",
+                "pipe_ghost_menu_cannot_move_items", "pipe_disabled_link_stops_transfer", "pipe_equal_priority_is_fair"));
         for (var fn : FUNCTIONS.getEntries()) {
-            String structure = fn.getId().getPath().equals("rubber_tree_canopy_and_latex") ? "empty_11x16x11"
+            String structure = fn.getId().getPath().equals("rubber_tree_canopy_and_latex") || fn.getId().getPath().equals("quantum_lab_generates")
+                    ? "empty_11x16x11"
                     : wide.contains(fn.getId().getPath()) ? "empty_9x3x3" : tall.contains(fn.getId().getPath()) || fn.getId().getPath().startsWith("wind_base_") ? "empty_7x8x7"
                     : "empty_3x3x3";
             event.registerTest(fn.getId(), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, fn.getId()),
                     new TestData<>(env, PowerFactor.id(structure), MAX_TICKS, 0, true)));
         }
+    }
+
+    private static com.powerfactor.logistics.FluidTankBlockEntity reservoirCell(GameTestHelper h, BlockPos pos) {
+        h.setBlock(pos, ModBlocks.FLUID_TANK.get());
+        return h.getBlockEntity(pos, com.powerfactor.logistics.FluidTankBlockEntity.class);
+    }
+    private static net.neoforged.neoforge.transfer.fluid.FluidResource markedWater(String grade) {
+        var data = new net.minecraft.nbt.CompoundTag(); data.putString("grade", grade);
+        return net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER)
+                .with(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(data));
+    }
+    private static void reservoirJoinsAndBalances(GameTestHelper h) {
+        var a = reservoirCell(h, new BlockPos(0,1,1));
+        var b = reservoirCell(h, new BlockPos(1,1,1));
+        var c = reservoirCell(h, new BlockPos(0,2,1));
+        var port = h.getLevel().getCapability(Capabilities.Fluid.BLOCK, c.getBlockPos(), Direction.UP);
+        var water = markedWater("A");
+        try (var tx = Transaction.openRoot()) {
+            h.assertValueEqual(port.insert(water, 50000, tx), 50000, "joined capacity inaccessible from top port"); tx.commit();
+        }
+        a.balance();
+        h.assertValueEqual(port.getCapacityAsInt(0,water),96000,"joined capacity wrong");
+        h.assertValueEqual(a.fluid().getAmount(),25000,"bottom layer was not level");
+        h.assertValueEqual(b.fluid().getAmount(),25000,"neighbor layer lost fluid");
+        h.assertTrue(c.fluid().isEmpty(),"liquid floated into the upper layer");
+        h.assertTrue(a.getBlockState().getValue(com.powerfactor.logistics.FluidTankBlock.JOINED.get(Direction.UP))
+                && a.getBlockState().getValue(com.powerfactor.logistics.FluidTankBlock.JOINED.get(Direction.EAST)),"tank shell did not join");
+        try (var tx = Transaction.openRoot()) { h.assertValueEqual(port.insert(water,10000,tx),10000,"simulation refused free capacity"); }
+        h.assertValueEqual(port.getAmountAsInt(0),50000,"aborted insertion created fluid");
+        try (var tx = Transaction.openRoot()) { h.assertValueEqual(port.extract(water,40000,tx),40000,"top port could not drain lower cells"); }
+        h.assertValueEqual(port.getAmountAsInt(0),50000,"aborted drain lost fluid");
+        try (var tx = Transaction.openRoot()) { h.assertValueEqual(port.extract(water,40000,tx),40000,"committed drain failed"); tx.commit(); }
+        a.balance();
+        h.assertTrue(a.getTank().getResource(0).equals(water) && b.getTank().getResource(0).equals(water),"component-bearing water changed");
+        h.assertValueEqual(a.fluid().getAmount()+b.fluid().getAmount(),10000,"balancing lost or created fluid");h.succeed();
+    }
+    private static void reservoirBreakSplitAndRejoin(GameTestHelper h) {
+        var left=reservoirCell(h,new BlockPos(0,1,1));
+        var middle=reservoirCell(h,new BlockPos(1,1,1));
+        var right=reservoirCell(h,new BlockPos(2,1,1));
+        h.setBlock(new BlockPos(1,0,1),Blocks.STONE);
+        var water=markedWater("portable");
+        var cached=middle.getReservoir();
+        try(var tx=Transaction.openRoot()){h.assertValueEqual(cached.insert(water,72000,tx),72000,"bulk fill failed");tx.commit();}
+        middle.balance();
+        h.getLevel().destroyBlock(middle.getBlockPos(),true);
+        var entities=h.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                new net.minecraft.world.phys.AABB(middle.getBlockPos()).inflate(.9),entity->entity.getItem().is(ModItems.FLUID_TANK.get()));
+        h.assertValueEqual(entities.size(),1,"breaking a reservoir cell did not produce exactly one tank");
+        var drop=entities.getFirst().getItem().copy();entities.getFirst().discard();
+        var content=drop.get(com.powerfactor.registry.ModComponents.FLUID.get());
+        h.assertTrue(content!=null && content.copy().getAmount()==24000
+                && net.neoforged.neoforge.transfer.fluid.FluidResource.of(content.copy()).equals(water),"drop lost fluid metadata");
+        var ops=h.getLevel().registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE);
+        var saved=net.minecraft.world.item.ItemStack.CODEC.encodeStart(ops,drop).getOrThrow();
+        var restored=net.minecraft.world.item.ItemStack.CODEC.parse(ops,saved).getOrThrow();
+        left.balance();right.balance();
+        h.assertValueEqual(left.getReservoir().getAmountAsInt(0)+right.getReservoir().getAmountAsInt(0)+content.copy().getAmount(),72000,"split duplicated or lost contents");
+        try(var tx=Transaction.openRoot()){h.assertValueEqual(cached.insert(water,1000,tx),0,"removed tank accepted fluid through a cached handler");tx.commit();}
+        var player=h.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.setPos(middle.getBlockPos().getX()+.5,middle.getBlockPos().getY()+1,middle.getBlockPos().getZ()+1.5);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,restored);
+        var hit=new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(middle.getBlockPos().below()).add(0,.5,0),
+                Direction.UP,middle.getBlockPos().below(),false);
+        restored.useOn(new net.minecraft.world.item.context.UseOnContext(player,net.minecraft.world.InteractionHand.MAIN_HAND,hit));
+        h.assertTrue(h.getBlockState(new BlockPos(1,1,1)).is(ModBlocks.FLUID_TANK.get()),"packed tank placement failed");
+        h.assertValueEqual(left.getReservoir().getAmountAsInt(0),72000,"rejoining lost the saved tank fluid");
+        h.assertTrue(player.getMainHandItem().isEmpty(),"survival placement kept the filled item");h.succeed();
+    }
+    private static void reservoirRejectsMixedComponents(GameTestHelper h) {
+        var a=reservoirCell(h,new BlockPos(0,1,1));var b=reservoirCell(h,new BlockPos(1,1,1));
+        var first=markedWater("A");var second=markedWater("B");
+        a.getTank().set(0,first,12000);b.getTank().set(0,second,8000);a.balance();b.balance();
+        h.assertValueEqual(a.getReservoir().getCapacityAsInt(0,first),32000,"different components shared a reservoir");
+        h.assertFalse(a.getBlockState().getValue(com.powerfactor.logistics.FluidTankBlock.JOINED.get(Direction.EAST)),"incompatible fluids lost their divider");
+        try(var tx=Transaction.openRoot()){h.assertValueEqual(a.getReservoir().insert(second,1000,tx),0,"different fluid components were mixed");tx.commit();}
+        try(var tx=Transaction.openRoot()){h.assertValueEqual(a.getReservoir().extract(first,12000,tx),12000,"drain failed");tx.commit();}
+        a.balance();b.balance();
+        h.assertValueEqual(b.getReservoir().getAmountAsInt(0),8000,"joining a drained tank changed fluid quantity");
+        h.assertValueEqual(b.getReservoir().getCapacityAsInt(0,second),64000,"drained tank did not join its neighbor");
+        h.assertTrue(a.getTank().getResource(0).equals(second) && b.getTank().getResource(0).equals(second),"joined fluid lost components");h.succeed();
+    }
+    private static void portableReservoirCapability(GameTestHelper h) {
+        var stack=new net.minecraft.world.item.ItemStack(ModItems.FLUID_TANK.get());
+        var access=net.neoforged.neoforge.transfer.access.ItemAccess.forStack(stack);
+        var handler=access.getCapability(Capabilities.Fluid.ITEM);var fluid=markedWater("item-capability");
+        h.assertTrue(handler!=null,"portable tank has no fluid capability");
+        try(var tx=Transaction.openRoot()){h.assertValueEqual(handler.insert(fluid,40000,tx),32000,"portable capacity wrong");}
+        h.assertValueEqual(handler.getAmountAsInt(0),0,"aborted portable fill persisted metadata");
+        try(var tx=Transaction.openRoot()){h.assertValueEqual(handler.insert(fluid,27000,tx),27000,"portable fill failed");tx.commit();}
+        h.assertTrue(handler.getResource(0).equals(fluid),"portable capability lost fluid components");
+        try(var tx=Transaction.openRoot()){h.assertValueEqual(handler.extract(fluid,17000,tx),17000,"portable drain failed");}
+        h.assertValueEqual(handler.getAmountAsInt(0),27000,"aborted portable drain lost fluid");
+        try(var tx=Transaction.openRoot()){h.assertValueEqual(handler.extract(fluid,17000,tx),17000,"committed portable drain failed");tx.commit();}
+        h.assertValueEqual(handler.getAmountAsInt(0),10000,"portable remainder wrong");
+        var restored=access.getResource().toStack(access.getAmount());
+        var metadata=restored.get(com.powerfactor.registry.ModComponents.FLUID.get());
+        h.assertTrue(metadata!=null && metadata.copy().getAmount()==10000
+                && net.neoforged.neoforge.transfer.fluid.FluidResource.of(metadata.copy()).equals(fluid),"portable component metadata disagrees with capability");
+        h.succeed();
+    }
+    private static void reservoirSaveAndReload(GameTestHelper h) {
+        var a=reservoirCell(h,new BlockPos(0,1,1));var b=reservoirCell(h,new BlockPos(0,2,1));var fluid=markedWater("reload");
+        try(var tx=Transaction.openRoot()){a.getReservoir().insert(fluid,47000,tx);tx.commit();}a.balance();
+        var registries=h.getLevel().registryAccess();
+        for(var cell:java.util.List.of(a,b)) {
+            var restored=net.minecraft.world.level.block.entity.BlockEntity.loadStatic(cell.getBlockPos(),cell.getBlockState(),cell.saveWithFullMetadata(registries),registries);
+            h.assertTrue(restored instanceof com.powerfactor.logistics.FluidTankBlockEntity,"saved reservoir could not load");
+            h.getLevel().setBlockEntity(restored);
+        }
+        var restored=h.getBlockEntity(new BlockPos(0,1,1),com.powerfactor.logistics.FluidTankBlockEntity.class);restored.balance();
+        h.assertTrue(restored.getReservoir().getResource(0).equals(fluid),"reload lost fluid components");
+        h.assertValueEqual(restored.getReservoir().getAmountAsInt(0),47000,"reload changed reservoir quantity");
+        h.assertValueEqual(restored.fluid().getAmount(),32000,"reload changed the lower liquid level");h.succeed();
     }
 
     // ------------------------------------------------------------------ helpers
@@ -462,6 +600,181 @@ public final class PowerFactorGameTests {
             helper.assertTrue(crusher.slot(CrusherBlockEntity.INPUT).is(Items.RAW_IRON), "crusher got " + crusher.slot(CrusherBlockEntity.INPUT));
             helper.assertTrue(chest.getItem(0).getCount() < 10, "chest still has " + chest.getItem(0));
             helper.succeed();
+        });
+    }
+
+    private static net.minecraft.world.level.block.entity.ChestBlockEntity pipeChest(GameTestHelper h, BlockPos pos) {
+        h.setBlock(pos, Blocks.CHEST);
+        return h.getBlockEntity(pos, net.minecraft.world.level.block.entity.ChestBlockEntity.class);
+    }
+    private static com.powerfactor.logistics.PipeBlockEntity routingPipe(GameTestHelper h, BlockPos pos,
+            com.powerfactor.logistics.PipeBlock block, Direction source, Direction... outputs) {
+        var state = block.defaultBlockState().setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(source), com.powerfactor.logistics.PipeSide.EXTRACT);
+        for (Direction side : outputs) state = state.setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(side), com.powerfactor.logistics.PipeSide.INSERT);
+        h.setBlock(pos, state);
+        return h.getBlockEntity(pos, com.powerfactor.logistics.PipeBlockEntity.class);
+    }
+    private static int count(net.minecraft.world.Container container, Item item) {
+        int total = 0;
+        for (int i = 0; i < container.getContainerSize(); i++) if (container.getItem(i).is(item)) total += container.getItem(i).getCount();
+        return total;
+    }
+
+    private static void pipeSortsAndOverflows(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        var source = pipeChest(h, pos.west());
+        var iron = pipeChest(h, pos.north());
+        var dirt = pipeChest(h, pos.south());
+        var overflow = pipeChest(h, pos.east());
+        source.setItem(0, new net.minecraft.world.item.ItemStack(Items.IRON_INGOT, 40));
+        source.setItem(1, new net.minecraft.world.item.ItemStack(Items.DIRT, 30));
+        source.setItem(2, new net.minecraft.world.item.ItemStack(Items.DIAMOND, 10));
+        for (int i = 1; i < iron.getContainerSize(); i++) iron.setItem(i, new net.minecraft.world.item.ItemStack(Items.STONE, 64));
+        iron.setItem(0, new net.minecraft.world.item.ItemStack(Items.IRON_INGOT, 63));
+        var pipe = routingPipe(h, pos, ModBlocks.ITEM_PIPE.get(), Direction.WEST, Direction.NORTH, Direction.SOUTH, Direction.EAST);
+        pipe.setSample(Direction.WEST, 0, new net.minecraft.world.item.ItemStack(Items.IRON_INGOT));
+        pipe.setSample(Direction.WEST, 1, new net.minecraft.world.item.ItemStack(Items.DIRT));
+        pipe.setSample(Direction.NORTH, 0, new net.minecraft.world.item.ItemStack(Items.IRON_INGOT));
+        pipe.setFace(Direction.NORTH, pipe.face(Direction.NORTH).withPriority(5));
+        pipe.setSample(Direction.SOUTH, 0, new net.minecraft.world.item.ItemStack(Items.DIRT));
+        pipe.setSample(Direction.EAST, 0, new net.minecraft.world.item.ItemStack(Items.DIRT));
+        pipe.setFace(Direction.EAST, pipe.face(Direction.EAST).withMode(2).withPriority(-5));
+        h.runAfterDelay(70, () -> {
+            h.assertValueEqual(count(iron, Items.IRON_INGOT), 64, "high priority fills its last slot first");
+            h.assertValueEqual(count(overflow, Items.IRON_INGOT), 39, "remaining iron overflows without loss");
+            h.assertValueEqual(count(dirt, Items.DIRT), 30, "dirt follows its own destination filter");
+            h.assertValueEqual(count(overflow, Items.DIRT), 0, "block list must reject dirt");
+            h.assertValueEqual(count(source, Items.DIAMOND), 10, "extract filter preserves unlisted items");
+            h.assertValueEqual(count(source, Items.IRON_INGOT) + count(source, Items.DIRT), 0, "all allowed source items moved");
+            h.succeed();
+        });
+    }
+
+    private static void pipeExactFilterAndPacking(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        var source = pipeChest(h, pos.west()); var target = pipeChest(h, pos.east());
+        var gradeA = new net.minecraft.world.item.ItemStack(Items.IRON_INGOT, 7);
+        gradeA.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Grade A"));
+        var gradeB = gradeA.copyWithCount(9);
+        gradeB.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Grade B"));
+        source.setItem(0, gradeA); source.setItem(1, gradeB);
+        var pipe = routingPipe(h, pos, ModBlocks.ITEM_PIPE.get(), Direction.WEST, Direction.EAST);
+        pipe.setSample(Direction.EAST, 0, gradeA);
+        pipe.setFace(Direction.EAST, pipe.face(Direction.EAST).withExact(true).withPriority(4));
+        pipe.setDisabled(Direction.UP, true);
+        var saved = (com.powerfactor.logistics.PipeBlockEntity) net.minecraft.world.level.block.entity.BlockEntity.loadStatic(
+                pipe.getBlockPos(), pipe.getBlockState(), pipe.saveWithFullMetadata(h.getLevel().registryAccess()), h.getLevel().registryAccess());
+        h.assertTrue(saved.disabled(Direction.UP) && saved.face(Direction.EAST).exact() && saved.face(Direction.EAST).priority() == 4,
+                "all face settings and disabled mask survive saving");
+        h.assertValueEqual(saved.face(Direction.EAST).samples().get(0).getCount(), 1, "saved sample is a one-item reference");
+        h.assertTrue(saved.settings().equals(pipe.settings()) && saved.settings().hashCode() == pipe.settings().hashCode(),
+                "identical saved configurations compare by reference contents so packed pipes can stack");
+        var drops = net.minecraft.world.level.block.Block.getDrops(pipe.getBlockState(), h.getLevel(), pipe.getBlockPos(), pipe);
+        h.assertValueEqual(drops.size(), 1, "packing drops a pipe, not its ghost samples");
+        var packed = drops.getFirst();
+        h.assertTrue(packed.has(com.powerfactor.registry.ModComponents.PIPE_SETTINGS.get()), "packed pipe must carry routing components");
+        var placed = new com.powerfactor.logistics.PipeBlockEntity(pipe.getBlockPos(), pipe.getBlockState());
+        placed.applyComponentsFromItemStack(packed);
+        h.assertTrue(placed.disabled(Direction.UP) && placed.accepts(Direction.EAST, ItemResource.of(gradeA))
+                && !placed.accepts(Direction.EAST, ItemResource.of(gradeB)), "packing and replacing preserves exact references");
+        h.runAfterDelay(40, () -> {
+            h.assertValueEqual(count(target, Items.IRON_INGOT), 7, "only matching components moved");
+            h.assertValueEqual(count(source, Items.IRON_INGOT), 9, "nonmatching named iron stays at the source");
+            h.succeed();
+        });
+    }
+
+    private static void pipeFluidFilter(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        h.setBlock(pos.west(), ModBlocks.FLUID_TANK.get()); h.setBlock(pos.east(), ModBlocks.FLUID_TANK.get());
+        var source = h.getBlockEntity(pos.west(), com.powerfactor.logistics.FluidTankBlockEntity.class);
+        var target = h.getBlockEntity(pos.east(), com.powerfactor.logistics.FluidTankBlockEntity.class);
+        var custom = new net.minecraft.nbt.CompoundTag(); custom.putString("origin", "filtered water");
+        var resource = net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER)
+                .with(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(custom));
+        source.getTank().set(0, resource, 3000);
+        var pipe = routingPipe(h, pos, ModBlocks.FLUID_PIPE.get(), Direction.WEST, Direction.EAST);
+        h.assertFalse(pipe.setSample(Direction.EAST, 0, new net.minecraft.world.item.ItemStack(Items.IRON_INGOT)), "fluid filters reject dry items");
+        pipe.setSample(Direction.EAST, 0, new net.minecraft.world.item.ItemStack(Items.LAVA_BUCKET));
+        h.runAfterDelay(30, () -> {
+            h.assertValueEqual(source.getTank().getAmountAsInt(0), 3000, "rejected fluid stays intact");
+            h.assertTrue(target.fluid().isEmpty(), "wrong fluid list must prevent insertion");
+            var reference = new net.minecraft.world.item.ItemStack(ModBlocks.FLUID_TANK.get());
+            reference.set(com.powerfactor.registry.ModComponents.FLUID.get(), net.neoforged.neoforge.fluids.SimpleFluidContent.copyOf(resource.toStack(1000)));
+            pipe.setSample(Direction.EAST, 0, reference);
+            pipe.setFace(Direction.EAST, pipe.face(Direction.EAST).withExact(true));
+        });
+        h.runAfterDelay(80, () -> {
+            h.assertValueEqual(target.getTank().getAmountAsInt(0), 3000, "matching liquid was fully transported");
+            h.assertTrue(target.getTank().getResource(0).equals(resource), "filtering never changes fluid identity or components");
+            h.assertTrue(source.fluid().isEmpty(), "source drained exactly the inserted amount");
+            h.succeed();
+        });
+    }
+
+    private static void pipeGhostMenu(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        var pipe = routingPipe(h, pos, ModBlocks.ITEM_PIPE.get(), Direction.WEST, Direction.EAST);
+        var player = h.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.setPos(net.minecraft.world.phys.Vec3.atCenterOf(pipe.getBlockPos()));
+        player.getInventory().setItem(9, new net.minecraft.world.item.ItemStack(Items.IRON_INGOT, 23));
+        var menu = new com.powerfactor.logistics.PipeMenu(1, player.getInventory(), pipe, Direction.EAST);
+        menu.quickMoveStack(player, 4);
+        h.assertValueEqual(player.getInventory().getItem(9).getCount(), 23, "shift-copy preserves real inventory");
+        h.assertValueEqual(menu.slots.get(0).getItem().getCount(), 1, "ghost uses a single reference");
+        menu.setCarried(new net.minecraft.world.item.ItemStack(Items.DIAMOND, 3));
+        menu.clicked(0, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, player);
+        h.assertValueEqual(menu.getCarried().getCount(), 3, "copying a carried stack consumes nothing");
+        for (var input : java.util.List.of(net.minecraft.world.inventory.ContainerInput.THROW, net.minecraft.world.inventory.ContainerInput.CLONE,
+                net.minecraft.world.inventory.ContainerInput.SWAP, net.minecraft.world.inventory.ContainerInput.PICKUP_ALL,
+                net.minecraft.world.inventory.ContainerInput.QUICK_CRAFT)) menu.clicked(0, 0, input, player);
+        h.assertValueEqual(menu.getCarried().getCount(), 3, "special clicks cannot duplicate ghost items");
+        menu.clicked(0, 1, net.minecraft.world.inventory.ContainerInput.PICKUP, player);
+        h.assertTrue(menu.slots.get(0).getItem().isEmpty(), "right-click clears a reference");
+        h.assertTrue(!pipe.accepts(Direction.EAST, ItemResource.of(Items.DIAMOND)), "empty allow list fails closed");
+        h.assertFalse(menu.clickMenuButton(player, 999), "unknown actions rejected");
+        player.setPos(player.position().add(100, 0, 0));
+        menu.clicked(1, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, player);
+        h.assertTrue(pipe.face(Direction.EAST).samples().get(1).isEmpty(), "distant clients cannot edit the pipe");
+        h.succeed();
+    }
+
+    private static void pipeDisabledLink(GameTestHelper h) {
+        BlockPos pos = new BlockPos(2, 1, 3), next = pos.east();
+        var source = pipeChest(h, pos.west()); var target = pipeChest(h, next.east());
+        source.setItem(0, new net.minecraft.world.item.ItemStack(Items.DIRT, 16));
+        var pipeBlock = ModBlocks.ITEM_PIPE.get();
+        h.setBlock(pos, pipeBlock.defaultBlockState().setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(Direction.WEST), com.powerfactor.logistics.PipeSide.EXTRACT)
+                .setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(Direction.EAST), com.powerfactor.logistics.PipeSide.PIPE));
+        h.setBlock(next, pipeBlock.defaultBlockState().setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(Direction.WEST), com.powerfactor.logistics.PipeSide.PIPE)
+                .setValue(com.powerfactor.logistics.PipeBlock.SIDES.get(Direction.EAST), com.powerfactor.logistics.PipeSide.INSERT));
+        var second = h.getBlockEntity(next, com.powerfactor.logistics.PipeBlockEntity.class);
+        second.setDisabled(Direction.WEST, true); // stale connection state may exist while neighbour updates run
+        h.runAfterDelay(30, () -> {
+            h.assertValueEqual(count(source, Items.DIRT), 16, "disabled neighbour link must stop the network immediately");
+            h.assertValueEqual(count(target, Items.DIRT), 0, "no target insertion across a disabled link");
+            second.setDisabled(Direction.WEST, false);
+        });
+        h.runAfterDelay(60, () -> {
+            h.assertValueEqual(count(target, Items.DIRT), 16, "reenabling reciprocal links resumes transport");
+            h.succeed();
+        });
+    }
+
+    private static void pipeEqualPriority(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        var source = pipeChest(h, pos.west()); var first = pipeChest(h, pos.north());
+        var second = pipeChest(h, pos.south()); var overflow = pipeChest(h, pos.east());
+        source.setItem(0, new net.minecraft.world.item.ItemStack(Items.DIRT, 64));
+        var pipe = routingPipe(h, pos, ModBlocks.ITEM_PIPE.get(), Direction.WEST, Direction.NORTH, Direction.SOUTH, Direction.EAST);
+        pipe.setFace(Direction.NORTH, pipe.face(Direction.NORTH).withPriority(3));
+        pipe.setFace(Direction.SOUTH, pipe.face(Direction.SOUTH).withPriority(3));
+        pipe.setFace(Direction.EAST, pipe.face(Direction.EAST).withPriority(-5));
+        h.runAfterDelay(60, () -> {
+            h.assertValueEqual(count(first, Items.DIRT), 32, "equal-priority destinations rotate fairly");
+            h.assertValueEqual(count(second, Items.DIRT), 32, "both peers get equal batches");
+            h.assertValueEqual(count(overflow, Items.DIRT), 0, "lower priority is reserved for overflow");
+            h.succeed();
         });
     }
 
@@ -756,6 +1069,113 @@ public final class PowerFactorGameTests {
                     "surplus power did not reach battery");
             helper.assertValueEqual(pad.getEnergy().getAmountAsInt(), pad.getEnergy().getCapacityAsInt(), "full ordinary load lost power");
             helper.succeed();
+        });
+    }
+
+    private static void batteryColdGrid(GameTestHelper helper) {
+        var at = CENTER.west();
+        helper.setBlock(at, ModBlocks.BATTERY_BANK.get().defaultBlockState());
+        var battery = helper.getBlockEntity(at, com.powerfactor.generator.BatteryBankBlockEntity.class);
+        try (var tx = Transaction.openRoot()) { for (int i = 0; i < 32; i++) battery.getEnergy().insert(1024, tx); tx.commit(); }
+        var crusher = placeCrusher(helper, CENTER.east()); insert(helper, CENTER.east(), Items.RAW_IRON, 2);
+        placeWire(helper, CENTER);
+        var grid = com.powerfactor.grid.GridManager.get(helper.getLevel()).gridAt(helper.absolutePos(CENTER));
+        helper.assertFalse(grid.energized(), "new backup grid started live without a transfer");
+        helper.runAfterDelay(260, () -> {
+            helper.assertTrue(crusher.slot(1).getCount() > 0, "charged bank failed to start a cold grid and process iron");
+            helper.assertTrue(battery.getEnergy().getAmountAsInt() < 32768, "backup work used no stored energy");
+            helper.succeed();
+        });
+    }
+
+    private static void batteryIdleGrid(GameTestHelper helper) {
+        var at = CENTER.west();
+        helper.setBlock(at, ModBlocks.BATTERY_BANK.get().defaultBlockState());
+        var battery = helper.getBlockEntity(at, com.powerfactor.generator.BatteryBankBlockEntity.class);
+        try (var tx = Transaction.openRoot()) { battery.getEnergy().insert(1024, tx); tx.commit(); }
+        placeWire(helper, CENTER);
+        var grid = com.powerfactor.grid.GridManager.get(helper.getLevel()).gridAt(helper.absolutePos(CENTER));
+        helper.runAfterDelay(60, () -> {
+            helper.assertValueEqual(battery.getEnergy().getAmountAsInt(), 1024, "idle network drained stored charge");
+            helper.assertFalse(grid.energized(), "battery energized an idle network without a useful transfer");
+            BlockPos peerPos = CENTER.east(), padPos = CENTER.north();
+            helper.setBlock(peerPos, ModBlocks.BATTERY_BANK.get().defaultBlockState());
+            var peer = helper.getBlockEntity(peerPos, com.powerfactor.generator.BatteryBankBlockEntity.class);
+            helper.setBlock(padPos, ModBlocks.CHARGING_PAD.get().defaultBlockState());
+            var pad = helper.getBlockEntity(padPos, com.powerfactor.device.ChargingPadBlockEntity.class);
+            try (var tx = Transaction.openRoot()) {
+                peer.getEnergy().insert(512, tx);
+                for (int i = 0; i <= com.powerfactor.device.ChargingPadBlockEntity.CAPACITY / com.powerfactor.device.ChargingPadBlockEntity.INTAKE; i++)
+                    pad.getEnergy().insert(com.powerfactor.device.ChargingPadBlockEntity.INTAKE, tx);
+                tx.commit();
+            }
+            helper.runAfterDelay(30, () -> {
+                helper.assertValueEqual(battery.getEnergy().getAmountAsInt(), 1024, "full consumers drained first battery");
+                helper.assertValueEqual(peer.getEnergy().getAmountAsInt(), 512, "storage-to-storage loop changed peer charge");
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void batterySharedBackup(GameTestHelper helper) {
+        BlockPos a = CENTER.west(), b = CENTER.south(), consumer = CENTER.east();
+        helper.setBlock(a, ModBlocks.BATTERY_BANK.get().defaultBlockState());
+        helper.setBlock(b, ModBlocks.BATTERY_BANK.get().defaultBlockState());
+        helper.setBlock(consumer, ModBlocks.CHARGING_PAD.get().defaultBlockState());
+        var first = helper.getBlockEntity(a, com.powerfactor.generator.BatteryBankBlockEntity.class);
+        var second = helper.getBlockEntity(b, com.powerfactor.generator.BatteryBankBlockEntity.class);
+        var pad = helper.getBlockEntity(consumer, com.powerfactor.device.ChargingPadBlockEntity.class);
+        try (var tx = Transaction.openRoot()) {
+            for (int i = 0; i < 32; i++) { first.getEnergy().insert(1024, tx); second.getEnergy().insert(1024, tx); }
+            tx.commit();
+        }
+        placeWire(helper, CENTER);
+        long start = helper.getLevel().getGameTime();
+        final int[] previous = {0};
+        helper.onEachTick(() -> {
+            if (helper.getLevel().getGameTime() - start < 20) {
+                int amount = pad.getEnergy().getAmountAsInt();
+                helper.assertTrue(amount - previous[0] <= com.powerfactor.grid.CableTier.COPPER.ratingCe, "backup exceeded wire rating in one tick");
+                previous[0] = amount;
+            }
+        });
+        helper.runAfterDelay(20, () -> {
+            int leftA = first.getEnergy().getAmountAsInt(), leftB = second.getEnergy().getAmountAsInt();
+            int spentA = 32768 - leftA, spentB = 32768 - leftB;
+            helper.assertTrue(spentA > 0 && spentB > 0 && Math.abs(spentA - spentB) < 512, "backup dispatch was not shared fairly");
+            helper.assertTrue(spentA + spentB > pad.getEnergy().getAmountAsInt(), "backup ignored line heat or created energy");
+            try (var tx = Transaction.openRoot()) {
+                for (int i = 0; i <= com.powerfactor.device.ChargingPadBlockEntity.CAPACITY / com.powerfactor.device.ChargingPadBlockEntity.INTAKE; i++)
+                    pad.getEnergy().insert(com.powerfactor.device.ChargingPadBlockEntity.INTAKE, tx);
+                tx.commit();
+            }
+            helper.runAfterDelay(5, () -> {
+                helper.assertValueEqual(first.getEnergy().getAmountAsInt(), leftA, "full load spent first battery on heat alone");
+                helper.assertValueEqual(second.getEnergy().getAmountAsInt(), leftB, "full load spent second battery on heat alone");
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void batteryPassiveBackup(GameTestHelper helper) {
+        var at = CENTER.west(); var consumer = CENTER.east();
+        helper.setBlock(at, ModBlocks.BATTERY_BANK.get().defaultBlockState());
+        helper.setBlock(consumer, ModBlocks.CHARGING_PAD.get().defaultBlockState());
+        var battery = helper.getBlockEntity(at, com.powerfactor.generator.BatteryBankBlockEntity.class);
+        try (var tx = Transaction.openRoot()) { for (int i = 0; i < 32; i++) battery.getEnergy().insert(1024, tx); tx.commit(); }
+        placeWire(helper, CENTER);
+        var drop = helper.spawnItem(ModItems.ELECTRIC_DRILL.get(), new net.minecraft.world.phys.Vec3(consumer.getX() + 0.5, consumer.getY() + 0.2, consumer.getZ() + 0.5));
+        helper.runAfterDelay(30, () -> {
+            int charged = com.powerfactor.item.PoweredItem.energy(drop.getItem());
+            int stored = battery.getEnergy().getAmountAsInt();
+            helper.assertTrue(charged > 500, "battery never built a cold network for a passive charging pad");
+            helper.setBlock(CENTER, Blocks.AIR);
+            helper.runAfterDelay(5, () -> placeWire(helper, CENTER));
+            helper.runAfterDelay(30, () -> {
+                helper.assertTrue(com.powerfactor.item.PoweredItem.energy(drop.getItem()) > charged, "battery failed to resume after wire rebuilt");
+                helper.assertTrue(battery.getEnergy().getAmountAsInt() < stored, "resumed charging spent no stored power");
+                helper.succeed();
+            });
         });
     }
 
@@ -1678,6 +2098,28 @@ public final class PowerFactorGameTests {
         player.setDeltaMovement(0.4, 0.3, 0.7);
         com.powerfactor.movement.GrappleServer.release(player);
         helper.assertTrue(player.getDeltaMovement().equals(new net.minecraft.world.phys.Vec3(0.4, 0.3, 0.7)), "release destroyed momentum");
+        helper.succeed();
+    }
+    private static void wingsuitNativeFlight(GameTestHelper helper) {
+        var player = movementPlayer(helper, CENTER.above(4));
+        var velocity = new net.minecraft.world.phys.Vec3(.6, .2, 3.8);
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new net.minecraft.world.item.ItemStack(ModItems.WINGSUIT.get()));
+        player.setDeltaMovement(velocity); player.setXRot(-25); player.setYRot(15);
+        com.powerfactor.movement.WingsuitServer.toggle(player);
+        helper.assertTrue(player.getDeltaMovement().equals(velocity), "deployment erased grapple launch speed");
+        try {
+            var method = net.minecraft.world.entity.LivingEntity.class.getDeclaredMethod("updateFallFlyingMovement", net.minecraft.world.phys.Vec3.class);
+            method.setAccessible(true);
+            var actual = (net.minecraft.world.phys.Vec3)method.invoke(player,velocity);
+            var expected = com.powerfactor.movement.GrappleHookEntity.vec(com.powerfactor.movement.MovementPhysics.glide(
+                    com.powerfactor.movement.GrappleHookEntity.vector(velocity),15,-25,false));
+            helper.assertTrue(actual.distanceTo(expected)<1e-8, "native travel did not use the wingsuit forces exactly once");
+            player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.item.ItemStack.EMPTY);
+            var vanilla = (net.minecraft.world.phys.Vec3)method.invoke(player,velocity);
+            helper.assertTrue(vanilla.distanceTo(expected)>.01, "wingsuit forces leaked into vanilla flight");
+        } catch (ReflectiveOperationException e) { throw new IllegalStateException("Native flight validation failed",e); }
+        player.setDeltaMovement(velocity);com.powerfactor.movement.WingsuitServer.fold(player);
+        helper.assertTrue(player.getDeltaMovement().equals(velocity), "folding erased launch momentum");
         helper.succeed();
     }
     private static void wingsuitDeployAndFold(GameTestHelper helper) {

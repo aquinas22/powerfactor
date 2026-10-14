@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GGG",
+    "DMD",
+    "PCP"
+  ],
+  "key": {
+    "G": "#c:glass_panes",
+    "D": "powerfactor:data_core",
+    "M": "powerfactor:microprocessor",
+    "P": "#c:plates/steel",
+    "C": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:grid_terminal",
+    "count": 1
+  }
+}

@@ -1,9 +1,7 @@
 package com.powerfactor.generator;
 
-import com.powerfactor.api.Bus;
-import com.powerfactor.grid.BusLocator;
-import com.powerfactor.grid.PowerGrid;
 import com.powerfactor.machine.MachineBlockEntity;
+import com.powerfactor.grid.GridManager;
 import com.powerfactor.registry.ModBlockEntities;
 import com.powerfactor.scada.ScadaReading;
 import net.minecraft.core.BlockPos;
@@ -22,12 +20,11 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Grid battery. Soaks up surplus FE like any load; when its grid sags (frequency under 59.7 Hz or
- * voltage under 0.95 pu) it pushes power back in to hold it up. Inverter-fed: FE only.
+ * Grid battery. Charges from surplus generation and supplies remaining machine demand through the
+ * grid's transactional dispatch. Inverter-fed: FE only, with no idle drain or storage-to-storage loop.
  */
 public class BatteryBankBlockEntity extends MachineBlockEntity implements com.powerfactor.api.GridStorage {
     public static final int CAPACITY = 2_000_000, RATE = 1_024;
@@ -40,6 +37,7 @@ public class BatteryBankBlockEntity extends MachineBlockEntity implements com.po
     };
     private int lastIn, lastOut;
     private int previous;
+    private int gridOut;
     private boolean supporting;
     private float shownCharge, previousCharge;
     private boolean visualsInitialized;
@@ -75,17 +73,17 @@ public class BatteryBankBlockEntity extends MachineBlockEntity implements com.po
     @Override
     public void serverTick(ServerLevel level, BlockPos pos, BlockState state) {
         int now = energy.getAmountAsInt();
-        lastIn = Math.max(0, now - previous);
-        lastOut = Math.max(0, previous - now);
-        Bus bus = BusLocator.find(level, pos);
-        supporting = now > 0 && enabled(level, pos) && bus instanceof PowerGrid grid && grid.energized()
-                && (grid.hertz() < 59.7 || grid.volts() < 0.95);
-        if (supporting && bus instanceof PowerGrid grid) {
-            try (Transaction tx = Transaction.openRoot()) {
-                int moved = grid.handler().insert(Math.min(RATE, now), tx);
-                tx.commit();
-                energy.set(now - moved);
-                lastOut += moved;
+        int externalChange = now - previous + gridOut;
+        lastIn = Math.max(0, externalChange);
+        lastOut = Math.max(0, -externalChange) + gridOut;
+        supporting = gridOut > 0 && now > 0 && enabled(level, pos);
+        gridOut = 0;
+        // Build new/reconnected networks even when passive consumers never query their wire.
+        if (now > 0 && enabled(level, pos)) {
+            GridManager grids = GridManager.get(level);
+            for (var face : net.minecraft.core.Direction.values()) {
+                BlockPos adjacent = pos.relative(face);
+                if (level.isLoaded(adjacent)) grids.gridAt(adjacent);
             }
         }
         previous = energy.getAmountAsInt();
@@ -119,7 +117,13 @@ public class BatteryBankBlockEntity extends MachineBlockEntity implements com.po
         return energy;
     }
 
-    @Override public Role role(net.minecraft.core.Direction face) { return supporting ? Role.SOURCE : Role.LOAD; }
+    @Override public Role role(net.minecraft.core.Direction face) { return gridOut > 0 && controlEnabled() ? Role.SOURCE : Role.LOAD; }
+
+    @Override public int gridOutputLimit(net.minecraft.core.Direction face) {
+        return controlEnabled() ? Math.min(energy.getAmountAsInt(), Math.max(0, RATE - gridOut)) : 0;
+    }
+
+    @Override public void onGridExport(int amount) { gridOut += amount; setChanged(); }
 
     private boolean controlEnabled() { return !(level instanceof ServerLevel server) || enabled(server, worldPosition); }
 
@@ -143,6 +147,7 @@ public class BatteryBankBlockEntity extends MachineBlockEntity implements com.po
         super.loadAdditional(input);
         energy.deserialize(input);
         previous = energy.getAmountAsInt();
+        gridOut = 0;
         visualFlow = Math.clamp(input.getIntOr("battery_flow", 0), -1, 1);
         if (!visualsInitialized) {
             previousCharge = shownCharge = (float) previous / CAPACITY;

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MZM",
+    "QFQ",
+    "AAA"
+  ],
+  "key": {
+    "M": "powerfactor:fusion_magnet",
+    "Z": "powerfactor:singularity",
+    "Q": "powerfactor:quantum_processor",
+    "F": "powerfactor:fusion_reactor",
+    "A": "#c:storage_blocks/adamantium"
+  },
+  "result": {
+    "id": "powerfactor:space_elevator",
+    "count": 1
+  }
+}

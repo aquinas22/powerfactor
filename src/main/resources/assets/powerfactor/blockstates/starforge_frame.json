@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/starforge_frame"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/starforge_frame_formed"
+    }
+  }
+}

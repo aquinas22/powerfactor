@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PMP",
+    "DAD",
+    "PCP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "M": "powerfactor:microprocessor",
+    "D": "powerfactor:data_core",
+    "A": "powerfactor:advanced_circuit",
+    "C": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:crafting_processor",
+    "count": 1
+  }
+}

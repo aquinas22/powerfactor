@@ -2,6 +2,7 @@ package com.powerfactor.grid;
 
 import com.powerfactor.api.Bus;
 import com.powerfactor.api.GridGenerator;
+import com.powerfactor.api.GridStorage;
 import com.powerfactor.api.ReactiveLoad;
 import com.powerfactor.power.BusSolver;
 import com.powerfactor.power.PowerTriangle;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
@@ -31,9 +33,13 @@ import org.jspecify.annotations.Nullable;
  * net reactive flow; turbines supply (or absorb) it in proportion to their spare capacity, and
  * whatever they can't cover collapses the voltage. Frequency is set by the turbines; a grid fed
  * only by engines and other mods' generators runs at a nominal 60 Hz.
+ * Storage supplies remaining ordinary-load demand directly, within the conductor limit; its
+ * energy never enters the reserve-charging pool.
  */
 public final class PowerGrid implements Bus {
     record Endpoint(BlockPos pos, Direction side) {}
+    private record StorageSource(GridStorage storage, EnergyHandler handler, Direction face) {}
+    private record BackupFlow(int delivered, Set<EnergyHandler> exporters) {}
 
     /** Ticks without any FE arriving before the grid counts as de-energized. */
     private static final int DEAD_AFTER = 20;
@@ -179,10 +185,16 @@ public final class PowerGrid implements Bus {
         }
 
         // Line heat comes off the top.
-        buffer.take(Math.min(buffer.amount(), (int) Math.ceil(state.lossFe())));
+        int buffered = buffer.amount();
+        int loss = (int) Math.ceil(state.lossFe());
+        int bufferedLoss = Math.min(buffered, loss);
+        buffer.take(bufferedLoss);
 
         // Share between ordinary loads, then charge storage from what remains. Source faces receive nothing.
         List<EnergyHandler> targets = new ArrayList<>();
+        List<StorageSource> sources = new ArrayList<>();
+        Map<GridStorage, Boolean> seenStorage = new IdentityHashMap<>();
+        Map<EnergyHandler, Boolean> seenProviders = new IdentityHashMap<>();
         Map<EnergyHandler, Boolean> storage = new IdentityHashMap<>();
         for (int i = 0; i < caches.size(); i++) {
             Endpoint endpoint = endpoints.get(i);
@@ -191,10 +203,13 @@ public final class PowerGrid implements Bus {
             if (be instanceof com.powerfactor.multiblock.MultiblockPart part) be = part.controller();
             var role = be instanceof com.powerfactor.api.SidedGridDevice sided ? sided.role(endpoint.side())
                     : com.powerfactor.api.SidedGridDevice.Role.BOTH;
-            if (role != com.powerfactor.api.SidedGridDevice.Role.LOAD && role != com.powerfactor.api.SidedGridDevice.Role.BOTH) continue;
             EnergyHandler h = caches.get(i).getCapability();
             if (h == null || h == buffer) continue;
-            boolean reserve = be instanceof com.powerfactor.api.GridStorage;
+            if (be instanceof GridStorage store && store.gridOutputLimit(endpoint.side()) > 0
+                    && seenStorage.put(store, true) == null && seenProviders.put(h, true) == null)
+                sources.add(new StorageSource(store, h, endpoint.side()));
+            if (role != com.powerfactor.api.SidedGridDevice.Role.LOAD && role != com.powerfactor.api.SidedGridDevice.Role.BOTH) continue;
+            boolean reserve = be instanceof GridStorage;
             if (storage.putIfAbsent(h, reserve) == null) targets.add(h);
             // An ordinary load wins if aliases expose the same handler in different roles.
             if (!reserve) storage.put(h, false);
@@ -202,7 +217,12 @@ public final class PowerGrid implements Bus {
         List<EnergyHandler> loads = new ArrayList<>(), reserves = new ArrayList<>();
         for (EnergyHandler target : targets) (storage.get(target) ? reserves : loads).add(target);
         int order = rotation++;
-        lastDelivered = deliver(loads, order) + deliver(reserves, order);
+        int delivered = deliver(loads, order);
+        int allowedFe = (int) PowerTriangle.maxFeFor(ratingCe * Math.min(1, state.volts()), state.netEe());
+        int backupBudget = Math.max(0, Math.min(buffer.getCapacityAsInt(), allowedFe) - buffered);
+        BackupFlow backup = discharge(sources, loads, backupBudget, loss - bufferedLoss, order);
+        reserves.removeIf(backup.exporters()::contains);
+        lastDelivered = delivered + backup.delivered() + deliver(reserves, order);
 
         // Next tick's FE headroom: the current rating at this voltage, less what EE uses.
         buffer.setLimit((int) PowerTriangle.maxFeFor(ratingCe * Math.min(1, state.volts()), state.netEe()));
@@ -225,6 +245,46 @@ public final class PowerGrid implements Bus {
             }
         }
         return delivered;
+    }
+
+    /** Backup goes directly to ordinary loads, never into the charging pool. */
+    private BackupFlow discharge(List<StorageSource> sources, List<EnergyHandler> loads, int budget, int loss, int order) {
+        Set<EnergyHandler> exporters = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (sources.isEmpty() || loads.isEmpty() || budget <= 0) return new BackupFlow(0, exporters);
+        List<EnergyHandler> demand = new ArrayList<>();
+        try (Transaction simulation = Transaction.openRoot()) {
+            for (EnergyHandler target : loads) if (target.insert(budget, simulation) > 0) demand.add(target);
+        }
+        if (demand.isEmpty()) return new BackupFlow(0, exporters);
+        Collections.rotate(sources, Math.floorMod(order, sources.size()));
+        int delivered = 0;
+        for (int pass = 0; pass < 2 && budget > 0; pass++) {
+            for (int i = 0; i < sources.size() && budget > 0; i++) {
+                StorageSource source = sources.get(i);
+                int share = Math.max(1, budget / (sources.size() - i));
+                int available = Math.min(share, source.storage().gridOutputLimit(source.face()));
+                if (available <= loss) continue;
+                int heat, moved = 0;
+                try (Transaction tx = Transaction.openRoot()) {
+                    heat = source.handler().extract(loss, tx);
+                    if (heat != loss) continue;
+                    for (int j = 0; j < demand.size() && moved < available - heat; j++) {
+                        EnergyHandler target = demand.get(j);
+                        if (target == source.handler()) continue;
+                        int offer = Math.max(1, (available - heat - moved) / (demand.size() - j));
+                        moved += EnergyHandlerUtil.move(source.handler(), target, offer, tx);
+                    }
+                    if (moved == 0) continue; // A full consumer must not spend storage on line heat alone.
+                    tx.commit();
+                }
+                int spent = moved + heat;
+                source.storage().onGridExport(spent);
+                exporters.add(source.handler());
+                budget -= spent; delivered += moved; loss -= heat;
+                ticksSinceSupply = 0;
+            }
+        }
+        return new BackupFlow(delivered, exporters);
     }
 
     private final class Buffer extends SimpleEnergyHandler {

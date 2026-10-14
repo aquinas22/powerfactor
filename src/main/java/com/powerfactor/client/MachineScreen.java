@@ -36,7 +36,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
 
     protected static final int MAIN_W = 176;
     private static final int TAB_X = MAIN_W - 1, TAB_W = 26, TAB_H = 24, TAB_GAP = 2;
-    private static final int BG = 0xFF0A100D, TEXT = 0xFFB8F5C0, DIM = 0xFF5F8A66;
+    private static final int BG = Skin.INK, TEXT = Skin.TEXT, DIM = Skin.DIM;
 
     private @Nullable Tab open;
     private final ElectricalPanel panel = new ElectricalPanel();
@@ -119,14 +119,8 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
     private void tabButton(GuiGraphicsExtractor g, Tab tab, int x, int y, boolean selected, int mx, int my) {
         int w = tabWidth();
         boolean hover = mx >= x && mx < x + w && my >= y && my < y + TAB_H;
-        // Gunmetal tab, teal edge when open, like the v2 panels.
-        g.fill(x, y, x + w, y + TAB_H, 0xFF0B0D0F);
-        g.fillGradient(x, y + 1, x + w - 1, y + TAB_H - 1, hover ? 0xFF5A646C : 0xFF4A535B, 0xFF2E353B);
-        g.fill(x, y + 1, x + w - 1, y + 2, 0xFF7C8790);
-        g.fill(x + 3, y + 3, x + w - 4, y + TAB_H - 3, selected ? 0xFF10241C : 0xFF1A2026);
-        if (selected) {
-            g.fill(x + w - 3, y + 2, x + w - 1, y + TAB_H - 2, Skin.TEAL);
-        }
+        Skin.control(g, x, y, w, TAB_H, selected, hover);
+        if (selected) g.fill(x + w - 2, y + 2, x + w - 1, y + TAB_H - 2, Skin.TEAL);
         ItemStack icon = switch (tab) {
             case ELECTRICAL -> new ItemStack(ModItems.COPPER_COIL.get());
             case UPGRADES -> new ItemStack(ModItems.SPEED_UPGRADE.get());
@@ -152,11 +146,8 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
     }
 
     private void frame(GuiGraphicsExtractor g, int x, int y, int w, int h) {
-        g.fill(x, y, x + w, y + h, 0xFF0B0D0F);
-        g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF4A535B, 0xFF2E353B);
-        g.fill(x + 1, y + 1, x + w - 1, y + 2, 0xFF7C8790);
-        g.fill(x + 3, y + 3, x + w - 3, y + h - 3, BG);
-        g.fill(x + 3, y + 3, x + w - 3, y + 4, 0x6030D0A8);
+        Skin.panel(g, x, y, w, h);
+        Skin.lcd(g, x + 3, y + 3, w - 6, h - 6);
     }
 
     private void upgradesPanel(GuiGraphicsExtractor g, int x, int y) {
@@ -182,7 +173,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             g.textWithWordWrap(font, Component.translatable("gui.powerfactor.tab.upgrades.empty"), x + 6, y + 70, w - 12, DIM, false);
         }
         for (int i = 0; i < lines.size(); i++) {
-            g.text(font, lines.get(i), x + 6, y + 70 + i * 11, TEXT, false);
+            g.text(font, Skin.fit(font, lines.get(i), w - 12), x + 6, y + 70 + i * 11, TEXT, false);
         }
     }
 
@@ -274,15 +265,14 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
             int redstone = b.id() - ProcessingMenu.BUTTON_REDSTONE_SET;
             boolean selected = redstone >= 0 && redstone < 3 ? redstoneMode().ordinal() == redstone
                     : menu instanceof ProcessingMenu pm && (b.id() == ProcessingMenu.BUTTON_AUTO_INPUT ? pm.autoInput() : pm.autoEject());
-            g.fill(b.x(), b.y(), b.x() + b.w(), b.y() + b.h(), hover ? 0xFF293D49 : selected ? 0xFF173A36 : 0xFF19242B);
-            g.outline(b.x(), b.y(), b.w(), b.h(), selected ? Skin.TEAL : 0xFF586873);
+            Skin.control(g, b.x(), b.y(), b.w(), b.h(), selected, hover);
             if (redstone >= 0 && redstone < 3) {
                 GuiIcons.redstone(g, b.x() + (b.w() - 12) / 2, b.y() + 2, MachineBlockEntity.RedstoneMode.values()[redstone]);
             } else {
                 boolean input = b.id() == ProcessingMenu.BUTTON_AUTO_INPUT;
                 g.item(new ItemStack(input ? Items.CHEST : machineIcon()), b.x() + 15, b.y() + 2);
                 g.item(new ItemStack(input ? machineIcon() : Items.CHEST), b.x() + b.w() - 31, b.y() + 2);
-                GuiIcons.port(g, b.x() + b.w() / 2 - 6, b.y() + 5, SideConfig.Mode.OUTPUT, selected ? Skin.TEAL : Skin.DIM);
+                GuiIcons.port(g, b.x() + b.w() / 2 - 6, b.y() + 5, SideConfig.Mode.OUTPUT, selected ? Skin.TEAL : Skin.LCD_DIM);
                 Skin.lamp(g, b.x() + 6, b.y() + 8, selected ? Skin.TEAL : Skin.DIM);
             }
         }
@@ -317,7 +307,7 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
         g.fill(b.x() + 1, b.y() + 1, b.x() + TILE - 1, b.y() + TILE - 1, mode.color);
         g.fill(b.x() + 3, b.y() + 3, b.x() + TILE - 3, b.y() + TILE - 3, darken(mode.color));
         String letter = Component.translatable("gui.powerfactor.config.face." + face.name().toLowerCase(java.util.Locale.ROOT)).getString();
-        g.text(font, letter, b.x() + 3, b.y() + 1, Skin.TEXT, false);
+        g.text(font, letter, b.x() + 3, b.y() + 1, Skin.LCD_TEXT, false);
         GuiIcons.port(g, b.x() + 4, b.y() + 10, mode, mode == SideConfig.Mode.NONE ? Skin.DIM : mode.color);
     }
 
@@ -423,6 +413,12 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
         }
         if (isHovering(3, 3, MAIN_W - 24, 12, mouseX, mouseY) && font.width(title) > MAIN_W - 32) {
             g.setTooltipForNextFrame(font, title, mouseX, mouseY);
+        } else if (open == Tab.ELECTRICAL && mouseX >= leftPos + panelX() && mouseX < leftPos + panelX() + ElectricalPanel.WIDTH
+                && mouseY >= topPos && mouseY < topPos + ElectricalPanel.HEIGHT) {
+            Electrical e = electrical();
+            g.setComponentTooltipForNextFrame(font, List.of(e.status(), Component.translatable("gui.powerfactor.console.power",
+                    Math.round(e.fe()), Math.round(e.ee())), Component.translatable("gui.powerfactor.console.supply",
+                    Math.round(e.volts() * 480), String.format(java.util.Locale.ROOT, "%.2f", e.hertz()))), mouseX, mouseY);
         } else if (open == Tab.CONFIG) {
             for (Button b : configButtons(leftPos + panelX(), topPos)) {
                 if (mouseX >= b.x() && mouseX < b.x() + b.w() && mouseY >= b.y() && mouseY < b.y() + b.h()
@@ -437,8 +433,8 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
 
     protected static int driveColor(com.powerfactor.machine.Drive.State state, double speed) {
         return switch (state) {
-            case RUNNING -> speed >= 0.9 ? 0xFF55FF55 : 0xFFFFB020;
-            case IDLE -> 0xFFFFB020;
+            case RUNNING -> speed >= 0.9 ? Skin.TEAL : Skin.OUTPUT;
+            case IDLE -> Skin.OUTPUT;
             case TRIPPED -> 0xFFFF4040;
             case OFF -> DIM;
         };

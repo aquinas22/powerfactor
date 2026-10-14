@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GQG",
+    "MCM",
+    "AAA"
+  ],
+  "key": {
+    "G": "powerfactor:fusion_glass",
+    "Q": "powerfactor:quantum_processor",
+    "M": "powerfactor:fusion_magnet",
+    "C": "powerfactor:capacitor_bank",
+    "A": "#c:ingots/adamantium"
+  },
+  "result": {
+    "id": "powerfactor:shield_generator",
+    "count": 1
+  }
+}

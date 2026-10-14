@@ -149,7 +149,7 @@ public final class JetpackClient {
     /** The gauge beside the hotbar while a jetpack is worn. */
     public static void renderHud(GuiGraphicsExtractor g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.gui.hud.isHidden() || mc.player == null || mc.player.getVehicle() instanceof com.powerfactor.vehicle.RoverEntity) {
+        if (mc.gui.hud.isHidden() || mc.player == null || (mc.player.getVehicle() instanceof com.powerfactor.vehicle.RoverEntity || mc.player.getVehicle() instanceof com.powerfactor.vehicle.HoverBikeEntity || mc.player.getVehicle() instanceof com.powerfactor.vehicle.MechEntity)) {
             return;
         }
         ItemStack chest = mc.player.getItemBySlot(EquipmentSlot.CHEST);

@@ -17,5 +17,11 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.powerfactor.vehicle.RoverEntity>> ELECTRIC_ROVER = ENTITIES.register("electric_rover",
             () -> EntityType.Builder.<com.powerfactor.vehicle.RoverEntity>of(com.powerfactor.vehicle.RoverEntity::new, MobCategory.MISC).sized(2.3F, 1.7F)
                     .clientTrackingRange(12).updateInterval(1).build(ResourceKey.create(Registries.ENTITY_TYPE, PowerFactor.id("electric_rover"))));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.powerfactor.vehicle.HoverBikeEntity>> HOVER_BIKE = ENTITIES.register("hover_bike",
+            () -> EntityType.Builder.<com.powerfactor.vehicle.HoverBikeEntity>of(com.powerfactor.vehicle.HoverBikeEntity::new, MobCategory.MISC).sized(1.2F, 0.8F)
+                    .clientTrackingRange(12).updateInterval(1).build(ResourceKey.create(Registries.ENTITY_TYPE, PowerFactor.id("hover_bike"))));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.powerfactor.vehicle.MechEntity>> MECH = ENTITIES.register("mech",
+            () -> EntityType.Builder.<com.powerfactor.vehicle.MechEntity>of(com.powerfactor.vehicle.MechEntity::new, MobCategory.MISC).sized(1.6F, 3.1F)
+                    .clientTrackingRange(12).updateInterval(1).build(ResourceKey.create(Registries.ENTITY_TYPE, PowerFactor.id("mech"))));
     private ModEntities() {}
 }

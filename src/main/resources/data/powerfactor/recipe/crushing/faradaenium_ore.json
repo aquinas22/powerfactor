@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "powerfactor:faradaenium_ore",
+  "result": {
+    "item": "powerfactor:raw_faradaenium",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "item": "powerfactor:raw_faradaenium",
+      "chance": 0.35
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:qubit_crystal_block"
+  ],
+  "result": {
+    "id": "powerfactor:qubit_crystal",
+    "count": 9
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "III",
+    "III",
+    "III"
+  ],
+  "key": {
+    "I": "powerfactor:qubit_crystal"
+  },
+  "result": {
+    "id": "powerfactor:qubit_crystal_block",
+    "count": 1
+  }
+}

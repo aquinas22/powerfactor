@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/starforge_pylon"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/starforge_pylon_formed"
+    }
+  }
+}

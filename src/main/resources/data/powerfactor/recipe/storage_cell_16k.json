@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:cell_housing",
+    "powerfactor:data_core",
+    "powerfactor:data_core",
+    "powerfactor:data_core",
+    "#c:gems/diamond"
+  ],
+  "result": {
+    "id": "powerfactor:storage_cell_16k",
+    "count": 1
+  }
+}

@@ -14,7 +14,20 @@ public final class ModTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> POWERFACTOR = TABS.register("powerfactor", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.powerfactor"))
             .icon(() -> new ItemStack(ModItems.COAL_TURBINE.get()))
-            .displayItems((params, output) -> ModItems.ITEMS.getEntries().forEach(holder -> output.accept(holder.get())))
+            .displayItems((params, output) -> {
+                var quantum = new java.util.HashSet<Object>();
+                ModStorage.TAB.forEach(i -> quantum.add(i.get()));
+                ModItems.ITEMS.getEntries().forEach(holder -> {
+                    if (!quantum.contains(holder.get())) output.accept(holder.get());
+                });
+            })
+            .build());
+
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> QUANTUM = TABS.register("quantum", () -> CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup.powerfactor.quantum"))
+            .icon(() -> new ItemStack(ModStorage.QUANTUM_CRAFTING_PROCESSOR.get()))
+            .withTabsBefore(POWERFACTOR.getKey())
+            .displayItems((params, output) -> ModStorage.TAB.forEach(i -> output.accept(i.get())))
             .build());
 
     private ModTabs() {}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:storage_cell_64k",
+    "powerfactor:data_core",
+    "powerfactor:data_core",
+    "powerfactor:data_core",
+    "powerfactor:data_core",
+    "#c:gems/emerald",
+    "#c:ingots/electrum",
+    "powerfactor:advanced_circuit"
+  ],
+  "result": {
+    "id": "powerfactor:storage_cell_256k",
+    "count": 1
+  }
+}

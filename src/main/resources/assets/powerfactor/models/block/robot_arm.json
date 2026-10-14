@@ -1,0 +1,216 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "casing": "powerfactor:block/storage_casing",
+    "dark": "powerfactor:block/finish_dark",
+    "hazard": "powerfactor:block/hazard_block",
+    "particle": "powerfactor:block/storage_casing"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        3,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            2,
+            13,
+            14,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            2,
+            13,
+            14,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            2,
+            13,
+            14,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            2,
+            13,
+            14,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#hazard",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        3,
+        3
+      ],
+      "to": [
+        13,
+        6,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            10,
+            13,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            10,
+            13,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            10,
+            13,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            10,
+            13,
+            13
+          ]
+        },
+        "up": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        4,
+        2.8
+      ],
+      "to": [
+        9.5,
+        5,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            6.5,
+            11,
+            9.5,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            6.5,
+            11,
+            9.5,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            2.8,
+            11,
+            3.0,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            2.8,
+            11,
+            3.0,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#dark",
+          "uv": [
+            6.5,
+            2.8,
+            9.5,
+            3.0
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            6.5,
+            2.8,
+            9.5,
+            3.0
+          ]
+        }
+      }
+    }
+  ]
+}

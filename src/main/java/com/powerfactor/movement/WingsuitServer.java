@@ -15,7 +15,7 @@ import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
-/** Deliberate deploy/fold state, sharing Minecraft's collision-aware gliding pose and movement. */
+/** Deliberate deploy/fold state. The flight mixin supplies forces inside native collision-aware travel. */
 @EventBusSubscriber(modid = PowerFactor.MODID)
 public final class WingsuitServer {
     public static final Identifier GLIDE = PowerFactor.id("wingsuit_glide");
@@ -37,7 +37,7 @@ public final class WingsuitServer {
         attribute.removeModifier(GLIDE);
         attribute.addTransientModifier(new AttributeModifier(GLIDE, 1, AttributeModifier.Operation.ADD_VALUE));
         ACTIVE.add(player.getUUID()); player.startFallFlying();
-        if (player.getKnownMovement().horizontalDistance() < 0.2) player.setDeltaMovement(player.getDeltaMovement().add(player.getViewVector(1).scale(0.24)));
+        // Deployment and folding preserve the launch velocity, including a grapple slingshot.
     }
     public static void fold(Player player) {
         boolean wasActive = ACTIVE.remove(player.getUUID()); var attribute = player.getAttribute(NeoForgeMod.GLIDING_FLIGHT);

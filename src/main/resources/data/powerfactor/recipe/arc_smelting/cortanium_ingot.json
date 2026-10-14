@@ -1,0 +1,19 @@
+{
+  "type": "powerfactor:arc_smelting",
+  "inputs": [
+    {
+      "ingredient": "#c:gems/cortanium",
+      "count": 4
+    },
+    {
+      "ingredient": "minecraft:netherite_scrap",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:cortanium_ingot"
+    }
+  ],
+  "time": 800
+}

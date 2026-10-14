@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PGP",
+    "G G",
+    "PPP"
+  ],
+  "key": {
+    "P": "#c:plates/aluminum",
+    "G": "#c:glass_panes"
+  },
+  "result": {
+    "id": "powerfactor:cell_housing",
+    "count": 2
+  }
+}

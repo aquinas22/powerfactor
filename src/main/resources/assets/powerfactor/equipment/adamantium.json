@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "powerfactor:adamantium"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "powerfactor:adamantium"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "powerfactor:adamantium"
+      }
+    ]
+  }
+}

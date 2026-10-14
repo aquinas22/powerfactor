@@ -1,6 +1,28 @@
 {
   "replace": false,
   "values": [
-    "powerfactor:electric_drill"
+    "powerfactor:electric_drill",
+    "powerfactor:adamantium_pickaxe",
+    "powerfactor:adamantium_axe",
+    "powerfactor:adamantium_shovel",
+    "powerfactor:adamantium_hoe",
+    "powerfactor:faradaenium_pickaxe",
+    "powerfactor:faradaenium_axe",
+    "powerfactor:faradaenium_shovel",
+    "powerfactor:faradaenium_hoe",
+    "powerfactor:cortanium_pickaxe",
+    "powerfactor:cortanium_axe",
+    "powerfactor:cortanium_shovel",
+    "powerfactor:cortanium_hoe",
+    "powerfactor:quantum_pickaxe",
+    "powerfactor:quantum_axe",
+    "powerfactor:quantum_shovel",
+    "powerfactor:quantum_hoe",
+    "powerfactor:diamond_paxel",
+    "powerfactor:netherite_paxel",
+    "powerfactor:adamantium_paxel",
+    "powerfactor:faradaenium_paxel",
+    "powerfactor:cortanium_paxel",
+    "powerfactor:quantum_paxel"
   ]
 }

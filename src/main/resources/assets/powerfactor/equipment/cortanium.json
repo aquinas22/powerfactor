@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "powerfactor:cortanium"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "powerfactor:cortanium"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "powerfactor:cortanium"
+      }
+    ]
+  }
+}

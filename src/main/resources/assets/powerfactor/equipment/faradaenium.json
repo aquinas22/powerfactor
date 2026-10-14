@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "powerfactor:faradaenium"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "powerfactor:faradaenium"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "powerfactor:faradaenium"
+      }
+    ]
+  }
+}

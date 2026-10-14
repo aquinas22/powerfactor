@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "HHH",
+    " S ",
+    " S "
+  ],
+  "key": {
+    "H": "#c:ingots/cortanium",
+    "S": "#c:rods/blaze"
+  },
+  "result": {
+    "id": "powerfactor:cortanium_pickaxe",
+    "count": 1
+  }
+}

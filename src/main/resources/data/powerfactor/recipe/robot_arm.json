@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " PG",
+    " M ",
+    "SCS"
+  ],
+  "key": {
+    "P": "minecraft:piston",
+    "G": "#c:plates/steel",
+    "M": "powerfactor:electric_motor",
+    "S": "#c:plates/steel",
+    "C": "powerfactor:microprocessor"
+  },
+  "result": {
+    "id": "powerfactor:robot_arm",
+    "count": 1
+  }
+}

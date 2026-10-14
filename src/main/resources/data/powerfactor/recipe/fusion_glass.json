@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GAG",
+    "AGA",
+    "GAG"
+  ],
+  "key": {
+    "G": "#c:glass_blocks",
+    "A": "#c:ingots/adamantium"
+  },
+  "result": {
+    "id": "powerfactor:fusion_glass",
+    "count": 4
+  }
+}

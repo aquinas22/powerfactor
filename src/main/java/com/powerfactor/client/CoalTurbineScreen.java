@@ -25,8 +25,8 @@ public class CoalTurbineScreen extends MachineScreen<CoalTurbineMenu> {
     public static final int FE_COLOR = 0xFFFF5A4A;
     public static final int EE_COLOR = 0xFF33E0B0;
     public static final int CE_COLOR = 0xFFE070FF;
-    private static final int LCD_TEXT = 0xFFB8F5C0;
-    private static final int LCD_DIM = 0xFF5F8A66;
+    private static final int LCD_TEXT = Skin.LCD_TEXT;
+    private static final int LCD_DIM = Skin.DIM;
     private static final int GREEN = 0xFF55FF55, AMBER = 0xFFFFB020, RED = 0xFFFF5555;
 
     public CoalTurbineScreen(CoalTurbineMenu menu, Inventory inventory, Component title) {
@@ -90,7 +90,7 @@ public class CoalTurbineScreen extends MachineScreen<CoalTurbineMenu> {
             status = Component.translatable("gui.powerfactor.turbine.offline");
             statusColor = RED;
         }
-        graphics.text(font, status, x, y, statusColor, false);
+        graphics.text(font, Skin.fit(font, status, 47), x, y, statusColor, false);
         String hz = String.format("%.1f Hz", menu.hertz());
         graphics.text(font, hz, right - font.width(hz), y, LCD_TEXT, false);
 

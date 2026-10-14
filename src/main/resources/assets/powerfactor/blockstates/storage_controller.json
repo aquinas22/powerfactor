@@ -1,0 +1,50 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "powerfactor:block/storage_controller"
+    },
+    "active=true,facing=north": {
+      "model": "powerfactor:block/storage_controller_on"
+    },
+    "active=false,facing=south": {
+      "model": "powerfactor:block/storage_controller",
+      "y": 180
+    },
+    "active=true,facing=south": {
+      "model": "powerfactor:block/storage_controller_on",
+      "y": 180
+    },
+    "active=false,facing=east": {
+      "model": "powerfactor:block/storage_controller",
+      "y": 90
+    },
+    "active=true,facing=east": {
+      "model": "powerfactor:block/storage_controller_on",
+      "y": 90
+    },
+    "active=false,facing=west": {
+      "model": "powerfactor:block/storage_controller",
+      "y": 270
+    },
+    "active=true,facing=west": {
+      "model": "powerfactor:block/storage_controller_on",
+      "y": 270
+    },
+    "active=false,facing=up": {
+      "model": "powerfactor:block/storage_controller",
+      "x": 270
+    },
+    "active=true,facing=up": {
+      "model": "powerfactor:block/storage_controller_on",
+      "x": 270
+    },
+    "active=false,facing=down": {
+      "model": "powerfactor:block/storage_controller",
+      "x": 90
+    },
+    "active=true,facing=down": {
+      "model": "powerfactor:block/storage_controller_on",
+      "x": 90
+    }
+  }
+}

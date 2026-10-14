@@ -10,8 +10,9 @@ ASSETS = ROOT / "assets/powerfactor"
 
 def check():
     errors = []
-    java = (ROOT.parent / "java/com/powerfactor/registry/ModBlocks.java").read_text()
-    registered = set(re.findall(r'(?:register(?:Simple)?Block|steamCasing)\("([a-z0-9_]+)"', java))
+    java = "".join((ROOT.parent / "java/com/powerfactor/registry" / f).read_text() for f in ("ModBlocks.java", "ModStorage.java", "ModQuantum.java")
+                   if (ROOT.parent / "java/com/powerfactor/registry" / f).is_file())
+    registered = set(re.findall(r'(?:register(?:Simple)?Block|steamCasing|node)\("([a-z0-9_]+)"', java))
     recipes = (ROOT.parent / "java/com/powerfactor/machine/RecipeMachine.java").read_text()
     registered.update(re.findall(r'\b[A-Z_]+\("([a-z0-9_]+)",', recipes))
     for block in sorted(registered):
@@ -25,6 +26,17 @@ def check():
         except (ValueError, OSError) as error:
             errors.append(f"{path.relative_to(ROOT)}: {error}")
             continue
+        if isinstance(data, dict) and data.get("type") == "minecraft:crafting_shaped":
+            # The game rejects a shaped recipe whose key has symbols the pattern never uses (and vice versa).
+            used = {c for row in data.get("pattern", []) for c in row if c != " "}
+            keys = set(data.get("key", {}))
+            if used != keys:
+                errors.append(f"{path.name}: pattern/key mismatch {sorted(used ^ keys)}")
+        if "models" in path.parts and "item" in path.parts and data.get("elements"):
+            # 26.2 bakes item cuboid models against one atlas: mixing block/ and item/ textures fails to bake.
+            kinds = {t.split(":", 1)[-1].split("/", 1)[0] for k, t in data.get("textures", {}).items() if k != "particle" and isinstance(t, str) and "/" in t}
+            if {"block", "item"} <= kinds:
+                errors.append(f"{path.name}: item model mixes block and item atlas textures")
         if "models" in path.parts:
             for texture in data.get("textures", {}).values():
                 if texture.startswith("powerfactor:") and not (ASSETS / "textures" / (texture.split(":", 1)[1] + ".png")).is_file():

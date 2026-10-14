@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "HHH",
+    " S ",
+    " S "
+  ],
+  "key": {
+    "H": "#c:ingots/adamantium",
+    "S": "#c:rods/wooden"
+  },
+  "result": {
+    "id": "powerfactor:adamantium_pickaxe",
+    "count": 1
+  }
+}

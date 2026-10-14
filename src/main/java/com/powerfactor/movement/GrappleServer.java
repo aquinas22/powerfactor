@@ -37,9 +37,9 @@ public final class GrappleServer {
         }
         PoweredItem.drain(stack, cost, player);
         var hook = new GrappleHookEntity(level, player);
-        hook.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, 3.0F, 0);
+        hook.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, 12.0F, 0);
         level.addFreshEntity(hook);
-        player.getCooldowns().addCooldown(stack, 6);
+        player.getCooldowns().addCooldown(stack, 3);
         level.playSound(null, player.blockPosition(), ModSounds.GRAPPLE_FIRE.get(), SoundSource.PLAYERS, 0.65F, 1);
         return true;
     }

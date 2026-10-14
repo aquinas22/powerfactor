@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:storage_cell_1k",
+    "powerfactor:storage_cell_4k",
+    "powerfactor:storage_cell_16k",
+    "powerfactor:storage_cell_64k",
+    "powerfactor:storage_cell_256k",
+    "powerfactor:quantum_storage_cell"
+  ]
+}

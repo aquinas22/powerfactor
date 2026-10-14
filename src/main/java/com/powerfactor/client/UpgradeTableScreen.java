@@ -62,13 +62,24 @@ public class UpgradeTableScreen extends AbstractContainerScreen<UpgradeTableMenu
     @Override
     public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
         super.extractBackground(g, mouseX, mouseY, a);
-        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, W, H, 256, 256);
         track();
         float t = time();
         int x0 = leftPos, y0 = topPos;
+        // Bright chassis like every other PowerFactor screen; the holographic bay and the stats readout
+        // are dark glass windows cut from the bench texture.
+        Skin.panel(g, x0, y0, W, H);
+        Skin.lcd(g, x0 + 5, y0 + 15, 153, 111);
+        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x0 + 6, y0 + 16, 6, 16, 151, 109, 256, 256);
+        Skin.lcd(g, x0 + 159, y0 + 17, 83, 109);
+        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x0 + 160, y0 + 18, 160, 18, 81, 107, 256, 256);
+        for (int row = 0; row < 4; row++) {
+            for (int col = 0; col < 9; col++) {
+                Skin.slot(g, x0 + UpgradeTableMenu.INV_X + col * 18 - 1, y0 + (row < 3 ? UpgradeTableMenu.INV_Y + row * 18 : 194) - 1, 0);
+            }
+        }
 
-        // A slow scan line sweeping the main area.
-        int sweep = (int) ((t * 40) % 140);
+        // A slow scan line sweeping the bay.
+        int sweep = (int) ((t * 40) % 110);
         g.fill(x0 + 6, y0 + 16 + sweep, x0 + 158, y0 + 17 + sweep, 0x2A3FE0FF);
         g.fill(x0 + 6, y0 + 15 + sweep, x0 + 158, y0 + 16 + sweep, 0x123FE0FF);
 
@@ -335,14 +346,14 @@ public class UpgradeTableScreen extends AbstractContainerScreen<UpgradeTableMenu
     protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
         boolean cursor = (Util.getMillis() / 400) % 2 == 0;
         Component title = Component.translatable("gui.powerfactor.upgrade.title");
-        g.text(font, title, 8, 4, CYAN, false);
+        g.text(font, title, 8, 5, Skin.TEXT, false);
         if (cursor) {
-            g.fill(10 + font.width(title), 4, 15 + font.width(title), 12, CYAN);
+            g.fill(10 + font.width(title), 5, 15 + font.width(title), 13, Skin.ACCENT);
         }
         Component status = menu.kind() == null ? Component.translatable("gui.powerfactor.upgrade.standby")
                 : Component.translatable("gui.powerfactor.upgrade.linked");
-        g.text(font, status, W - 8 - font.width(status), 4, menu.kind() == null ? DIM : GREEN, false);
-        g.text(font, Component.translatable("gui.powerfactor.upgrade.inventory"), UpgradeTableMenu.INV_X, 126, DIM, false);
+        g.text(font, status, W - 8 - font.width(status), 5, menu.kind() == null ? Skin.DIM : 0xFF1E9E5A, false);
+        g.text(font, Component.translatable("gui.powerfactor.upgrade.inventory"), UpgradeTableMenu.INV_X, 127, Skin.DIM, false);
     }
 
     /** The tool socket shows the hologram instead of a little item icon. */

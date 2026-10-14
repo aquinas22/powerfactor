@@ -62,7 +62,8 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> BATTERY_BANK = ITEMS.registerSimpleBlockItem("battery_bank", ModBlocks.BATTERY_BANK);
     public static final DeferredItem<BlockItem> POWER_METER = ITEMS.registerSimpleBlockItem("power_meter", ModBlocks.POWER_METER);
     public static final DeferredItem<BlockItem> WIND_TURBINE_TOWER = ITEMS.registerSimpleBlockItem("wind_turbine_tower", ModBlocks.WIND_TURBINE_TOWER);
-    public static final DeferredItem<BlockItem> FLUID_TANK = ITEMS.registerSimpleBlockItem("fluid_tank", ModBlocks.FLUID_TANK);
+    public static final DeferredItem<com.powerfactor.item.FluidTankItem> FLUID_TANK = ITEMS.registerItem("fluid_tank",
+            properties -> new com.powerfactor.item.FluidTankItem(ModBlocks.FLUID_TANK.get(), properties));
     public static final DeferredItem<BlockItem> ELECTRIC_PUMP = ITEMS.registerSimpleBlockItem("electric_pump", ModBlocks.ELECTRIC_PUMP);
     public static final DeferredItem<BlockItem> FLUID_PIPE = ITEMS.registerSimpleBlockItem("fluid_pipe", ModBlocks.FLUID_PIPE);
     public static final DeferredItem<BlockItem> ITEM_PIPE = ITEMS.registerSimpleBlockItem("item_pipe", ModBlocks.ITEM_PIPE);
@@ -84,6 +85,8 @@ public final class ModItems {
 
     // ---------------------------------------------------------------- tools
     public static final DeferredItem<com.powerfactor.item.RoverItem> ELECTRIC_ROVER = ITEMS.registerItem("electric_rover", com.powerfactor.item.RoverItem::new);
+    public static final DeferredItem<com.powerfactor.item.MechItem> MECH = ITEMS.registerItem("mech_suit", com.powerfactor.item.MechItem::new);
+    public static final DeferredItem<com.powerfactor.item.HoverBikeItem> HOVER_BIKE = ITEMS.registerItem("hover_bike", com.powerfactor.item.HoverBikeItem::new);
     public static final DeferredItem<com.powerfactor.item.GrappleItem> GRAPPLE_HOOK = ITEMS.registerItem("grapple_hook", com.powerfactor.item.GrappleItem::new,
             p -> p.rarity(Rarity.UNCOMMON));
     public static final DeferredItem<com.powerfactor.item.WingsuitItem> WINGSUIT = ITEMS.registerItem("wingsuit", com.powerfactor.item.WingsuitItem::new);

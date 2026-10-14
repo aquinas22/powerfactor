@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " C ",
+    "PDP",
+    " H "
+  ],
+  "key": {
+    "C": "#c:chests",
+    "P": "#c:plates/steel",
+    "D": "powerfactor:data_core",
+    "H": "minecraft:hopper"
+  },
+  "result": {
+    "id": "powerfactor:storage_bus",
+    "count": 1
+  }
+}

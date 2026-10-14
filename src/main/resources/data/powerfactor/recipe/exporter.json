@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PDP",
+    " X "
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "D": "powerfactor:data_core",
+    "X": "minecraft:dispenser"
+  },
+  "result": {
+    "id": "powerfactor:exporter",
+    "count": 1
+  }
+}

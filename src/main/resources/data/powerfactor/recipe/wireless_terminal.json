@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:grid_terminal",
+    "#c:ender_pearls",
+    "powerfactor:capacitor",
+    "powerfactor:sensor_chip"
+  ],
+  "result": {
+    "id": "powerfactor:wireless_terminal",
+    "count": 1
+  }
+}

@@ -1,0 +1,288 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "casing": "powerfactor:block/storage_casing",
+    "lit": "powerfactor:block/storage_casing_lit",
+    "dark": "powerfactor:block/finish_dark",
+    "chrome": "powerfactor:block/finish_chrome",
+    "ring": "powerfactor:block/assembler_base",
+    "pcb": "powerfactor:block/quantum_processor_side",
+    "particle": "powerfactor:block/storage_casing"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        4,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pcb",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#pcb",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#pcb",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#pcb",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#ring",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        4,
+        3
+      ],
+      "to": [
+        13,
+        10,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            6,
+            13,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            6,
+            13,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            6,
+            13,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            6,
+            13,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#casing",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        10,
+        5
+      ],
+      "to": [
+        11,
+        12,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome",
+          "uv": [
+            5,
+            4,
+            11,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#chrome",
+          "uv": [
+            5,
+            4,
+            11,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#chrome",
+          "uv": [
+            5,
+            4,
+            11,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#chrome",
+          "uv": [
+            5,
+            4,
+            11,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#chrome",
+          "uv": [
+            5,
+            5,
+            11,
+            11
+          ]
+        },
+        "down": {
+          "texture": "#chrome",
+          "uv": [
+            5,
+            5,
+            11,
+            11
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        6,
+        2.8
+      ],
+      "to": [
+        9.5,
+        8,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lit",
+          "uv": [
+            6.5,
+            8,
+            9.5,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#lit",
+          "uv": [
+            6.5,
+            8,
+            9.5,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#lit",
+          "uv": [
+            2.8,
+            8,
+            3.0,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#lit",
+          "uv": [
+            2.8,
+            8,
+            3.0,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#lit",
+          "uv": [
+            6.5,
+            2.8,
+            9.5,
+            3.0
+          ]
+        },
+        "down": {
+          "texture": "#lit",
+          "uv": [
+            6.5,
+            2.8,
+            9.5,
+            3.0
+          ]
+        }
+      },
+      "light_emission": 12
+    }
+  ]
+}

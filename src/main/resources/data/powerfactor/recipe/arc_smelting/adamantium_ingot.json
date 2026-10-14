@@ -1,0 +1,19 @@
+{
+  "type": "powerfactor:arc_smelting",
+  "inputs": [
+    {
+      "ingredient": "#c:raw_materials/adamantium",
+      "count": 1
+    },
+    {
+      "ingredient": "powerfactor:graphite",
+      "count": 1
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:adamantium_ingot"
+    }
+  ],
+  "time": 400
+}

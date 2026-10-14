@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public class AutoCapacitorScreen extends AbstractContainerScreen<AutoCapacitorMenu> {
     private static final int LEFT_W = 176, H = ElectricalPanel.HEIGHT;
-    private static final int BG = 0xFF0A100D, TEXT = 0xFFB8F5C0, DIM = 0xFF5F8A66;
+    private static final int BG = Skin.INK, TEXT = Skin.LCD_TEXT, DIM = Skin.LCD_DIM;
     private final ElectricalPanel panel = new ElectricalPanel();
     private final float[] glow = new float[AutoCapacitorBankBlockEntity.STEPS];
     private double needle = 1.0;
@@ -31,9 +31,11 @@ public class AutoCapacitorScreen extends AbstractContainerScreen<AutoCapacitorMe
         lastNanos = now;
 
         int x = leftPos, y = topPos;
-        g.fill(x, y, x + LEFT_W, y + H, 0xFF2B3036);
-        g.fill(x + 1, y + 1, x + LEFT_W - 1, y + H - 1, 0xFF6F767D);
-        g.fill(x + 2, y + 2, x + LEFT_W - 2, y + H - 2, BG);
+        // Bright chassis with two instrument windows: the capacitor bay with its PF meter, and the readouts.
+        Skin.panel(g, x, y, LEFT_W, H);
+        Skin.title(g, font, title, x, y, LEFT_W);
+        Skin.lcd(g, x + 5, y + 15, LEFT_W - 10, 72);
+        Skin.lcd(g, x + 5, y + 88, LEFT_W - 10, H - 93);
 
         // Capacitor steps: glow fades in and out as contactors close and open.
         int steps = menu.steps();
@@ -106,7 +108,6 @@ public class AutoCapacitorScreen extends AbstractContainerScreen<AutoCapacitorMe
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
-        g.text(font, title, 6, 6, TEXT, false);
         int steps = menu.steps();
         g.text(font, Component.translatable("gui.powerfactor.autocap.steps", steps, AutoCapacitorBankBlockEntity.STEPS,
                 steps * AutoCapacitorBankBlockEntity.STEP_EE), 8, 90, TEXT, false);

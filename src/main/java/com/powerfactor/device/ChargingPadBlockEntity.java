@@ -52,7 +52,9 @@ public class ChargingPadBlockEntity extends com.powerfactor.machine.MachineBlock
         if (enabled(level, pos) && energy.getAmountAsInt() > 0) {
             record Target(EnergyHandler energy, Runnable commit) {}
             var targets = new java.util.ArrayList<Target>();
-            for (Entity e : level.getEntities((Entity) null, new AABB(pos).setMaxY(pos.getY() + 1.2), e -> e instanceof Player || e instanceof ItemEntity || e instanceof com.powerfactor.vehicle.RoverEntity)) {
+            for (Entity e : level.getEntities((Entity) null, new AABB(pos).setMaxY(pos.getY() + 2.4), e -> e instanceof Player || e instanceof ItemEntity
+                    || e instanceof com.powerfactor.vehicle.RoverEntity || e instanceof com.powerfactor.vehicle.HoverBikeEntity
+                    || e instanceof com.powerfactor.vehicle.MechEntity)) {
                 if (e instanceof Player player) {
                     ResourceHandler<ItemResource> inv = PlayerInventoryWrapper.of(player);
                     for (int i = 0; i < inv.size(); i++) {

@@ -25,8 +25,8 @@ public final class ElectricalPanel {
     /** Visible wave cycles per second at 60 Hz. */
     private static final double VISUAL_HZ = 0.6;
 
-    private static final int BG = 0xFF0A100D, GRID = 0xFF16261D, AXIS = 0xFF24402F;
-    private static final int TEXT = 0xFFB8F5C0, DIM = 0xFF5F8A66;
+    private static final int BG = Skin.INK, GRID = 0xFF16261D, AXIS = 0xFF24402F;
+    private static final int TEXT = Skin.LCD_TEXT, DIM = Skin.LCD_DIM;
     private static final int[] PHASE = {0xFFFF5A4A, 0xFFFFD24A, 0xFF4AA8FF};
     private static final int[] PHASE_DIM = {0xFFB0453A, 0xFFB0913A, 0xFF3A78B0};
     private static final int GOOD = 0xFF55FF55, FAIR = 0xFFFFB020, BAD = 0xFFFF4040;
@@ -61,10 +61,8 @@ public final class ElectricalPanel {
         double iFrac = Mth.clamp(ce / Math.max(1, ratedCe), 0, 1.3);
         boolean dead = v < 0.05 || this.hertz < 1;
 
-        // Frame.
-        g.fill(x, y, x + WIDTH, y + HEIGHT, 0xFF2B3036);
-        g.fill(x + 1, y + 1, x + WIDTH - 1, y + HEIGHT - 1, 0xFF6F767D);
-        g.fill(x + 2, y + 2, x + WIDTH - 2, y + HEIGHT - 2, BG);
+        Skin.panel(g, x, y, WIDTH, HEIGHT);
+        Skin.lcd(g, x + 3, y + 3, WIDTH - 6, HEIGHT - 6);
 
         // Header.
         g.text(font, "3φ " + Math.round(v * NOMINAL_VOLTS) + " V", x + 5, y + 5, voltColor(v), false);
@@ -78,20 +76,21 @@ public final class ElectricalPanel {
         // Readouts.
         int ry = y + 116;
         double amps = dead ? 0 : ce * 1000 / (Math.sqrt(3) * NOMINAL_VOLTS * Math.max(0.05, v));
-        g.text(font, String.format("%.0f A", amps), x + 5, ry, TEXT, false);
+        g.text(font, Skin.fit(font, Component.literal(Skin.compact(amps) + " A"), 40), x + 5, ry, TEXT, false);
         double pf = ce < 0.5 ? 1 : this.fe / ce;
         String pfText = ce < 0.5 ? "PF ---" : String.format("PF %.2f %s", pf, this.ee >= 0 ? "lag" : "lead");
         g.text(font, pfText, x + WIDTH - 5 - font.width(pfText), ry, ce < 0.5 ? DIM : pfColor(pf), false);
-        ry += 11;
-        String feText = Math.round(this.fe) + " FE";
-        String eeText = Math.round(this.ee) + " EE";
-        String ceText = Math.round(ce) + " CE";
-        g.text(font, feText, x + 5, ry, GuiUtil.FE_COLOR, false);
-        g.text(font, eeText, x + 5 + font.width(feText) + 6, ry, GuiUtil.EE_COLOR, false);
-        g.text(font, ceText, x + WIDTH - 5 - font.width(ceText), ry, GuiUtil.CE_COLOR, false);
-        ry += 13;
-        g.fill(x + 4, ry - 3, x + WIDTH - 4, ry - 2, GRID);
-        g.text(font, font.substrByWidth(status, WIDTH - 10).getString(), x + 5, ry, statusColor, false);
+        double[] powers = {this.fe, this.ee, ce};
+        String[] units = {"FE", "EE", "CE"};
+        int[] colors = {GuiUtil.FE_COLOR, GuiUtil.EE_COLOR, GuiUtil.CE_COLOR};
+        for (int i = 0; i < 3; i++) {
+            int center = x + 23 + i * 39;
+            g.text(font, units[i], center - font.width(units[i]) / 2, y + 127, DIM, false);
+            Component value = Skin.fit(font, Component.literal(Skin.compact(powers[i])), 35);
+            g.text(font, value, center - font.width(value) / 2, y + 137, colors[i], false);
+        }
+        g.fill(x + 4, y + 148, x + WIDTH - 4, y + 149, GRID);
+        g.text(font, Skin.fit(font, status, WIDTH - 10), x + 5, y + 152, statusColor, false);
     }
 
     private void scope(GuiGraphicsExtractor g, Font font, int x, int y, int w, int h, double v, double phi, double iFrac, boolean dead) {

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "FQF",
+    "ZXZ",
+    "FAF"
+  ],
+  "key": {
+    "F": "powerfactor:starforge_frame",
+    "Q": "powerfactor:quantum_processor",
+    "Z": "powerfactor:singularity",
+    "X": "minecraft:smithing_table",
+    "A": "#c:ingots/quantum_alloy"
+  },
+  "result": {
+    "id": "powerfactor:starforge",
+    "count": 1
+  }
+}

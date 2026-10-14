@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " E ",
+    "QWQ",
+    " A "
+  ],
+  "key": {
+    "E": "powerfactor:entangled_pair",
+    "Q": "powerfactor:quantum_processor",
+    "W": "powerfactor:wireless_terminal",
+    "A": "#c:ingots/quantum_alloy"
+  },
+  "result": {
+    "id": "powerfactor:quantum_wireless_terminal",
+    "count": 1
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "EQE",
+    "ACA",
+    "EQE"
+  ],
+  "key": {
+    "E": "powerfactor:entangled_pair",
+    "Q": "powerfactor:quantum_processor",
+    "A": "#c:ingots/quantum_alloy",
+    "C": "powerfactor:storage_cell_256k"
+  },
+  "result": {
+    "id": "powerfactor:quantum_storage_cell",
+    "count": 1
+  }
+}

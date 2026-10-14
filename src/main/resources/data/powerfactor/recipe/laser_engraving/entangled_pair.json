@@ -1,0 +1,21 @@
+{
+  "type": "powerfactor:laser_engraving",
+  "inputs": [
+    {
+      "ingredient": "#c:gems/qubit",
+      "count": 2
+    },
+    {
+      "ingredient": "#c:ender_pearls",
+      "count": 1
+    }
+  ],
+  "tool": "powerfactor:quantum_photomask",
+  "results": [
+    {
+      "item": "powerfactor:entangled_pair",
+      "count": 1
+    }
+  ],
+  "time": 600
+}

@@ -1,0 +1,14 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "powerfactor:deepslate_adamantium_ore",
+  "result": {
+    "item": "powerfactor:raw_adamantium",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "item": "powerfactor:raw_adamantium",
+      "chance": 0.25
+    }
+  ]
+}

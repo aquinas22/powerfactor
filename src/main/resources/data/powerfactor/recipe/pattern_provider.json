@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PCP",
+    "TDT",
+    "PCP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "C": "powerfactor:control_circuit",
+    "T": "#c:chests",
+    "D": "powerfactor:data_core"
+  },
+  "result": {
+    "id": "powerfactor:pattern_provider",
+    "count": 1
+  }
+}

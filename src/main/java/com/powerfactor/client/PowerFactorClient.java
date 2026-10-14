@@ -20,6 +20,12 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 public final class PowerFactorClient {
     public PowerFactorClient() {
         ScadaPayloads.clientHandler = ScadaTerminalScreen::receive;
+        com.powerfactor.storage.GridPayloads.syncHandler = com.powerfactor.client.storage.ClientGrid::receive;
+        com.powerfactor.weapon.FxPayload.handler = com.powerfactor.client.fx.WorldFx::receive;
+        com.powerfactor.logistics.GravityLiftBlockEntity.localPlayerHook = lift -> {
+            var me = net.minecraft.client.Minecraft.getInstance().player;
+            if (me != null) lift.carry(me);
+        };
         ScadaPayloads.displayHandler = ScadaDisplayRenderer::receive;
         com.powerfactor.item.ToolPayloads.meterHandler = ClampMeterHud::onReading;
         com.powerfactor.item.ToolPayloads.jetpackHandler = JetpackClient::onSync;
@@ -31,6 +37,13 @@ public final class PowerFactorClient {
         com.powerfactor.item.ArcSaberItem.openScreen = hand -> net.minecraft.client.Minecraft.getInstance().gui.setScreen(new SaberScreen(hand));
     }
 
+    @SubscribeEvent
+    static void onItemExtensions(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event) {
+        event.registerItem(new PowerArmorModels(), com.powerfactor.registry.ModItems.POWER_HELMET.get(),
+                com.powerfactor.registry.ModItems.POWER_CHESTPLATE.get(), com.powerfactor.registry.ModItems.POWER_LEGGINGS.get(),
+                com.powerfactor.registry.ModItems.POWER_BOOTS.get());
+    }
+
     @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGHEST)
     static void onRecipes(net.neoforged.neoforge.client.event.RecipesReceivedEvent event) {
         com.powerfactor.compat.jei.ClientRecipes.map = event.getRecipeMap();
@@ -38,12 +51,15 @@ public final class PowerFactorClient {
 
     @SubscribeEvent
     static void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
+        com.powerfactor.storage.TerminalMenu.clientGuiHeight = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScaledHeight();
         SaberHum.clientTick();
         ChainsawSound.clientTick();
         JetpackClient.clientTick();
         MovementClient.tick();
         RoverClient.tick();
+        HoverBikeClient.tick();
         PowerArmorClient.tick();
+        AgentWorkbenchClient.tick();
         ClampMeterHud.clientTick();
         PipeTrafficClient.clientTick();
     }
@@ -88,6 +104,7 @@ public final class PowerFactorClient {
         event.registerCategory(JetpackClient.CATEGORY);
         event.register(JetpackClient.HOVER_KEY);
         event.register(PowerArmorClient.SETTINGS);
+        event.register(HudPreferences.TOGGLE);
         event.register(MovementClient.GRAPPLE); event.register(MovementClient.GLIDE);
     }
 
@@ -114,19 +131,30 @@ public final class PowerFactorClient {
     }
 
     @SubscribeEvent
+    static void onMovementFov(net.neoforged.neoforge.client.event.ComputeFovModifierEvent event) {
+        if(event.getPlayer()==net.minecraft.client.Minecraft.getInstance().player)
+            event.setNewFovModifier(event.getNewFovModifier()*(1+MovementClient.flightFov()*event.getFovScale()));
+    }
+
+    @SubscribeEvent
     static void onGuiLayers(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent event) {
         event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("power_armor"), PowerArmorClient::render);
         event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("movement"), MovementClient::render);
         event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("rover"), RoverClient::render);
+        event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("hover_bike"), HoverBikeClient::render);
+        event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("mech"), HoverBikeClient::renderMech);
         event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("jetpack"),
                 JetpackClient::renderHud);
         event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.CROSSHAIR, com.powerfactor.PowerFactor.id("clamp_meter"),
                 ClampMeterHud::render);
         event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.HOTBAR, com.powerfactor.PowerFactor.id("radio"), RadioHud::render);
+        event.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.CROSSHAIR, com.powerfactor.PowerFactor.id("weapon_reticle"),
+                com.powerfactor.client.weapon.WeaponClient::renderHud);
     }
 
     @SubscribeEvent
     static void onAddLayers(EntityRenderersEvent.AddLayers event) {
+        PowerArmorModels.invalidate();
         for (var skin : event.getSkins()) {
             net.minecraft.client.renderer.entity.player.AvatarRenderer<net.minecraft.client.player.AbstractClientPlayer> renderer =
                     event.getPlayerRenderer(skin);
@@ -144,6 +172,8 @@ public final class PowerFactorClient {
         event.registerLayerDefinition(EngineRenderer.LAYER, EngineRenderer::createLayer);
         event.registerLayerDefinition(JetpackLayer.LAYER, JetpackLayer::createLayer);
         event.registerLayerDefinition(PowerArmorLayer.LAYER, PowerArmorLayer::createLayer);
+        event.registerLayerDefinition(PowerArmorModel.LAYER, PowerArmorModel::createLayer);
+        event.registerLayerDefinition(PowerArmorModel.BABY_LAYER, PowerArmorModel::createBabyLayer);
         event.registerLayerDefinition(WingsuitLayer.LAYER, WingsuitLayer::createLayer);
         event.registerLayerDefinition(GrappleHookRenderer.LAYER, GrappleHookRenderer::createLayer);
         event.registerLayerDefinition(GrappleWristLayer.LAYER, GrappleWristLayer::createLayer);
@@ -152,6 +182,13 @@ public final class PowerFactorClient {
         event.registerLayerDefinition(WorkshopRenderer.LAYER, WorkshopRenderer::createLayer);
         event.registerLayerDefinition(SteamPlantRenderer.LAYER, SteamPlantRenderer::createLayer);
         event.registerLayerDefinition(LaserEngraverRenderer.LAYER, LaserEngraverRenderer::createLayer);
+        event.registerLayerDefinition(RobotArmRenderer.LAYER, RobotArmRenderer::createLayer);
+        event.registerLayerDefinition(HoverBikeRenderer.LAYER, HoverBikeRenderer::createLayer);
+        event.registerLayerDefinition(MechRenderer.LAYER, MechRenderer::createLayer);
+        event.registerLayerDefinition(com.powerfactor.client.quantum.OrbitalCollectorRenderer.LAYER, com.powerfactor.client.quantum.OrbitalCollectorRenderer::createLayer);
+        event.registerLayerDefinition(com.powerfactor.client.weapon.MeteorRenderer.LAYER, com.powerfactor.client.weapon.MeteorRenderer::createLayer);
+        event.registerLayerDefinition(com.powerfactor.client.defense.TurretRenderer.PLASMA, com.powerfactor.client.defense.TurretRenderer::plasmaLayer);
+        event.registerLayerDefinition(com.powerfactor.client.defense.TurretRenderer.RAIL, com.powerfactor.client.defense.TurretRenderer::railLayer);
         event.registerLayerDefinition(TurbineRotorRenderer.LAYER, TurbineRotorRenderer::createLayer);
         event.registerLayerDefinition(EnderCoreRenderer.LAYER, EnderCoreRenderer::createLayer);
         event.registerLayerDefinition(WindTurbineRenderer.LAYER, WindTurbineRenderer::createLayer);
@@ -166,7 +203,31 @@ public final class PowerFactorClient {
     @SubscribeEvent
     static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(com.powerfactor.registry.ModEntities.GRAPPLE_HOOK.get(), GrappleHookRenderer::new);
+        event.registerEntityRenderer(com.powerfactor.registry.ModQuantum.PLASMA_BOLT.get(), com.powerfactor.client.weapon.WeaponRenderers.Plasma::new);
+        event.registerEntityRenderer(com.powerfactor.registry.ModQuantum.METEOR.get(), com.powerfactor.client.weapon.MeteorRenderer::new);
+        event.registerEntityRenderer(com.powerfactor.registry.ModQuantum.SINGULARITY_ENTITY.get(), com.powerfactor.client.weapon.WeaponRenderers.Singularity::new);
         event.registerEntityRenderer(com.powerfactor.registry.ModEntities.ELECTRIC_ROVER.get(), RoverRenderer::new);
+        event.registerEntityRenderer(com.powerfactor.registry.ModEntities.HOVER_BIKE.get(), HoverBikeRenderer::new);
+        event.registerEntityRenderer(com.powerfactor.registry.ModEntities.MECH.get(), MechRenderer::new);
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.STARFORGE_BE.get(), com.powerfactor.client.quantum.StarforgeRenderer::new);
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.FUSION_REACTOR_BE.get(), com.powerfactor.client.quantum.FusionRenderer::new);
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.ORBITAL_COLLECTOR_BE.get(), PowerConnections.wrap(com.powerfactor.client.quantum.OrbitalCollectorRenderer::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.SPACE_ELEVATOR_BE.get(), PowerConnections.wrap(com.powerfactor.client.quantum.SpaceElevatorRenderer::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.GRAVITY_LIFT_BE.get(), PowerConnections.wrap(GravityLiftRenderer::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.ROBOT_ARM_BE.get(), PowerConnections.wrap(RobotArmRenderer::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.TELEPORTER_BE.get(), PowerConnections.wrap(com.powerfactor.client.quantum.TeleporterRenderer::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModDefense.SHIELD_GENERATOR_BE.get(), PowerConnections.wrap(com.powerfactor.client.defense.ShieldRenderer::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModDefense.PLASMA_TURRET_BE.get(), PowerConnections.wrap(com.powerfactor.client.defense.TurretRenderer::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModDefense.RAIL_TURRET_BE.get(), PowerConnections.wrap(com.powerfactor.client.defense.TurretRenderer::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.COLLIDER_BE.get(), PowerConnections.wrap(com.powerfactor.client.quantum.QuantumRenderers.Collider::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.ZERO_POINT_BE.get(), PowerConnections.wrap(com.powerfactor.client.quantum.QuantumRenderers.ZeroPoint::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.QUARRY_BE.get(), PowerConnections.wrap(com.powerfactor.client.quantum.QuarryRenderer::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModQuantum.QUANTUM_QUARRY_BE.get(), PowerConnections.wrap(com.powerfactor.client.quantum.QuarryRenderer::new));
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModStorage.CONTROLLER_BE.get(), com.powerfactor.client.storage.StorageRenderers.Controller::new);
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModStorage.DRIVE_BAY_BE.get(), com.powerfactor.client.storage.StorageRenderers.Drive::new);
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModStorage.PROCESSOR_BE.get(), com.powerfactor.client.storage.StorageRenderers.Processor::new);
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModStorage.QUANTUM_PROCESSOR_BE.get(), com.powerfactor.client.storage.StorageRenderers.Processor::new);
+        event.registerBlockEntityRenderer(com.powerfactor.registry.ModStorage.ASSEMBLER_BE.get(), com.powerfactor.client.storage.StorageRenderers.Assembler::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STEAM_BOILER.get(), PowerConnections.wrap(SteamPlantRenderer::boiler));
         event.registerBlockEntityRenderer(ModBlockEntities.STEAM_TURBINE.get(), PowerConnections.wrap(SteamPlantRenderer::turbine));
         event.registerBlockEntityRenderer(ModBlockEntities.COOLING_TOWER.get(), PowerConnections.wrap(CoolingTowerRenderer::new));
@@ -217,6 +278,22 @@ public final class PowerFactorClient {
 
     @SubscribeEvent
     static void onMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(ModMenus.PIPE_ROUTING.get(), PipeScreen::new);
+        event.register(com.powerfactor.registry.ModQuantum.QUARRY_MENU.get(), com.powerfactor.client.quantum.QuarryScreen::new);
+        event.register(com.powerfactor.registry.ModQuantum.STARFORGE_MENU.get(), com.powerfactor.client.quantum.StarforgeScreen::new);
+        event.register(com.powerfactor.registry.ModQuantum.COLLIDER_MENU.get(), com.powerfactor.client.quantum.QuantumScreens.Collider::new);
+        event.register(com.powerfactor.registry.ModQuantum.ZERO_POINT_MENU.get(), com.powerfactor.client.quantum.QuantumScreens.ZeroPoint::new);
+        event.register(com.powerfactor.registry.ModQuantum.ORBITAL_COLLECTOR_MENU.get(), com.powerfactor.client.quantum.OrbitalCollectorScreen::new);
+        event.register(com.powerfactor.registry.ModQuantum.SPACE_ELEVATOR_MENU.get(), com.powerfactor.client.quantum.SpaceElevatorScreen::new);
+        event.register(com.powerfactor.registry.ModQuantum.LOGIC_CONTROLLER_MENU.get(), LogicControllerScreen::new);
+        event.register(com.powerfactor.registry.ModQuantum.FUSION_MENU.get(), com.powerfactor.client.quantum.FusionScreen::new);
+        event.register(com.powerfactor.registry.ModDefense.SHIELD_MENU.get(), com.powerfactor.client.defense.ShieldScreen::new);
+        event.register(com.powerfactor.registry.ModDefense.TURRET_MENU.get(), com.powerfactor.client.defense.TurretScreen::new);
+        event.register(com.powerfactor.registry.ModStorage.TERMINAL_MENU.get(), com.powerfactor.client.storage.TerminalScreen::new);
+        event.register(com.powerfactor.registry.ModStorage.FLUID_TERMINAL_MENU.get(), com.powerfactor.client.storage.FluidTerminalScreen::new);
+        event.register(com.powerfactor.registry.ModStorage.DRIVE_BAY_MENU.get(), com.powerfactor.client.storage.StorageScreens.DriveBay::new);
+        event.register(com.powerfactor.registry.ModStorage.IO_PORT_MENU.get(), com.powerfactor.client.storage.StorageScreens.IoPort::new);
+        event.register(com.powerfactor.registry.ModStorage.PATTERN_RACK_MENU.get(), com.powerfactor.client.storage.StorageScreens.PatternRack::new);
         event.register(ModMenus.STEAM_BOILER.get(), SteamBoilerScreen::new);
         for (var device : com.powerfactor.steam.ThermalMenu.Device.values()) event.register(ModMenus.THERMAL.get(device).get(), ThermalScreen::new);
         event.register(ModMenus.COAL_TURBINE.get(), CoalTurbineScreen::new);

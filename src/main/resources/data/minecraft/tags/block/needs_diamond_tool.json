@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:deepslate_adamantium_ore",
+    "powerfactor:cortanium_ore",
+    "powerfactor:adamantium_block",
+    "powerfactor:faradaenium_block",
+    "powerfactor:cortanium_block",
+    "powerfactor:qubit_crystal_block",
+    "powerfactor:quantum_alloy_block",
+    "powerfactor:starforge",
+    "powerfactor:starforge_frame",
+    "powerfactor:starforge_pylon",
+    "powerfactor:starforge_crucible"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "HH",
+    "HS",
+    " S"
+  ],
+  "key": {
+    "H": "#c:ingots/faradaenium",
+    "S": "#c:rods/blaze"
+  },
+  "result": {
+    "id": "powerfactor:faradaenium_axe",
+    "count": 1
+  }
+}

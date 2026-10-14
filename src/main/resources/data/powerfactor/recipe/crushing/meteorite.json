@@ -1,0 +1,26 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "powerfactor:meteorite",
+  "result": {
+    "item": "minecraft:raw_iron",
+    "count": 2
+  },
+  "bonus": [
+    {
+      "item": "powerfactor:raw_adamantium",
+      "chance": 0.15
+    },
+    {
+      "item": "powerfactor:raw_faradaenium",
+      "chance": 0.1
+    },
+    {
+      "item": "powerfactor:qubit_crystal",
+      "chance": 0.1
+    },
+    {
+      "item": "powerfactor:cortanium_shard",
+      "chance": 0.04
+    }
+  ]
+}

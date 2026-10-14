@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "HHH",
+    "H H",
+    "H H"
+  ],
+  "key": {
+    "H": "#c:ingots/adamantium"
+  },
+  "result": {
+    "id": "powerfactor:adamantium_leggings",
+    "count": 1
+  }
+}

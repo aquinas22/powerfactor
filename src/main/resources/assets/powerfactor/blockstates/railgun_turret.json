@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=north,running=false": {
+      "model": "powerfactor:block/railgun_turret"
+    },
+    "facing=north,running=true": {
+      "model": "powerfactor:block/railgun_turret_on"
+    },
+    "facing=south,running=false": {
+      "model": "powerfactor:block/railgun_turret"
+    },
+    "facing=south,running=true": {
+      "model": "powerfactor:block/railgun_turret_on"
+    },
+    "facing=east,running=false": {
+      "model": "powerfactor:block/railgun_turret"
+    },
+    "facing=east,running=true": {
+      "model": "powerfactor:block/railgun_turret_on"
+    },
+    "facing=west,running=false": {
+      "model": "powerfactor:block/railgun_turret"
+    },
+    "facing=west,running=true": {
+      "model": "powerfactor:block/railgun_turret_on"
+    }
+  }
+}

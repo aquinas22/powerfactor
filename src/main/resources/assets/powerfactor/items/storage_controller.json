@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "powerfactor:block/storage_controller_on"
+  }
+}

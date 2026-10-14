@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GQG",
+    "QMQ",
+    "GQG"
+  ],
+  "key": {
+    "G": "#c:dusts/glowstone",
+    "Q": "#c:gems/quartz",
+    "M": "powerfactor:memory_chip"
+  },
+  "result": {
+    "id": "powerfactor:data_core",
+    "count": 2
+  }
+}

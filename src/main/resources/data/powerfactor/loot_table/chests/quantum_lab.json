@@ -1,0 +1,143 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:written_book",
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "minecraft:written_book_content": {
+                  "title": {
+                    "raw": "Lab Journal"
+                  },
+                  "author": "Dr. E. Voss",
+                  "generation": 2,
+                  "pages": [
+                    {
+                      "raw": "Day 1. The collider ran clean at 4M FE. Two qubits per diamond, exactly as predicted. The team is giddy."
+                    },
+                    {
+                      "raw": "Day 9. We pushed it to 80M FE to try for a stable singularity. The ring sang. Something sang back."
+                    },
+                    {
+                      "raw": "Day 10. There is a hum in the walls that the instruments cannot place. Crystals are growing in the panels overnight."
+                    },
+                    {
+                      "raw": "Day 12. Small grey things came through the north corner where the field pinched. Endermites, or something wearing their shape."
+                    },
+                    {
+                      "raw": "Day 13. We cannot close the rift; it feeds on the collider's residual charge. Sealing the lab. If you find this: do not power the ring."
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": {
+        "min": 3,
+        "max": 6
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:qubit_crystal",
+          "weight": 20,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 2,
+                "max": 8
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:quantum_dust",
+          "weight": 18,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 2,
+                "max": 6
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:entangled_pair",
+          "weight": 10,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 1,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:raw_adamantium",
+          "weight": 10,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 1,
+                "max": 3
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:data_core",
+          "weight": 10,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 1,
+                "max": 4
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:quantum_processor",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:exotic_matter",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:fluid_cell_4k",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:storage_cell_16k",
+          "weight": 4
+        }
+      ]
+    }
+  ]
+}

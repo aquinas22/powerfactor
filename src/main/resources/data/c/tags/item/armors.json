@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:adamantium_helmet",
+    "powerfactor:adamantium_chestplate",
+    "powerfactor:adamantium_leggings",
+    "powerfactor:adamantium_boots",
+    "powerfactor:faradaenium_helmet",
+    "powerfactor:faradaenium_chestplate",
+    "powerfactor:faradaenium_leggings",
+    "powerfactor:faradaenium_boots",
+    "powerfactor:cortanium_helmet",
+    "powerfactor:cortanium_chestplate",
+    "powerfactor:cortanium_leggings",
+    "powerfactor:cortanium_boots",
+    "powerfactor:quantum_helmet",
+    "powerfactor:quantum_chestplate",
+    "powerfactor:quantum_leggings",
+    "powerfactor:quantum_boots"
+  ]
+}

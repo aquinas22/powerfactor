@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:adamantium_hoe",
+    "powerfactor:faradaenium_hoe",
+    "powerfactor:cortanium_hoe",
+    "powerfactor:quantum_hoe",
+    "powerfactor:diamond_paxel",
+    "powerfactor:netherite_paxel",
+    "powerfactor:adamantium_paxel",
+    "powerfactor:faradaenium_paxel",
+    "powerfactor:cortanium_paxel",
+    "powerfactor:quantum_paxel"
+  ]
+}

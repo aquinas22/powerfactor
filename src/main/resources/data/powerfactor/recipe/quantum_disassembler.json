@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "AQA",
+    " C ",
+    " G "
+  ],
+  "key": {
+    "A": "#c:ingots/quantum_alloy",
+    "Q": "powerfactor:quantum_processor",
+    "C": "powerfactor:electric_drill",
+    "G": "powerfactor:capacitor"
+  },
+  "result": {
+    "id": "powerfactor:quantum_disassembler",
+    "count": 1
+  }
+}

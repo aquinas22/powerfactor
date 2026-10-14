@@ -25,8 +25,8 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
     private static final int HISTORY = 120;
     private static final int BTN_X = 216, BTN_W = 32, BTN_H = 12;
 
-    private static final int BG = 0xFF0A100D, PANEL = 0xFF111C17, GRID = 0xFF1B2B23;
-    private static final int TEXT = 0xFFB8F5C0, DIM = 0xFF5F8A66, AMBER = 0xFFFFB020;
+    private static final int BG = Skin.INK, PANEL = Skin.SURFACE, GRID = 0xFF28424C;
+    private static final int TEXT = Skin.LCD_TEXT, DIM = Skin.LCD_DIM, AMBER = Skin.OUTPUT;
     private static final int[] LAMP = {0xFF3A3F3C, 0xFF55FF55, 0xFFFFB020, 0xFFFF4040};
 
     private List<ScadaReading> readings = List.of();
@@ -86,17 +86,17 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
     public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
         super.extractBackground(g, mouseX, mouseY, a);
         int x = leftPos, y = topPos;
-        // Steel bezel around a dark screen.
-        g.fill(x - 3, y - 3, x + W + 3, y + H + 3, 0xFF2B3036);
-        g.fill(x - 2, y - 2, x + W + 2, y + H + 2, 0xFF6F767D);
-        g.fill(x - 1, y - 1, x + W + 1, y + H + 1, 0xFF1A1D20);
+        // The control-room monitor sits in the same bright chassis as every other screen.
+        Skin.panel(g, x - 7, y - 7, W + 14, H + 14);
+        g.fill(x - 2, y - 2, x + W + 2, y + H + 2, 0xFF6F8797);
+        g.fill(x - 1, y - 1, x + W + 1, y + H + 1, 0xFF0A1016);
         g.fill(x, y, x + W, y + H, BG);
         // Header and totals panels.
-        g.fill(x, y, x + W, y + 14, 0xFF16362A);
+        g.fill(x, y, x + W, y + 14, 0xFF244940);
         g.fill(x + 4, y + 18, x + W - 4, y + 42, PANEL);
         // Faint scanlines.
         for (int sy = y + 46; sy < y + H; sy += 2) {
-            g.fill(x, sy, x + W, sy + 1, 0xFF0C1310);
+            g.fill(x, sy, x + W, sy + 1, 0xFF13232C);
         }
         trend(g, x + 4, y + TREND_Y, W - 8, TREND_H);
         for (int i = 0; i < ROWS; i++) {

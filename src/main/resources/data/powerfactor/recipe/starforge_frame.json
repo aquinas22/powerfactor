@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "APA",
+    "PDP",
+    "APA"
+  ],
+  "key": {
+    "A": "#c:ingots/adamantium",
+    "P": "#c:plates/steel",
+    "D": "#c:dusts/quantum"
+  },
+  "result": {
+    "id": "powerfactor:starforge_frame",
+    "count": 2
+  }
+}

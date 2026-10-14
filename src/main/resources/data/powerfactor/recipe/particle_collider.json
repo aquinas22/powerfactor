@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AEA",
+    "QSQ",
+    "ACA"
+  ],
+  "key": {
+    "A": "#c:ingots/quantum_alloy",
+    "E": "powerfactor:electric_motor",
+    "Q": "powerfactor:quantum_processor",
+    "S": "#c:storage_blocks/faradaenium",
+    "C": "powerfactor:capacitor_bank"
+  },
+  "result": {
+    "id": "powerfactor:particle_collider",
+    "count": 1
+  }
+}

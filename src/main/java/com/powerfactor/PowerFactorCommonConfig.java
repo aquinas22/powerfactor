@@ -12,7 +12,7 @@ public final class PowerFactorCommonConfig {
     static {
         BUILDER.comment("Ore generation. Turn one off if another mod in your pack already provides that metal;",
                 "PowerFactor's machines and recipes use common c: tags, so other mods' ores work everywhere.").push("worldgen");
-        for (String ore : new String[] {"zinc", "tin", "lead", "silver", "bauxite"}) {
+        for (String ore : new String[] {"zinc", "tin", "lead", "silver", "bauxite", "adamantium", "faradaenium", "cortanium", "qubit"}) {
             ORE_GEN.put(ore, BUILDER.define("generate_" + ore + "_ore", true));
         }
     }
@@ -20,6 +20,8 @@ public final class PowerFactorCommonConfig {
     public static final ModConfigSpec.BooleanValue RUBBER_TREES = BUILDER.define("generate_rubber_trees", true);
     public static final ModConfigSpec.BooleanValue OIL = BUILDER.comment("Underground crude oil reservoirs and desert tar pits")
             .define("generate_oil", true);
+    public static final ModConfigSpec.BooleanValue QUANTUM_LABS = BUILDER.comment("Rare abandoned quantum labs sealed deep in deepslate")
+            .define("generate_quantum_labs", true);
 
     static {
         BUILDER.pop();
@@ -36,6 +38,9 @@ public final class PowerFactorCommonConfig {
         }
         if (feature.equals("oil")) {
             return OIL.get();
+        }
+        if (feature.equals("quantum_labs")) {
+            return QUANTUM_LABS.get();
         }
         var value = ORE_GEN.get(feature);
         return value == null || value.get();

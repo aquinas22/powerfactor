@@ -5,6 +5,9 @@
     "powerfactor:deepslate_tin_ore",
     "powerfactor:deepslate_lead_ore",
     "powerfactor:deepslate_silver_ore",
-    "powerfactor:deepslate_bauxite_ore"
+    "powerfactor:deepslate_bauxite_ore",
+    "powerfactor:deepslate_adamantium_ore",
+    "powerfactor:cortanium_ore",
+    "powerfactor:qubit_ore"
   ]
 }

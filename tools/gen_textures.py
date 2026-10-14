@@ -6869,4 +6869,16 @@ if __name__ == "__main__":
     phase_movement()
     phase_rover()
     phase_machine_polish()
+    from machine_finish import generate_textures as finish_textures
+    finish_textures()
+    from logistics_art import generate_textures as logistics_textures
+    logistics_textures()
+    from armor_finish import generate_textures as armor_textures
+    armor_textures()
+    from storage_art import generate_textures as storage_textures
+    storage_textures()
+    from fx_art import generate_textures as fx_textures
+    fx_textures()
+    from quantum_art import generate_textures as quantum_textures
+    quantum_textures()
     print("textures written to", os.path.normpath(ROOT))

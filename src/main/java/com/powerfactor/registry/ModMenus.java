@@ -56,6 +56,8 @@ public final class ModMenus {
             () -> IMenuTypeExtension.create(com.powerfactor.item.DrillMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.logistics.PumpMenu>> ELECTRIC_PUMP = MENUS.register("electric_pump",
             () -> IMenuTypeExtension.create(com.powerfactor.logistics.PumpMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<com.powerfactor.logistics.PipeMenu>> PIPE_ROUTING = MENUS.register("pipe_routing",
+            () -> IMenuTypeExtension.create(com.powerfactor.logistics.PipeMenu::new));
 
     public static final java.util.Map<RecipeMachine, DeferredHolder<MenuType<?>, MenuType<RecipeMachineMenu>>> RECIPE_MACHINES =
             new java.util.EnumMap<>(RecipeMachine.class);

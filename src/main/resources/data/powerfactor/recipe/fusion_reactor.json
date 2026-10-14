@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MQM",
+    "ZXZ",
+    "CCC"
+  ],
+  "key": {
+    "M": "powerfactor:fusion_magnet",
+    "Q": "powerfactor:quantum_processor",
+    "Z": "powerfactor:exotic_matter",
+    "X": "powerfactor:capacitor_bank",
+    "C": "powerfactor:fusion_casing"
+  },
+  "result": {
+    "id": "powerfactor:fusion_reactor",
+    "count": 1
+  }
+}

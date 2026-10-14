@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GOG",
+    "GQG",
+    "GOG"
+  ],
+  "key": {
+    "G": "powerfactor:graphite",
+    "O": "powerfactor:optical_fiber",
+    "Q": "#c:ingots/quantum_alloy"
+  },
+  "result": {
+    "id": "powerfactor:nanotube_tether",
+    "count": 2
+  }
+}

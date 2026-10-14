@@ -14,7 +14,7 @@ public final class RoverClient {
     private static int seat = -1;
     public static void tick() {
         var mc = Minecraft.getInstance(); if (mc.player == null || mc.level == null) { SOUNDS.clear(); seat = -1; return; }
-        if (mc.player.getVehicle() instanceof RoverEntity rover && rover.driver() == mc.player) {
+        if (mc.player.getVehicle() instanceof RoverEntity rover && rover.driver() == mc.player && !AgentWorkbenchClient.scriptedDrive()) {
             if (seat != rover.getId()) { seat = rover.getId(); mc.player.setYRot(rover.getYRot()); mc.player.setXRot(8); }
             var keys = mc.player.input.keyPresses;
             float throttle = mc.gui.screen() == null ? (keys.forward() ? 1 : 0) - (keys.backward() ? 1 : 0) : 0;

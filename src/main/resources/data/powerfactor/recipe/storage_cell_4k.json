@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:cell_housing",
+    "powerfactor:data_core",
+    "powerfactor:data_core",
+    "powerfactor:microprocessor"
+  ],
+  "result": {
+    "id": "powerfactor:storage_cell_4k",
+    "count": 1
+  }
+}

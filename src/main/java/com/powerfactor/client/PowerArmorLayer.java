@@ -35,7 +35,7 @@ public final class PowerArmorLayer extends RenderLayer<AvatarRenderState, Player
         root.addOrReplaceChild("helmet", CubeListBuilder.create().texOffs(0, 0)
                 .addBox(-5.7F, -8.5F, -4.2F, 1, 5, 8).addBox(4.7F, -8.5F, -4.2F, 1, 5, 8)
                 .texOffs(24, 0).addBox(-2.5F, -3.2F, -5.8F, 5, 2.5F, 1.2F), PartPose.ZERO);
-        root.addOrReplaceChild("visor", CubeListBuilder.create().texOffs(80, 0).addBox(-3.9F, -6.8F, -5.15F, 7.8F, 2.7F, 0.1F), PartPose.ZERO);
+        root.addOrReplaceChild("visor", CubeListBuilder.create().texOffs(80, 0).addBox(-3.9F, -6.45F, -5.05F, 7.8F, 2.4F, 0.1F), PartPose.ZERO);
         root.addOrReplaceChild("chest", CubeListBuilder.create().texOffs(0, 20)
                 .addBox(-4.4F, 0.5F, -3.2F, 8.8F, 7, 1).texOffs(24, 20).addBox(-3, 1, 2.8F, 6, 8, 1.8F)
                 .texOffs(0, 42).addBox(-4.4F, 9, -2.9F, 8.8F, 2, 5.8F), PartPose.ZERO);
@@ -46,7 +46,7 @@ public final class PowerArmorLayer extends RenderLayer<AvatarRenderState, Player
         root.addOrReplaceChild("piston", CubeListBuilder.create().texOffs(70, 22).addBox(-0.5F, 3, 3.3F, 1, 4, 0.8F), PartPose.ZERO);
         root.addOrReplaceChild("boot", CubeListBuilder.create().texOffs(44, 42).addBox(-3.3F, 8, -3.7F, 6.6F, 5, 7)
                 .texOffs(72, 42).addBox(-3.4F, 8.5F, -3.4F, 6.8F, 1, 6.8F), PartPose.ZERO);
-        root.addOrReplaceChild("lamp", CubeListBuilder.create().texOffs(80, 0).addBox(-2, 4, -3.3F, 4, 0.6F, 0.15F), PartPose.ZERO);
+        root.addOrReplaceChild("lamp", CubeListBuilder.create().texOffs(80, 0).addBox(-1.8F, 4.5F, -4.13F, 3.6F, 0.6F, 0.15F), PartPose.ZERO);
         return LayerDefinition.create(mesh, 128, 64);
     }
     @Override public void submit(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, float yaw, float pitch) {
@@ -59,16 +59,11 @@ public final class PowerArmorLayer extends RenderLayer<AvatarRenderState, Player
             if (!(stack.getItem() instanceof PowerArmorItem armor) || armor.part() != part) continue;
             int glow = PoweredItem.energy(stack) > 0 ? 0xFF53E6F2 : 0xFF455961;
             if (part == PowerArmorItem.Part.HELMET) {
-                draw(helmet, model.head, pose, collector, light, -1, false);
                 draw(visor, model.head, pose, collector, light, glow, PoweredItem.energy(stack) > 0);
             } else if (part == PowerArmorItem.Part.CHEST) {
-                draw(chest, model.body, pose, collector, light, -1, false);
                 draw(lamp, model.body, pose, collector, light, glow, PoweredItem.energy(stack) > 0);
-                draw(shoulder, model.leftArm, pose, collector, light, -1, false);
-                draw(shoulder, model.rightArm, pose, collector, light, -1, false);
             } else {
                 for (var leg : new ModelPart[] {model.leftLeg, model.rightLeg}) {
-                    draw(part == PowerArmorItem.Part.LEGS ? servo : boot, leg, pose, collector, light, -1, false);
                     if (part == PowerArmorItem.Part.LEGS) {
                         pose.pushPose(); leg.translateAndRotate(pose);
                         float extension = PowerArmorItem.assists(stack) && PoweredItem.energy(stack) > 0 ? 1 + Math.abs(leg.xRot) * 0.16F : 1;

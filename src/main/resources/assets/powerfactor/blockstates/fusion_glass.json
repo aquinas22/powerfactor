@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/fusion_glass"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/fusion_glass"
+    }
+  }
+}

@@ -34,6 +34,12 @@ public final class MovementPayloads {
         registrar.playToServer(RoverInput.TYPE, RoverInput.CODEC, (packet, context) -> {
             if (context.player().getVehicle() instanceof com.powerfactor.vehicle.RoverEntity rover)
                 rover.input(context.player(), packet.throttle(), packet.steer(), packet.brake(), packet.boost());
+            // The hover-bike reads the same controls; "brake" is the Jump key, which lifts its cushion.
+            else if (context.player().getVehicle() instanceof com.powerfactor.vehicle.HoverBikeEntity bike)
+                bike.input(context.player(), packet.throttle(), packet.steer(), false, packet.boost(), packet.brake());
+            // The mech too: Sprint runs, Jump fires the jump-jets.
+            else if (context.player().getVehicle() instanceof com.powerfactor.vehicle.MechEntity mech)
+                mech.input(context.player(), packet.throttle(), packet.steer(), packet.boost(), packet.brake());
         });
         registrar.playToServer(GrappleAction.TYPE, GrappleAction.CODEC, (packet, context) -> {
             if (packet.action() == 0) GrappleServer.toggle(context.player());

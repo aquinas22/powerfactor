@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:grid_terminal",
+    "minecraft:crafting_table",
+    "powerfactor:advanced_circuit"
+  ],
+  "result": {
+    "id": "powerfactor:crafting_terminal",
+    "count": 1
+  }
+}

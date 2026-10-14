@@ -100,6 +100,10 @@ public final class ToolPayloads {
     public static void register(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
         com.powerfactor.movement.MovementPayloads.register(registrar);
+        com.powerfactor.storage.GridPayloads.register(registrar);
+        com.powerfactor.storage.fluid.FluidPayloads.register(registrar);
+        registrar.playToClient(com.powerfactor.weapon.FxPayload.TYPE, com.powerfactor.weapon.FxPayload.STREAM_CODEC,
+                (payload, context) -> com.powerfactor.weapon.FxPayload.handler.accept(payload));
         registrar.playToServer(MeterRequest.TYPE, MeterRequest.STREAM_CODEC, (payload, context) -> {
             if (!(context.player() instanceof ServerPlayer player) || !(player.level() instanceof ServerLevel level)) {
                 return;

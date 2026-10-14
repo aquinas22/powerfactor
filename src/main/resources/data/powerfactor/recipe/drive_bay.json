@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PCP",
+    "H H",
+    "PCP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "C": "powerfactor:control_circuit",
+    "H": "powerfactor:cell_housing"
+  },
+  "result": {
+    "id": "powerfactor:drive_bay",
+    "count": 1
+  }
+}

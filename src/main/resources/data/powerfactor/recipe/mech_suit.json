@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SPS",
+    "AJA",
+    "L L"
+  ],
+  "key": {
+    "S": "#c:storage_blocks/steel",
+    "P": "powerfactor:power_chestplate",
+    "A": "#c:ingots/adamantium",
+    "J": "powerfactor:electric_jetpack",
+    "L": "powerfactor:electric_motor"
+  },
+  "result": {
+    "id": "powerfactor:mech_suit",
+    "count": 1
+  }
+}

@@ -98,6 +98,11 @@ python3 tools/check_resources.py
 ```
 
 The grapple and wingsuit are implemented; see [their guide](grapple-and-wingsuit.md).
+PowerFactor 0.3.0 adds complete articulated adult/baby foundry models, detailed 256px materials,
+smaller equipment controls and compact hideable overlays. **B** exposes separate suit/movement
+HUD buttons; **F8** toggles both temporarily. Choices persist in the local client configuration.
+See [the foundry suit and reservoir guide](reservoirs-and-foundry-suit.md) for the current models
+and software pose gallery. Older screenshots in this guide show the previous models/UI.
 The remaining vehicle, nuclear and automation plans remain in [TODO.md](../TODO.md).
 
 [Suit model](previews/power-armor.png) · [Fitted jetpack](previews/power-armor-jetpack.png) · [Suit controls](previews/power-armor-gui.png) ·

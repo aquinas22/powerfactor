@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CQC",
+    "ASA",
+    "CXC"
+  ],
+  "key": {
+    "C": "#c:ingots/cortanium",
+    "Q": "powerfactor:quantum_processor",
+    "A": "#c:ingots/quantum_alloy",
+    "S": "powerfactor:singularity",
+    "X": "powerfactor:particle_collider"
+  },
+  "result": {
+    "id": "powerfactor:zero_point_generator",
+    "count": 1
+  }
+}

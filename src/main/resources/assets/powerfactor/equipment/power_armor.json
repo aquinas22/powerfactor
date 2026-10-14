@@ -9,6 +9,11 @@
       {
         "texture": "powerfactor:power_armor"
       }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "powerfactor:power_armor"
+      }
     ]
   }
 }

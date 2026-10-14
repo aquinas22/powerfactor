@@ -41,7 +41,7 @@ public abstract class ProcessingMenu extends MachineMenu {
     /** Where the machine is (client side, for the GUI's 3D view); null if not sent. */
     public net.minecraft.core.@org.jspecify.annotations.Nullable BlockPos pos;
     /** Top of the player inventory in the v2 machine GUIs. */
-    public static final int INVENTORY_V2 = 116;
+    public static final int INVENTORY_V2 = 132;
 
     /** Call after adding the machine's own slots. */
     protected void addUpgradesAndInventory(Inventory inventory, int inventoryTop) {
@@ -88,6 +88,9 @@ public abstract class ProcessingMenu extends MachineMenu {
         int d = unsigned(DATA_DURATION);
         return d == 0 ? 0 : Math.min(1, (float) unsigned(DATA_PROGRESS) / d);
     }
+
+    public int progressTicks() { return unsigned(DATA_PROGRESS); }
+    public int durationTicks() { return unsigned(DATA_DURATION); }
 
     public int fe() {
         return unsigned(DATA_FE);

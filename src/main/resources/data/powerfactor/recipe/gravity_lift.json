@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "FEF",
+    "PMP",
+    "SSS"
+  ],
+  "key": {
+    "F": "#c:ingots/faradaenium",
+    "E": "minecraft:ender_pearl",
+    "P": "#c:plates/steel",
+    "M": "powerfactor:electric_motor",
+    "S": "#c:plates/steel"
+  },
+  "result": {
+    "id": "powerfactor:gravity_lift",
+    "count": 1
+  }
+}

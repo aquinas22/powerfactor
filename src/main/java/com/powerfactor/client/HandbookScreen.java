@@ -37,11 +37,20 @@ public class HandbookScreen extends Screen {
             new Chapter("wire_safety", ModItems.RUBBER.get()),
             new Chapter("chips", ModItems.MICROPROCESSOR.get()),
             new Chapter("radio", ModItems.WALKIE_TALKIE.get()),
-            new Chapter("oil", ModBlocks.PUMPJACK.get()));
+            new Chapter("oil", ModBlocks.PUMPJACK.get()),
+            new Chapter("storage", com.powerfactor.registry.ModStorage.STORAGE_CONTROLLER.get()),
+            new Chapter("exotic", com.powerfactor.registry.ModQuantum.TOOLS.get(com.powerfactor.exotic.ExoticMaterial.QUANTUM)
+                    .get(com.powerfactor.exotic.ExoticTool.Kind.PICKAXE).get()),
+            new Chapter("quarry", com.powerfactor.registry.ModQuantum.QUANTUM_QUARRY.get()),
+            new Chapter("quantum", com.powerfactor.registry.ModQuantum.ZERO_POINT_GENERATOR.get()),
+            new Chapter("arsenal", com.powerfactor.registry.ModQuantum.RAILGUN.get()),
+            new Chapter("starforge", com.powerfactor.registry.ModQuantum.STARFORGE.get()),
+            new Chapter("turrets", com.powerfactor.registry.ModDefense.RAIL_TURRET.get()),
+            new Chapter("fusion", com.powerfactor.registry.ModQuantum.FUSION_REACTOR.get()));
 
     private static final int ROW = 10;
     private static int selected;
-    private static final int W = 340, H = 245, LIST_W = 124;
+    private static final int W = 340, H = Math.max(245, 24 + CHAPTERS.size() * ROW), LIST_W = 124;
     private int left, top, scroll;
     private List<FormattedCharSequence> lines = List.of();
 

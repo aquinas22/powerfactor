@@ -24,7 +24,8 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
  */
 public class PipeBlockEntity extends BlockEntity {
     private static final int INTERVAL = 10, MAX_PIPES = 1024;
-    private int disabledMask;
+    private PipeSettings settings = PipeSettings.DEFAULT;
+    private final PipeFilter[] filters = new PipeFilter[6];
     private int rotation;
 
     public PipeBlockEntity(BlockPos pos, BlockState state) {
@@ -32,16 +33,37 @@ public class PipeBlockEntity extends BlockEntity {
     }
 
     public boolean disabled(Direction side) {
-        return (disabledMask & 1 << side.ordinal()) != 0;
+        return (settings.disabledMask() & 1 << side.ordinal()) != 0;
     }
 
     public void setDisabled(Direction side, boolean disabled) {
-        disabledMask = disabled ? disabledMask | 1 << side.ordinal() : disabledMask & ~(1 << side.ordinal());
+        settings = settings.withDisabled(side, disabled);
         setChanged();
     }
 
+    public PipeSettings settings() { return settings; }
+    public PipeKind kind() { return ((PipeBlock) getBlockState().getBlock()).kind(); }
+    public PipeSettings.Face face(Direction side) { return settings.face(side); }
+    public void setFace(Direction side, PipeSettings.Face filter) {
+        settings = settings.withFace(side, filter);
+        filters[side.ordinal()] = null;
+        setChanged();
+    }
+    public boolean setSample(Direction side, int index, net.minecraft.world.item.ItemStack stack) {
+        if (index < 0 || index >= PipeSettings.SAMPLES) return false;
+        if (!stack.isEmpty() && (PipeFilter.sample(stack, kind()).isEmpty() || !kind().accepts(PipeFilter.sample(stack, kind())))) return false;
+        setFace(side, face(side).withSample(index, stack));
+        return true;
+    }
+    public boolean accepts(Direction side, Resource resource) {
+        if (disabled(side)) return false;
+        PipeFilter filter = filters[side.ordinal()];
+        if (filter == null) filters[side.ordinal()] = filter = new PipeFilter(face(side), kind());
+        return filter.accepts(resource);
+    }
+
     /** A place pipes deliver to: the block, the face it's reached through, and the pipe next to it. */
-    record Endpoint(BlockPos pos, Direction side, BlockPos pipe) {}
+    record Endpoint(BlockPos pos, Direction side, BlockPos pipe, int priority) {}
 
     private final java.util.Map<BlockPos, BlockPos> parents = new java.util.HashMap<>();
 
@@ -58,51 +80,61 @@ public class PipeBlockEntity extends BlockEntity {
                 continue;
             }
             BlockPos sourcePos = pos.relative(d);
+            if (disabled(d) || !level.isLoaded(sourcePos)) continue;
             Object source = level.getCapability(kind.capability, sourcePos, d.getOpposite());
             if (source instanceof ResourceHandler<?> handler) {
-                pull(level, kind, handler, sourcePos, pos, targets);
+                pull(level, kind, handler, sourcePos, pos, d, targets);
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Resource> void pull(ServerLevel level, PipeKind kind, ResourceHandler<?> raw, BlockPos sourcePos, BlockPos start,
+    private <T extends Resource> void pull(ServerLevel level, PipeKind kind, ResourceHandler<?> raw, BlockPos sourcePos, BlockPos start, Direction sourceSide,
             List<Endpoint> targets) {
         ResourceHandler<T> source = (ResourceHandler<T>) raw;
         int budget = kind.batch;
         for (int i = 0; i < source.size() && budget > 0; i++) {
             T resource = source.getResource(i);
-            if (resource.isEmpty() || !kind.accepts(resource)) {
+            if (resource.isEmpty() || !kind.accepts(resource) || !accepts(sourceSide, resource)) {
                 continue;
             }
-            for (int t = 0; t < targets.size() && budget > 0; t++) {
-                Endpoint e = targets.get((t + rotation) % targets.size());
-                if (e.pos().equals(sourcePos)) {
-                    continue;
-                }
-                Object targetRaw = level.getCapability(kind.capability, e.pos(), e.side());
-                if (!(targetRaw instanceof ResourceHandler<?> th)) {
-                    continue;
-                }
-                ResourceHandler<T> target = (ResourceHandler<T>) th;
-                try (Transaction tx = Transaction.openRoot()) {
-                    int accepted;
-                    try (Transaction simulate = Transaction.open(tx)) {
-                        accepted = target.insert(resource, budget, simulate);
-                    }
-                    if (accepted <= 0) {
-                        continue;
-                    }
-                    int got = source.extract(i, resource, accepted, tx);
-                    if (got > 0 && target.insert(resource, got, tx) == got) {
-                        tx.commit();
-                        budget -= got;
-                        show(level, sourcePos, start, e, resource, got);
+            // Rotate peers inside each priority tier; higher-priority destinations remain first.
+            for (int first = 0; first < targets.size() && budget > 0;) {
+                int end = first + 1;
+                while (end < targets.size() && targets.get(end).priority() == targets.get(first).priority()) end++;
+                for (int t = 0; t < end - first && budget > 0; t++) {
+                    Endpoint e = targets.get(first + Math.floorMod(t + rotation, end - first));
+                    if (e.pos().equals(sourcePos)) continue;
+                    if (!level.isLoaded(e.pos()) || !(level.getBlockEntity(e.pipe()) instanceof PipeBlockEntity destination)
+                            || !destination.accepts(e.side().getOpposite(), resource)) continue;
+                    Object targetRaw = level.getCapability(kind.capability, e.pos(), e.side());
+                    if (!(targetRaw instanceof ResourceHandler<?> th)) continue;
+                    ResourceHandler<T> target = (ResourceHandler<T>) th;
+                    if (target == source) continue;
+                    int moved = move(source, i, target, resource, budget);
+                    if (moved > 0) {
+                        budget -= moved;
+                        show(level, sourcePos, start, e, resource, moved);
                     }
                 }
+                first = end;
             }
         }
-        rotation++;
+        rotation = (rotation + 1) & Integer.MAX_VALUE;
+    }
+
+    private static <T extends Resource> int move(ResourceHandler<T> source, int slot, ResourceHandler<T> target, T resource, int budget) {
+        try (Transaction tx = Transaction.openRoot()) {
+            int accepted;
+            try (Transaction simulate = Transaction.open(tx)) {
+                accepted = Math.clamp(target.insert(resource, budget, simulate), 0, budget);
+            }
+            if (accepted <= 0) return 0;
+            int got = source.extract(slot, resource, accepted, tx);
+            if (got <= 0 || got > accepted || target.insert(resource, got, tx) != got) return 0;
+            tx.commit();
+            return got;
+        }
     }
 
     /** Tell nearby players what just went through, so the glass pipes can show it travelling. */
@@ -133,7 +165,7 @@ public class PipeBlockEntity extends BlockEntity {
         parents.clear();
         seen.add(start);
         queue.add(start);
-        while (!queue.isEmpty() && seen.size() < MAX_PIPES) {
+        while (!queue.isEmpty()) {
             BlockPos p = queue.poll();
             BlockState s = level.getBlockState(p);
             if (s.getBlock() != pipe) {
@@ -142,26 +174,43 @@ public class PipeBlockEntity extends BlockEntity {
             for (Direction d : Direction.values()) {
                 PipeSide side = s.getValue(PipeBlock.SIDES.get(d));
                 BlockPos next = p.relative(d);
-                if (side == PipeSide.PIPE && level.isLoaded(next) && seen.add(next)) {
+                if (!level.isLoaded(next) || level.getBlockEntity(p) instanceof PipeBlockEntity owner && owner.disabled(d)) continue;
+                if (side == PipeSide.PIPE && seen.size() < MAX_PIPES && level.getBlockState(next).getBlock() == pipe
+                        && level.getBlockState(next).getValue(PipeBlock.SIDES.get(d.getOpposite())) == PipeSide.PIPE
+                        && !(level.getBlockEntity(next) instanceof PipeBlockEntity neighbour && neighbour.disabled(d.getOpposite())) && seen.add(next)) {
                     parents.put(next, p);
                     queue.add(next);
                 } else if (side == PipeSide.INSERT) {
-                    out.add(new Endpoint(next, d.getOpposite(), p));
+                    int priority = level.getBlockEntity(p) instanceof PipeBlockEntity owner ? owner.face(d).priority() : 0;
+                    out.add(new Endpoint(next, d.getOpposite(), p, priority));
                 }
             }
         }
+        out.sort(java.util.Comparator.comparingInt(Endpoint::priority).reversed());
         return out;
     }
 
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
-        disabledMask = input.getIntOr("disabled", 0);
+        settings = input.read("routing", PipeSettings.CODEC).orElseGet(() ->
+                new PipeSettings(input.getIntOr("disabled", 0) & 63, PipeSettings.DEFAULT.faces()));
+        java.util.Arrays.fill(filters, null);
     }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
-        output.putInt("disabled", disabledMask);
+        output.store("routing", PipeSettings.CODEC, settings);
+    }
+
+    @Override protected void collectImplicitComponents(net.minecraft.core.component.DataComponentMap.Builder components) {
+        super.collectImplicitComponents(components);
+        if (!settings.equals(PipeSettings.DEFAULT)) components.set(com.powerfactor.registry.ModComponents.PIPE_SETTINGS.get(), settings);
+    }
+    @Override protected void applyImplicitComponents(net.minecraft.core.component.DataComponentGetter components) {
+        super.applyImplicitComponents(components);
+        var saved = components.get(com.powerfactor.registry.ModComponents.PIPE_SETTINGS.get());
+        if (saved != null) { settings = saved; java.util.Arrays.fill(filters, null); }
     }
 }

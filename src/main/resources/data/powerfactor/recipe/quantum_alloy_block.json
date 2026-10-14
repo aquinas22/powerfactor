@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "III",
+    "III",
+    "III"
+  ],
+  "key": {
+    "I": "powerfactor:quantum_alloy_ingot"
+  },
+  "result": {
+    "id": "powerfactor:quantum_alloy_block",
+    "count": 1
+  }
+}

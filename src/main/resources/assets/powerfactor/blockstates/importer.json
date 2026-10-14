@@ -1,0 +1,50 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "powerfactor:block/importer"
+    },
+    "active=true,facing=north": {
+      "model": "powerfactor:block/importer_on"
+    },
+    "active=false,facing=south": {
+      "model": "powerfactor:block/importer",
+      "y": 180
+    },
+    "active=true,facing=south": {
+      "model": "powerfactor:block/importer_on",
+      "y": 180
+    },
+    "active=false,facing=east": {
+      "model": "powerfactor:block/importer",
+      "y": 90
+    },
+    "active=true,facing=east": {
+      "model": "powerfactor:block/importer_on",
+      "y": 90
+    },
+    "active=false,facing=west": {
+      "model": "powerfactor:block/importer",
+      "y": 270
+    },
+    "active=true,facing=west": {
+      "model": "powerfactor:block/importer_on",
+      "y": 270
+    },
+    "active=false,facing=up": {
+      "model": "powerfactor:block/importer",
+      "x": 270
+    },
+    "active=true,facing=up": {
+      "model": "powerfactor:block/importer_on",
+      "x": 270
+    },
+    "active=false,facing=down": {
+      "model": "powerfactor:block/importer",
+      "x": 90
+    },
+    "active=true,facing=down": {
+      "model": "powerfactor:block/importer_on",
+      "x": 90
+    }
+  }
+}

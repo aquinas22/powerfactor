@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PDP",
+    "MCM",
+    "PGP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "D": "powerfactor:drill_head",
+    "M": "powerfactor:electric_motor",
+    "C": "powerfactor:advanced_circuit",
+    "G": "powerfactor:steel_gear"
+  },
+  "result": {
+    "id": "powerfactor:quarry",
+    "count": 1
+  }
+}

@@ -19,6 +19,9 @@
     "powerfactor:cooling_tower",
     "powerfactor:geothermal_generator",
     "powerfactor:thermoelectric_generator",
-    "powerfactor:rain_collector"
+    "powerfactor:rain_collector",
+    "powerfactor:faradaenium_ore",
+    "powerfactor:qubit_ore",
+    "powerfactor:meteorite"
   ]
 }

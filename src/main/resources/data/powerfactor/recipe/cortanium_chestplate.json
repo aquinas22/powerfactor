@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "H H",
+    "HHH",
+    "HHH"
+  ],
+  "key": {
+    "H": "#c:ingots/cortanium"
+  },
+  "result": {
+    "id": "powerfactor:cortanium_chestplate",
+    "count": 1
+  }
+}
