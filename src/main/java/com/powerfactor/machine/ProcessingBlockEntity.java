@@ -40,7 +40,7 @@ import org.jspecify.annotations.Nullable;
  * whatever comes next. Owns the inventory, FE buffer, upgrade slots, auto-eject, and the electrical
  * behavior of its {@link Drive}; subclasses only say what a job is.
  */
-public abstract class ProcessingBlockEntity extends MachineBlockEntity implements ReactiveLoad, com.powerfactor.api.MachineAudio.Looping {
+public abstract class ProcessingBlockEntity extends MachineBlockEntity implements com.powerfactor.upgrade.Upgradeable, ReactiveLoad, com.powerfactor.api.MachineAudio.Looping {
     public enum WorkState { NO_RECIPE, READY, OUTPUT_FULL, NEEDS_FLUID, DISABLED, NO_ENERGY, OUTPUT_UNAVAILABLE }
     /** Matching recipe and its current requirements; blocked work keeps its paid progress. */
     public record Job(net.minecraft.resources.Identifier id, int duration, Component description, WorkState state, Runnable complete) {}

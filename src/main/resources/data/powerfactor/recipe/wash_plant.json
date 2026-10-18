@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MPM",
+    "GCG",
+    "SDS"
+  ],
+  "key": {
+    "M": "powerfactor:electric_motor",
+    "P": "#c:plates/steel",
+    "G": "powerfactor:brass_gear",
+    "C": "powerfactor:advanced_circuit",
+    "S": "#c:ingots/steel",
+    "D": "powerfactor:sluice_box"
+  },
+  "result": {
+    "id": "powerfactor:wash_plant",
+    "count": 1
+  }
+}

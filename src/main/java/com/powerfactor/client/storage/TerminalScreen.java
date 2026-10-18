@@ -63,6 +63,15 @@ public class TerminalScreen extends AbstractContainerScreen<TerminalMenu> {
     private final List<Btn> buttons = new ArrayList<>();
     private int hoveredCell = -1;
 
+    /** The title plate is 60 px: "Crafting Terminal" reads as "Crafting" (the full name is in its tooltip). */
+    private Component plateTitle() {
+        String full = title.getString();
+        if (font.width(full) * 0.85F <= 60) return title;
+        String shorter = full.replace(" Terminal", "");
+        if (font.width(shorter) * 0.85F > 60) shorter = shorter.replace("Wireless ", "").replace("Quantum ", "");
+        return Component.literal(shorter);
+    }
+
     public TerminalScreen(TerminalMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, W, TerminalMenu.height(menu.kind(), menu.rows()));
         this.rows = menu.rows();
@@ -137,7 +146,7 @@ public class TerminalScreen extends AbstractContainerScreen<TerminalMenu> {
             default -> 0xFF505A60;
         };
         Skin.lamp(g, x + 11, y + 6, lamp);
-        g.text(font, Skin.fit(font, title, 60), x + 19, y + 6, Skin.TEXT, false);
+        Skin.condensed(g, font, plateTitle(), x + 19, y + 6, 60, Skin.TEXT);
         Skin.lcd(g, x + 81, y + 3, 93, 14);
         // Side tabs.
         sideTabs(g, mx, my, t);
@@ -241,10 +250,11 @@ public class TerminalScreen extends AbstractContainerScreen<TerminalMenu> {
     private void lowerArea(GuiGraphicsExtractor g, int x, int y, int mx, int my, long t) {
         switch (menu.kind()) {
             case CRAFTING -> {
-                for (int i = 0; i < 9; i++) Skin.slot(g, x + 29 + (i % 3) * 18, y + (i / 3) * 18 + 0 + 0, Skin.INPUT);
-                Skin.chevrons(g, x + 90, y + 23, 3, 1, !menu.getSlot(0).getItem().isEmpty());
-                Skin.bigSlot(g, x + 119, y + 14, Skin.OUTPUT);
-                miniButton(g, x + 12, y + 18, Component.literal("✕"), Skin.DIM, mx, my, Component.translatable("gui.powerfactor.terminal.clear_grid"),
+                // Clear, grid, chevrons and result as one group centred on the item grid above (x 90).
+                for (int i = 0; i < 9; i++) Skin.slot(g, x + 41 + (i % 3) * 18, y + (i / 3) * 18, Skin.INPUT);
+                Skin.chevrons(g, x + 102, y + 23, 3, 1, !menu.getSlot(0).getItem().isEmpty());
+                Skin.bigSlot(g, x + 131, y + 14, Skin.OUTPUT);
+                miniButton(g, x + 22, y + 18, Component.literal("✕"), Skin.DIM, mx, my, Component.translatable("gui.powerfactor.terminal.clear_grid"),
                         () -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId, TerminalMenu.BUTTON_CLEAR_GRID));
             }
             case PATTERN -> {
@@ -300,6 +310,9 @@ public class TerminalScreen extends AbstractContainerScreen<TerminalMenu> {
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float a) {
         super.extractRenderState(g, mx, my, a);
+        if (modal == Modal.NONE && !plateTitle().equals(title) && mx >= leftPos + 6 && mx < leftPos + 80 && my >= topPos + 3 && my < topPos + 16) {
+            g.setTooltipForNextFrame(font, title, mx, my);
+        }
         hoveredCell = -1;
         ClientGrid.Stack hovered = modal == Modal.NONE ? stackAt(mx, my) : null;
         drawGridItems(g, mx, my);

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "OGO",
+    "GEG",
+    "OGO"
+  ],
+  "key": {
+    "O": "minecraft:obsidian",
+    "G": "#c:ingots/gold",
+    "E": "minecraft:ender_eye"
+  },
+  "result": {
+    "id": "powerfactor:chunk_loader",
+    "count": 1
+  }
+}

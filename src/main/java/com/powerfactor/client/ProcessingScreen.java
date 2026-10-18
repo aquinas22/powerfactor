@@ -18,8 +18,10 @@ import net.minecraft.world.inventory.Slot;
 /** Compact process console: separate power, material flow, cycle progress and inventory. */
 public class ProcessingScreen<M extends ProcessingMenu> extends MachineScreen<M> {
     public static final int H = 214;
-    private static final int BAR_X = 156, BAR_Y = 21, BAR_W = 12, BAR_H = 56;
-    private static final int VIEW_X = 8, VIEW_Y = 21, VIEW_W = 56, STRIP_Y = 81, STRIP_H = 39;
+    private static final int BAR_X = 156, BAR_Y = Skin.Layout.CONTENT_TOP, BAR_W = 12, BAR_H = 56;
+    private static final int VIEW_X = 8, VIEW_Y = Skin.Layout.CONTENT_TOP, VIEW_W = 56;
+    /** Status strip: 4 px under the view and gauge (which end at y 76), down to the content zone's bottom. */
+    private static final int STRIP_Y = 80, STRIP_H = Skin.Layout.contentBottom(H) - STRIP_Y;
     private static final int TOOL_RING = 0xFFC6A1E6;
     private final int arrowX, arrowY;
     private final double ratedCe;
@@ -90,8 +92,8 @@ public class ProcessingScreen<M extends ProcessingMenu> extends MachineScreen<M>
         Skin.energyTube(g, x + BAR_X, y + BAR_Y, BAR_W, BAR_H, menu.stored(), menu.capacity(), menu.fe() > 0);
 
         Skin.lcd(g, x + 8, y + STRIP_Y, 160, STRIP_H);
-        g.fill(x + 9, y + STRIP_Y + 2, x + 11, y + STRIP_Y + 14, color);
-        Skin.progress(g, x + 12, y + STRIP_Y + 27, 152, shownProgress, color);
+        g.fill(x + 9, y + STRIP_Y + 2, x + 11, y + STRIP_Y + 22, color);
+        Skin.progress(g, x + 12, y + STRIP_Y + 25, 152, shownProgress, color);
         Skin.inventory(g, font, x + 8, y + ProcessingMenu.INVENTORY_V2);
     }
 
@@ -103,16 +105,21 @@ public class ProcessingScreen<M extends ProcessingMenu> extends MachineScreen<M>
 
     @Override protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
         int lx = VIEW_X + 3, ly = VIEW_Y + 28;
-        Skin.metric(g, font, lx, ly, 50, Component.literal("FE"), Component.literal(Integer.toString(menu.fe())), Skin.FE);
-        Skin.metric(g, font, lx, ly + 9, 50, Component.literal("EE"), Component.literal(Integer.toString(menu.ee())), Skin.EE);
         double ce = Math.hypot(menu.fe(), menu.ee());
-        Skin.metric(g, font, lx, ly + 18, 50, Component.literal("PF"),
-                Component.literal(ce < 0.5 ? "—" : String.format(Locale.ROOT, "%.2f", menu.fe() / ce)), Skin.LCD_TEXT);
-        g.text(font, Skin.fit(font, electrical().status(), 147), 15, STRIP_Y + 4, workColor(), false);
-        Component cycle = cycleLabel();
-        g.text(font, Skin.fit(font, cycle, 99), 12, STRIP_Y + 16, Skin.DIM, false);
+        String[] values = {Integer.toString(menu.fe()), Integer.toString(menu.ee()), ce < 0.5 ? "—" : String.format(Locale.ROOT, "%.2f", menu.fe() / ce)};
+        Skin.Icon[] icons = {Skin.Icon.FE, Skin.Icon.EE, Skin.Icon.PF};
+        int[] colors = {Skin.FE, Skin.EE, Skin.LCD_TEXT};
+        for (int i = 0; i < 3; i++) {
+            Skin.icon(g, icons[i], lx, ly + i * 9 - 1);
+            g.text(font, values[i], lx + 50 - font.width(values[i]), ly + i * 9, colors[i], false);
+        }
+        Skin.icon(g, Skin.statusIcon(workColor()), 15, STRIP_Y + 2);
+        Skin.condensed(g, font, electrical().status(), 26, STRIP_Y + 3, 138, workColor());
+        Skin.icon(g, Skin.Icon.CLOCK, 15, STRIP_Y + 12, cycleLabel());
+        Skin.condensed(g, font, Component.literal(Math.round(progressValue() * 100) + "%"), 26, STRIP_Y + 13, 60, Skin.LCD_DIM);
         String speed = String.format(Locale.ROOT, "×%.2f", menu.speed());
-        g.text(font, speed, 164 - font.width(speed), STRIP_Y + 16, working() ? Skin.TEXT : Skin.DIM, false);
+        g.text(font, speed, 164 - font.width(speed), STRIP_Y + 13, working() ? Skin.LCD_TEXT : Skin.LCD_DIM, false);
+        Skin.icon(g, Skin.Icon.SPEED, 164 - font.width(speed) - 11, STRIP_Y + 12);
     }
 
     @Override protected Electrical electrical() {

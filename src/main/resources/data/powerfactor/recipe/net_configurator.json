@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " F ",
+    "RCR",
+    " I "
+  ],
+  "key": {
+    "F": "powerfactor:fulgurite",
+    "R": "#c:dusts/redstone",
+    "C": "powerfactor:control_circuit",
+    "I": "#c:ingots/iron"
+  },
+  "result": {
+    "id": "powerfactor:net_configurator",
+    "count": 1
+  }
+}

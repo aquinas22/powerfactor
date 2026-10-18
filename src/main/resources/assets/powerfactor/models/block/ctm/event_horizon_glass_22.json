@@ -1,0 +1,85 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "side": "powerfactor:block/ctm/event_horizon_glass",
+    "particle": "powerfactor:block/event_horizon_glass"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            5,
+            9,
+            7,
+            11
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            5,
+            9,
+            7,
+            11
+          ],
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#side",
+          "uv": [
+            5,
+            9,
+            7,
+            11
+          ],
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#side",
+          "uv": [
+            1,
+            13,
+            3,
+            15
+          ],
+          "cullface": "down"
+        }
+      },
+      "light_emission": 4
+    }
+  ]
+}

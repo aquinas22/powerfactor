@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SES",
+    "SES",
+    "SES"
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "E": "powerfactor:enriched_uranium"
+  },
+  "result": {
+    "id": "powerfactor:fuel_rod",
+    "count": 1
+  }
+}

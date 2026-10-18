@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:bedrock_fragment",
+    "powerfactor:bedrock_fragment",
+    "powerfactor:bedrock_fragment",
+    "powerfactor:bedrock_fragment",
+    "minecraft:glowstone_dust"
+  ],
+  "result": {
+    "id": "powerfactor:essence_of_bedrock",
+    "count": 2
+  }
+}

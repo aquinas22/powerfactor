@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PBP",
+    "BMB",
+    "PBP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "B": "minecraft:iron_bars",
+    "M": "powerfactor:electric_motor"
+  },
+  "result": {
+    "id": "powerfactor:trommel",
+    "count": 1
+  }
+}

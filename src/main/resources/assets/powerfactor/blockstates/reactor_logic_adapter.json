@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "fuel=false": {
+      "model": "powerfactor:block/reactor_logic_adapter"
+    },
+    "fuel=true": {
+      "model": "powerfactor:block/reactor_logic_adapter"
+    }
+  }
+}

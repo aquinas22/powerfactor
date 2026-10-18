@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WWW",
+    "WDW",
+    "WWW"
+  ],
+  "key": {
+    "W": "powerfactor:red_alloy_wire",
+    "D": "minecraft:white_wool"
+  },
+  "result": {
+    "id": "powerfactor:white_insulated_wire",
+    "count": 8
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:brown_illumar_lamp",
+    "minecraft:redstone_torch"
+  ],
+  "result": {
+    "id": "powerfactor:inverted_brown_illumar_lamp",
+    "count": 1
+  }
+}

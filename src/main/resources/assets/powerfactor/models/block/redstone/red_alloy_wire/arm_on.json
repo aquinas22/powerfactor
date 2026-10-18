@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "w": "powerfactor:block/redstone/red_alloy_on",
+    "particle": "powerfactor:block/redstone/red_alloy_on"
+  },
+  "elements": [
+    {
+      "from": [
+        7.0,
+        0,
+        0
+      ],
+      "to": [
+        9.0,
+        1,
+        7.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      },
+      "light_emission": 4
+    }
+  ]
+}

@@ -18,6 +18,9 @@ public final class ModItems {
 
     public static final DeferredItem<com.powerfactor.item.HandbookItem> HANDBOOK = ITEMS.registerItem("powerfactor_handbook",
             com.powerfactor.item.HandbookItem::new);
+    /** Fitted to any digging tool in an anvil (30 levels) for vein mining. */
+    public static final DeferredItem<net.minecraft.world.item.Item> VEIN_MATRIX = ITEMS.registerItem("vein_mining_matrix",
+            p -> new net.minecraft.world.item.Item(p.rarity(net.minecraft.world.item.Rarity.EPIC).stacksTo(16)));
     public static final DeferredItem<com.powerfactor.item.CraftingToolItem> FORGE_HAMMER = ITEMS.registerItem("forge_hammer",
             p -> new com.powerfactor.item.CraftingToolItem("forge_hammer", p));
     public static final DeferredItem<com.powerfactor.item.CraftingToolItem> WIRE_CUTTERS = ITEMS.registerItem("wire_cutters",
@@ -108,6 +111,7 @@ public final class ModItems {
     public static final DeferredItem<UpgradeItem> VFD_UPGRADE = upgrade("vfd_upgrade", UpgradeType.VFD);
     public static final DeferredItem<UpgradeItem> SURGE_UPGRADE = upgrade("surge_upgrade", UpgradeType.SURGE);
     public static final DeferredItem<UpgradeItem> CAPACITY_UPGRADE = upgrade("capacity_upgrade", UpgradeType.CAPACITY);
+    public static final DeferredItem<UpgradeItem> CHUNK_LOADER_UPGRADE = upgrade("chunk_loader_upgrade", UpgradeType.CHUNK_LOADER);
 
     public static final DeferredItem<com.powerfactor.item.ArcGunItem> ARC_GUN = ITEMS.registerItem("arc_gun", com.powerfactor.item.ArcGunItem::new,
             p -> p.stacksTo(1).rarity(Rarity.RARE).component(ModComponents.ENERGY.get(), 0));

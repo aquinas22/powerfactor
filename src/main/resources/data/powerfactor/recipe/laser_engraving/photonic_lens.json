@@ -1,0 +1,21 @@
+{
+  "type": "powerfactor:laser_engraving",
+  "inputs": [
+    {
+      "ingredient": "#c:glass_blocks",
+      "count": 1
+    },
+    {
+      "ingredient": "#c:dusts/redstone",
+      "count": 2
+    }
+  ],
+  "tool": "powerfactor:sensor_photomask",
+  "results": [
+    {
+      "item": "powerfactor:photonic_lens",
+      "count": 2
+    }
+  ],
+  "time": 160
+}

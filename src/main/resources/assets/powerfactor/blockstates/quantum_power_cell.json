@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "powerfactor:block/powernet/quantum_power_cell"
+    }
+  }
+}

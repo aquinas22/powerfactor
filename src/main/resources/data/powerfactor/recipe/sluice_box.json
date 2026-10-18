@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "P P",
+    "PWP",
+    "SSS"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "W": "minecraft:green_wool",
+    "S": "#c:ingots/steel"
+  },
+  "result": {
+    "id": "powerfactor:sluice_box",
+    "count": 2
+  }
+}

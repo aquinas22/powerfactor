@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "OEO",
+    "EPE",
+    "OEO"
+  ],
+  "key": {
+    "O": "minecraft:crying_obsidian",
+    "E": "powerfactor:essence_of_bedrock",
+    "P": "minecraft:ender_eye"
+  },
+  "result": {
+    "id": "powerfactor:void_core",
+    "count": 1
+  }
+}

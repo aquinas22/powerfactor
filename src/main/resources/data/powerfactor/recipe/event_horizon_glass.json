@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CEC",
+    "GCG"
+  ],
+  "key": {
+    "G": "powerfactor:fusion_glass",
+    "C": "#c:ingots/cortanium",
+    "E": "powerfactor:exotic_matter"
+  },
+  "result": {
+    "id": "powerfactor:event_horizon_glass",
+    "count": 4
+  }
+}

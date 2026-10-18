@@ -23,7 +23,7 @@ public class SpaceElevatorScreen extends StorageScreens.Base<SpaceElevatorMenu> 
     @Override
     protected void main(GuiGraphicsExtractor g, int x, int y, int mx, int my) {
         long ms = Util.getMillis();
-        int sx = x + 8, sy = y + 18, w = 88, h = 76;
+        int sx = x + 8, sy = y + 20, w = 88, h = 72;   // hero: the view up the tether
         Skin.lcd(g, sx, sy, w, h);
         // Stars.
         for (int i = 0; i < 30; i++) {
@@ -65,28 +65,29 @@ public class SpaceElevatorScreen extends StorageScreens.Base<SpaceElevatorMenu> 
         } else if (segs > 0) {
             g.fill(cx - 2, tetherTop - 1, cx + 3, tetherTop + 1, 0xFFFFB347);
         }
-        // Readouts.
-        int tx = x + 100;
-        Skin.lamp(g, tx, y + 22, !menu.sky() ? 0xFFC8402A : complete ? 0xFF5CFF8A : 0xFFFFB347);
+        // Readout column (x 102-150): status glass over the tether slot; FE tube on the right edge.
+        int tx = x + 102, tw = 48;
+        Skin.lcd(g, tx, y + 20, tw, 48);
+        Skin.icon(g, !menu.sky() ? Skin.Icon.ERROR : complete ? Skin.Icon.OK : Skin.Icon.WAIT, tx + 2, y + 22);
         Component state = Component.translatable(!menu.sky() ? "gui.powerfactor.elevator.no_sky"
                 : complete ? "gui.powerfactor.elevator.online" : "gui.powerfactor.elevator.building");
-        g.text(font, Skin.fit(font, state, 46), tx + 8, y + 21, Skin.TEXT, false);
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.elevator.segments", segs, SpaceElevatorBlockEntity.SEGMENTS), 52),
-                tx, y + 33, Skin.DIM, false);
-        Skin.bar(g, tx, y + 43, 48, frac, CYAN);
+        Skin.condensed(g, font, state, tx + 12, y + 23, tw - 15, Skin.LCD_TEXT);
+        Skin.iconValue(g, font, Skin.Icon.LINK, Component.literal(segs + "/" + SpaceElevatorBlockEntity.SEGMENTS), tx + 4, y + 33, Skin.LCD_DIM,
+                Component.translatable("gui.powerfactor.elevator.segments", segs, SpaceElevatorBlockEntity.SEGMENTS));
+        Skin.bar(g, tx + 4, y + 43, tw - 8, frac, CYAN);
         if (!complete) {
-            g.text(font, Component.translatable("gui.powerfactor.elevator.spool"), tx, y + 50, Skin.DIM, false);
-            Skin.bar(g, tx, y + 60, 48, menu.spool(), 0xFFFFB347);
+            Skin.icon(g, Skin.Icon.ROTOR, tx + 4, y + 49, Component.translatable("gui.powerfactor.elevator.spool"));
+            Skin.bar(g, tx + 4, y + 60, tw - 8, menu.spool(), 0xFFFFB347);
         } else {
-            g.text(font, Skin.fit(font, Component.literal("+" + Skin.compact(menu.output()) + "/t"), 52), tx, y + 52, 0xFFD0503A, false);
+            Skin.iconValue(g, font, Skin.Icon.FE, Component.literal("+" + Skin.compact(menu.output()) + "/t"), tx + 4, y + 52, Skin.FE, null);
         }
-        Skin.energyTube(g, x + 158, y + 18, 10, 76, menu.energy(), SpaceElevatorBlockEntity.CAPACITY, menu.output() > 0);
+        Skin.energyTube(g, x + 156, y + 20, 12, 72, menu.energy(), SpaceElevatorBlockEntity.CAPACITY, menu.output() > 0);
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float a) {
         super.extractRenderState(g, mx, my, a);
-        if (mx >= leftPos + 158 && mx < leftPos + 168 && my >= topPos + 18 && my < topPos + 94) {
+        if (mx >= leftPos + 156 && mx < leftPos + 168 && my >= topPos + 20 && my < topPos + 92) {
             g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.buffer", String.format("%,d", menu.energy()),
                     String.format("%,d", SpaceElevatorBlockEntity.CAPACITY)), mx, my);
         }

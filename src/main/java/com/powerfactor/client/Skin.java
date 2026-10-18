@@ -25,6 +25,7 @@ public final class Skin {
 
     /** The chassis: pearl gradient, chamfered corners, a white top highlight, a cyan accent and a faint tech grid. */
     public static void panel(GuiGraphicsExtractor g, int x, int y, int w, int h) {
+        ICON_HITS.clear();
         int c = 4;
         // Soft drop shadow.
         g.fill(x + c, y + h, x + w + 2, y + h + 3, SHADOW);
@@ -63,13 +64,210 @@ public final class Skin {
         g.fill(x + 1, y + 1, x + 2, y + 2, ACCENT);
     }
 
-    /** Title: dark slate text with a cyan accent pill and a fading divider. */
+    // ------------------------------------------------------------------ icons ("show, don't tell")
+
+    private static final net.minecraft.resources.Identifier ICONS = com.powerfactor.PowerFactor.id("textures/gui/icons.png");
+
+    /** The hand-drawn 9x9 icon set (tools/gui_icons.py); the order is the atlas index. */
+    public enum Icon {
+        FE,
+        EE,
+        CE,
+        PF,
+        HEAT,
+        TEMP,
+        FLUID,
+        STEAM,
+        ITEM,
+        SPEED,
+        EFFICIENCY,
+        PRIORITY,
+        ALLOW,
+        DENY,
+        FILTER,
+        EXACT,
+        LINK,
+        RANGE,
+        KILLS,
+        ANIMAL,
+        PLAYER,
+        HOSTILE,
+        CLOCK,
+        REDSTONE,
+        POWER,
+        WARNING,
+        ERROR,
+        OK,
+        WAIT,
+        NIGHT,
+        DAY,
+        AREA,
+        DEPTH,
+        FORTUNE,
+        SILK,
+        VOID,
+        RESTART,
+        PLUS,
+        MINUS,
+        SHIELD,
+        HIT,
+        OUTPUT,
+        INPUT,
+        MATTER,
+        BATTERY,
+        FUEL,
+        ROTOR,
+        MINED,
+        NETWORK,
+        UPGRADE,
+        HZ,
+        LOCK,
+        UNLOCK,
+        VISION,
+        CHANNEL;
+
+        public Component label() {
+            return Component.translatable("icon.powerfactor." + name().toLowerCase(java.util.Locale.ROOT));
+        }
+    }
+
+    private record IconHit(int x, int y, Component tip) {}
+
+    private static final java.util.List<IconHit> ICON_HITS = new java.util.ArrayList<>();
+
+    /** Draws an icon (9x9) with its top-left at x, y and remembers it so {@link #iconTooltips} can name it on hover. */
+    public static void icon(GuiGraphicsExtractor g, Icon icon, int x, int y) {
+        icon(g, icon, x, y, icon.label());
+    }
+
+    /** As {@link #icon(GuiGraphicsExtractor, Icon, int, int)}, with a tooltip that says more than the icon's name. */
+    public static void icon(GuiGraphicsExtractor g, Icon icon, int x, int y, Component tip) {
+        int i = icon.ordinal();
+        g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, ICONS, x, y, (i % 12) * 10, (i / 12) * 10, 9, 9, 128, 128);
+        if (tip != null) {
+            // Hit-box in screen space, whatever translation the caller drew under (labels are drawn relative).
+            org.joml.Vector2f at = g.pose().transformPosition(new org.joml.Vector2f(x, y));
+            ICON_HITS.add(new IconHit(Math.round(at.x), Math.round(at.y), tip));
+        }
+    }
+
+    /** An icon followed by a value: the guide's replacement for "Label: value". Returns the x after the text. */
+    public static int iconValue(GuiGraphicsExtractor g, Font font, Icon icon, Component value, int x, int y, int color, Component tip) {
+        icon(g, icon, x, y - 1, tip);
+        g.text(font, value, x + 11, y, color, false);
+        return x + 11 + font.width(value);
+    }
+
+    /** Call once per frame from extractRenderState: shows the tooltip of the icon under the mouse. */
+    public static void iconTooltips(GuiGraphicsExtractor g, Font font, int mx, int my) {
+        for (IconHit h : ICON_HITS) {
+            if (mx >= h.x() && mx < h.x() + 9 && my >= h.y() && my < h.y() + 9) {
+                g.setTooltipForNextFrame(font, h.tip(), mx, my);
+                break;
+            }
+        }
+    }
+
+    /** The shared grid (docs/gui-style-guide.md). */
+    public static final class Layout {
+        public static final int CONTENT_TOP = 20, MARGIN = 7, LINE = 10, LCD_INSET_X = 4, LCD_INSET_Y = 3;
+
+        /** Inventory origin for a screen of height h. */
+        public static int invY(int h) {
+            return h - 82;
+        }
+
+        /** Last row (exclusive) the content zone may draw into: 3 px clear of the inventory divider. */
+        public static int contentBottom(int h) {
+            return invY(h) - 16;
+        }
+
+        /** Content zone height for a screen of height h. */
+        public static int contentHeight(int h) {
+            return contentBottom(h) - CONTENT_TOP;
+        }
+
+        /** How many text lines an LCD of height h holds. */
+        public static int lcdLines(int h) {
+            return Math.max(0, (h - LCD_INSET_Y - 1) / LINE);
+        }
+
+        private Layout() {}
+    }
+
+    /** Title: dark slate text with a cyan accent pill and a fading divider. Long titles condense before they are cut. */
     public static void title(GuiGraphicsExtractor g, Font font, Component title, int x, int y, int w) {
         g.fill(x + 6, y + 6, x + 8, y + 14, ACCENT);
         g.fill(x + 6, y + 6, x + 8, y + 7, 0xFFB8F6FF);
-        g.text(font, fit(font, title, w - 30), x + 12, y + 6, TEXT, false);
+        condensed(g, font, title, x + 12, y + 6, w - 30, TEXT);
         g.fillGradient(x + 6, y + 16, x + w - 6, y + 17, 0x8019C6D8, 0x8019C6D8);
         g.fill(x + w / 2, y + 16, x + w - 6, y + 17, 0x308FA6B5);
+    }
+
+    /**
+     * Text that must fit {@code width}: drawn as is if it fits, squeezed horizontally by up to 15% if
+     * that's enough, and only then cut with an ellipsis.
+     */
+    public static void condensed(GuiGraphicsExtractor g, Font font, Component text, int x, int y, int width, int color) {
+        int tw = font.width(text);
+        if (tw <= width) {
+            g.text(font, text, x, y, color, false);
+        } else if (tw * 0.85F <= width) {
+            g.pose().pushMatrix();
+            g.pose().translate(x, y);
+            g.pose().scale((float) width / tw, 1F);
+            g.text(font, text, 0, 0, color, false);
+            g.pose().popMatrix();
+        } else {
+            g.pose().pushMatrix();
+            g.pose().translate(x, y);
+            g.pose().scale(0.85F, 1F);
+            g.text(font, fit(font, text, (int) (width / 0.85F)), 0, 0, color, false);
+            g.pose().popMatrix();
+        }
+    }
+
+    /**
+     * Lines of text on an LCD at (x, y, w, h): inset per the guide, 10 px apart, each condensed to the
+     * glass width, and only as many as fully fit. Colours pair with lines; a missing colour is LCD_TEXT.
+     */
+    public static void lcdLines(GuiGraphicsExtractor g, Font font, int x, int y, int w, int h, java.util.List<Component> lines, int... colors) {
+        int n = Math.min(lines.size(), Layout.lcdLines(h));
+        for (int i = 0; i < n; i++) {
+            condensed(g, font, lines.get(i), x + Layout.LCD_INSET_X, y + Layout.LCD_INSET_Y + i * Layout.LINE, w - Layout.LCD_INSET_X * 2,
+                    i < colors.length ? colors[i] : LCD_TEXT);
+        }
+    }
+
+    /** One readout line: an icon that says what it is, and the value. */
+    public record Row(Icon icon, Component text, int color, @org.jspecify.annotations.Nullable Component tip) {
+        public Row(Icon icon, Component text, int color) {
+            this(icon, text, color, null);
+        }
+
+        public Row(Icon icon, String text, int color) {
+            this(icon, Component.literal(text), color, null);
+        }
+    }
+
+    /** The status icon that matches a status colour: green running, amber waiting, red fault, grey off. */
+    public static Icon statusIcon(int color) {
+        int r = color >> 16 & 0xFF, gr = color >> 8 & 0xFF, b = color & 0xFF;
+        if (r > 180 && gr < 130) return Icon.ERROR;
+        if (gr > r && gr >= b) return Icon.OK;
+        if (r > 180 && gr >= 130 && b < 140) return Icon.WAIT;
+        return Icon.POWER;
+    }
+
+    /** Icon rows on an LCD: icon at the inset, value beside it, 10 px apart, only as many as fully fit. */
+    public static void lcdRows(GuiGraphicsExtractor g, Font font, int x, int y, int w, int h, java.util.List<Row> rows) {
+        int n = Math.min(rows.size(), Layout.lcdLines(h));
+        for (int i = 0; i < n; i++) {
+            Row r = rows.get(i);
+            int ry = y + Layout.LCD_INSET_Y + i * Layout.LINE;
+            icon(g, r.icon(), x + Layout.LCD_INSET_X, ry - 1, r.tip() != null ? r.tip() : r.icon().label());
+            condensed(g, font, r.text(), x + Layout.LCD_INSET_X + 11, ry, w - Layout.LCD_INSET_X * 2 - 11, r.color());
+        }
     }
 
     /** Keep translated titles and live readouts inside their panel. */

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:heavy_water",
+    "powerfactor:flowing_heavy_water"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " H ",
+    "BCB",
+    " H "
+  ],
+  "key": {
+    "H": "minecraft:hopper",
+    "B": "minecraft:bucket",
+    "C": "powerfactor:reactor_casing"
+  },
+  "result": {
+    "id": "powerfactor:reactor_port",
+    "count": 1
+  }
+}

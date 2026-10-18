@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SNS",
+    "NXN",
+    "SNS"
+  ],
+  "key": {
+    "S": "minecraft:shulker_shell",
+    "N": "minecraft:nether_star",
+    "X": "powerfactor:exotic_matter"
+  },
+  "result": {
+    "id": "powerfactor:spatial_expander",
+    "count": 1
+  }
+}

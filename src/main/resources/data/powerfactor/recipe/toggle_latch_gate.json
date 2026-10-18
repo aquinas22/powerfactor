@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " X ",
+    "WTW",
+    "PPP"
+  ],
+  "key": {
+    "X": "minecraft:gold_nugget",
+    "W": "powerfactor:red_alloy_wire",
+    "T": "minecraft:redstone_torch",
+    "P": "minecraft:smooth_stone_slab"
+  },
+  "result": {
+    "id": "powerfactor:toggle_latch_gate",
+    "count": 1
+  }
+}

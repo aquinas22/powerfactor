@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "FCF",
+    "ARA",
+    "FPF"
+  ],
+  "key": {
+    "F": "#c:ingots/faradaenium",
+    "C": "powerfactor:charger",
+    "A": "powerfactor:advanced_circuit",
+    "R": "powerfactor:radio_tower",
+    "P": "powerfactor:charging_pad"
+  },
+  "result": {
+    "id": "powerfactor:wireless_charger",
+    "count": 1
+  }
+}

@@ -44,7 +44,7 @@ import org.jspecify.annotations.Nullable;
  * a qubit focusing lens. It is the only way to make paxels: it fuses a pickaxe, axe and shovel of one
  * material around a catalyst block, merging their enchantments, at a ruinous energy cost.
  */
-public class StarforgeBlockEntity extends MachineBlockEntity implements com.powerfactor.multiblock.Buildable {
+public class StarforgeBlockEntity extends MachineBlockEntity implements com.powerfactor.upgrade.Upgradeable, com.powerfactor.multiblock.Buildable {
     public static final int CAPACITY = 250_000_000, MAX_INPUT = 2_000_000, MAX_RATE = 400_000;
     public static final int PICK = 0, AXE = 1, SHOVEL = 2, CATALYST = 3, OUTPUT = 4;
     public static final int DATA_PROGRESS = 0, DATA_FORMED = 1, DATA_ENERGY_HI = 2, DATA_ENERGY_LO = 3, DATA_RATE = 4, DATA_RECIPE = 5, DATA_COUNT = 6;
@@ -126,6 +126,23 @@ public class StarforgeBlockEntity extends MachineBlockEntity implements com.powe
     private float clientProgress;
     private int flash;
 
+    private final com.powerfactor.upgrade.UpgradeInventory upgrades = new com.powerfactor.upgrade.UpgradeInventory(
+            com.powerfactor.upgrade.UpgradeInventory.CONSOLE, this::setChanged, p -> net.minecraft.world.Container.stillValidBlockEntity(this, p));
+
+    public com.powerfactor.upgrade.UpgradeInventory upgrades() {
+        return upgrades;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (level != null && !level.isClientSide()) {
+            net.minecraft.world.Containers.dropContents(level, pos, upgrades);
+            // Only a real removal frees the casings: setRemoved also runs when the chunk unloads, and must not touch other blocks then.
+            CasingBlockEntity.release(level, linked, worldPosition);
+        }
+    }
+
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int i) {
@@ -179,7 +196,12 @@ public class StarforgeBlockEntity extends MachineBlockEntity implements com.powe
     }
 
     private float progress() {
-        return recipe < 0 ? 0 : (float) Math.min(1, (double) banked / RECIPES.get(recipe).energy());
+        return recipe < 0 ? 0 : (float) Math.min(1, (double) banked / need(RECIPES.get(recipe)));
+    }
+
+    /** The forging energy after Speed (+15%/card) and Efficiency (-15%/card) cards. */
+    long need(Recipe r) {
+        return (long) (r.energy() * upgrades.effects().energyPerOperation());
     }
 
     public static int recipeFor(Container slots) {
@@ -205,14 +227,14 @@ public class StarforgeBlockEntity extends MachineBlockEntity implements com.powe
         }
         if (formed && recipe >= 0 && slots.getItem(OUTPUT).isEmpty() && enabled(level, pos)) {
             Recipe rec = RECIPES.get(recipe);
-            int draw = (int) Math.min(Math.min(MAX_RATE, energy.getAmountAsInt()), rec.energy() - banked);
+            int draw = (int) Math.min(Math.min((long) (MAX_RATE * upgrades.effects().speedMultiplier()), energy.getAmountAsInt()), need(rec) - banked);
             energy.set(energy.getAmountAsInt() - draw);
             banked += draw;
             rate = draw;
             if (draw > 0 && level.getGameTime() % 4 == 0) {
                 level.sendParticles(ParticleTypes.LAVA, pos.getX() + .5, pos.getY() + 1.5, pos.getZ() + .5, 1, .2, .1, .2, 0);
             }
-            if (banked >= rec.energy()) forge(level, pos, rec);
+            if (banked >= need(rec)) forge(level, pos, rec);
         }
         setRunning(level, pos, state, rate > 0);
         if (level.getGameTime() % 5 == 0) level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
@@ -243,6 +265,7 @@ public class StarforgeBlockEntity extends MachineBlockEntity implements com.powe
     }
 
     private void checkStructure(ServerLevel level, BlockPos pos, BlockState state) {
+        if (!STRUCTURE.loaded(level, pos, facingDir())) return;
         boolean now = STRUCTURE.complete(level, pos, facingDir());
         Set<BlockPos> parts = new HashSet<>();
         if (now) for (var p : STRUCTURE.parts()) parts.add(STRUCTURE.worldPos(pos, facingDir(), p));
@@ -257,16 +280,6 @@ public class StarforgeBlockEntity extends MachineBlockEntity implements com.powe
             level.playSound(null, pos, now ? SoundEvents.BEACON_ACTIVATE : SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1F, 0.7F);
         }
         if (state.getValue(CasingBlock.FORMED) != now) level.setBlock(pos, state.setValue(CasingBlock.FORMED, now), Block.UPDATE_ALL);
-    }
-
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-        if (level != null && !level.isClientSide()) {
-            for (BlockPos p : linked) {
-                if (level.getBlockEntity(p) instanceof CasingBlockEntity c && worldPosition.equals(c.controllerPos())) c.link(null);
-            }
-        }
     }
 
     public boolean formed() {
@@ -315,6 +328,7 @@ public class StarforgeBlockEntity extends MachineBlockEntity implements com.powe
         slots.clearContent();
         ContainerHelper.loadAllItems(input, slots.getItems());
         banked = input.getLongOr("banked", 0);
+        upgrades.load(input);
         recipe = input.getIntOr("recipe", -1);
         linked.clear();
     }
@@ -325,6 +339,7 @@ public class StarforgeBlockEntity extends MachineBlockEntity implements com.powe
         energy.serialize(output);
         ContainerHelper.saveAllItems(output, slots.getItems());
         output.putLong("banked", banked);
+        upgrades.save(output);
         output.putInt("recipe", recipe);
     }
 

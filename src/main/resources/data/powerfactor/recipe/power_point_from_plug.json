@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:power_plug",
+    "minecraft:redstone_torch"
+  ],
+  "result": {
+    "id": "powerfactor:power_point",
+    "count": 1
+  }
+}

@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class SpaceElevatorMenu extends MachineMenu {
-    public static final int SLOT_X = 134, SLOT_Y = 74;
+    public static final int SLOT_X = 118, SLOT_Y = 74;   // centred under the readout column
 
     public SpaceElevatorMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
         this(id, inventory, null, new SimpleContainer(1), new SimpleContainerData(SpaceElevatorBlockEntity.DATA_COUNT));

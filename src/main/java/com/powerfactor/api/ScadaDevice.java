@@ -10,4 +10,7 @@ public interface ScadaDevice {
     boolean remoteEnabled();
 
     void setRemoteEnabled(boolean enabled);
+
+    /** A control published in the reading was used from a terminal: a button (value 0), toggle (0/1) or setpoint. */
+    default void scadaControl(String id, float value) {}
 }

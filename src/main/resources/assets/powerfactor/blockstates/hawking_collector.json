@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/hawking_collector"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/hawking_collector_formed"
+    }
+  }
+}

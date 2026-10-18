@@ -34,6 +34,22 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
     private final java.util.ArrayDeque<double[]> history = new java.util.ArrayDeque<>();
     private int scroll;
     private long lastUpdate;
+    /** The device whose detail view is open (null: the list). */
+    private net.minecraft.core.@org.jspecify.annotations.Nullable BlockPos detail;
+    private boolean alarmsOnly;
+    private String armed = "";
+    private long armedAt;
+
+    /** A clickable area in screen-local coordinates. */
+    private record Hit(int x, int y, int w, int h, Runnable action) {}
+
+    private final java.util.List<Hit> hits = new java.util.ArrayList<>();
+
+    /** What the list shows: everything, or only devices raising a warning or alarm. */
+    private List<ScadaReading> shown() {
+        return alarmsOnly ? readings.stream().filter(r -> r.status() == ScadaReading.Status.ALARM || r.status() == ScadaReading.Status.WARNING).toList()
+                : readings;
+    }
 
     public ScadaTerminalScreen(ScadaTerminalMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, W, H);
@@ -52,7 +68,7 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
             s.readings = snapshot.readings();
             s.record();
             s.lastUpdate = System.currentTimeMillis();
-            s.scroll = Mth.clamp(s.scroll, 0, Math.max(0, s.readings.size() - ROWS));
+            s.scroll = Mth.clamp(s.scroll, 0, Math.max(0, s.shown().size() - ROWS));
         }
     }
 
@@ -98,6 +114,7 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
         for (int sy = y + 46; sy < y + H; sy += 2) {
             g.fill(x, sy, x + W, sy + 1, 0xFF13232C);
         }
+        if (detail != null) return;
         trend(g, x + 4, y + TREND_Y, W - 8, TREND_H);
         for (int i = 0; i < ROWS; i++) {
             int ry = y + LIST_Y + i * ROW_H;
@@ -132,6 +149,16 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
         String ceText = Math.round(ce) + " CE/t";
         g.text(font, ceText, W - 8 - font.width(ceText), 31, GuiUtil.CE_COLOR, false);
 
+        hits.clear();
+        if (detail != null) {
+            ScadaReading r = readings.stream().filter(d -> d.pos().equals(detail)).findFirst().orElse(null);
+            if (r == null) {
+                detail = null;
+            } else {
+                detailView(g, r, xm - leftPos, ym - topPos);
+                return;
+            }
+        }
         double[] latest = history.isEmpty() ? new double[] {0, 0} : history.getLast();
         g.text(font, String.format("%.2f Hz", latest[0]), 8, TREND_Y + 2, AMBER, false);
         String vText = Math.round(latest[1] * 480) + " V";
@@ -142,6 +169,19 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
         g.text(font, "FE/t", 132 - font.width("FE/t"), LIST_Y - 11, DIM, false);
         g.text(font, "EE/t", 170 - font.width("EE/t"), LIST_Y - 11, DIM, false);
 
+        // Filter chip: all devices, or only those in alarm.
+        long alarmCount = readings.stream().filter(r -> r.status() == ScadaReading.Status.ALARM || r.status() == ScadaReading.Status.WARNING).count();
+        Component chip = alarmsOnly ? Component.translatable("gui.powerfactor.scada.filter.alarms", alarmCount)
+                : Component.translatable("gui.powerfactor.scada.filter.all", alarmCount);
+        int cw = font.width(chip) + 8, cx = W - 6 - cw, cy = LIST_Y - 13;
+        g.fill(cx, cy, cx + cw, cy + 11, alarmsOnly ? 0xFF6B1F1F : alarmCount > 0 ? 0xFF6B4A1F : 0xFF1E3A30);
+        g.outline(cx, cy, cw, 11, 0xFF8A9A90);
+        g.text(font, chip, cx + 4, cy + 2, 0xFFFFFFFF, false);
+        hits.add(new Hit(cx, cy, cw, 11, () -> {
+            alarmsOnly = !alarmsOnly;
+            scroll = 0;
+        }));
+        List<ScadaReading> list = shown();
         if (readings.isEmpty()) {
             Component hint = Component.translatable(live ? "gui.powerfactor.scada.empty" : "gui.powerfactor.scada.connecting");
             // Wrapped to the panel, so long translations never run into the border.
@@ -150,13 +190,13 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
                 g.centeredText(font, lines.get(i), W / 2, LIST_Y + 26 + i * 10, DIM);
             }
         }
-        for (int i = 0; i < ROWS && scroll + i < readings.size(); i++) {
-            row(g, readings.get(scroll + i), LIST_Y + i * ROW_H, xm - leftPos, ym - topPos);
+        for (int i = 0; i < ROWS && scroll + i < list.size(); i++) {
+            row(g, list.get(scroll + i), LIST_Y + i * ROW_H, xm - leftPos, ym - topPos);
         }
-        if (readings.size() > ROWS) {
+        if (list.size() > ROWS) {
             int trackH = ROWS * ROW_H;
-            int thumbH = Math.max(8, trackH * ROWS / readings.size());
-            int thumbY = LIST_Y + (trackH - thumbH) * scroll / (readings.size() - ROWS);
+            int thumbH = Math.max(8, trackH * ROWS / list.size());
+            int thumbY = LIST_Y + (trackH - thumbH) * scroll / (list.size() - ROWS);
             g.fill(W - 3, thumbY, W - 1, thumbY + thumbH, DIM);
         }
     }
@@ -207,6 +247,7 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
         g.text(font, fe, 132 - font.width(fe), y + 2, GuiUtil.FE_COLOR, false);
         g.text(font, ee, 170 - font.width(ee), y + 2, GuiUtil.EE_COLOR, false);
         g.text(font, font.substrByWidth(r.detail(), 192).getString(), 18, y + 11, DIM, false);
+        if (r.detailed()) g.text(font, "›", BTN_X - 8, y + 6, TEXT, false);
 
         if (r.controllable()) {
             boolean hover = mx >= BTN_X && mx < BTN_X + BTN_W && my >= y + 2 && my < y + 2 + BTN_H;
@@ -231,8 +272,25 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         int mx = (int) event.x() - leftPos, my = (int) event.y() - topPos;
-        for (int i = 0; i < ROWS && scroll + i < readings.size(); i++) {
-            ScadaReading r = readings.get(scroll + i);
+        for (Hit h : java.util.List.copyOf(hits)) {
+            if (mx >= h.x && mx < h.x + h.w && my >= h.y && my < h.y + h.h) {
+                minecraft.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
+                        com.powerfactor.registry.ModSounds.SCADA_CLICK.get(), 1.0F));
+                h.action.run();
+                return true;
+            }
+        }
+        if (detail != null) return super.mouseClicked(event, doubleClick);
+        List<ScadaReading> list = shown();
+        for (int i = 0; i < ROWS && scroll + i < list.size(); i++) {
+            ScadaReading r = list.get(scroll + i);
+            int rowY = LIST_Y + i * ROW_H;
+            if (mx >= 4 && mx < BTN_X - 2 && my >= rowY && my < rowY + ROW_H) {
+                detail = r.pos();
+                minecraft.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
+                        com.powerfactor.registry.ModSounds.SCADA_CLICK.get(), 1.2F));
+                return true;
+            }
             int y = LIST_Y + i * ROW_H + 2;
             if (r.controllable() && mx >= BTN_X && mx < BTN_X + BTN_W && my >= y && my < y + BTN_H) {
                 ClientPacketDistributor.sendToServer(new ScadaPayloads.Command(menu.terminal(), r.pos(), !r.enabled()));
@@ -246,7 +304,7 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
 
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
-        scroll = Mth.clamp(scroll - (int) Math.signum(scrollY), 0, Math.max(0, readings.size() - ROWS));
+        scroll = Mth.clamp(scroll - (int) Math.signum(scrollY), 0, Math.max(0, shown().size() - ROWS));
         return true;
     }
 
@@ -254,13 +312,114 @@ public class ScadaTerminalScreen extends AbstractContainerScreen<ScadaTerminalMe
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
         super.extractRenderState(g, mouseX, mouseY, a);
         int mx = mouseX - leftPos, my = mouseY - topPos;
-        for (int i = 0; i < ROWS && scroll + i < readings.size(); i++) {
+        if (detail != null) {
+            if (pointTip != null) g.setComponentTooltipForNextFrame(font, pointTip, mouseX, mouseY);
+            return;
+        }
+        List<ScadaReading> list = shown();
+        for (int i = 0; i < ROWS && scroll + i < list.size(); i++) {
             int y = LIST_Y + i * ROW_H;
             if (mx >= 4 && mx < BTN_X - 2 && my >= y && my < y + ROW_H) {
-                ScadaReading r = readings.get(scroll + i);
+                ScadaReading r = list.get(scroll + i);
                 g.setComponentTooltipForNextFrame(font, List.of(r.name(), r.detail(),
                         Component.literal(r.pos().toShortString()).withColor(DIM & 0xFFFFFF)), mouseX, mouseY);
             }
         }
+    }
+
+    private java.util.@org.jspecify.annotations.Nullable List<Component> pointTip;
+
+    private static final int[] STATE = {0xFF55FF55, 0xFFFFB020, 0xFFFF4040};
+
+    /** One device up close: its gauges in two columns, then its controls. */
+    private void detailView(GuiGraphicsExtractor g, ScadaReading r, int mx, int my) {
+        pointTip = null;
+        long t = System.currentTimeMillis();
+        if (!armed.isEmpty() && t - armedAt > 2500) armed = "";
+        // Header: back, lamp, name, position.
+        g.fill(4, 46, W - 4, 60, 0xFF16303A);
+        boolean backHover = mx >= 6 && mx < 38 && my >= 48 && my < 58;
+        g.fill(6, 48, 38, 58, backHover ? 0xFF2E5A6A : 0xFF1E3A48);
+        g.text(font, Component.translatable("gui.powerfactor.scada.back"), 9, 49, TEXT, false);
+        hits.add(new Hit(6, 48, 32, 10, () -> detail = null));
+        g.fill(44, 50, 50, 56, LAMP[r.status().ordinal()]);
+        g.text(font, font.substrByWidth(r.name(), 120).getString(), 54, 49, TEXT, false);
+        String where = r.pos().toShortString();
+        g.text(font, where, W - 8 - font.width(where), 49, DIM, false);
+        // Gauges.
+        int y0 = 64;
+        if (r.points().isEmpty()) {
+            g.text(font, font.substrByWidth(r.detail(), W - 16).getString(), 8, y0, DIM, false);
+            y0 += 14;
+        }
+        for (int k = 0; k < r.points().size(); k++) {
+            var p = r.points().get(k);
+            int cx = 6 + (k % 2) * 124, cy = y0 + (k / 2) * 19;
+            int col = STATE[Math.clamp(p.state(), 0, 2)];
+            boolean flash = p.state() == 2 && (t / 300) % 2 == 0;
+            g.fill(cx, cy, cx + 120, cy + 17, flash ? 0xFF3A1414 : 0xFF0E1C22);
+            Skin.condensed(g, font, p.label(), cx + 3, cy + 2, 64, DIM);
+            String v = format(p.value(), p.unit());
+            g.text(font, v, cx + 117 - font.width(v), cy + 2, col, false);
+            float f = p.hi() > p.lo() ? Mth.clamp((p.value() - p.lo()) / (p.hi() - p.lo()), 0, 1) : 0;
+            g.fill(cx + 3, cy + 12, cx + 117, cy + 14, 0xFF24343C);
+            g.fill(cx + 3, cy + 12, cx + 3 + (int) (114 * f), cy + 14, col);
+            if (mx >= cx && mx < cx + 120 && my >= cy && my < cy + 17) {
+                pointTip = java.util.List.of(p.label(), Component.literal(v + "   (" + format(p.lo(), p.unit()) + " – " + format(p.hi(), p.unit()) + ")")
+                        .withColor(DIM & 0xFFFFFF));
+            }
+        }
+        int cy = y0 + ((r.points().size() + 1) / 2) * 19 + 4;
+        // Buttons and toggles in a row, then setpoints in two columns.
+        int bx = 6;
+        for (var c : r.controls()) {
+            if (c.kind() == ScadaReading.SETPOINT) continue;
+            boolean isArmed = c.danger() && armed.equals(c.id());
+            boolean on = c.kind() == ScadaReading.TOGGLE && c.value() > 0;
+            int bw = Math.max(38, font.width(c.label()) + 10);
+            boolean hover = mx >= bx && mx < bx + bw && my >= cy && my < cy + 14;
+            int base = c.danger() ? (isArmed && (t / 200) % 2 == 0 ? 0xFFFF4040 : 0xFF8A1F1F) : on ? 0xFF1F6B3A : 0xFF1E3A48;
+            g.fill(bx, cy, bx + bw, cy + 14, hover ? brighten(base) : base);
+            g.outline(bx, cy, bw, 14, 0xFF8A9A90);
+            Component label = isArmed ? Component.translatable("gui.powerfactor.scada.confirm") : c.label();
+            g.centeredText(font, label, bx + bw / 2, cy + 3, 0xFFFFFFFF);
+            hits.add(new Hit(bx, cy, bw, 14, () -> {
+                if (c.danger() && !armed.equals(c.id())) {
+                    armed = c.id();
+                    armedAt = System.currentTimeMillis();
+                    return;
+                }
+                armed = "";
+                send(r, c.id(), c.kind() == ScadaReading.TOGGLE ? (c.value() > 0 ? 0 : 1) : 0);
+            }));
+            bx += bw + 4;
+        }
+        int sy = cy + 18, k = 0;
+        for (var c : r.controls()) {
+            if (c.kind() != ScadaReading.SETPOINT) continue;
+            int sx = 6 + (k % 2) * 124, yy = sy + (k / 2) * 16;
+            g.fill(sx, yy, sx + 120, yy + 14, 0xFF0E1C22);
+            Skin.condensed(g, font, c.label(), sx + 3, yy + 3, 50, DIM);
+            String v = format(c.value(), "");
+            g.centeredText(font, v, sx + 88, yy + 3, TEXT);
+            for (int d = 0; d < 2; d++) {
+                int ax = sx + (d == 0 ? 56 : 106);
+                boolean hover = mx >= ax && mx < ax + 12 && my >= yy + 1 && my < yy + 13;
+                g.fill(ax, yy + 1, ax + 12, yy + 13, hover ? 0xFF2E5A6A : 0xFF1E3A48);
+                g.centeredText(font, d == 0 ? "−" : "+", ax + 6, yy + 3, TEXT);
+                float nv = Mth.clamp(c.value() + (d == 0 ? -c.step() : c.step()), c.min(), c.max());
+                hits.add(new Hit(ax, yy + 1, 12, 12, () -> send(r, c.id(), nv)));
+            }
+            k++;
+        }
+    }
+
+    private void send(ScadaReading r, String id, float value) {
+        ClientPacketDistributor.sendToServer(new ScadaPayloads.ControlCommand(menu.terminal(), r.pos(), id, value));
+    }
+
+    private static String format(float v, String unit) {
+        String n = Math.abs(v) >= 10_000 ? Skin.compact(v) : Math.abs(v) >= 100 || v == Math.round(v) ? String.valueOf(Math.round(v)) : String.format("%.1f", v);
+        return unit.isEmpty() ? n : n + " " + unit;
     }
 }

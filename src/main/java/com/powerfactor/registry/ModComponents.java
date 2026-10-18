@@ -27,6 +27,11 @@ public final class ModComponents {
             COMPONENTS.registerComponentType("saber_lit", b -> b.persistent(net.minecraft.util.Unit.CODEC)
                     .networkSynchronized(net.minecraft.util.Unit.STREAM_CODEC));
 
+    /** Vein mining, fitted to any digging tool in an anvil with a Vein Mining Matrix. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.util.Unit>> VEIN_MINER =
+            COMPONENTS.registerComponentType("vein_miner", b -> b.persistent(net.minecraft.util.Unit.CODEC)
+                    .networkSynchronized(net.minecraft.util.Unit.STREAM_CODEC));
+
     /** First pylon picked with a conductor spool. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.core.BlockPos>> LINK_START =
             COMPONENTS.registerComponentType("link_start", b -> b.persistent(net.minecraft.core.BlockPos.CODEC)

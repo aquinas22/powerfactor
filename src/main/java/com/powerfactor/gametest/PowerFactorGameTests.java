@@ -40,6 +40,7 @@ public final class PowerFactorGameTests {
     static {
         StorageGameTests.register(FUNCTIONS);
         QuantumGameTests.register(FUNCTIONS);
+        ProcessGameTests.register(FUNCTIONS);
         FUNCTIONS.register("reservoir_joins_balances_and_rolls_back", () -> PowerFactorGameTests::reservoirJoinsAndBalances);
         FUNCTIONS.register("reservoir_break_split_metadata_and_rejoin", () -> PowerFactorGameTests::reservoirBreakSplitAndRejoin);
         FUNCTIONS.register("reservoir_preserves_distinct_components", () -> PowerFactorGameTests::reservoirRejectsMixedComponents);
@@ -187,6 +188,7 @@ public final class PowerFactorGameTests {
         var env = event.registerEnvironment(PowerFactor.id("default"));
         java.util.Set<String> wide = new java.util.HashSet<>(StorageGameTests.NAMES);
         wide.addAll(QuantumGameTests.NAMES);
+        wide.addAll(ProcessGameTests.NAMES);
         wide.addAll(java.util.Set.of("long_transformer_chain", "breaker_splits_grid", "tesla_coil_zaps_zombie",
                 "bare_wire_shocks_coated_does_not", "mixed_copper_cables_share_weakest_grid", "breaker_chain_rejects_mixed_voltages"));
         java.util.Set<String> tall = new java.util.HashSet<>(QuantumGameTests.TALL);
@@ -199,6 +201,7 @@ public final class PowerFactorGameTests {
                 "pipe_ghost_menu_cannot_move_items", "pipe_disabled_link_stops_transfer", "pipe_equal_priority_is_fair"));
         for (var fn : FUNCTIONS.getEntries()) {
             String structure = fn.getId().getPath().equals("rubber_tree_canopy_and_latex") || fn.getId().getPath().equals("quantum_lab_generates")
+                    || ProcessGameTests.HUGE.contains(fn.getId().getPath())
                     ? "empty_11x16x11"
                     : wide.contains(fn.getId().getPath()) ? "empty_9x3x3" : tall.contains(fn.getId().getPath()) || fn.getId().getPath().startsWith("wind_base_") ? "empty_7x8x7"
                     : "empty_3x3x3";
@@ -1441,6 +1444,15 @@ public final class PowerFactorGameTests {
             helper.assertValueEqual(pump.getTank().amount(0), stoppedOil[0], "oil pumped with broken foundation");
             helper.assertTrue(refinery.getTanks().amount(com.powerfactor.oil.RefineryBlockEntity.DIESEL) > 200, "no diesel");
             helper.assertTrue(refinery.getTanks().amount(com.powerfactor.oil.RefineryBlockEntity.JET) > 150, "no jet fuel");
+            helper.assertTrue(helper.getBlockEntity(new BlockPos(0, 3, 0), com.powerfactor.multiblock.CasingBlockEntity.class).controllerPos() != null,
+                    "refinery casing not linked");
+            // Breaking the controller (not just unloading it) frees its casings.
+            helper.setBlock(col, Blocks.AIR);
+        });
+        helper.runAfterDelay(225, () -> {
+            var casing = helper.getBlockEntity(new BlockPos(0, 3, 0), com.powerfactor.multiblock.CasingBlockEntity.class);
+            helper.assertTrue(casing.controllerPos() == null, "casing still linked to a broken refinery");
+            helper.assertFalse(casing.getBlockState().getValue(com.powerfactor.multiblock.CasingBlock.FORMED), "casing still formed");
             helper.succeed();
         });
     }

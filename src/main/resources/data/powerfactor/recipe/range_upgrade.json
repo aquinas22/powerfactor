@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GRG",
+    "RPR",
+    "GRG"
+  ],
+  "key": {
+    "G": "#c:ingots/gold",
+    "R": "#c:dusts/redstone",
+    "P": "minecraft:ender_pearl"
+  },
+  "result": {
+    "id": "powerfactor:range_upgrade",
+    "count": 1
+  }
+}

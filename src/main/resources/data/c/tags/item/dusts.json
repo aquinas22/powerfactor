@@ -14,6 +14,7 @@
     "#c:dusts/steel",
     "#c:dusts/bronze",
     "#c:dusts/electrum",
-    "#c:dusts/quantum"
+    "#c:dusts/quantum",
+    "powerfactor:sulfur_dust"
   ]
 }

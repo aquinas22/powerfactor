@@ -34,13 +34,23 @@ import net.minecraft.world.item.ItemStack;
 public class UpgradeTableScreen extends AbstractContainerScreen<UpgradeTableMenu> {
     private static final Identifier TEXTURE = PowerFactor.id("textures/gui/upgrade_table.png");
     private static final Identifier HOLOGRAM = PowerFactor.id("textures/gui/upgrade_table_hologram.png");
-    private static final int W = 248, H = 218;
-    private static final int CX = 84, CY = 66, BAY_R = 30;
-    private static final int PANEL_X = 162, PANEL_Y = 20, PANEL_W = 76;
+    private static final int W = 248, H = 228;
+    /** The bench art is drawn 4 px lower on screen than in the texture, to sit inside the guide's content zone. */
+    private static final int DY = 4;
+    private static final int CX = 84, CY = 74, BAY_R = 30;
+    private static final int PANEL_X = 164, PANEL_Y = 24, PANEL_W = 75;   // 4 px inside the stats glass
     private static final int CYAN = 0xFF3FE0FF, CYAN_DIM = 0xFF1D5A66, TEXT = 0xFFCFF6FF, DIM = 0xFF6FA4B0, GREEN = 0xFF5CFF8A, RED = 0xFFFF4A5A;
 
     /** A stat row: label, the value shown, and a 0..1 bar. */
     private record Stat(String label, String value, float bar) {}
+
+    private static final java.util.Map<String, Skin.Icon> STAT_ICONS = java.util.Map.ofEntries(
+            java.util.Map.entry("Charge", Skin.Icon.BATTERY), java.util.Map.entry("Cost", Skin.Icon.FE), java.util.Map.entry("Speed", Skin.Icon.SPEED),
+            java.util.Map.entry("Mode", Skin.Icon.MINED), java.util.Map.entry("Damage", Skin.Icon.HIT), java.util.Map.entry("Chain", Skin.Icon.LINK),
+            java.util.Map.entry("Arcs", Skin.Icon.EE), java.util.Map.entry("Reel", Skin.Icon.ROTOR), java.util.Map.entry("Range", Skin.Icon.RANGE),
+            java.util.Map.entry("Thrust", Skin.Icon.SPEED), java.util.Map.entry("Armor", Skin.Icon.SHIELD), java.util.Map.entry("Shield", Skin.Icon.SHIELD),
+            java.util.Map.entry("Jump", Skin.Icon.PLUS), java.util.Map.entry("Pack", Skin.Icon.BATTERY), java.util.Map.entry("Landing", Skin.Icon.DEPTH),
+            java.util.Map.entry("Vision", Skin.Icon.VISION), java.util.Map.entry("Air", Skin.Icon.FLUID));
 
     private final float[] shown = new float[5];
     private final long[] bumped = new long[5];
@@ -68,20 +78,17 @@ public class UpgradeTableScreen extends AbstractContainerScreen<UpgradeTableMenu
         // Bright chassis like every other PowerFactor screen; the holographic bay and the stats readout
         // are dark glass windows cut from the bench texture.
         Skin.panel(g, x0, y0, W, H);
-        Skin.lcd(g, x0 + 5, y0 + 15, 153, 111);
-        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x0 + 6, y0 + 16, 6, 16, 151, 109, 256, 256);
-        Skin.lcd(g, x0 + 159, y0 + 17, 83, 109);
-        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x0 + 160, y0 + 18, 160, 18, 81, 107, 256, 256);
-        for (int row = 0; row < 4; row++) {
-            for (int col = 0; col < 9; col++) {
-                Skin.slot(g, x0 + UpgradeTableMenu.INV_X + col * 18 - 1, y0 + (row < 3 ? UpgradeTableMenu.INV_Y + row * 18 : 194) - 1, 0);
-            }
-        }
+        Skin.title(g, font, Component.translatable("gui.powerfactor.upgrade.title"), x0, y0, W);
+        Skin.lcd(g, x0 + 5, y0 + 15 + DY, 153, 111);
+        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x0 + 6, y0 + 16 + DY, 6, 16, 151, 109, 256, 256);
+        Skin.lcd(g, x0 + 160, y0 + 15 + DY, 83, 111);
+        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x0 + 161, y0 + 18 + DY, 160, 18, 81, 107, 256, 256);
+        Skin.inventory(g, font, x0 + UpgradeTableMenu.INV_X, y0 + UpgradeTableMenu.INV_Y);
 
         // A slow scan line sweeping the bay.
         int sweep = (int) ((t * 40) % 110);
-        g.fill(x0 + 6, y0 + 16 + sweep, x0 + 158, y0 + 17 + sweep, 0x2A3FE0FF);
-        g.fill(x0 + 6, y0 + 15 + sweep, x0 + 158, y0 + 16 + sweep, 0x123FE0FF);
+        g.fill(x0 + 6, y0 + 16 + DY + sweep, x0 + 158, y0 + 17 + DY + sweep, 0x2A3FE0FF);
+        g.fill(x0 + 6, y0 + 15 + DY + sweep, x0 + 158, y0 + 16 + DY + sweep, 0x123FE0FF);
 
         ItemStack tool = menu.toolStack();
         boolean hasTool = menu.kind() != null;
@@ -228,7 +235,9 @@ public class UpgradeTableScreen extends AbstractContainerScreen<UpgradeTableMenu
             lastValue[i] = st.value();
             shown[i] += (st.bar() - shown[i]) * 0.12F;
             boolean hot = now - bumped[i] < 1200;
-            g.text(font, st.label(), x, ry, hot ? GREEN : DIM, false);
+            // Show, don't tell: the stat's icon (named in its tooltip), not its word.
+            Skin.icon(g, STAT_ICONS.getOrDefault(st.label(), Skin.Icon.UPGRADE), x, ry - 1, Component.literal(st.label()));
+            if (hot) g.fill(x + 10, ry + 3, x + 12, ry + 5, GREEN);
             g.text(font, st.value(), x + PANEL_W - font.width(st.value()), ry, hot ? GREEN : TEXT, false);
             int by = ry + 10;
             g.fill(x, by, x + PANEL_W, by + 3, 0xFF0A1A20);
@@ -262,71 +271,71 @@ public class UpgradeTableScreen extends AbstractContainerScreen<UpgradeTableMenu
     private List<Stat> rows(ToolKind kind, ItemStack tool) {
         List<Stat> out = new ArrayList<>();
         int cap = capacity(kind, tool);
-        out.add(new Stat("CAP", compact(cap) + " FE", Math.min(1, cap / 480_000F)));
+        out.add(new Stat("Charge", compact(cap) + " FE", Math.min(1, cap / 480_000F)));
         switch (kind) {
             case GRAPPLE -> {
-                out.add(new Stat("REEL", Math.round(com.powerfactor.item.GrappleItem.reelMultiplier(tool) * 100) + "%", (float) com.powerfactor.item.GrappleItem.reelMultiplier(tool) / 1.6F));
-                out.add(new Stat("RANGE", (int) com.powerfactor.item.GrappleItem.RANGE + "m", 1));
-                out.add(new Stat("COST", ToolModules.cost(tool, com.powerfactor.item.GrappleItem.REEL_FE) + "/t", 1 - ToolModules.cost(tool, 12) / 15F));
+                out.add(new Stat("Reel", Math.round(com.powerfactor.item.GrappleItem.reelMultiplier(tool) * 100) + "%", (float) com.powerfactor.item.GrappleItem.reelMultiplier(tool) / 1.6F));
+                out.add(new Stat("Range", (int) com.powerfactor.item.GrappleItem.RANGE + "m", 1));
+                out.add(new Stat("Cost", ToolModules.cost(tool, com.powerfactor.item.GrappleItem.REEL_FE) + "/t", 1 - ToolModules.cost(tool, 12) / 15F));
             }
             case DRILL -> {
                 int speed = ToolModules.count(tool, DrillModule.Type.SPEED);
-                out.add(new Stat("COST", DrillItem.costPerBlock(tool) + " FE", 1 - DrillItem.costPerBlock(tool) / 120F));
-                out.add(new Stat("SPEED", "x" + fmt(1 + 0.5 * speed), (1 + 0.5F * speed) / 2.5F));
+                out.add(new Stat("Cost", DrillItem.costPerBlock(tool) + " FE", 1 - DrillItem.costPerBlock(tool) / 120F));
+                out.add(new Stat("Speed", "x" + fmt(1 + 0.5 * speed), (1 + 0.5F * speed) / 2.5F));
                 boolean silk = ToolModules.count(tool, DrillModule.Type.SILK) > 0;
                 int fortune = ToolModules.count(tool, DrillModule.Type.FORTUNE);
-                String mode = (ToolModules.count(tool, DrillModule.Type.AREA) > 0 ? "3x3 " : "") + (silk ? "SILK" : fortune > 0 ? "FORT " + fortune : "");
-                out.add(new Stat("MODE", mode.isBlank() ? "STD" : mode.trim(), (silk || fortune > 0 ? 0.5F : 0F)
+                String mode = (ToolModules.count(tool, DrillModule.Type.AREA) > 0 ? "3x3 " : "") + (silk ? "Silk" : fortune > 0 ? "Fortune " + fortune : "");
+                out.add(new Stat("Mode", mode.isBlank() ? "Normal" : mode.trim(), (silk || fortune > 0 ? 0.5F : 0F)
                         + (ToolModules.count(tool, DrillModule.Type.AREA) > 0 ? 0.5F : 0)));
             }
             case CHAINSAW -> {
                 int speed = ToolModules.count(tool, DrillModule.Type.SPEED);
-                out.add(new Stat("COST", ChainsawItem.perLog(tool) + " FE", 1 - ChainsawItem.perLog(tool) / 70F));
-                out.add(new Stat("SPEED", "x" + fmt(1 + 0.5 * speed), (1 + 0.5F * speed) / 2.5F));
+                out.add(new Stat("Cost", ChainsawItem.perLog(tool) + " FE", 1 - ChainsawItem.perLog(tool) / 70F));
+                out.add(new Stat("Speed", "x" + fmt(1 + 0.5 * speed), (1 + 0.5F * speed) / 2.5F));
                 float dmg = 8 + ToolModules.overcharge(tool, 3F);
-                out.add(new Stat("DMG", fmt(dmg), dmg / 17F));
+                out.add(new Stat("Damage", fmt(dmg), dmg / 17F));
             }
             case JETPACK -> {
                 float thrust = JetpackItem.thrust(tool);
                 int plates = ToolModules.count(tool, DrillModule.Type.PLATING);
-                out.add(new Stat("THRUST", Math.round(thrust * 100) + "%", thrust / 2.05F));
-                out.add(new Stat("ARMOR", String.valueOf(3 + 2 * plates), (3 + 2 * plates) / 9F));
+                out.add(new Stat("Thrust", Math.round(thrust * 100) + "%", thrust / 2.05F));
+                out.add(new Stat("Armor", String.valueOf(3 + 2 * plates), (3 + 2 * plates) / 9F));
                 int cost = com.powerfactor.item.ToolModules.cost(tool, JetpackItem.THRUST_FE);
-                out.add(new Stat("COST", cost + "/t", 1 - cost / 60F));
+                out.add(new Stat("Cost", cost + "/t", 1 - cost / 60F));
             }
             case POWER_HELMET, POWER_CHEST, POWER_LEGS, POWER_BOOTS -> {
-                out.add(new Stat("SHIELD", Math.round(com.powerfactor.item.PowerArmorItem.shieldFraction(tool) * 100) + "%", (float) com.powerfactor.item.PowerArmorItem.shieldFraction(tool) / 0.14F));
+                out.add(new Stat("Shield", Math.round(com.powerfactor.item.PowerArmorItem.shieldFraction(tool) * 100) + "%", (float) com.powerfactor.item.PowerArmorItem.shieldFraction(tool) / 0.14F));
                 if (kind == ToolKind.POWER_LEGS) {
                     int speed = ToolModules.count(tool, DrillModule.Type.SPEED), jump = ToolModules.count(tool, DrillModule.Type.JUMP);
-                    out.add(new Stat("SPEED", "+" + Math.round(com.powerfactor.power.ArmorPower.speedBonus(speed) * 100) + "%", (float) com.powerfactor.power.ArmorPower.speedBonus(speed) / 0.7F));
-                    out.add(new Stat("JUMP", "+" + fmt(com.powerfactor.power.ArmorPower.jumpBonus(jump)), (float) com.powerfactor.power.ArmorPower.jumpBonus(jump) / 0.34F));
+                    out.add(new Stat("Speed", "+" + Math.round(com.powerfactor.power.ArmorPower.speedBonus(speed) * 100) + "%", (float) com.powerfactor.power.ArmorPower.speedBonus(speed) / 0.7F));
+                    out.add(new Stat("Jump", "+" + fmt(com.powerfactor.power.ArmorPower.jumpBonus(jump)), (float) com.powerfactor.power.ArmorPower.jumpBonus(jump) / 0.34F));
                 } else if (kind == ToolKind.POWER_CHEST) {
-                    out.add(new Stat("PACK", JetpackItem.worn(tool) ? "LINKED" : "EMPTY", JetpackItem.worn(tool) ? 1 : 0));
-                    out.add(new Stat("THRUST", Math.round(JetpackItem.thrust(tool) * 100) + "%", JetpackItem.thrust(tool) / 2.05F));
+                    out.add(new Stat("Pack", JetpackItem.worn(tool) ? "Linked" : "Empty", JetpackItem.worn(tool) ? 1 : 0));
+                    out.add(new Stat("Thrust", Math.round(JetpackItem.thrust(tool) * 100) + "%", JetpackItem.thrust(tool) / 2.05F));
                 } else if (kind == ToolKind.POWER_BOOTS) {
                     int shock = ToolModules.count(tool, DrillModule.Type.SHOCK);
-                    out.add(new Stat("LAND", (int) com.powerfactor.power.ArmorPower.landingLimit(shock) + "m", (float) com.powerfactor.power.ArmorPower.landingLimit(shock) / 14));
-                    out.add(new Stat("COST", ToolModules.cost(tool, 100) + "/m", 1 - ToolModules.cost(tool, 100) / 120F));
+                    out.add(new Stat("Landing", (int) com.powerfactor.power.ArmorPower.landingLimit(shock) + "m", (float) com.powerfactor.power.ArmorPower.landingLimit(shock) / 14));
+                    out.add(new Stat("Cost", ToolModules.cost(tool, 100) + "/m", 1 - ToolModules.cost(tool, 100) / 120F));
                 } else {
                     int vision = ToolModules.count(tool, DrillModule.Type.NIGHT_VISION), air = ToolModules.count(tool, DrillModule.Type.REBREATHER);
-                    out.add(new Stat("VISION", vision > 0 ? "FITTED" : "EMPTY", vision));
-                    out.add(new Stat("AIR", air > 0 ? "FITTED" : "EMPTY", air));
+                    out.add(new Stat("Vision", vision > 0 ? "Fitted" : "Empty", vision));
+                    out.add(new Stat("Air", air > 0 ? "Fitted" : "Empty", air));
                 }
             }
             case SABER -> {
                 float dmg = ArcSaberItem.LIT_DAMAGE + ToolModules.overcharge(tool, 3F);
                 int chain = ToolModules.count(tool, DrillModule.Type.CHAIN);
-                out.add(new Stat("DMG", fmt(dmg), dmg / 19F));
-                out.add(new Stat("CHAIN", chain == 0 ? "-" : "+" + chain, chain / 2F));
+                out.add(new Stat("Damage", fmt(dmg), dmg / 19F));
+                out.add(new Stat("Chain", chain == 0 ? "-" : "+" + chain, chain / 2F));
                 int cost = ToolModules.cost(tool, ArcSaberItem.PER_HIT);
-                out.add(new Stat("COST", cost + " FE", 1 - cost / 180F));
+                out.add(new Stat("Cost", cost + " FE", 1 - cost / 180F));
             }
             case ARC_GUN -> {
                 float dmg = 10 + ToolModules.overcharge(tool, 4F);
                 int hops = 4 + 2 * ToolModules.count(tool, DrillModule.Type.CHAIN);
-                out.add(new Stat("DMG", fmt(dmg), dmg / 22F));
-                out.add(new Stat("ARCS", String.valueOf(hops + 1), (hops + 1) / 9F));
-                out.add(new Stat("COST", ArcGunItem.cost(tool) + " FE", 1 - ArcGunItem.cost(tool) / 700F));
+                out.add(new Stat("Damage", fmt(dmg), dmg / 22F));
+                out.add(new Stat("Arcs", String.valueOf(hops + 1), (hops + 1) / 9F));
+                out.add(new Stat("Cost", ArcGunItem.cost(tool) + " FE", 1 - ArcGunItem.cost(tool) / 700F));
             }
         }
         return out;
@@ -344,16 +353,10 @@ public class UpgradeTableScreen extends AbstractContainerScreen<UpgradeTableMenu
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor g, int xm, int ym) {
-        boolean cursor = (Util.getMillis() / 400) % 2 == 0;
-        Component title = Component.translatable("gui.powerfactor.upgrade.title");
-        g.text(font, title, 8, 5, Skin.TEXT, false);
-        if (cursor) {
-            g.fill(10 + font.width(title), 5, 15 + font.width(title), 13, Skin.ACCENT);
-        }
         Component status = menu.kind() == null ? Component.translatable("gui.powerfactor.upgrade.standby")
                 : Component.translatable("gui.powerfactor.upgrade.linked");
-        g.text(font, status, W - 8 - font.width(status), 5, menu.kind() == null ? Skin.DIM : 0xFF1E9E5A, false);
-        g.text(font, Component.translatable("gui.powerfactor.upgrade.inventory"), UpgradeTableMenu.INV_X, 127, Skin.DIM, false);
+        g.text(font, status, W - 18 - font.width(status), 6, menu.kind() == null ? Skin.DIM : 0xFF1E9E5A, false);
+        Skin.lamp(g, W - 14, 6, menu.kind() == null ? 0xFF8FA6B5 : 0xFF5CFF8A);
     }
 
     /** The tool socket shows the hologram instead of a little item icon. */

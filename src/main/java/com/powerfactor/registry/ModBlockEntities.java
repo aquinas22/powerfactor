@@ -91,7 +91,8 @@ public final class ModBlockEntities {
                     ModBlocks.BOILER_CASING.get(), ModBlocks.BOILER_FIREBOX.get(), ModBlocks.STEAM_DRUM.get(), ModBlocks.TURBINE_CASING.get(),
                     ModBlocks.STEAM_ROTOR.get(), ModBlocks.GENERATOR_MAGNET.get(), ModQuantum.STARFORGE_FRAME.get(), ModQuantum.STARFORGE_PYLON.get(),
                     ModQuantum.STARFORGE_CRUCIBLE.get(), ModQuantum.FUSION_CASING.get(), ModQuantum.FUSION_MAGNET.get(),
-                    ModQuantum.FUSION_GLASS.get()));
+                    ModQuantum.FUSION_GLASS.get(), ModWash.WASH_FRAME.get(), ModWash.SLUICE_BOX.get(), ModWash.TROMMEL.get(), ModWash.FEED_HOPPER.get(),
+                    ModBlackHole.CASING.get(), ModBlackHole.COIL.get(), ModBlackHole.GLASS.get(), ModBlackHole.INJECTOR.get(), ModBlackHole.COLLECTOR.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FluidTankBlockEntity>> FLUID_TANK = BLOCK_ENTITIES.register("fluid_tank",
             () -> new BlockEntityType<>(FluidTankBlockEntity::new, ModBlocks.FLUID_TANK.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PumpBlockEntity>> ELECTRIC_PUMP = BLOCK_ENTITIES.register("electric_pump",

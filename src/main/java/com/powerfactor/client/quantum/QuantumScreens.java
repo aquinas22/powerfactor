@@ -31,8 +31,9 @@ public final class QuantumScreens {
             float p = menu.progress();
             boolean running = menu.rate() > 0;
             // The ring: an LCD with the accelerator loop; bunches race faster as energy banks.
-            int cx = x + 88, cy = y + 60, r = 24;
-            Skin.lcd(g, x + 60, y + 20, 56, 80);
+            // Hero: the ring on the screen's centre line; input and output slots mirror it (docs/gui-style-guide.md).
+            int cx = x + 88, cy = y + 47, r = 21;
+            Skin.lcd(g, x + 54, y + 20, 68, 72);
             spin += running ? 0.02F + p * 0.35F : 0.003F;
             for (int i = 0; i < 48; i++) {
                 double a = i * Math.PI * 2 / 48;
@@ -62,24 +63,27 @@ public final class QuantumScreens {
                 g.fill(cx - s, cy - s, cx + s, cy + s, (flash * 12) << 24 | 0xFFFFFF);
             }
             g.text(font, Component.literal(Math.round(p * 100) + "%"), cx - font.width(Math.round(p * 100) + "%") / 2, cy - 4, running ? WHITE : Skin.DIM, false);
-            // Labels and energy.
+            // Readout on the ring's glass, under the loop: what it's making and how fast it banks.
             int recipe = menu.recipe();
-            g.text(font, Skin.fit(font, recipe < 0 ? Component.translatable("gui.powerfactor.collider.idle")
-                    : Component.translatable("gui.powerfactor.collider.recipe." + ColliderRecipes.ALL.get(recipe).id()), 50), x + 8, y + 22, Skin.DIM, false);
-            g.text(font, Component.literal(Skin.compact(menu.rate()) + " FE/t"), x + 8, y + 34, running ? 0xFFD0503A : Skin.DIM, false);
-            Skin.energyTube(g, x + 152, y + 20, 14, 80, menu.energy(), ColliderBlockEntity.CAPACITY, running);
-            if (recipe >= 0) {
-                g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.collider.needs", ColliderRecipes.ALL.get(recipe).count(),
-                        Skin.compact(ColliderRecipes.ALL.get(recipe).energy())), 50), x + 8, y + 84, Skin.DIM, false);
-            }
+            Component what = recipe < 0 ? Component.translatable("gui.powerfactor.collider.idle")
+                    : Component.translatable("gui.powerfactor.collider.recipe." + ColliderRecipes.ALL.get(recipe).id());
+            Component rate = Component.literal(Skin.compact(menu.rate()) + " FE/t");
+            int w1 = Math.min(60, font.width(what)), w2 = font.width(rate);
+            Skin.condensed(g, font, what, cx - w1 / 2, y + 73, 60, running ? Skin.LCD_TEXT : Skin.LCD_DIM);
+            Skin.iconValue(g, font, Skin.Icon.FE, Component.literal(Skin.compact(menu.rate()) + "/t"), cx - (w2 + 11) / 2, y + 82,
+                    running ? Skin.FE : Skin.LCD_DIM, null);
+            Skin.energyTube(g, x + 156, y + 20, 12, 72, menu.energy(), ColliderBlockEntity.CAPACITY, running);
         }
 
         @Override
         public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float a) {
             super.extractRenderState(g, mx, my, a);
-            if (mx >= leftPos + 152 && mx < leftPos + 166 && my >= topPos + 20 && my < topPos + 100) {
+            if (mx >= leftPos + 156 && mx < leftPos + 168 && my >= topPos + 20 && my < topPos + 92) {
                 g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.buffer", String.format("%,d", menu.energy()),
                         String.format("%,d", ColliderBlockEntity.CAPACITY)), mx, my);
+            } else if (menu.recipe() >= 0 && mx >= leftPos + 54 && mx < leftPos + 122 && my >= topPos + 20 && my < topPos + 92) {
+                var r = ColliderRecipes.ALL.get(menu.recipe());
+                g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.collider.needs", r.count(), Skin.compact(r.energy())), mx, my);
             }
         }
     }
@@ -95,8 +99,10 @@ public final class QuantumScreens {
         protected void main(GuiGraphicsExtractor g, int x, int y, int mx, int my) {
             long t = Util.getMillis();
             float s = menu.stability();
-            int cx = x + 94, cy = y + 46;
-            Skin.lcd(g, x + 60, y + 20, 68, 52);
+            // Readouts on the left glass; the vacuum pocket is the hero, centred over its fuel slot; FE tube on the right.
+            Skin.lcd(g, x + 8, y + 20, 40, 72);
+            int cx = x + 101, cy = y + 44;
+            Skin.lcd(g, x + 54, y + 20, 94, 50);
             // The vacuum pocket: a black core with an orange rim, orbited by qubits that speed up as it stabilises.
             int core = 6 + Math.round(4 * s);
             for (int dy = -core - 3; dy <= core + 3; dy++) {
@@ -113,13 +119,15 @@ public final class QuantumScreens {
                 int px = cx + (int) Math.round(Math.cos(a) * rx), py = cy + (int) Math.round(Math.sin(a) * ry);
                 g.fill(px - 1, py - 1, px + 1, py + 1, s > 0.05F ? (k == 1 ? CYAN : VIOLET) : 0xFF404850);
             }
-            g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.zero_point.stability", Math.round(s * 100)), 48), x + 8, y + 22,
-                    s > 0.95F ? 0xFF1E9E5A : Skin.DIM, false);
-            Skin.bar(g, x + 8, y + 33, 46, s, VIOLET);
-            g.text(font, Skin.fit(font, Component.literal(Skin.compact(menu.output()) + " FE/t"), 48), x + 8, y + 42, menu.output() > 0 ? 0xFFD0503A : Skin.DIM, false);
-            g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.zero_point.fuel"), 48), x + 8, y + 58, Skin.DIM, false);
-            Skin.bar(g, x + 8, y + 69, 46, menu.fuel(), ORANGE);
-            Skin.energyTube(g, x + 150, y + 20, 14, 80, menu.stored(), ZeroPointBlockEntity.BUFFER, menu.output() > 0);
+            // Left glass: label over value over bar, twice (field, then exotic matter), with the output between.
+            int lx = x + 12, lw = 32;
+            Skin.iconValue(g, font, Skin.Icon.RANGE, Component.literal(Math.round(s * 100) + "%"), lx, y + 26, s > 0.95F ? 0xFF7CFF8A : Skin.LCD_TEXT,
+                    Component.translatable("gui.powerfactor.zero_point.stability", Math.round(s * 100)));
+            Skin.bar(g, lx, y + 43, lw, s, VIOLET);
+            Skin.iconValue(g, font, Skin.Icon.FE, Component.literal(Skin.compact(menu.output()) + "/t"), lx, y + 53, menu.output() > 0 ? Skin.FE : Skin.LCD_DIM, null);
+            Skin.icon(g, Skin.Icon.MATTER, lx, y + 68, Component.translatable("gui.powerfactor.zero_point.fuel"));
+            Skin.bar(g, lx, y + 80, lw, menu.fuel(), ORANGE);
+            Skin.energyTube(g, x + 156, y + 20, 12, 72, menu.stored(), ZeroPointBlockEntity.BUFFER, menu.output() > 0);
         }
     }
 

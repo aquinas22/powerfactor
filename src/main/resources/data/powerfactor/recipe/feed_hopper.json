@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "P P",
+    "PHP",
+    " P "
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "H": "minecraft:hopper"
+  },
+  "result": {
+    "id": "powerfactor:feed_hopper",
+    "count": 1
+  }
+}

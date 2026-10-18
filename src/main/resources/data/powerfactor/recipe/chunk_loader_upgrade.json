@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " F ",
+    "PKP",
+    " F "
+  ],
+  "key": {
+    "F": "powerfactor:bedrock_fragment",
+    "P": "minecraft:ender_pearl",
+    "K": "powerfactor:control_circuit"
+  },
+  "result": {
+    "id": "powerfactor:chunk_loader_upgrade",
+    "count": 1
+  }
+}

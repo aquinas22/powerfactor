@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class ZeroPointMenu extends MachineMenu {
-    public static final int FUEL_X = 86, FUEL_Y = 78;
+    public static final int FUEL_X = 93, FUEL_Y = 75;   // centred under the vacuum display
 
     public ZeroPointMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
         this(id, inventory, null, new SimpleContainer(1), new SimpleContainerData(ZeroPointBlockEntity.DATA_COUNT));

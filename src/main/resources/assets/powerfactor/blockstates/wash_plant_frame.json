@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/wash_plant_frame"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/wash_plant_frame"
+    }
+  }
+}

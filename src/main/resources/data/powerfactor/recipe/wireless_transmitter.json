@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " T ",
+    "RCR",
+    "PPP"
+  ],
+  "key": {
+    "T": "minecraft:redstone_torch",
+    "R": "#c:dusts/redstone",
+    "C": "powerfactor:advanced_circuit",
+    "P": "#c:plates/iron"
+  },
+  "result": {
+    "id": "powerfactor:wireless_transmitter",
+    "count": 1
+  }
+}

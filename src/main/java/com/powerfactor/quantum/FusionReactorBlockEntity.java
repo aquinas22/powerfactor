@@ -207,6 +207,7 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements com.
     }
 
     private void checkStructure(ServerLevel level, BlockPos pos, BlockState bs) {
+        if (!STRUCTURE.loaded(level, pos, facingDir())) return;
         boolean now = STRUCTURE.complete(level, pos, facingDir());
         Set<BlockPos> parts = new HashSet<>();
         if (now) for (var p : STRUCTURE.parts()) parts.add(STRUCTURE.worldPos(pos, facingDir(), p));
@@ -227,14 +228,11 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements com.
         }
     }
 
+    /** Only a real removal frees the casings: setRemoved also runs when the chunk unloads, and must not touch other blocks then. */
     @Override
-    public void setRemoved() {
-        super.setRemoved();
-        if (level != null && !level.isClientSide()) {
-            for (BlockPos p : linked) {
-                if (level.getBlockEntity(p) instanceof CasingBlockEntity c && worldPosition.equals(c.controllerPos())) c.link(null);
-            }
-        }
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (level != null && !level.isClientSide()) CasingBlockEntity.release(level, linked, worldPosition);
     }
 
     public float clientTemp() {

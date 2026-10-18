@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "LEL",
+    "LCL"
+  ],
+  "key": {
+    "S": "minecraft:string",
+    "L": "minecraft:leather",
+    "E": "powerfactor:essence_of_bedrock",
+    "C": "#c:chests/wooden"
+  },
+  "result": {
+    "id": "powerfactor:pocket_void",
+    "count": 1
+  }
+}

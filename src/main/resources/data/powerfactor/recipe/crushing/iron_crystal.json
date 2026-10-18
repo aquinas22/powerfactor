@@ -1,0 +1,7 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "powerfactor:iron_crystal",
+  "result": {
+    "item": "powerfactor:iron_dust"
+  }
+}

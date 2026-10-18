@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/sluice_box"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/sluice_box_formed"
+    }
+  }
+}

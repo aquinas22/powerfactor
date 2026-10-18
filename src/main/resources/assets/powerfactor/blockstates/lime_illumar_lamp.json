@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "powerfactor:block/redstone/lamp/lime"
+    },
+    "lit=true": {
+      "model": "powerfactor:block/redstone/lamp/lime_on"
+    }
+  }
+}

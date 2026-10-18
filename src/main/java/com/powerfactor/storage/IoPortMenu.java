@@ -17,7 +17,8 @@ import org.jspecify.annotations.Nullable;
 
 /** Filter references (ghost slots), speed cards and the allow/deny, exact and priority controls. */
 public class IoPortMenu extends NodeMenu {
-    public static final int FILTER_X = 8, FILTER_Y = 36, UPGRADE_X = 152, UPGRADE_Y = 18;
+    /** Filter row spans the inventory's nine columns; speed upgrades are a row of four in columns 6-9 at the bottom. */
+    public static final int FILTER_X = 8, FILTER_Y = 34, UPGRADE_X = 98, UPGRADE_Y = 75;
     public static final int BUTTON_DENY = 0, BUTTON_EXACT = 1, BUTTON_PRIORITY = 2; // +0..3: -10,-1,+1,+10
 
     private final @Nullable IoPortBlockEntity port;
@@ -42,7 +43,13 @@ public class IoPortMenu extends NodeMenu {
             addSlot(new GhostSlot(filters, i, FILTER_X + i * 18, FILTER_Y));
         }
         for (int i = 0; i < IoPortBlockEntity.UPGRADES; i++) {
-            addSlot(new Slot(upgrades, i, UPGRADE_X, UPGRADE_Y + i * 18) {
+            addSlot(new Slot(upgrades, i, UPGRADE_X + i * 18, UPGRADE_Y) {
+                /** A storage bus moves on its own clock: no speed cards, so no sockets on its screen. */
+                @Override
+                public boolean isActive() {
+                    return IoPortMenu.this.kind != IoPortBlockEntity.Kind.STORAGE_BUS;
+                }
+
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return stack.getItem() instanceof UpgradeItem u && u.type() == UpgradeType.SPEED;

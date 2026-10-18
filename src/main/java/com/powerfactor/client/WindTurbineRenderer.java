@@ -242,16 +242,25 @@ public class WindTurbineRenderer implements BlockEntityRenderer<WindTurbineBlock
         return m;
     }
 
+    /** Blade skin UVs (texture 0,80 64x40, see gen_textures.blade_skin): u round the section, v along the span. */
+    private static float bladeU(int k) {
+        return (0.5F + k * 63F / LOOP) / 128F;
+    }
+
+    private static float bladeV(int j) {
+        return (80.5F + 38.9F * STATIONS[j] / STATIONS[STATIONS.length - 1]) / 128F;
+    }
+
     private static void emitBlade(VertexConsumer buf, PoseStack.Pose p, float[][][] m, int light) {
         for (int j = 0; j + 1 < m.length; j++) {
             float mid = (STATIONS[j] + STATIONS[j + 1]) / 2;
             int color = (mid > 5.35F && mid < 5.65F) || mid > 5.95F ? BLADE_RED : BLADE_WHITE;
             for (int k = 0; k < LOOP; k++) {
                 int k1 = (k + 1) % LOOP;
-                vertex(buf, p, m[j][k], color, light);
-                vertex(buf, p, m[j][k1], color, light);
-                vertex(buf, p, m[j + 1][k1], color, light);
-                vertex(buf, p, m[j + 1][k], color, light);
+                vertex(buf, p, m[j][k], color, light, bladeU(k), bladeV(j));
+                vertex(buf, p, m[j][k1], color, light, bladeU(k + 1), bladeV(j));
+                vertex(buf, p, m[j + 1][k1], color, light, bladeU(k + 1), bladeV(j + 1));
+                vertex(buf, p, m[j + 1][k], color, light, bladeU(k), bladeV(j + 1));
             }
         }
         // Tip cap.
@@ -272,7 +281,11 @@ public class WindTurbineRenderer implements BlockEntityRenderer<WindTurbineBlock
     }
 
     private static void vertex(VertexConsumer buf, PoseStack.Pose p, float[] v, int color, int light) {
-        buf.addVertex(p, v[0], v[1], v[2]).setColor(color).setUv(WHITE_U, WHITE_V).setOverlay(OverlayTexture.NO_OVERLAY)
+        vertex(buf, p, v, color, light, WHITE_U, WHITE_V);
+    }
+
+    private static void vertex(VertexConsumer buf, PoseStack.Pose p, float[] v, int color, int light, float u, float vv) {
+        buf.addVertex(p, v[0], v[1], v[2]).setColor(color).setUv(u, vv).setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(light).setNormal(p, v[3], v[4], v[5]);
     }
 
@@ -297,22 +310,25 @@ public class WindTurbineRenderer implements BlockEntityRenderer<WindTurbineBlock
         for (int i = 0; i + 1 < prof.length; i++) {
             for (int a = 0; a < seg; a++) {
                 double t0 = Math.PI * 2 * a / seg, t1 = Math.PI * 2 * (a + 1) / seg;
-                spinnerVertex(buf, p, prof, i, t0, light);
-                spinnerVertex(buf, p, prof, i, t1, light);
-                spinnerVertex(buf, p, prof, i + 1, t1, light);
-                spinnerVertex(buf, p, prof, i + 1, t0, light);
+                float u0 = (64.5F + 63F * a / seg) / 128F, u1 = (64.5F + 63F * (a + 1) / seg) / 128F;
+                spinnerVertex(buf, p, prof, i, t0, light, u0);
+                spinnerVertex(buf, p, prof, i, t1, light, u1);
+                spinnerVertex(buf, p, prof, i + 1, t1, light, u1);
+                spinnerVertex(buf, p, prof, i + 1, t0, light, u0);
             }
         }
     }
 
-    private static void spinnerVertex(VertexConsumer buf, PoseStack.Pose p, float[][] prof, int i, double theta, int light) {
+    /** Spinner skin (texture 64,80 64x40, see gen_textures.spinner_skin): u round the shaft, v from drum to nose. */
+    private static void spinnerVertex(VertexConsumer buf, PoseStack.Pose p, float[][] prof, int i, double theta, int light, float u) {
+        float v = (80.5F + 38.9F * i / (prof.length - 1)) / 128F;
         float z = prof[i][0], rad = prof[i][1];
         float[] a = prof[Math.max(0, i - 1)], b = prof[Math.min(prof.length - 1, i + 1)];
         float dz = b[0] - a[0], dr = b[1] - a[1];
         float len = (float) Math.sqrt(dz * dz + dr * dr);
         float nr = dz / len, nz = -dr / len;
         float c = (float) Math.cos(theta), s = (float) Math.sin(theta);
-        buf.addVertex(p, rad * c, rad * s, z).setColor(SPINNER).setUv(WHITE_U, WHITE_V).setOverlay(OverlayTexture.NO_OVERLAY)
+        buf.addVertex(p, rad * c, rad * s, z).setColor(SPINNER).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(light).setNormal(p, nr * c, nr * s, nz);
     }
 

@@ -283,6 +283,9 @@ def quarries(g):
         "gui.powerfactor.quarry.fortune.tip": "Fortune level: 1.585× energy per level",
         "gui.powerfactor.quarry.void": "Void", "gui.powerfactor.quarry.void.tip": "Void common rubble (stone, dirt, gravel, netherrack…)",
         "gui.powerfactor.quarry.restart": "Restart from the top",
+        "gui.powerfactor.quarry.restart.short": "Restart", "gui.powerfactor.quarry.size": "Area %s×%s",
+        "gui.powerfactor.quarry.fortune": "Fortune %s", "gui.powerfactor.quarry.fortune.off": "No fortune",
+        "gui.powerfactor.quarry.layer": "Layer %s/%s · %s FE/t",
         "scada.powerfactor.quarry": "%s · %s blocks mined",
     })
     LANG["handbook.powerfactor.quarry.title"] = "Quarries"
@@ -453,7 +456,7 @@ def quantum_machines(g):
         "gui.powerfactor.collider.recipe.adamantium": "→ Adamantium", "gui.powerfactor.collider.recipe.cortanium": "→ Cortanium",
         "gui.powerfactor.collider.recipe.exotic_matter": "→ Exotic Matter", "gui.powerfactor.collider.recipe.singularity": "→ Singularity",
         "gui.powerfactor.collider.recipe.nether_star": "→ Nether Star",
-        "gui.powerfactor.zero_point.stability": "Field %s%%", "gui.powerfactor.zero_point.fuel": "Matter",
+        "gui.powerfactor.zero_point.stability": "Field %s%%", "gui.powerfactor.zero_point.field": "Field", "gui.powerfactor.zero_point.fuel": "Matter",
         "scada.powerfactor.collider": "Collision energy %s%%", "scada.powerfactor.zero_point": "Vacuum %s%% · %s s of matter left",
     })
     LANG["handbook.powerfactor.quantum.title"] = "Quantum Machines"
@@ -554,7 +557,7 @@ def starforge(g):
     LANG.update({
         "tooltip.powerfactor.paxel": "Pickaxe, axe, shovel and hoe in one · forged only in a Starforge",
         "tooltip.powerfactor.exotic.paxel": "Pickaxe, axe, shovel and hoe in one",
-        "gui.powerfactor.starforge.unformed": "Incomplete · sneak-use to build",
+        "gui.powerfactor.starforge.unformed": "Frame incomplete",
         "gui.powerfactor.starforge.load": "Load pickaxe, axe, shovel + catalyst",
         "gui.powerfactor.starforge.forging": "Forging… %s%%",
         "scada.powerfactor.starforge": "Forging %s%%",
@@ -655,7 +658,7 @@ def turrets(g):
         "gui.powerfactor.turret.range": "Reach %sm", "gui.powerfactor.turret.charge": "Rail charge",
         "gui.powerfactor.turret.animals": "Animals", "gui.powerfactor.turret.players": "Players",
         "gui.powerfactor.turret.animals.tip": "Also engage farm animals (named animals are always spared)",
-        "gui.powerfactor.turret.players.tip": "Also engage players in survival (never the turret's owner)",
+        "gui.powerfactor.turret.hostiles.tip": "Hostile mobs are always engaged", "gui.powerfactor.turret.players.tip": "Also engage players in survival (never the turret's owner)",
         "scada.powerfactor.turret": "%s kills",
     })
     LANG["handbook.powerfactor.turrets.title"] = "Defence Turrets"
@@ -764,7 +767,7 @@ def fusion(g):
         name(f"block.powerfactor.{k}", v)
     LANG.update({
         "gui.powerfactor.fusion.cold": "Cold", "gui.powerfactor.fusion.igniting": "Igniting", "gui.powerfactor.fusion.burning": "Burning",
-        "gui.powerfactor.fusion.unformed": "Structure incomplete", "gui.powerfactor.fusion.temp": "%s MK",
+        "gui.powerfactor.fusion.unformed": "No frame", "gui.powerfactor.fusion.temp": "%s MK",
         "gui.powerfactor.fusion.fuel": "H₂ %s", "gui.powerfactor.fusion.output": "+%s/t", "gui.powerfactor.fusion.fuel_tip": "Hydrogen: %s / %s mB · needs 1,000 mB and 50M FE to ignite", "gui.powerfactor.fusion.ignite_hint": "Needs 1,000 mB H₂ and 50M FE to ignite",
         "scada.powerfactor.fusion": "Plasma %s MK · %s mB hydrogen",
     })
@@ -1156,3 +1159,60 @@ def shield_generator(g):
         "\n\nShield Generator: projects a dome of force 4 to 16 m in radius. Hostile mobs inside are shoved back out, and "
         "projectiles fired by hostiles are burned away as they cross the surface. Upkeep is 3 FE/t per square metre of radius, "
         "plus 2,000 FE per repulse.")
+
+
+def laser_transport(g):
+    """Laser Nodes, the Laser Wrench and the Photonic Lens: mid-game wireless items, fluids and energy."""
+    from storage_data import box, SIDES
+    write, asset, data, pf, NS, name, item_def, flat_item, shaped, drops_self, tag, LANG = (g[k] for k in (
+        "write", "asset", "data", "pf", "NS", "name", "item_def", "flat_item", "shaped", "drops_self", "tag", "LANG"))
+    T = {"base": "storage_casing", "chrome": "finish_chrome", "lit": "storage_casing_lit", "dark": "finish_dark", "lens": "laser_lens",
+         "particle": "storage_casing"}
+    # Built attached to the block below (facing=down); the blockstate turns it to every face.
+    e = [box([3, 0, 3], [13, 2, 13], "base", full=SIDES),
+         box([4, 2, 4], [12, 3, 12], "dark"),
+         box([5, 3, 5], [11, 6, 11], "chrome", {"up": "lens"}, glow=0, full=("up",)),
+         box([6, 6, 6], [10, 7, 10], "lens", glow=15, full=("up",)),
+         box([3, 0, 7], [3.5, 2.5, 9], "lit", glow=10), box([12.5, 0, 7], [13, 2.5, 9], "lit", glow=10)]
+    used = {f["texture"][1:] for el in e for f in el["faces"].values()}
+    write(asset("models", "block", "laser_node.json"), {"parent": "minecraft:block/block", "render_type": "minecraft:cutout",
+          "textures": {k: pf("block/" + v) for k, v in T.items() if k in used or k == "particle"}, "elements": e,
+          "display": {"gui": {"rotation": [30, 225, 0], "translation": [0, 4, 0], "scale": [1.15, 1.15, 1.15]}, "fixed": {"translation": [0, 4, 0], "scale": [0.9, 0.9, 0.9]}}})
+    rot = {"down": {}, "up": {"x": 180}, "north": {"x": 270}, "south": {"x": 270, "y": 180}, "east": {"x": 270, "y": 90},
+           "west": {"x": 270, "y": 270}}
+    write(asset("blockstates", "laser_node.json"), {"variants": {f"facing={f}": dict({"model": pf("block/laser_node")}, **r) for f, r in rot.items()}})
+    item_def("laser_node", pf("block/laser_node"))
+    drops_self("laser_node")
+    tag("block", "minecraft", "mineable/pickaxe", [pf("laser_node")])
+    flat_item("photonic_lens")
+    flat_item("laser_wrench", "minecraft:item/handheld")
+    write(data(NS, "recipe", "laser_engraving", "photonic_lens.json"), {
+        "type": pf("laser_engraving"), "inputs": [{"ingredient": "#c:glass_blocks", "count": 1}, {"ingredient": "#c:dusts/redstone", "count": 2}],
+        "tool": pf("sensor_photomask"), "results": [{"item": pf("photonic_lens"), "count": 2}], "time": 160})
+    shaped("laser_node", [" L ", "PMP", " R "], {"L": pf("photonic_lens"), "P": "#c:plates/steel", "M": pf("microprocessor"),
+                                                "R": "#c:dusts/redstone"}, 2)
+    shaped("laser_wrench", ["  L", " S ", "S  "], {"L": pf("photonic_lens"), "S": "#c:ingots/steel"}, category="equipment")
+    name("block.powerfactor.laser_node", "Laser Node")
+    name("item.powerfactor.laser_wrench", "Laser Wrench")
+    name("item.powerfactor.photonic_lens", "Photonic Lens")
+    LANG.update({
+        "gui.powerfactor.laser.channel.items": "Items", "gui.powerfactor.laser.channel.fluids": "Fluids",
+        "gui.powerfactor.laser.channel.energy": "Energy",
+        "gui.powerfactor.laser.mode.0": "Off", "gui.powerfactor.laser.mode.1": "Send", "gui.powerfactor.laser.mode.2": "Receive",
+        "gui.powerfactor.laser.channel_tip": "Click: Off → Send → Receive. Senders push to every receiving node they can reach.",
+        "gui.powerfactor.laser.links": "%s/%s links", "gui.powerfactor.laser.filter": "Item filter",
+        "gui.powerfactor.laser.priority": "Priority %s",
+        "gui.powerfactor.laser.selected": "Node selected: now click another node to fire a link",
+        "gui.powerfactor.laser.linked": "Laser linked!", "gui.powerfactor.laser.unlinked": "Laser link cut",
+        "gui.powerfactor.laser.cleared": "Selection cleared",
+        "gui.powerfactor.laser.same": "That's the same node", "gui.powerfactor.laser.not_node": "Both ends must be Laser Nodes",
+        "gui.powerfactor.laser.too_far": "Too far: lasers reach %s blocks", "gui.powerfactor.laser.full": "A node holds at most %s links",
+        "gui.powerfactor.laser.blocked": "Something is in the way of the beam",
+        "tooltip.powerfactor.laser_wrench": "Click a Laser Node, then another, to link them (again to unlink) · sneak-use to clear",
+        "tooltip.powerfactor.laser_wrench.selected": "Selected: %s",
+    })
+    LANG["handbook.powerfactor.storage.text"] = LANG["handbook.powerfactor.storage.text"] + (
+        "\n\nLaser transport: stick a Laser Node on any chest, tank or machine. Click one node with a Laser Wrench, then another "
+        "within 24 blocks in clear line of sight, to fire a laser between them (click both again to cut it). Open a node to set each "
+        "channel (Items, Fluids, Energy) to Off, Send or Receive: senders push through every chain of linked nodes to receivers, "
+        "highest priority first. Items can be filtered. Beams glow gold for items, blue for fluids and red for energy as they flow.")

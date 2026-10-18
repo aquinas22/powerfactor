@@ -503,6 +503,51 @@
     ],
     "subtitle": "subtitles.powerfactor.rover_motor"
   },
+  "wash_plant_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:wash_plant_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.wash_plant_run"
+  },
+  "chemical_reactor_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:chemical_reactor_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.chemical_reactor_run"
+  },
+  "ore_dissolver_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:ore_dissolver_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.ore_dissolver_run"
+  },
+  "reactor_hum": {
+    "sounds": [
+      {
+        "name": "powerfactor:reactor_hum",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.reactor_hum"
+  },
+  "centrifuge_run": {
+    "sounds": [
+      {
+        "name": "powerfactor:centrifuge_run",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.centrifuge_run"
+  },
   "tree_fall": {
     "sounds": [
       {
@@ -598,5 +643,29 @@
       }
     ],
     "subtitle": "subtitles.powerfactor.wingsuit_open"
+  },
+  "reactor_alarm": {
+    "sounds": [
+      {
+        "name": "powerfactor:reactor_alarm"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.reactor_alarm"
+  },
+  "reactor_scram": {
+    "sounds": [
+      {
+        "name": "powerfactor:reactor_scram"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.reactor_scram"
+  },
+  "geiger": {
+    "sounds": [
+      {
+        "name": "powerfactor:geiger"
+      }
+    ],
+    "subtitle": "subtitles.powerfactor.geiger"
   }
 }

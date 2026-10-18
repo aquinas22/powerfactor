@@ -5,6 +5,7 @@
     "powerfactor:tin_ore",
     "powerfactor:lead_ore",
     "powerfactor:silver_ore",
-    "powerfactor:bauxite_ore"
+    "powerfactor:bauxite_ore",
+    "powerfactor:uranium_ore"
   ]
 }

@@ -38,5 +38,7 @@ if __name__ == "__main__":
     lang_path = ROOT / "assets/powerfactor/lang/en_us.json"
     language = json.loads(lang_path.read_text())
     generate(language)
+    from text_style import normalize
+    normalize(language)
     lang_path.write_text(json.dumps(language, indent=2, ensure_ascii=False) + "\n")
     print("Generated routing translations and component-preserving drops for three pipe types.")

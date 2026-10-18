@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " I ",
+    "GPG",
+    " I "
+  ],
+  "key": {
+    "I": "#c:ingots/iron",
+    "G": "minecraft:glass_pane",
+    "P": "minecraft:paper"
+  },
+  "result": {
+    "id": "powerfactor:dosimeter",
+    "count": 1
+  }
+}

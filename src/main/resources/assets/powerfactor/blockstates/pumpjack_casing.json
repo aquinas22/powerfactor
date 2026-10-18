@@ -3,8 +3,197 @@
     "formed=false": {
       "model": "powerfactor:block/pumpjack_casing"
     },
-    "formed=true": {
-      "model": "powerfactor:block/pumpjack_casing_formed"
+    "down=false,east=false,formed=true,north=false,south=false,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_00"
+    },
+    "down=true,east=false,formed=true,north=false,south=false,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_01"
+    },
+    "down=false,east=false,formed=true,north=false,south=false,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_02"
+    },
+    "down=true,east=false,formed=true,north=false,south=false,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_03"
+    },
+    "down=false,east=false,formed=true,north=true,south=false,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_04"
+    },
+    "down=true,east=false,formed=true,north=true,south=false,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_05"
+    },
+    "down=false,east=false,formed=true,north=true,south=false,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_06"
+    },
+    "down=true,east=false,formed=true,north=true,south=false,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_07"
+    },
+    "down=false,east=false,formed=true,north=false,south=true,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_08"
+    },
+    "down=true,east=false,formed=true,north=false,south=true,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_09"
+    },
+    "down=false,east=false,formed=true,north=false,south=true,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_10"
+    },
+    "down=true,east=false,formed=true,north=false,south=true,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_11"
+    },
+    "down=false,east=false,formed=true,north=true,south=true,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_12"
+    },
+    "down=true,east=false,formed=true,north=true,south=true,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_13"
+    },
+    "down=false,east=false,formed=true,north=true,south=true,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_14"
+    },
+    "down=true,east=false,formed=true,north=true,south=true,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_15"
+    },
+    "down=false,east=false,formed=true,north=false,south=false,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_16"
+    },
+    "down=true,east=false,formed=true,north=false,south=false,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_17"
+    },
+    "down=false,east=false,formed=true,north=false,south=false,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_18"
+    },
+    "down=true,east=false,formed=true,north=false,south=false,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_19"
+    },
+    "down=false,east=false,formed=true,north=true,south=false,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_20"
+    },
+    "down=true,east=false,formed=true,north=true,south=false,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_21"
+    },
+    "down=false,east=false,formed=true,north=true,south=false,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_22"
+    },
+    "down=true,east=false,formed=true,north=true,south=false,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_23"
+    },
+    "down=false,east=false,formed=true,north=false,south=true,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_24"
+    },
+    "down=true,east=false,formed=true,north=false,south=true,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_25"
+    },
+    "down=false,east=false,formed=true,north=false,south=true,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_26"
+    },
+    "down=true,east=false,formed=true,north=false,south=true,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_27"
+    },
+    "down=false,east=false,formed=true,north=true,south=true,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_28"
+    },
+    "down=true,east=false,formed=true,north=true,south=true,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_29"
+    },
+    "down=false,east=false,formed=true,north=true,south=true,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_30"
+    },
+    "down=true,east=false,formed=true,north=true,south=true,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_31"
+    },
+    "down=false,east=true,formed=true,north=false,south=false,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_32"
+    },
+    "down=true,east=true,formed=true,north=false,south=false,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_33"
+    },
+    "down=false,east=true,formed=true,north=false,south=false,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_34"
+    },
+    "down=true,east=true,formed=true,north=false,south=false,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_35"
+    },
+    "down=false,east=true,formed=true,north=true,south=false,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_36"
+    },
+    "down=true,east=true,formed=true,north=true,south=false,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_37"
+    },
+    "down=false,east=true,formed=true,north=true,south=false,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_38"
+    },
+    "down=true,east=true,formed=true,north=true,south=false,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_39"
+    },
+    "down=false,east=true,formed=true,north=false,south=true,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_40"
+    },
+    "down=true,east=true,formed=true,north=false,south=true,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_41"
+    },
+    "down=false,east=true,formed=true,north=false,south=true,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_42"
+    },
+    "down=true,east=true,formed=true,north=false,south=true,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_43"
+    },
+    "down=false,east=true,formed=true,north=true,south=true,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_44"
+    },
+    "down=true,east=true,formed=true,north=true,south=true,up=false,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_45"
+    },
+    "down=false,east=true,formed=true,north=true,south=true,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_46"
+    },
+    "down=true,east=true,formed=true,north=true,south=true,up=true,west=false": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_47"
+    },
+    "down=false,east=true,formed=true,north=false,south=false,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_48"
+    },
+    "down=true,east=true,formed=true,north=false,south=false,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_49"
+    },
+    "down=false,east=true,formed=true,north=false,south=false,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_50"
+    },
+    "down=true,east=true,formed=true,north=false,south=false,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_51"
+    },
+    "down=false,east=true,formed=true,north=true,south=false,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_52"
+    },
+    "down=true,east=true,formed=true,north=true,south=false,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_53"
+    },
+    "down=false,east=true,formed=true,north=true,south=false,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_54"
+    },
+    "down=true,east=true,formed=true,north=true,south=false,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_55"
+    },
+    "down=false,east=true,formed=true,north=false,south=true,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_56"
+    },
+    "down=true,east=true,formed=true,north=false,south=true,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_57"
+    },
+    "down=false,east=true,formed=true,north=false,south=true,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_58"
+    },
+    "down=true,east=true,formed=true,north=false,south=true,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_59"
+    },
+    "down=false,east=true,formed=true,north=true,south=true,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_60"
+    },
+    "down=true,east=true,formed=true,north=true,south=true,up=false,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_61"
+    },
+    "down=false,east=true,formed=true,north=true,south=true,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_62"
+    },
+    "down=true,east=true,formed=true,north=true,south=true,up=true,west=true": {
+      "model": "powerfactor:block/ctm/pumpjack_casing_63"
     }
   }
 }

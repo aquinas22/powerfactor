@@ -1,0 +1,180 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "powered": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/center_off"
+      }
+    },
+    {
+      "when": {
+        "north": "side|up",
+        "powered": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/arm_off",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "north": "up",
+        "powered": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/riser_off",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "east": "side|up",
+        "powered": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/arm_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "east": "up",
+        "powered": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/riser_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "side|up",
+        "powered": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/arm_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "south": "up",
+        "powered": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/riser_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "side|up",
+        "powered": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/arm_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": "up",
+        "powered": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/riser_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "powered": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/center_on"
+      }
+    },
+    {
+      "when": {
+        "north": "side|up",
+        "powered": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/arm_on",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "north": "up",
+        "powered": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/riser_on",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "east": "side|up",
+        "powered": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/arm_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "east": "up",
+        "powered": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/riser_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "side|up",
+        "powered": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/arm_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "south": "up",
+        "powered": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/riser_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "side|up",
+        "powered": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/arm_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": "up",
+        "powered": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/pink_insulated_wire/riser_on",
+        "y": 270
+      }
+    }
+  ]
+}

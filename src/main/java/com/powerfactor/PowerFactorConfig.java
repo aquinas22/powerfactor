@@ -124,6 +124,18 @@ public final class PowerFactorConfig {
         }
     }
 
+    public static final ModConfigSpec.BooleanValue REACTOR_EXPLOSIONS = BUILDER
+            .comment("If true (the default), a fission reactor meltdown blows the vessel apart and breaks the terrain around it.")
+            .define("reactor_explosions", true);
+
+    public static boolean reactorExplosions() {
+        try {
+            return REACTOR_EXPLOSIONS.getAsBoolean();
+        } catch (IllegalStateException notLoaded) {
+            return true;
+        }
+    }
+
     public static boolean superweaponsBreakBlocks() {
         try {
             return SUPERWEAPONS_BREAK_BLOCKS.getAsBoolean();

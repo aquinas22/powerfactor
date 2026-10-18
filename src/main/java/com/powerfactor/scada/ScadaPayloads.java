@@ -43,6 +43,19 @@ public final class ScadaPayloads {
         }
     }
 
+    /** Client to server: the operator used one of a device's published controls. */
+    public record ControlCommand(BlockPos terminal, BlockPos device, String id, float value) implements CustomPacketPayload {
+        public static final Type<ControlCommand> TYPE = new Type<>(PowerFactor.id("scada_control"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, ControlCommand> STREAM_CODEC = StreamCodec.composite(
+                BlockPos.STREAM_CODEC, ControlCommand::terminal, BlockPos.STREAM_CODEC, ControlCommand::device,
+                ByteBufCodecs.stringUtf8(32), ControlCommand::id, ByteBufCodecs.FLOAT, ControlCommand::value, ControlCommand::new);
+
+        @Override
+        public Type<ControlCommand> type() {
+            return TYPE;
+        }
+    }
+
     /** Server to client: readings for a display wall, keyed by its master panel. */
     public record DisplaySnapshot(BlockPos master, List<ScadaReading> readings) implements CustomPacketPayload {
         public static final Type<DisplaySnapshot> TYPE = new Type<>(PowerFactor.id("display_snapshot"));
@@ -79,6 +92,7 @@ public final class ScadaPayloads {
         var registrar = event.registrar("1");
         registrar.playToClient(Snapshot.TYPE, Snapshot.STREAM_CODEC, (payload, context) -> clientHandler.accept(payload));
         registrar.playToServer(Command.TYPE, Command.STREAM_CODEC, ScadaPayloads::handleCommand);
+        registrar.playToServer(ControlCommand.TYPE, ControlCommand.STREAM_CODEC, ScadaPayloads::handleControl);
         registrar.playToServer(SaberConfig.TYPE, SaberConfig.STREAM_CODEC, (payload, context) -> {
             var stack = context.player().getItemInHand(payload.mainHand() ? net.minecraft.world.InteractionHand.MAIN_HAND
                     : net.minecraft.world.InteractionHand.OFF_HAND);
@@ -102,6 +116,21 @@ public final class ScadaPayloads {
         ScadaDevice device = ScadaNetwork.discover(level, command.terminal()).get(command.device());
         if (device != null && device.scadaReading().controllable()) {
             device.setRemoteEnabled(command.enabled());
+        }
+    }
+
+    private static void handleControl(ControlCommand command, IPayloadContext context) {
+        if (!(context.player() instanceof ServerPlayer player) || !(player.level() instanceof ServerLevel level)) return;
+        if (!(player.containerMenu instanceof ScadaTerminalMenu menu) || !menu.terminal().equals(command.terminal()) || !menu.stillValid(player)) return;
+        ScadaDevice device = ScadaNetwork.discover(level, command.terminal()).get(command.device());
+        if (device == null) return;
+        // Only controls the device actually publishes, and setpoints only within their range.
+        for (ScadaReading.Control c : device.scadaReading().controls()) {
+            if (c.id().equals(command.id())) {
+                float v = c.kind() == ScadaReading.SETPOINT ? Math.clamp(command.value(), c.min(), c.max()) : command.value();
+                device.scadaControl(c.id(), v);
+                return;
+            }
         }
     }
 

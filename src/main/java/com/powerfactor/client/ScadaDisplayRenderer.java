@@ -229,7 +229,7 @@ public class ScadaDisplayRenderer implements BlockEntityRenderer<ScadaDisplayBlo
         Cached data = s.data;
         boolean live = data != null && System.currentTimeMillis() - data.time() < 3_000;
         if (!live) {
-            c.textCenter(c.w / 2F, c.h / 2F - 5, "NO LINK", AMBER, s.width == 1 ? 0.8F : 1.2F);
+            c.textCenter(c.w / 2F, c.h / 2F - 5, "No link", AMBER, s.width == 1 ? 0.8F : 1.2F);
             c.textCenter(c.w / 2F, c.h / 2F + 7, "connect fiber", DIM, 0.5F);
             return;
         }
@@ -285,7 +285,7 @@ public class ScadaDisplayRenderer implements BlockEntityRenderer<ScadaDisplayBlo
         double[] sys = system(d.readings());
         double ce = Math.hypot(sys[2], sys[3]);
         float big = Math.min(w, h * 2) / 64F;
-        c.text(x + 5, y + 5, "GRID", DIM, 0.5F * big);
+        c.text(x + 5, y + 5, "Grid", DIM, 0.5F * big);
         c.text(x + 5, y + 14 * big, String.format("%.2f Hz", sys[0]), ElectricalPanel.freqColor(sys[0]), 1.2F * big);
         c.text(x + 5, y + 28 * big, Math.round(sys[1] * 480) + " V", ElectricalPanel.voltColor(sys[1]), 1.0F * big);
         c.textRight(x + w - 5, y + 14 * big, Math.round(sys[2]) + " FE", GuiUtil.FE_COLOR, 1.0F * big);

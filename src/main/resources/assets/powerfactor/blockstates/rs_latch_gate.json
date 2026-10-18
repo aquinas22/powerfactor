@@ -1,0 +1,360 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/rs_latch",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "in_left": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_left_off",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "in_left": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_left_on",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "in_back": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_back_off",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "in_back": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_back_on",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "in_right": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_right_off",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "in_right": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_right_on",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "out": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/out_off",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "out": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/out_on",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/rs_latch",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "in_left": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_left_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "in_left": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_left_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "in_back": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_back_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "in_back": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_back_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "in_right": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_right_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "in_right": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_right_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "out": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/out_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "out": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/out_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/rs_latch",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "in_left": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_left_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "in_left": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_left_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "in_back": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_back_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "in_back": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_back_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "in_right": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_right_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "in_right": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_right_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "out": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/out_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "out": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/out_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/rs_latch",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "in_left": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_left_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "in_left": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_left_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "in_back": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_back_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "in_back": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_back_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "in_right": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_right_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "in_right": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/in_right_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "out": "false"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/out_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "out": "true"
+      },
+      "apply": {
+        "model": "powerfactor:block/redstone/gate/out_on",
+        "y": 270
+      }
+    }
+  ]
+}

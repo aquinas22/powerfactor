@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CAC",
+    "ADA",
+    "CAC"
+  ],
+  "key": {
+    "C": "powerfactor:reactor_casing",
+    "A": "powerfactor:advanced_circuit",
+    "D": "minecraft:diamond"
+  },
+  "result": {
+    "id": "powerfactor:reactor_controller",
+    "count": 1
+  }
+}

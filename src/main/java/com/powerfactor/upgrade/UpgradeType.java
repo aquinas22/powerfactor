@@ -8,7 +8,9 @@ public enum UpgradeType implements StringRepresentable {
     CAPACITOR(4, 0x33E0B0),
     VFD(1, 0x4AA8FF),
     SURGE(1, 0xFFD24A),
-    CAPACITY(4, 0xE070FF);
+    CAPACITY(4, 0xE070FF),
+    /** Keeps the machine's chunk loaded. Every machine with upgrade slots takes it. */
+    CHUNK_LOADER(1, 0x8A6AFF);
 
     public final int maxCount;
     public final int color;

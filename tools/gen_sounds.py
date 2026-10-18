@@ -1617,6 +1617,126 @@ def rover_motor():
 LOOPS_3["rover_motor"] = (rover_motor, -20.0)
 ONESHOTS_3.update({"grapple_fire": grapple_fire, "grapple_attach": pipe_click, "wingsuit_open": wingsuit_open})
 
+
+def wash_plant_run(seconds=4.0):
+    """A placer wash line: a big trommel's slow rumble and rock cascade, water rushing down the sluice, the
+    spray bars hissing and the shaker table's chatter."""
+    n = int(SR * seconds)
+    r = random.Random(1801)
+    rot = 0.5                                           # the big drum turns twice per loop
+    hum = motor_hum(n, r, bright=0.4)
+    rumble = loop_noise(n, r, ("lp", 140, 0.7), ("lp", 140, 0.7))
+    rumble = [x * (0.6 + 0.4 * math.sin(TAU * rot * i / SR) ** 2) for i, x in enumerate(rumble)]
+    rush = loop_noise(n, r, ("bp", 700, 0.5), ("lp", 2500, 0.7))
+    spray = loop_noise(n, r, ("hp", 3500, 0.7))
+    gravel = [0.0] * n
+
+    def cascade():
+        while True:
+            i = r.randrange(n)
+            if r.random() < 0.2 + 0.8 * math.sin(math.pi * rot * i / SR) ** 4:
+                return i
+    scatter_bursts(gravel, r, 900, cascade, 0.012, (0.0008, 0.004), lambda r: [("bp", r.uniform(900, 4000), 1.4)], (0.2, 1.0))
+    for _ in range(18):
+        add_at(gravel, thump(int(0.08 * SR), 220, 110, 0.02, drop=0.012), cascade(), r.uniform(0.3, 0.7), circular=True)
+    chatter = [0.0] * n
+    period = int(SR / 12)                               # shaker deck, 12 strokes a second
+    for k in range(n // period):
+        add_at(chatter, burst(int(0.01 * SR), r, 0.003, [("bp", 1600, 1.5)]), k * period, 0.35, circular=True)
+    return mix((hum, 0.2), (rumble, 0.5), (rush, 0.45), (spray, 0.08), (gravel, 0.5), (chatter, 0.15))
+
+
+def chemical_reactor_run(seconds=3.0):
+    """Contact-process reactor: a stirrer motor, steady bubbling through the absorber and the hydrogen burner's roar."""
+    n = int(SR * seconds)
+    r = random.Random(1802)
+    hum = motor_hum(n, r, bright=0.6)
+    burner = loop_noise(n, r, ("lp", 500, 0.7), ("hp", 60, 0.7))
+    bub = [0.0] * n
+    for _ in range(160):
+        add_at(bub, bubble(r.uniform(350, 1400), r.uniform(0.006, 0.02)), r.randrange(n), r.uniform(0.3, 1.0), circular=True)
+    return mix((hum, 0.3), (burner, 0.35), (bub, 0.45))
+
+
+def ore_dissolver_run(seconds=3.0):
+    """Ore in hot acid: a fierce fizz, a few big bubbles breaking and the agitator's slow churn."""
+    n = int(SR * seconds)
+    r = random.Random(1803)
+    fizz = loop_noise(n, r, ("bp", 5500, 0.8))
+    fizz = [x * e for x, e in zip(fizz, loop_env(n, r, 20, 0.6, 1.0))]
+    bub = [0.0] * n
+    for _ in range(300):
+        add_at(bub, bubble(r.uniform(1500, 3800), r.uniform(0.002, 0.005)), r.randrange(n), r.uniform(0.2, 1.0), circular=True)
+    for _ in range(14):
+        add_at(bub, bubble(r.uniform(200, 450), r.uniform(0.015, 0.03)), r.randrange(n), r.uniform(0.5, 1.0), circular=True)
+    churn = loop_noise(n, r, ("lp", 300, 0.7))
+    churn = [x * (0.6 + 0.4 * math.sin(TAU * i / n)) for i, x in enumerate(churn)]
+    return mix((fizz, 0.25), (bub, 0.45), (churn, 0.3))
+
+
+LOOPS_3["wash_plant_run"] = (wash_plant_run, -15.0)
+LOOPS_3["chemical_reactor_run"] = (chemical_reactor_run, -17.0)
+LOOPS_3["ore_dissolver_run"] = (ore_dissolver_run, -18.0)
+
+
+def reactor_alarm(seconds=2.4):
+    """The reactor klaxon: a hard two-tone horn, high-low, twice."""
+    n = int(SR * seconds)
+    out = [0.0] * n
+    seg = n // 4
+    for k in range(4):
+        f = 640.0 if k % 2 == 0 else 470.0
+        partials = [(f * h, 1.0 / h, 0.0) for h in (1, 2, 3, 4, 5, 7)]
+        part = tone(seg, partials)
+        for j in range(seg):
+            env = min(1.0, j / (0.01 * SR), (seg - j) / (0.01 * SR))
+            out[k * seg + j] += part[j] * env
+    return fade_edges(out, 0.003, 0.05)
+
+
+def reactor_scram(seconds=2.6):
+    """SCRAM: the rod drives let go, the rods slam home with a deep clank, then a long steam hiss."""
+    n = int(SR * seconds)
+    r = random.Random(1901)
+    clank = [0.0] * n
+    add_at(clank, thump(int(0.5 * SR), 90, 38, 0.18, drop=0.05), int(0.05 * SR), 1.0)
+    add_at(clank, ring(int(1.2 * SR), [(420, 0.5, 0.5), (1130, 0.3, 0.3), (2210, 0.15, 0.2)], r), int(0.06 * SR), 0.5)
+    for k in range(9):
+        add_at(clank, burst(int(0.04 * SR), r, 0.01, [("bp", r.uniform(1800, 4200), 1.2)]), int((0.07 + k * 0.012) * SR), 0.3)
+    hiss = loop_noise(n, r, ("hp", 2500, 0.7))
+    hiss = [x * max(0.0, min(1.0, (i / SR - 0.15) * 6)) * math.exp(-max(0.0, i / SR - 0.4) * 1.4) for i, x in enumerate(hiss)]
+    return fade_edges(mix((clank, 0.8), (hiss, 0.35)), 0.002, 0.2)
+
+
+def reactor_hum(seconds=4.0):
+    """A running reactor hall: the coolant pumps' drone, water rushing through the core, a faint high whine."""
+    n = int(SR * seconds)
+    r = random.Random(1902)
+    hum = motor_hum(n, r, base=50.0, bright=0.5, whine_f=1200.0, whine_a=0.02)
+    rush = loop_noise(n, r, ("bp", 500, 0.5), ("lp", 1800, 0.7))
+    return mix((hum, 0.45), (rush, 0.35))
+
+
+def centrifuge_run(seconds=3.0):
+    """A gas centrifuge at speed: a thin, high whine with a slow beat, over rushing air and a bearing hum."""
+    n = int(SR * seconds)
+    r = random.Random(1903)
+    whine = tone(n, [(1500.0, 0.5, 0.0), (1504.0, 0.4, 0.0), (3000.0, 0.15, 0.0), (750.0, 0.2, 0.0)])
+    air = loop_noise(n, r, ("bp", 3000, 0.6))
+    hum = motor_hum(n, r, base=100.0, bright=0.3)
+    return mix((whine, 0.3), (air, 0.25), (hum, 0.3))
+
+
+def geiger(seconds=0.05):
+    """One Geiger counter click."""
+    r = random.Random(1904)
+    return fade_edges(burst(int(seconds * SR), r, 0.002, [("hp", 1800, 0.7)], attack=0.0001), 0.0002, 0.01)
+
+
+ONESHOTS_3.update({"reactor_alarm": reactor_alarm, "reactor_scram": reactor_scram, "geiger": geiger})
+LOOPS_3["reactor_hum"] = (reactor_hum, -16.0)
+LOOPS_3["centrifuge_run"] = (centrifuge_run, -18.0)
+
 ALL_LOOPS = {**LOOPS, **LOOPS_2, **LOOPS_3}
 ALL_ONESHOTS = {**ONESHOTS, **ONESHOTS_2, **ONESHOTS_3}
 
@@ -1649,6 +1769,8 @@ def write_sounds_json():
     with open(os.path.join(ASSETS, "sounds.json"), "w") as f:
         json.dump(events, f, indent=2)
         f.write("\n")
+
+
 
 
 if __name__ == "__main__":

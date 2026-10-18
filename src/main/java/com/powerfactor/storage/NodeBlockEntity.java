@@ -67,7 +67,8 @@ public abstract class NodeBlockEntity extends BlockEntity implements MenuProvide
 
     void setActive(boolean active) {
         BlockState s = getBlockState();
-        if (level != null && s.hasProperty(NodeBlock.ACTIVE) && s.getValue(NodeBlock.ACTIVE) != active) {
+        // Only in a loaded chunk: a controller unloading dissolves its network, and must not reload a node's chunk to dim it.
+        if (level != null && level.hasChunkAt(worldPosition) && s.hasProperty(NodeBlock.ACTIVE) && s.getValue(NodeBlock.ACTIVE) != active) {
             level.setBlock(worldPosition, s.setValue(NodeBlock.ACTIVE, active), Block.UPDATE_CLIENTS);
         }
     }

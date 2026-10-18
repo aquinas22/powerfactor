@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QFQ",
+    "FCF",
+    "QFQ"
+  ],
+  "key": {
+    "Q": "#c:gems/quartz",
+    "F": "powerfactor:fulgurite",
+    "C": "powerfactor:capacitor_bank"
+  },
+  "result": {
+    "id": "powerfactor:power_cell",
+    "count": 1
+  }
+}

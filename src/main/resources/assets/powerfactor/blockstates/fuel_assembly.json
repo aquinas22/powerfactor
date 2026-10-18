@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "glow=0": {
+      "model": "powerfactor:block/fuel_assembly"
+    },
+    "glow=1": {
+      "model": "powerfactor:block/fuel_assembly"
+    },
+    "glow=2": {
+      "model": "powerfactor:block/fuel_assembly"
+    },
+    "glow=3": {
+      "model": "powerfactor:block/fuel_assembly"
+    }
+  }
+}

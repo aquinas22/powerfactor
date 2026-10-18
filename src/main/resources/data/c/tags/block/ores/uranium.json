@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:uranium_ore",
+    "powerfactor:deepslate_uranium_ore"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "G",
+    "P",
+    "G"
+  ],
+  "key": {
+    "G": "minecraft:glass",
+    "P": "minecraft:ender_pearl"
+  },
+  "result": {
+    "id": "powerfactor:pocket_port",
+    "count": 1
+  }
+}

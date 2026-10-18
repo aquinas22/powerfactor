@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SYS",
+    "S S",
+    "SYS"
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "Y": "minecraft:yellow_dye"
+  },
+  "result": {
+    "id": "powerfactor:wash_plant_frame",
+    "count": 4
+  }
+}

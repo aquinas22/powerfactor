@@ -23,6 +23,27 @@ public final class CommonEvents {
         if (Boolean.getBoolean("powerfactor.prepareTestWorld")) event.getServer().halt(false);
     }
     @SubscribeEvent
+    static void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+        com.powerfactor.powernet.PowerNets.tick(event.getServer());
+        com.powerfactor.powernet.PowerNetPayloads.tick(event.getServer());
+    }
+
+    @SubscribeEvent
+    static void onDetonate(net.neoforged.neoforge.event.level.ExplosionEvent.Detonate event) {
+        com.powerfactor.pocketvoid.BedrockFragments.onDetonate(event);
+    }
+
+    @SubscribeEvent
+    static void onItemPickup(net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent.Pre event) {
+        com.powerfactor.pocketvoid.PocketVoidEvents.onPickup(event);
+    }
+
+    @SubscribeEvent
+    static void onLightning(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent event) {
+        com.powerfactor.pocketvoid.Fulgurites.onJoin(event);
+    }
+
+    @SubscribeEvent
     static void onCapabilities(RegisterCapabilitiesEvent event) {
         // Any mod's cables can pull FE from the turbine; hoppers and pipes can feed it coal.
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.COAL_TURBINE.get(), (be, side) -> be.getEnergy());
@@ -111,6 +132,8 @@ public final class CommonEvents {
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.STEAM_BOILER.get(), (be, side) -> be.getTanks());
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.STEAM_BOILER.get(), (be, side) -> be.getFuelHandler());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.STEAM_TURBINE.get(), (be, side) -> be.getTanks());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModFission.HP_TURBINE_BE.get(), (be, side) -> be.getTanks());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModFission.HP_TURBINE_BE.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.STEAM_TURBINE.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.COOLING_TOWER.get(), (be, side) -> be.getTanks());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.COOLING_TOWER.get(), (be, side) -> be.getEnergy());
@@ -124,6 +147,8 @@ public final class CommonEvents {
             case com.powerfactor.steam.SteamTurbineBlockEntity t -> t.getEnergy();
             case com.powerfactor.quantum.StarforgeBlockEntity f -> f.getEnergy();
             case com.powerfactor.quantum.FusionReactorBlockEntity r -> r.getEnergy();
+            case com.powerfactor.wash.WashPlantBlockEntity w -> w.getEnergy();
+            case com.powerfactor.blackhole.BlackHoleBlockEntity b -> b.getEnergy();
             case null, default -> null;
         });
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.CASING.get(), (be, side) -> switch (be.controller()) {
@@ -132,16 +157,58 @@ public final class CommonEvents {
             case com.powerfactor.steam.SteamBoilerBlockEntity b -> b.getTanks();
             case com.powerfactor.steam.SteamTurbineBlockEntity t -> t.getTanks();
             case com.powerfactor.quantum.FusionReactorBlockEntity r -> r.getTank();
+            case com.powerfactor.wash.WashPlantBlockEntity w -> w.getWater();
             case null, default -> null;
         });
-        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.CASING.get(), (be, side) ->
-                be.controller() instanceof com.powerfactor.steam.SteamBoilerBlockEntity b ? b.getFuelHandler() : null);
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.CASING.get(), (be, side) -> switch (be.controller()) {
+            case com.powerfactor.steam.SteamBoilerBlockEntity b -> b.getFuelHandler();
+            case com.powerfactor.wash.WashPlantBlockEntity w -> w.getItems();
+            case com.powerfactor.blackhole.BlackHoleBlockEntity b -> b.getItems();
+            case null, default -> null;
+        });
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModWash.WASH_PLANT_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModTime.TIME_FIELD_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModTesseract.TESSERACT_BE.get(), (be, side) -> be.items());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModCharging.WIRELESS_CHARGER_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModFarm.FARM_GANTRY_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModMob.SPAWNER_CAGE_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModMob.MOB_GRINDER_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModMob.MOB_GRINDER_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModMob.SPAWNER_CAGE_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModPocket.POCKET_BE.get(), (be, side) -> be.passThrough(Capabilities.Item.BLOCK));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModFission.REACTOR_PART_BE.get(), (be, side) -> be.fluids());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModFission.REACTOR_PART_BE.get(), (be, side) -> be.items());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModFission.REACTOR_CONTROLLER_BE.get(), (be, side) -> be.tanks());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModFission.HEAT_EXCHANGER_BE.get(), (be, side) -> be.getTanks());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModPowerNet.NODE_BE.get(),
+                (be, side) -> be.kind() == com.powerfactor.powernet.PowerNodeBlockEntity.Kind.PLUG ? be.plugHandler : null);
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModFission.CENTRIFUGE_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModFission.CENTRIFUGE_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModBlackHole.CONTROLLER_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModDrone.HUB_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModDrone.HUB_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModBlackHole.CONTROLLER_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModPocket.POCKET_BE.get(), (be, side) -> be.passThrough(Capabilities.Fluid.BLOCK));
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModPocket.POCKET_BE.get(), (be, side) -> be.passThrough(Capabilities.Energy.BLOCK));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModFarm.FARM_GANTRY_BE.get(), (be, side) -> be.getWater());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModFarm.FARM_GANTRY_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModCharging.DIMENSIONAL_CHARGER_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModTesseract.TESSERACT_BE.get(), (be, side) -> be.fluids());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModTesseract.TESSERACT_BE.get(), (be, side) -> be.energy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModWash.WASH_PLANT_BE.get(), (be, side) -> be.getWater());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModWash.WASH_PLANT_BE.get(), (be, side) -> be.getItems());
         event.registerItem(Capabilities.Energy.ITEM,
                 (stack, access) -> new ItemAccessEnergyHandler(access, ModComponents.ENERGY.get(), com.powerfactor.radio.WalkieTalkieItem.CAPACITY, 2_000),
                 ModItems.WALKIE_TALKIE.get());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.GROW_LAMP.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CHARGING_PAD.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.ELECTROLYZER.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModChem.CHEMICAL_REACTOR_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModChem.CHEMICAL_REACTOR_BE.get(), (be, side) -> be.getTanks());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModChem.CHEMICAL_REACTOR_BE.get(), (be, side) -> be.getItems());
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, com.powerfactor.registry.ModChem.ORE_DISSOLVER_BE.get(), (be, side) -> be.getEnergy());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, com.powerfactor.registry.ModChem.ORE_DISSOLVER_BE.get(), (be, side) -> be.getTank());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, com.powerfactor.registry.ModChem.ORE_DISSOLVER_BE.get(), (be, side) -> be.getItems());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.ELECTROLYZER.get(), (be, side) -> be.getTanks());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.FUEL_CELL.get(), (be, side) -> be.getEnergy());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.FUEL_CELL.get(), (be, side) -> be.getTank());

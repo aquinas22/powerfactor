@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IGI",
+    "ICI",
+    "IRI"
+  ],
+  "key": {
+    "I": "#c:ingots/iron",
+    "G": "minecraft:glass_pane",
+    "C": "powerfactor:control_circuit",
+    "R": "#c:dusts/redstone"
+  },
+  "result": {
+    "id": "powerfactor:geiger_counter",
+    "count": 1
+  }
+}

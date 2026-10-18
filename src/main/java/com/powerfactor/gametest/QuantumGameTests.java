@@ -26,7 +26,7 @@ final class QuantumGameTests {
             "robot_arm_moves_filtered",
             "orbital_collector_needs_night_sky",
             "logic_controller_programs", "space_elevator_raises_and_powers",
-            "shield_repels_hostiles");
+            "shield_repels_hostiles", "laser_nodes_move_everything");
 
     static final List<String> TALL = List.of("starforge_fuses_paxel", "fusion_ignites_and_quenches", "meteor_leaves_meteorite",
             "hover_bike_hovers_and_drives", "gravity_lift_raises_items", "mech_walks_jets_and_stomps");
@@ -52,6 +52,7 @@ final class QuantumGameTests {
         functions.register("logic_controller_programs", () -> QuantumGameTests::logicController);
         functions.register("space_elevator_raises_and_powers", () -> QuantumGameTests::spaceElevator);
         functions.register("shield_repels_hostiles", () -> QuantumGameTests::shieldRepels);
+        functions.register("laser_nodes_move_everything", () -> QuantumGameTests::laserNodes);
     }
 
     private static void quarryMines(GameTestHelper h) {
@@ -541,4 +542,69 @@ final class QuantumGameTests {
     }
 
     private QuantumGameTests() {}
+
+    /**
+     * Three laser links along the arena: chest to chest (items, filtered to iron), tank to tank (water)
+     * and battery to battery (FE). A link through a wall is refused.
+     */
+    private static void laserNodes(GameTestHelper h) {
+        var L = com.powerfactor.laser.LaserNodeBlockEntity.class;
+        var node = com.powerfactor.registry.ModLaser.LASER_NODE.get().defaultBlockState();
+        BlockPos[][] rows = new BlockPos[3][];
+        net.minecraft.world.level.block.state.BlockState[] ends = {net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),
+                com.powerfactor.registry.ModBlocks.FLUID_TANK.get().defaultBlockState(),
+                com.powerfactor.registry.ModBlocks.BATTERY_BANK.get().defaultBlockState()};
+        for (int z = 0; z < 3; z++) {
+            rows[z] = new BlockPos[] {new BlockPos(1, 1, z), new BlockPos(7, 1, z)};
+            for (BlockPos p : rows[z]) {
+                h.setBlock(p, ends[z]);
+                h.setBlock(p.above(), node);
+            }
+            BlockPos a = h.absolutePos(rows[z][0].above()), b = h.absolutePos(rows[z][1].above());
+            h.assertTrue(com.powerfactor.laser.LaserNodeBlockEntity.canLink(h.getLevel(), a, b) == null, "row " + z + " can link");
+            h.assertTrue(com.powerfactor.laser.LaserNodeBlockEntity.toggleLink(h.getLevel(), a, b), "row " + z + " linked");
+            var ch = com.powerfactor.laser.LaserNodeBlockEntity.Channel.values()[z];
+            h.getBlockEntity(rows[z][0].above(), L).setMode(ch, com.powerfactor.laser.LaserNodeBlockEntity.SEND);
+            h.getBlockEntity(rows[z][1].above(), L).setMode(ch, com.powerfactor.laser.LaserNodeBlockEntity.RECEIVE);
+        }
+        // Items: iron passes the receiver's filter, dirt doesn't.
+        var src = h.getBlockEntity(rows[0][0], net.minecraft.world.level.block.entity.ChestBlockEntity.class);
+        src.setItem(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 40));
+        src.setItem(1, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIRT, 10));
+        h.getBlockEntity(rows[0][1].above(), L).filter().setItem(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT));
+        // Fluids: 8 buckets of water in the left tank.
+        var level = h.getLevel();
+        var tankIn = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK, h.absolutePos(rows[1][0]), null);
+        try (Transaction tx = Transaction.openRoot()) {
+            tankIn.insert(net.neoforged.neoforge.transfer.fluid.FluidResource.of(net.minecraft.world.level.material.Fluids.WATER), 8000, tx);
+            tx.commit();
+        }
+        // Energy: a full battery on the left.
+        var batA = h.getBlockEntity(rows[2][0], com.powerfactor.generator.BatteryBankBlockEntity.class);
+        var batB = h.getBlockEntity(rows[2][1], com.powerfactor.generator.BatteryBankBlockEntity.class);
+        try (Transaction tx = Transaction.openRoot()) {
+            for (int i = 0; i < 400; i++) batA.getEnergy().insert(com.powerfactor.generator.BatteryBankBlockEntity.RATE, tx);
+            tx.commit();
+        }
+        // A wall cuts line of sight.
+        h.setBlock(new BlockPos(4, 2, 0), net.minecraft.world.level.block.Blocks.STONE);
+        h.assertFalse(com.powerfactor.laser.LaserNodeBlockEntity.canLink(level, h.absolutePos(new BlockPos(1, 2, 0)), h.absolutePos(new BlockPos(7, 2, 0))) == null,
+                "walls block a new link");
+        h.setBlock(new BlockPos(4, 2, 0), net.minecraft.world.level.block.Blocks.AIR);
+        h.runAfterDelay(100, () -> {
+            var dst = h.getBlockEntity(rows[0][1], net.minecraft.world.level.block.entity.ChestBlockEntity.class);
+            int iron = 0, dirt = 0;
+            for (int i = 0; i < dst.getContainerSize(); i++) {
+                var st = dst.getItem(i);
+                if (st.is(net.minecraft.world.item.Items.IRON_INGOT)) iron += st.getCount();
+                if (st.is(net.minecraft.world.item.Items.DIRT)) dirt += st.getCount();
+            }
+            h.assertValueEqual(iron, 40, "all the iron crossed");
+            h.assertValueEqual(dirt, 0, "the filter kept the dirt back");
+            var tankOut = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK, h.absolutePos(rows[1][1]), null);
+            h.assertTrue(tankOut.getAmountAsLong(0) >= 8000, "the water crossed: " + tankOut.getAmountAsLong(0));
+            h.assertTrue(batB.getEnergy().getAmountAsLong() > 30_000, "energy crossed: " + batB.getEnergy().getAmountAsLong());
+            h.succeed();
+        });
+    }
 }

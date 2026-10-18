@@ -17,6 +17,13 @@ public class CasingBlockEntity extends BlockEntity implements MultiblockPart {
         super(ModBlockEntities.CASING.get(), pos, state);
     }
 
+    /** Frees a broken controller's casings, leaving any in unloaded chunks alone (they never load for it). */
+    public static void release(net.minecraft.world.level.Level level, Iterable<BlockPos> parts, BlockPos controller) {
+        for (BlockPos p : parts) {
+            if (level.hasChunkAt(p) && level.getBlockEntity(p) instanceof CasingBlockEntity c && controller.equals(c.controllerPos())) c.link(null);
+        }
+    }
+
     /** Join (or, with null, leave) a formed structure. */
     public void link(@Nullable BlockPos controller) {
         boolean changed = !java.util.Objects.equals(controller, controllerPos);
@@ -25,8 +32,9 @@ public class CasingBlockEntity extends BlockEntity implements MultiblockPart {
         }
         controllerPos = controller;
         setChanged();
-        if (level != null && getBlockState().hasProperty(CasingBlock.FORMED)) {
-            level.setBlock(worldPosition, getBlockState().setValue(CasingBlock.FORMED, controller != null), Block.UPDATE_ALL);
+        if (level != null && level.hasChunkAt(worldPosition) && getBlockState().hasProperty(CasingBlock.FORMED)) {
+            level.setBlock(worldPosition, Connected.refresh(getBlockState().setValue(CasingBlock.FORMED, controller != null), level, worldPosition),
+                    Block.UPDATE_ALL);
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }

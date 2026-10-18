@@ -32,7 +32,7 @@ import org.jspecify.annotations.Nullable;
  * Particle Collider: a superconducting ring that accelerates a charge of matter for as long as it
  * takes to bank the collision energy, then smashes it into something rarer. Draws up to 250,000 FE/t.
  */
-public class ColliderBlockEntity extends MachineBlockEntity implements ReactiveLoad {
+public class ColliderBlockEntity extends MachineBlockEntity implements com.powerfactor.upgrade.Upgradeable, ReactiveLoad {
     public static final int CAPACITY = 100_000_000, MAX_INPUT = 1_000_000, MAX_RATE = 250_000;
     public static final int DATA_PROGRESS = 0, DATA_RATE_HI = 1, DATA_RATE_LO = 2, DATA_ENERGY_HI = 3, DATA_ENERGY_LO = 4, DATA_RECIPE = 5,
             DATA_FLASH = 6, DATA_COUNT = 7;
@@ -66,12 +66,25 @@ public class ColliderBlockEntity extends MachineBlockEntity implements ReactiveL
     /** Client: 0..1 how far the current run has got, synced in the update tag for the renderer. */
     private float clientProgress;
 
+    private final com.powerfactor.upgrade.UpgradeInventory upgrades = new com.powerfactor.upgrade.UpgradeInventory(
+            com.powerfactor.upgrade.UpgradeInventory.CONSOLE, this::setChanged, p -> net.minecraft.world.Container.stillValidBlockEntity(this, p));
+
+    public com.powerfactor.upgrade.UpgradeInventory upgrades() {
+        return upgrades;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (level != null && !level.isClientSide()) net.minecraft.world.Containers.dropContents(level, pos, upgrades);
+    }
+
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int i) {
             ColliderRecipes.Recipe r = recipe < 0 ? null : ColliderRecipes.ALL.get(recipe);
             return switch (i) {
-                case DATA_PROGRESS -> r == null ? 0 : (int) (1000 * Math.min(1, (double) banked / r.energy()));
+                case DATA_PROGRESS -> r == null ? 0 : (int) (1000 * Math.min(1, (double) banked / need(r)));
                 case DATA_RATE_HI -> rate >>> 16;
                 case DATA_RATE_LO -> rate & 0xFFFF;
                 case DATA_ENERGY_HI -> (energy.getAmountAsInt() >>> 12) & 0xFFFF;
@@ -99,6 +112,11 @@ public class ColliderBlockEntity extends MachineBlockEntity implements ReactiveL
         return energy;
     }
 
+    /** A recipe's collision energy after the Speed (+15%/card) and Efficiency (-15%/card) cards. */
+    long need(ColliderRecipes.Recipe r) {
+        return (long) (r.energy() * upgrades.effects().energyPerOperation());
+    }
+
     public ResourceHandler<ItemResource> getItems() {
         return items;
     }
@@ -116,11 +134,11 @@ public class ColliderBlockEntity extends MachineBlockEntity implements ReactiveL
         }
         boolean ready = r != null && in.getCount() >= r.count() && fits(r.output().get()) && enabled(level, pos);
         if (ready) {
-            int draw = (int) Math.min(Math.min(MAX_RATE, energy.getAmountAsInt()), r.energy() - banked);
+            int draw = (int) Math.min(Math.min((long) (MAX_RATE * upgrades.effects().speedMultiplier()), energy.getAmountAsInt()), need(r) - banked);
             energy.set(energy.getAmountAsInt() - draw);
             banked += draw;
             rate = draw;
-            if (banked >= r.energy()) collide(level, pos, r);
+            if (banked >= need(r)) collide(level, pos, r);
         }
         setRunning(level, pos, state, rate > 0);
         if (level.getGameTime() % 5 == 0) level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
@@ -174,7 +192,7 @@ public class ColliderBlockEntity extends MachineBlockEntity implements ReactiveL
     }
 
     private double clamp() {
-        return recipe < 0 ? 0 : Math.min(1, (double) banked / ColliderRecipes.ALL.get(recipe).energy());
+        return recipe < 0 ? 0 : Math.min(1, (double) banked / need(ColliderRecipes.ALL.get(recipe)));
     }
 
     @Override
@@ -194,6 +212,7 @@ public class ColliderBlockEntity extends MachineBlockEntity implements ReactiveL
         slots.clearContent();
         ContainerHelper.loadAllItems(input, slots.getItems());
         banked = input.getLongOr("banked", 0);
+        upgrades.load(input);
         recipe = input.getIntOr("recipe", -1);
     }
 
@@ -203,6 +222,7 @@ public class ColliderBlockEntity extends MachineBlockEntity implements ReactiveL
         energy.serialize(output);
         ContainerHelper.saveAllItems(output, slots.getItems());
         output.putLong("banked", banked);
+        upgrades.save(output);
         output.putInt("recipe", recipe);
     }
 

@@ -12,7 +12,7 @@ public final class PowerFactorCommonConfig {
     static {
         BUILDER.comment("Ore generation. Turn one off if another mod in your pack already provides that metal;",
                 "PowerFactor's machines and recipes use common c: tags, so other mods' ores work everywhere.").push("worldgen");
-        for (String ore : new String[] {"zinc", "tin", "lead", "silver", "bauxite", "adamantium", "faradaenium", "cortanium", "qubit"}) {
+        for (String ore : new String[] {"zinc", "tin", "lead", "silver", "bauxite", "adamantium", "faradaenium", "cortanium", "qubit", "uranium"}) {
             ORE_GEN.put(ore, BUILDER.define("generate_" + ore + "_ore", true));
         }
     }

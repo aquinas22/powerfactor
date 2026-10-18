@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " F ",
+    "KTK",
+    " F "
+  ],
+  "key": {
+    "F": "powerfactor:fulgurite",
+    "K": "powerfactor:copper_coil",
+    "T": "minecraft:redstone_torch"
+  },
+  "result": {
+    "id": "powerfactor:power_point",
+    "count": 2
+  }
+}

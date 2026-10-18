@@ -1,0 +1,137 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "side": "powerfactor:block/ctm/starforge_frame",
+    "particle": "powerfactor:block/starforge_frame",
+    "top": "powerfactor:block/ctm/starforge_frame_top",
+    "lit": "powerfactor:block/storage_casing_lit"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            1,
+            13,
+            3,
+            15
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            9,
+            5,
+            11,
+            7
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ],
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#top",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#top",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.01,
+        7.5,
+        -0.01
+      ],
+      "to": [
+        16.01,
+        8.5,
+        16.01
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lit",
+          "uv": [
+            0,
+            7.5,
+            16,
+            8.5
+          ]
+        },
+        "south": {
+          "texture": "#lit",
+          "uv": [
+            0,
+            7.5,
+            16,
+            8.5
+          ]
+        },
+        "east": {
+          "texture": "#lit",
+          "uv": [
+            0,
+            7.5,
+            16,
+            8.5
+          ]
+        },
+        "west": {
+          "texture": "#lit",
+          "uv": [
+            0,
+            7.5,
+            16,
+            8.5
+          ]
+        }
+      },
+      "light_emission": 12
+    }
+  ]
+}

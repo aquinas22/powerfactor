@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "powerfactor:block/redstone/lamp/brown"
+    },
+    "lit=true": {
+      "model": "powerfactor:block/redstone/lamp/brown_on"
+    }
+  }
+}

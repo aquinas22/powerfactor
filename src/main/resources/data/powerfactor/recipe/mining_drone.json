@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "R R",
+    "PLP",
+    "R R"
+  ],
+  "key": {
+    "R": "powerfactor:electric_motor",
+    "P": "#c:plates/steel",
+    "L": "minecraft:diamond"
+  },
+  "result": {
+    "id": "powerfactor:mining_drone",
+    "count": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "FQF",
+    "QMQ",
+    "FQF"
+  ],
+  "key": {
+    "F": "#c:ingots/faradaenium",
+    "Q": "powerfactor:quantum_processor",
+    "M": "powerfactor:fusion_magnet"
+  },
+  "result": {
+    "id": "powerfactor:containment_coil",
+    "count": 2
+  }
+}

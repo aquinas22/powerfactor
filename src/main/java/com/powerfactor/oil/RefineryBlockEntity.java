@@ -121,6 +121,7 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
 
     /** Form or break the structure, linking or releasing its casings. */
     private void checkStructure(ServerLevel level, BlockPos pos, BlockState state) {
+        if (!STRUCTURE.loaded(level, pos, facing())) return;
         boolean now = STRUCTURE.complete(level, pos, facing());
         java.util.Set<BlockPos> parts = new java.util.HashSet<>();
         if (now) {
@@ -150,16 +151,11 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
         }
     }
 
+    /** Only a real removal frees the casings: setRemoved also runs when the chunk unloads, and must not touch other blocks then. */
     @Override
-    public void setRemoved() {
-        super.setRemoved();
-        if (level != null && !level.isClientSide()) {
-            for (BlockPos p : linked) {
-                if (level.getBlockEntity(p) instanceof com.powerfactor.multiblock.CasingBlockEntity c && worldPosition.equals(c.controllerPos())) {
-                    c.link(null);
-                }
-            }
-        }
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (level != null && !level.isClientSide()) com.powerfactor.multiblock.CasingBlockEntity.release(level, linked, worldPosition);
     }
 
     /** Resistive heaters and a pump motor. */

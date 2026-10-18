@@ -1,0 +1,100 @@
+{
+  "variants": {
+    "channel=0,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_0"
+    },
+    "channel=0,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_0_on"
+    },
+    "channel=1,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_1"
+    },
+    "channel=1,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_1_on"
+    },
+    "channel=2,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_2"
+    },
+    "channel=2,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_2_on"
+    },
+    "channel=3,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_3"
+    },
+    "channel=3,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_3_on"
+    },
+    "channel=4,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_4"
+    },
+    "channel=4,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_4_on"
+    },
+    "channel=5,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_5"
+    },
+    "channel=5,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_5_on"
+    },
+    "channel=6,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_6"
+    },
+    "channel=6,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_6_on"
+    },
+    "channel=7,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_7"
+    },
+    "channel=7,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_7_on"
+    },
+    "channel=8,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_8"
+    },
+    "channel=8,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_8_on"
+    },
+    "channel=9,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_9"
+    },
+    "channel=9,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_9_on"
+    },
+    "channel=10,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_10"
+    },
+    "channel=10,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_10_on"
+    },
+    "channel=11,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_11"
+    },
+    "channel=11,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_11_on"
+    },
+    "channel=12,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_12"
+    },
+    "channel=12,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_12_on"
+    },
+    "channel=13,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_13"
+    },
+    "channel=13,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_13_on"
+    },
+    "channel=14,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_14"
+    },
+    "channel=14,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_14_on"
+    },
+    "channel=15,lit=false": {
+      "model": "powerfactor:block/wireless_transmitter_15"
+    },
+    "channel=15,lit=true": {
+      "model": "powerfactor:block/wireless_transmitter_15_on"
+    }
+  }
+}

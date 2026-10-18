@@ -123,9 +123,11 @@ public final class SteamBoilerBlockEntity extends MachineBlockEntity implements 
         }
     }
 
-    @Override public void setRemoved() {
-        if (level instanceof ServerLevel server) assembly.release(server, worldPosition);
-        super.setRemoved();
+    /** Only a real removal frees the casings: setRemoved also runs when the chunk unloads. */
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (level instanceof ServerLevel s) assembly.release(s, worldPosition);
     }
     @Override public int comparatorSignal() { return 15 * tanks.amount(STEAM) / TANK; }
     @Override public boolean soundActive() { return isRunning(); }
@@ -139,7 +141,15 @@ public final class SteamBoilerBlockEntity extends MachineBlockEntity implements 
                 Component.translatable(!formed() ? "scada.powerfactor.multiblock.incomplete" : boiler.tripped() ? "scada.powerfactor.boiler.tripped"
                         : boiler.pressureHeld() ? "scada.powerfactor.boiler.pressure_hold"
                         : "scada.powerfactor.boiler", boiler.temperatureC(), tanks.amount(STEAM), lastSteam),
-                true, remoteEnabled(), false, 0, 0);
+                true, remoteEnabled(), false, 0, 0).with(java.util.List.of(
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.temperature"), boiler.temperatureC(), "°C", 20, 220,
+                        boiler.tripped() ? 2 : boiler.temperatureC() > 180 ? 1 : 0),
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.steam_rate"), lastSteam, "mB/t", 0, 80, 0),
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.water"), tanks.amount(WATER), "mB", 0, 32_000,
+                        tanks.amount(WATER) == 0 ? 2 : tanks.amount(WATER) < 4000 ? 1 : 0),
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.steam"), tanks.amount(STEAM), "mB", 0, 32_000, boiler.pressureHeld() ? 1 : 0),
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.fuel"), boiler.fuelPermille() / 10F, "%", 0, 100,
+                        boiler.fuelPermille() == 0 ? 1 : 0)), java.util.List.of());
     }
     @Override protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);

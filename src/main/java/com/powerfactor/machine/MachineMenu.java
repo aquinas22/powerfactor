@@ -24,6 +24,28 @@ public abstract class MachineMenu extends AbstractContainerMenu {
         addDataSlots(data);
     }
 
+    /** The upgrade bay: a column of card slots on a panel clipped to the screen's right edge (see StorageScreens.Base). */
+    public static final int BAY_X = 182, BAY_Y = 24;
+
+    public static final class BaySlot extends Slot {
+        private final com.powerfactor.upgrade.UpgradeInventory upgrades;
+
+        public BaySlot(com.powerfactor.upgrade.UpgradeInventory upgrades, int index) {
+            super(upgrades, index, BAY_X, BAY_Y + index * 18);
+            this.upgrades = upgrades;
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return upgrades.accepts(getContainerSlot(), stack);
+        }
+    }
+
+    /** Adds the machine's upgrade bay; call before addPlayerInventory so shift-click routes cards into it. */
+    protected void addUpgradeBay(com.powerfactor.upgrade.UpgradeInventory upgrades) {
+        for (int i = 0; i < com.powerfactor.upgrade.UpgradeInventory.SLOTS; i++) addSlot(new BaySlot(upgrades, i));
+    }
+
     /** Call after adding the machine's slots. */
     protected void addPlayerInventory(Inventory inventory, int top) {
         machineSlots = slots.size();

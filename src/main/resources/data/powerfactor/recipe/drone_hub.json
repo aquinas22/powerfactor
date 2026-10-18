@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QAQ",
+    "CMC",
+    "SBS"
+  ],
+  "key": {
+    "Q": "powerfactor:quantum_processor",
+    "A": "powerfactor:sensor_chip",
+    "C": "powerfactor:advanced_circuit",
+    "M": "powerfactor:charging_pad",
+    "S": "#c:ingots/steel",
+    "B": "powerfactor:capacitor_bank"
+  },
+  "result": {
+    "id": "powerfactor:drone_hub",
+    "count": 1
+  }
+}

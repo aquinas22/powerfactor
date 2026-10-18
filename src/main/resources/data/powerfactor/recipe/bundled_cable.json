@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SIS",
+    "III",
+    "SIS"
+  ],
+  "key": {
+    "S": "minecraft:string",
+    "I": "#powerfactor:insulated_wires"
+  },
+  "result": {
+    "id": "powerfactor:bundled_cable",
+    "count": 2
+  }
+}

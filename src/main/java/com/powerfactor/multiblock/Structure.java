@@ -20,7 +20,11 @@ public final class Structure {
     /** One position of the structure: offset from the controller and the block that belongs there. */
     public record Part(BlockPos offset, Supplier<? extends Block> block) {
         public boolean matches(BlockState state) {
-            return state.is(block.get());
+            if (state.is(block.get())) return true;
+            // Wherever the casing goes, the structure's own glass will do too: borders, corners, anything.
+            return block.get() instanceof Connected.Part want && want.style().kind() == Connected.Kind.HOST
+                    && state.getBlock() instanceof Connected.Part have && have.style().kind() == Connected.Kind.GLASS
+                    && have.style().group().equals(want.style().group());
         }
     }
 
@@ -57,6 +61,14 @@ public final class Structure {
             }
         }
         return out;
+    }
+
+    /** Whether every part's chunk is loaded: a structure across a chunk border waits for the rest of itself. */
+    public boolean loaded(net.minecraft.world.level.Level level, BlockPos controller, Direction facing) {
+        for (Part p : parts) {
+            if (!level.hasChunkAt(worldPos(controller, facing, p))) return false;
+        }
+        return true;
     }
 
     public boolean complete(BlockGetter level, BlockPos controller, Direction facing) {

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QGQ",
+    "GXG",
+    "QGQ"
+  ],
+  "key": {
+    "Q": "powerfactor:qubit_crystal",
+    "G": "#c:ingots/gold",
+    "X": "powerfactor:exotic_matter"
+  },
+  "result": {
+    "id": "powerfactor:quantum_catalyst",
+    "count": 1
+  }
+}

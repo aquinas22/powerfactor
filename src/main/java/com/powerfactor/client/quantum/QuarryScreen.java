@@ -51,37 +51,44 @@ public class QuarryScreen extends StorageScreens.Base<QuarryMenu> {
             float pulse = 0.5F + 0.5F * Mth.sin(t / 90F);
             g.fill(sx + 1, sy + cut - 1, sx + sw - 1, sy + cut + 1, mixAlpha(accent, 0.6F + 0.4F * pulse));
         }
-        // ---- LCD readout
-        int lx = x + 28, ly = y + 20, lw = 104, lh = 42;
-        Skin.lcd(g, lx, ly, lw, lh);
+        // ---- centre column (x 30-128): two-line readout, two steppers, a row of toggles.
+        int lx = x + 30, lw = 98;
+        Skin.lcd(g, lx, y + 20, lw, 24);
         int statusColor = switch (status) {
             case MINING -> 0xFF8FF0B0;
             case DONE -> CYAN;
             case NO_POWER, OUTPUT_FULL, WAITING_CHUNKS -> 0xFFFFC060;
-            default -> Skin.DIM;
+            default -> Skin.LCD_DIM;
         };
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.quarry.status." + status.name().toLowerCase(Locale.ROOT)), lw - 8),
-                lx + 4, ly + 4, statusColor, false);
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.quarry.area", menu.size(), menu.size(), menu.depth(), menu.totalDepth()),
-                lw - 8), lx + 4, ly + 16, Skin.LCD_TEXT, false);
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.quarry.mined", Skin.compact(menu.mined()), Skin.compact(menu.fe())), lw - 8),
-                lx + 4, ly + 28, Skin.LCD_TEXT, false);
-        // ---- energy tube (between LCD and upgrades)
+        Skin.lcdRows(g, font, lx, y + 20, lw, 24, java.util.List.of(
+                new Skin.Row(Skin.statusIcon(statusColor), Component.translatable("gui.powerfactor.quarry.status." + status.name().toLowerCase(Locale.ROOT)), statusColor),
+                new Skin.Row(Skin.Icon.DEPTH, Component.literal(menu.depth() + "/" + menu.totalDepth() + "   " + Skin.compact(menu.fe()) + " FE/t"), Skin.LCD_TEXT,
+                        Component.translatable("gui.powerfactor.quarry.layer", menu.depth(), menu.totalDepth(), Skin.compact(menu.fe())))));
+        stepper(g, 48, Skin.Icon.AREA, Component.literal(menu.size() + "×" + menu.size()), q ? VIOLET : AMBER,
+                Component.translatable("gui.powerfactor.quarry.smaller"), Component.translatable("gui.powerfactor.quarry.bigger"), 0, 1);
+        stepper(g, 63, Skin.Icon.FORTUNE, menu.fortune() == 0 ? Component.literal("—") : Component.literal("I".repeat(menu.fortune())),
+                menu.silk() ? Skin.LCD_DIM : 0xFF7CFF8A, Component.translatable("gui.powerfactor.quarry.fortune.tip"),
+                Component.translatable("gui.powerfactor.quarry.fortune.tip"), 3, 4);
+        // Toggles as icons: silk touch, void stone, restart (three equal chips, 2-px gutters).
+        iconButton(30, 78, 31, 14, Skin.Icon.SILK, Component.empty(), Component.translatable("gui.powerfactor.quarry.silk.tip"), CYAN, menu.silk(), true,
+                () -> send(2));
+        iconButton(63, 78, 32, 14, Skin.Icon.VOID, Component.empty(), Component.translatable("gui.powerfactor.quarry.void.tip"), AMBER, menu.voidStone(), true,
+                () -> send(5));
+        iconButton(97, 78, 31, 14, Skin.Icon.RESTART, Component.empty(), Component.translatable("gui.powerfactor.quarry.restart"), Skin.LCD_TEXT, false, false,
+                () -> send(6));
+        // ---- energy tube between the controls and the upgrade column
         long cap = q ? 20_000_000L : 1_000_000L;
-        Skin.energyTube(g, x + 136, y + 20, 10, 72, menu.energy(), cap, status == QuarryBlockEntity.Status.MINING);
-        // ---- controls
-        button(28, 66, 14, 13, Component.literal("−"), Component.translatable("gui.powerfactor.quarry.smaller"), Skin.TEXT, false, () -> send(0));
-        g.centeredText(font, Component.literal(menu.size() + "²"), x + 56, y + 69, q ? 0xFF6A48D8 : 0xFFC06A00);
-        button(70, 66, 14, 13, Component.literal("+"), Component.translatable("gui.powerfactor.quarry.bigger"), Skin.TEXT, false, () -> send(1));
-        button(88, 66, 44, 13, Component.translatable("gui.powerfactor.quarry.silk"), Component.translatable("gui.powerfactor.quarry.silk.tip"),
-                menu.silk() ? CYAN : Skin.DIM, menu.silk(), () -> send(2));
-        button(28, 82, 14, 13, Component.literal("−"), Component.translatable("gui.powerfactor.quarry.fortune.tip"), Skin.TEXT, false, () -> send(3));
-        g.centeredText(font, Component.literal(menu.fortune() == 0 ? "F —" : "F " + "I".repeat(menu.fortune())), x + 56, y + 85,
-                menu.silk() ? Skin.DIM : 0xFF1E9E5A);
-        button(70, 82, 14, 13, Component.literal("+"), Component.translatable("gui.powerfactor.quarry.fortune.tip"), Skin.TEXT, false, () -> send(4));
-        button(88, 82, 26, 13, Component.translatable("gui.powerfactor.quarry.void"), Component.translatable("gui.powerfactor.quarry.void.tip"),
-                menu.voidStone() ? AMBER : Skin.DIM, menu.voidStone(), () -> send(5));
-        button(116, 82, 16, 13, Component.literal("⟲"), Component.translatable("gui.powerfactor.quarry.restart"), Skin.TEXT, false, () -> send(6));
+        Skin.energyTube(g, x + 134, y + 20, 10, 72, menu.energy(), cap, status == QuarryBlockEntity.Status.MINING);
+    }
+
+    /** A full-width stepper row at y: [−] value glass [+]. */
+    private void stepper(GuiGraphicsExtractor g, int y, Skin.Icon icon, Component value, int color, Component lessTip, Component moreTip, int less, int more) {
+        iconButton(30, y, 14, 14, Skin.Icon.MINUS, Component.empty(), lessTip, Skin.LCD_TEXT, false, false, () -> send(less));
+        Skin.lcd(g, leftPos + 46, topPos + y, 66, 14);
+        int w = Math.min(48, font.width(value)), cx = leftPos + 79 - (w + 11) / 2;
+        Skin.icon(g, icon, cx, topPos + y + 3);
+        Skin.condensed(g, font, value, cx + 11, topPos + y + 3, 48, color);
+        iconButton(114, y, 14, 14, Skin.Icon.PLUS, Component.empty(), moreTip, Skin.LCD_TEXT, false, false, () -> send(more));
     }
 
     private static int mixAlpha(int argb, float a) {
@@ -91,9 +98,11 @@ public class QuarryScreen extends StorageScreens.Base<QuarryMenu> {
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float a) {
         super.extractRenderState(g, mx, my, a);
-        if (mx >= leftPos + 136 && mx < leftPos + 146 && my >= topPos + 20 && my < topPos + 92) {
+        if (mx >= leftPos + 134 && mx < leftPos + 144 && my >= topPos + 20 && my < topPos + 92) {
             g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.buffer", String.format("%,d", menu.energy()),
                     String.format("%,d", menu.quantum() ? 20_000_000 : 1_000_000)), mx, my);
+        } else if (mx >= leftPos + 30 && mx < leftPos + 128 && my >= topPos + 20 && my < topPos + 44) {
+            g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.quarry.mined", Skin.compact(menu.mined()), Skin.compact(menu.fe())), mx, my);
         } else if (mx >= leftPos + 8 && mx < leftPos + 24 && my >= topPos + 20 && my < topPos + 92) {
             g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.quarry.depth", menu.depth(), menu.totalDepth()), mx, my);
         }

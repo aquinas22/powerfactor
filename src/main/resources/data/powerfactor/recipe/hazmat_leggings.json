@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "RLR",
+    "R R",
+    "R R"
+  ],
+  "key": {
+    "R": "powerfactor:rubber",
+    "L": "#c:ingots/lead"
+  },
+  "result": {
+    "id": "powerfactor:hazmat_leggings",
+    "count": 1
+  }
+}

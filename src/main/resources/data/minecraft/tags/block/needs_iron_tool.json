@@ -22,6 +22,8 @@
     "powerfactor:rain_collector",
     "powerfactor:faradaenium_ore",
     "powerfactor:qubit_ore",
-    "powerfactor:meteorite"
+    "powerfactor:meteorite",
+    "powerfactor:uranium_ore",
+    "powerfactor:deepslate_uranium_ore"
   ]
 }

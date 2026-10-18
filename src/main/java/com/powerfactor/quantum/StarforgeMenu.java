@@ -11,7 +11,7 @@ import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 
 public class StarforgeMenu extends MachineMenu {
-    public static final int[][] SLOT_XY = {{30, 26}, {30, 50}, {30, 74}, {74, 50}, {132, 50}};
+    public static final int[][] SLOT_XY = {{30, 26}, {30, 50}, {30, 74}, {80, 50}, {132, 50}};   // tools left, catalyst on the centre line, output right
 
     public StarforgeMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
         this(id, inventory, null, new SimpleContainer(5), new SimpleContainerData(StarforgeBlockEntity.DATA_COUNT));
@@ -28,6 +28,7 @@ public class StarforgeMenu extends MachineMenu {
             });
         }
         addSlot(new OutputSlot(slots, StarforgeBlockEntity.OUTPUT, SLOT_XY[4][0], SLOT_XY[4][1]));
+        addUpgradeBay(be == null ? com.powerfactor.upgrade.UpgradeInventory.client(com.powerfactor.upgrade.UpgradeInventory.CONSOLE) : be.upgrades());
         addPlayerInventory(inventory, 108);
     }
 

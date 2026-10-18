@@ -244,7 +244,8 @@ public final class ModQuantum {
     public static final DeferredBlock<com.powerfactor.multiblock.MultiblockControllerBlock> STARFORGE = machine("starforge",
             p -> new com.powerfactor.multiblock.MultiblockControllerBlock(() -> ModQuantum.STARFORGE_BE.get(), p), 13, Rarity.EPIC);
     public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> STARFORGE_FRAME = casing("starforge_frame",
-            net.minecraft.world.phys.shapes.Shapes.block(), 0);
+            com.powerfactor.multiblock.Connected.Style.host("starforge", () -> ModQuantum.STARFORGE.get(),
+                    () -> ModQuantum.STORAGE_BLOCKS.get("adamantium").get(), () -> ModQuantum.STORAGE_BLOCKS.get("qubit_crystal").get()), 0);
     public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> STARFORGE_PYLON = casing("starforge_pylon",
             Block.box(3, 0, 3, 13, 16, 13), 10);
     public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> STARFORGE_CRUCIBLE = casing("starforge_crucible",
@@ -254,11 +255,11 @@ public final class ModQuantum {
     public static final DeferredBlock<com.powerfactor.multiblock.MultiblockControllerBlock> FUSION_REACTOR = machine("fusion_reactor",
             p -> new com.powerfactor.multiblock.MultiblockControllerBlock(() -> ModQuantum.FUSION_REACTOR_BE.get(), p), 14, Rarity.EPIC);
     public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> FUSION_CASING = casing("fusion_casing",
-            net.minecraft.world.phys.shapes.Shapes.block(), 0);
+            com.powerfactor.multiblock.Connected.Style.host("fusion", () -> ModQuantum.FUSION_REACTOR.get()), 0);
     public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> FUSION_MAGNET = casing("fusion_magnet",
-            net.minecraft.world.phys.shapes.Shapes.block(), 9);
+            com.powerfactor.multiblock.Connected.Style.panel("fusion", "magnet", () -> ModQuantum.FUSION_REACTOR.get()), 9);
     public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> FUSION_GLASS = casing("fusion_glass",
-            net.minecraft.world.phys.shapes.Shapes.block(), 4);
+            com.powerfactor.multiblock.Connected.Style.glass("fusion", () -> ModQuantum.FUSION_REACTOR.get()), 4);
     public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<com.powerfactor.quantum.FusionReactorBlockEntity>> FUSION_REACTOR_BE =
             ModBlockEntities.BLOCK_ENTITIES.register("fusion_reactor", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
@@ -267,8 +268,17 @@ public final class ModQuantum {
             net.minecraft.world.inventory.MenuType<com.powerfactor.quantum.FusionMenu>> FUSION_MENU = ModMenus.MENUS.register("fusion_reactor",
             () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(com.powerfactor.quantum.FusionMenu::new));
 
+    private static DeferredBlock<com.powerfactor.multiblock.CasingBlock> casing(String id, com.powerfactor.multiblock.Connected.Style style, int light) {
+        return casing(id, p -> new com.powerfactor.multiblock.ConnectedCasingBlock(style, net.minecraft.world.phys.shapes.Shapes.block(), p), light);
+    }
+
     private static DeferredBlock<com.powerfactor.multiblock.CasingBlock> casing(String id, net.minecraft.world.phys.shapes.VoxelShape shape, int light) {
-        DeferredBlock<com.powerfactor.multiblock.CasingBlock> b = ModBlocks.BLOCKS.registerBlock(id, p -> new com.powerfactor.multiblock.CasingBlock(shape, p),
+        return casing(id, p -> new com.powerfactor.multiblock.CasingBlock(shape, p), light);
+    }
+
+    private static DeferredBlock<com.powerfactor.multiblock.CasingBlock> casing(String id,
+            java.util.function.Function<BlockBehaviour.Properties, com.powerfactor.multiblock.CasingBlock> factory, int light) {
+        DeferredBlock<com.powerfactor.multiblock.CasingBlock> b = ModBlocks.BLOCKS.registerBlock(id, factory,
                 () -> BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(6F, 1200F).sound(SoundType.NETHERITE_BLOCK)
                         .requiresCorrectToolForDrops().noOcclusion()
                         .lightLevel(s -> s.getValue(com.powerfactor.multiblock.CasingBlock.FORMED) ? light : light / 3));

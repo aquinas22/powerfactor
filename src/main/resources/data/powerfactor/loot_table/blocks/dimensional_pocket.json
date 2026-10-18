@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "powerfactor:blocks/dimensional_pocket",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:dimensional_pocket",
+          "functions": [
+            {
+              "function": "minecraft:copy_components",
+              "source": "block_entity",
+              "include": [
+                "minecraft:custom_data"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

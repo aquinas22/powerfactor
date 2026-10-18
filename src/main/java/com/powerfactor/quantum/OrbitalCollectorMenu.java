@@ -21,6 +21,7 @@ public class OrbitalCollectorMenu extends MachineMenu {
         for (int i = 0; i < OrbitalCollectorBlockEntity.SLOTS; i++) {
             addSlot(new OutputSlot(out, i, SLOT_X + (i % 3) * 18, SLOT_Y + (i / 3) * 18));
         }
+        addUpgradeBay(be == null ? com.powerfactor.upgrade.UpgradeInventory.client(com.powerfactor.upgrade.UpgradeInventory.CONSOLE) : be.upgrades());
         addPlayerInventory(inventory, 108);
     }
 

@@ -169,6 +169,8 @@ public abstract class MachineScreen<M extends AbstractContainerMenu> extends Abs
         if (up.vfd()) lines.add(line(UpgradeType.VFD, ""));
         if (up.surge()) lines.add(line(UpgradeType.SURGE, String.format("%.2f pu", up.tripVolts())));
         if (up.capacity() > 0) lines.add(line(UpgradeType.CAPACITY, String.format("x%.0f", up.bufferMultiplier())));
+        if (menu.slots.stream().anyMatch(sl -> sl instanceof ProcessingMenu.UpgradeSlot && sl.getItem().getItem() instanceof UpgradeItem u
+                && u.type() == UpgradeType.CHUNK_LOADER)) lines.add(line(UpgradeType.CHUNK_LOADER, ""));
         if (lines.isEmpty()) {
             g.textWithWordWrap(font, Component.translatable("gui.powerfactor.tab.upgrades.empty"), x + 6, y + 70, w - 12, DIM, false);
         }

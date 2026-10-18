@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LGL",
+    "PKP",
+    "PMP"
+  ],
+  "key": {
+    "L": "#c:ingots/lead",
+    "G": "#c:glass_blocks",
+    "K": "minecraft:cauldron",
+    "P": "#c:plates/steel",
+    "M": "powerfactor:electric_motor"
+  },
+  "result": {
+    "id": "powerfactor:ore_dissolver",
+    "count": 1
+  }
+}

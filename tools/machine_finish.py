@@ -208,5 +208,6 @@ if __name__=='__main__':
     import gen_data
     generate_models(vars(gen_data))
     path=BASE/'lang/en_us.json';lang=json.loads(path.read_text());generate_lang(lang)
+    from text_style import normalize;normalize(lang)
     path.write_text(json.dumps(lang,indent=2,ensure_ascii=False)+'\n')
     print('Machine finishes, workshop models and console labels generated.')

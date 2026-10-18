@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "fuel=false": {
+      "model": "powerfactor:block/reactor_port_coolant"
+    },
+    "fuel=true": {
+      "model": "powerfactor:block/reactor_port_fuel"
+    }
+  }
+}

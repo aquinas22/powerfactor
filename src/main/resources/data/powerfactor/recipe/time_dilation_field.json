@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QCQ",
+    "XSX",
+    "QAQ"
+  ],
+  "key": {
+    "Q": "powerfactor:quantum_processor",
+    "C": "minecraft:clock",
+    "X": "powerfactor:exotic_matter",
+    "S": "powerfactor:singularity",
+    "A": "#c:ingots/quantum_alloy"
+  },
+  "result": {
+    "id": "powerfactor:time_dilation_field",
+    "count": 1
+  }
+}

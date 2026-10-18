@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:bucket",
+    "#c:dusts/soda_ash",
+    "#c:dusts/soda_ash",
+    "#c:dusts/soda_ash",
+    "#c:dusts/soda_ash",
+    "minecraft:blaze_powder",
+    "minecraft:blaze_powder",
+    "minecraft:amethyst_shard",
+    "minecraft:amethyst_shard"
+  ],
+  "result": {
+    "id": "powerfactor:molten_salt_bucket",
+    "count": 1
+  }
+}

@@ -19,6 +19,12 @@ def check():
         for directory in ("blockstates", "items"):
             if not (ASSETS / directory / (block + ".json")).is_file():
                 errors.append(f"Registered block {block}: missing {directory} definition")
+    # Text style: no shouted words in the language file (docs/gui-style-guide.md).
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from text_style import violations
+    for key, value in violations(json.loads((ASSETS / "lang/en_us.json").read_text())):
+        errors.append(f"lang {key}: all-caps text {value[:40]!r} (use Title or sentence case; see text_style.py)")
     json_files = list(ROOT.rglob("*.json"))
     for path in json_files:
         try:

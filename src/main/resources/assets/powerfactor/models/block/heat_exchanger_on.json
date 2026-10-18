@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "powerfactor:block/heat_exchanger_front_on",
+    "south": "powerfactor:block/heat_exchanger_side",
+    "east": "powerfactor:block/heat_exchanger_side",
+    "west": "powerfactor:block/heat_exchanger_side",
+    "up": "powerfactor:block/heat_exchanger_top",
+    "down": "powerfactor:block/heat_exchanger_top",
+    "particle": "powerfactor:block/heat_exchanger_side"
+  }
+}

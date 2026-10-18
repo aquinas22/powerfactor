@@ -11,6 +11,11 @@ public final class ModSounds {
     public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, PowerFactor.MODID);
 
     public static final DeferredHolder<SoundEvent, SoundEvent> TURBINE_RUN = register("turbine_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_ALARM = register("reactor_alarm");
+    public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_SCRAM = register("reactor_scram");
+    public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_HUM = register("reactor_hum");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CENTRIFUGE_RUN = register("centrifuge_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEIGER = register("geiger");
     public static final DeferredHolder<SoundEvent, SoundEvent> TURBINE_BREAKER_CLOSE = register("turbine_breaker_close");
     public static final DeferredHolder<SoundEvent, SoundEvent> TURBINE_BREAKER_OPEN = register("turbine_breaker_open");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRUSHER_RUN = register("crusher_run");
@@ -63,6 +68,9 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> TESLA_HUM = register("tesla_hum");
     public static final DeferredHolder<SoundEvent, SoundEvent> INDUCTION_HUM = register("induction_hum");
     public static final DeferredHolder<SoundEvent, SoundEvent> ELECTROLYZER_RUN = register("electrolyzer_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WASH_PLANT_RUN = register("wash_plant_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHEMICAL_REACTOR_RUN = register("chemical_reactor_run");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ORE_DISSOLVER_RUN = register("ore_dissolver_run");
     public static final DeferredHolder<SoundEvent, SoundEvent> FUEL_CELL_RUN = register("fuel_cell_run");
     public static final DeferredHolder<SoundEvent, SoundEvent> UPGRADE_INSTALL = register("upgrade_install");
     public static final DeferredHolder<SoundEvent, SoundEvent> UPGRADE_REMOVE = register("upgrade_remove");

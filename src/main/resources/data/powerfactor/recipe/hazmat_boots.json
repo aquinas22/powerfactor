@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "R R",
+    "L L"
+  ],
+  "key": {
+    "R": "powerfactor:rubber",
+    "L": "#c:ingots/lead"
+  },
+  "result": {
+    "id": "powerfactor:hazmat_boots",
+    "count": 1
+  }
+}

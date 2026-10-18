@@ -25,10 +25,36 @@ public class PowerFactor {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public PowerFactor(IEventBus modBus, ModContainer container) {
+        modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent e) ->
+                e.register(com.powerfactor.util.ChunkLoaderBlockEntity.TICKETS));
+        modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent e) ->
+                e.register(com.powerfactor.pocket.PocketRooms.TICKETS));
+        modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent e) ->
+                e.register(com.powerfactor.upgrade.ChunkCard.TICKETS));
+        modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent e) ->
+                e.register(com.powerfactor.powernet.PowerNets.TICKETS));
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent e) ->
+                e.enqueueWork(com.powerfactor.fission.FissionCherenkov::register));
         ModMaterials.register();
         com.powerfactor.registry.ModStorage.init();
         com.powerfactor.registry.ModQuantum.init();
         com.powerfactor.registry.ModDefense.init();
+        com.powerfactor.registry.ModLaser.init();
+        com.powerfactor.registry.ModChem.init();
+        com.powerfactor.registry.ModWash.init();
+        com.powerfactor.registry.ModUtility.init();
+        com.powerfactor.registry.ModTime.init();
+        com.powerfactor.registry.ModTesseract.init();
+        com.powerfactor.registry.ModCharging.init();
+        com.powerfactor.registry.ModFarm.init();
+        com.powerfactor.registry.ModMob.init();
+        com.powerfactor.registry.ModPocket.init();
+        com.powerfactor.registry.ModFission.init();
+        com.powerfactor.registry.ModBlackHole.init();
+        com.powerfactor.registry.ModDrone.init();
+        com.powerfactor.registry.ModVoid.init();
+        com.powerfactor.registry.ModPowerNet.init();
+        com.powerfactor.registry.ModRedstone.init();
         ModConditions.CONDITIONS.register(modBus);
         container.registerConfig(ModConfig.Type.COMMON, PowerFactorCommonConfig.SPEC);
         ModComponents.COMPONENTS.register(modBus);

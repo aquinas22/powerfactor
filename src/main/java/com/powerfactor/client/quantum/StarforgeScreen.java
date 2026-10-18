@@ -54,9 +54,15 @@ public class StarforgeScreen extends StorageScreens.Base<StarforgeMenu> {
         Component status = !menu.formed() ? Component.translatable("gui.powerfactor.starforge.unformed")
                 : menu.recipe() < 0 ? Component.translatable("gui.powerfactor.starforge.load")
                 : Component.translatable("gui.powerfactor.starforge.forging", Math.round(p * 100));
-        g.text(font, Skin.fit(font, status, 140), x + 8, y + 88, !menu.formed() ? 0xFFD04A2A : running ? 0xFFB25A00 : Skin.DIM, false);
-        if (running) g.text(font, Component.literal(Skin.compact(menu.rate()) + " FE/t"), x + 104, y + 24, 0xFFD0503A, false);
-        Skin.energyTube(g, x + 158, y + 20, 10, 64, menu.energy(), StarforgeBlockEntity.CAPACITY, running);
+        // Status strip under the catalyst and output (the tool column runs the full height on the left).
+        Skin.lcd(g, x + 54, y + 78, 96, 14);
+        Component rate = Component.literal(Skin.compact(menu.rate()) + " FE/t");
+        int rw = running ? font.width(rate) + 4 : 0;
+        int sc = !menu.formed() ? 0xFFFF6A5A : running ? 0xFFFFB347 : Skin.LCD_DIM;
+        Skin.icon(g, !menu.formed() ? Skin.Icon.ERROR : running ? Skin.Icon.HEAT : Skin.Icon.WAIT, x + 57, y + 80);
+        Skin.condensed(g, font, status, x + 68, y + 81, 78 - rw, sc);
+        if (running) g.text(font, rate, x + 146 - font.width(rate), y + 81, Skin.FE, false);
+        Skin.energyTube(g, x + 156, y + 20, 12, 72, menu.energy(), StarforgeBlockEntity.CAPACITY, running);
     }
 
     private static void line(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, float p, boolean running, long t, int seed) {
@@ -73,5 +79,14 @@ public class StarforgeScreen extends StorageScreens.Base<StarforgeMenu> {
         boolean on = i < lit;
         boolean pulse = running && (i + seed * 7 - (int) (t / 40)) % 12 == 0;
         g.fill(x, y, x + 1, y + 2, pulse ? CORE : on ? HOT : 0xFFB7C7D3);
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float a) {
+        super.extractRenderState(g, mx, my, a);
+        if (!menu.formed() && mx >= leftPos + 54 && mx < leftPos + 150 && my >= topPos + 78 && my < topPos + 92) {
+            g.setComponentTooltipForNextFrame(font, java.util.List.of(Component.translatable("gui.powerfactor.starforge.unformed"),
+                    Component.translatable("gui.powerfactor.multiblock.auto_hint")), mx, my);
+        }
     }
 }

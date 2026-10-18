@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " L ",
+    "RCR",
+    "PPP"
+  ],
+  "key": {
+    "L": "minecraft:lever",
+    "R": "#c:dusts/redstone",
+    "C": "powerfactor:advanced_circuit",
+    "P": "#c:plates/iron"
+  },
+  "result": {
+    "id": "powerfactor:wireless_receiver",
+    "count": 1
+  }
+}

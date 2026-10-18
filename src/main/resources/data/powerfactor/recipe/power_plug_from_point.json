@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "powerfactor:power_point",
+    "#c:ingots/copper"
+  ],
+  "result": {
+    "id": "powerfactor:power_plug",
+    "count": 1
+  }
+}

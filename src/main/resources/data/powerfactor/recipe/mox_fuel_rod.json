@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SPS",
+    "SDS",
+    "SPS"
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "P": "powerfactor:plutonium",
+    "D": "powerfactor:depleted_uranium"
+  },
+  "result": {
+    "id": "powerfactor:mox_fuel_rod",
+    "count": 1
+  }
+}

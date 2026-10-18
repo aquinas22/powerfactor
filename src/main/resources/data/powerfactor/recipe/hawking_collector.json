@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CGC",
+    "GXG",
+    "CGC"
+  ],
+  "key": {
+    "C": "powerfactor:containment_casing",
+    "G": "minecraft:gold_block",
+    "X": "powerfactor:capacitor_bank"
+  },
+  "result": {
+    "id": "powerfactor:hawking_collector",
+    "count": 1
+  }
+}

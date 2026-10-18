@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "powerfactor:blocks/time_dilation_field",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:time_dilation_field"
+        }
+      ]
+    }
+  ]
+}

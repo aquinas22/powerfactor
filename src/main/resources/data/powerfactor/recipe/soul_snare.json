@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " G ",
+    "GSG",
+    " G "
+  ],
+  "key": {
+    "G": "#c:glass_blocks",
+    "S": "minecraft:soul_sand"
+  },
+  "result": {
+    "id": "powerfactor:soul_snare",
+    "count": 1
+  }
+}

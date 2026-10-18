@@ -1,0 +1,84 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "side": "powerfactor:block/ctm/reactor_glass",
+    "particle": "powerfactor:block/reactor_glass"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            5,
+            5,
+            7,
+            7
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            5,
+            5,
+            7,
+            7
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            5,
+            13,
+            7,
+            15
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ],
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#side",
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ],
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#side",
+          "uv": [
+            5,
+            1,
+            7,
+            3
+          ],
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

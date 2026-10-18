@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "TKT",
+    "RXR",
+    "TMT"
+  ],
+  "key": {
+    "T": "powerfactor:steam_turbine",
+    "K": "powerfactor:advanced_circuit",
+    "R": "powerfactor:steam_rotor",
+    "X": "powerfactor:steel_block",
+    "M": "powerfactor:generator_magnet"
+  },
+  "result": {
+    "id": "powerfactor:high_pressure_turbine",
+    "count": 1
+  }
+}

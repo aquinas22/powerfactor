@@ -62,11 +62,20 @@ public final class PowerConnections<T extends BlockEntity> implements BlockEntit
             boolean energy = level.getCapability(Capabilities.Energy.BLOCK, be.getBlockPos(), d) != null || be instanceof com.powerfactor.api.ReactiveLoad;
             if (!energy) continue;
             var pos = be.getBlockPos().relative(d); var other = level.getBlockState(pos);
+            if (sameStructure(be, level, pos)) continue;   // parts of one multiblock share power internally: no socket between them
             boolean cable = other.getBlock() instanceof com.powerfactor.grid.WireBlock && other.getValue(com.powerfactor.grid.ConnectorBlock.CONNECTIONS.get(d.getOpposite()));
             boolean linked = level.getCapability(Capabilities.Energy.BLOCK, pos, d.getOpposite()) != null;
             if (cable || linked) state.ports |= 1 << d.ordinal();
         }
     }
+    /** True if {@code pos} is this block's own multiblock controller or another casing of the same structure. */
+    private static boolean sameStructure(BlockEntity be, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        net.minecraft.core.BlockPos mine = be instanceof com.powerfactor.multiblock.CasingBlockEntity c ? c.controllerPos() : be.getBlockPos();
+        if (mine == null) return false;
+        if (pos.equals(mine)) return true;
+        return level.getBlockEntity(pos) instanceof com.powerfactor.multiblock.CasingBlockEntity other && mine.equals(other.controllerPos());
+    }
+
     @Override public void submit(State s, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
         if (delegate != null) { s.inner.lightCoords = s.lightCoords; delegate.submit(s.inner, pose, collector, camera); }
         for (Direction d : Direction.values()) if ((s.ports & 1 << d.ordinal()) != 0) {

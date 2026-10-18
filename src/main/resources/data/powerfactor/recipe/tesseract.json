@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AXA",
+    "PSP",
+    "AXA"
+  ],
+  "key": {
+    "A": "#c:ingots/quantum_alloy",
+    "X": "powerfactor:exotic_matter",
+    "P": "powerfactor:quantum_processor",
+    "S": "powerfactor:singularity"
+  },
+  "result": {
+    "id": "powerfactor:tesseract",
+    "count": 2
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " L ",
+    "PMP",
+    " R "
+  ],
+  "key": {
+    "L": "powerfactor:photonic_lens",
+    "P": "#c:plates/steel",
+    "M": "powerfactor:microprocessor",
+    "R": "#c:dusts/redstone"
+  },
+  "result": {
+    "id": "powerfactor:laser_node",
+    "count": 2
+  }
+}

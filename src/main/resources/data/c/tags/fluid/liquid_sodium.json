@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:liquid_sodium",
+    "powerfactor:flowing_liquid_sodium"
+  ]
+}

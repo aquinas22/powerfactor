@@ -172,13 +172,15 @@ public final class ModBlocks {
     public static final DeferredBlock<com.powerfactor.oil.PumpjackBlock> PUMPJACK = BLOCKS.registerBlock("pumpjack",
             com.powerfactor.oil.PumpjackBlock::new, () -> machine().noOcclusion());
     public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> PUMPJACK_CASING = BLOCKS.registerBlock("pumpjack_casing",
-            p -> new com.powerfactor.multiblock.CasingBlock(net.minecraft.world.phys.shapes.Shapes.block(), p), ModBlocks::machine);
+            p -> new com.powerfactor.multiblock.ConnectedCasingBlock(com.powerfactor.multiblock.Connected.Style.host("pumpjack", () -> ModBlocks.PUMPJACK.get()),
+                    net.minecraft.world.phys.shapes.Shapes.block(), p), ModBlocks::machine);
     /** Refinery controller: the front-centre block of a 3x3 casing base under a three-block distillation column. */
     public static final DeferredBlock<com.powerfactor.multiblock.MultiblockControllerBlock> REFINERY = BLOCKS.registerBlock("refinery",
             p -> new com.powerfactor.multiblock.MultiblockControllerBlock(() -> ModBlockEntities.REFINERY.get(), p),
             () -> machine().lightLevel(s -> s.getValue(MachineBlock.RUNNING) ? 6 : 0));
     public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> REFINERY_CASING = BLOCKS.registerBlock("refinery_casing",
-            p -> new com.powerfactor.multiblock.CasingBlock(net.minecraft.world.phys.shapes.Shapes.block(), p), ModBlocks::machine);
+            p -> new com.powerfactor.multiblock.ConnectedCasingBlock(com.powerfactor.multiblock.Connected.Style.host("refinery", () -> ModBlocks.REFINERY.get()),
+                    net.minecraft.world.phys.shapes.Shapes.block(), p), ModBlocks::machine);
     public static final DeferredBlock<com.powerfactor.multiblock.CasingBlock> DISTILLATION_COLUMN = BLOCKS.registerBlock("distillation_column",
             p -> new com.powerfactor.multiblock.CasingBlock(Block.box(3, 0, 3, 13, 16, 13), p), () -> machine().noOcclusion());
     public static final DeferredBlock<com.powerfactor.upgrade.UpgradeTableBlock> UPGRADE_TABLE = BLOCKS.registerBlock("upgrade_table",

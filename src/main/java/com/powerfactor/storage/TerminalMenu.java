@@ -85,9 +85,9 @@ public class TerminalMenu extends AbstractContainerMenu {
         int lowerTop = GRID_Y + rows * 18 + 6;
         if (kind == TerminalBlockEntity.Kind.CRAFTING) {
             resultSlot = slots.size();
-            addSlot(new NetworkResultSlot(player, craft, craftResult, 0, 124, lowerTop + 19));
+            addSlot(new NetworkResultSlot(player, craft, craftResult, 0, 136, lowerTop + 19));   // crafting row centred on the item grid (x 90)
             firstCraftSlot = slots.size();
-            for (int i = 0; i < 9; i++) addSlot(new Slot(craft, i, 30 + (i % 3) * 18, lowerTop + 1 + (i / 3) * 18));
+            for (int i = 0; i < 9; i++) addSlot(new Slot(craft, i, 42 + (i % 3) * 18, lowerTop + 1 + (i / 3) * 18));
         } else if (kind == TerminalBlockEntity.Kind.PATTERN) {
             firstGhost = slots.size();
             for (int i = 0; i < 9; i++) addSlot(new IoPortMenu.GhostSlot(ghostIn, i, 9 + (i % 3) * 18, lowerTop + 1 + (i / 3) * 18));

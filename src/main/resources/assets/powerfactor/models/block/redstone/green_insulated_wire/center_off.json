@@ -1,0 +1,42 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "w": "powerfactor:block/redstone/insulated/green",
+    "particle": "powerfactor:block/redstone/insulated/green"
+  },
+  "elements": [
+    {
+      "from": [
+        6.0,
+        0,
+        6.0
+      ],
+      "to": [
+        10.0,
+        2,
+        10.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    }
+  ]
+}

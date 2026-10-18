@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_transmute",
+  "category": "equipment",
+  "input": "powerfactor:pocket_void",
+  "material": "powerfactor:void_core",
+  "result": {
+    "id": "powerfactor:deep_pocket_void"
+  }
+}

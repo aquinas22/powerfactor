@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SPS",
+    "CBC",
+    "SPS"
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "P": "powerfactor:fluid_pipe",
+    "C": "#c:ingots/copper",
+    "B": "powerfactor:reactor_casing"
+  },
+  "result": {
+    "id": "powerfactor:heat_exchanger",
+    "count": 1
+  }
+}

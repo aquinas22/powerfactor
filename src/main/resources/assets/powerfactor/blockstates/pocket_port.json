@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powerfactor:block/pocket_port"
+    },
+    "facing=south": {
+      "model": "powerfactor:block/pocket_port",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "powerfactor:block/pocket_port",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "powerfactor:block/pocket_port",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "powerfactor:block/pocket_port",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "powerfactor:block/pocket_port",
+      "x": 90
+    }
+  }
+}

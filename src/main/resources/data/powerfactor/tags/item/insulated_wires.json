@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:white_insulated_wire",
+    "powerfactor:orange_insulated_wire",
+    "powerfactor:magenta_insulated_wire",
+    "powerfactor:light_blue_insulated_wire",
+    "powerfactor:yellow_insulated_wire",
+    "powerfactor:lime_insulated_wire",
+    "powerfactor:pink_insulated_wire",
+    "powerfactor:gray_insulated_wire",
+    "powerfactor:light_gray_insulated_wire",
+    "powerfactor:cyan_insulated_wire",
+    "powerfactor:purple_insulated_wire",
+    "powerfactor:blue_insulated_wire",
+    "powerfactor:brown_insulated_wire",
+    "powerfactor:green_insulated_wire",
+    "powerfactor:red_insulated_wire",
+    "powerfactor:black_insulated_wire"
+  ]
+}

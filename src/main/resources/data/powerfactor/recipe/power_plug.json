@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " F ",
+    "KPK",
+    " F "
+  ],
+  "key": {
+    "F": "powerfactor:fulgurite",
+    "K": "powerfactor:copper_coil",
+    "P": "minecraft:ender_pearl"
+  },
+  "result": {
+    "id": "powerfactor:power_plug",
+    "count": 2
+  }
+}

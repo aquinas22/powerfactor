@@ -46,7 +46,10 @@ public abstract class MachineBlock extends BaseEntityBlock {
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         var expected = (BlockEntityType<MachineBlockEntity>) blockEntityType();
         if (level instanceof ServerLevel serverLevel) {
-            return createTickerHelper(type, expected, (l, pos, s, machine) -> machine.serverTick(serverLevel, pos, s));
+            return createTickerHelper(type, expected, (l, pos, s, machine) -> {
+                machine.serverTick(serverLevel, pos, s);
+                com.powerfactor.upgrade.ChunkCard.tick(serverLevel, machine);
+            });
         }
         return createTickerHelper(type, expected, (l, pos, s, machine) -> machine.clientTick());
     }

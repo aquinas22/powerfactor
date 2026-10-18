@@ -49,6 +49,8 @@ public final class ModFluids {
     public static final Liquid CRUDE_OIL = liquid("crude_oil", 900, 4000, 0xFF1C1612, 2, 30);
     public static final Liquid DIESEL = liquid("diesel", 830, 1600, 0xFFC89A32, 1, 10);
     public static final Liquid JET_FUEL = liquid("jet_fuel", 800, 1100, 0xFFE6D9A4, 1, 8);
+    /** Ore Dissolver feed, made in the Chemical Reactor. Hazardous: it burns what swims in it (chem/AcidEffects). */
+    public static final Liquid SULFURIC_ACID = liquid("sulfuric_acid", 1830, 2600, 0xFFE4E25A, 1, 12);
 
     private static Liquid liquid(String id, int density, int viscosity, int tint, int levelDecrease, int tickRate) {
         DeferredHolder<FluidType, FluidType> type = TYPES.register(id, () -> new FluidType(FluidType.Properties.create()
@@ -72,7 +74,16 @@ public final class ModFluids {
         return new Liquid(type, source, flowing, block[0], bucket[0], tint);
     }
 
-    public static final Liquid[] LIQUIDS = {CRUDE_OIL, DIESEL, JET_FUEL};
+    // Reactor coolants and their hot sides (fission/ReactorCore.Coolant): pumped round a closed loop through a Heat Exchanger.
+    public static final Liquid HEAVY_WATER = liquid("heavy_water", 1100, 1100, 0xFF5E9CD8, 1, 5);
+    public static final Liquid HOT_HEAVY_WATER = liquid("hot_heavy_water", 1050, 900, 0xFFA8D8F4, 1, 5);
+    public static final Liquid LIQUID_SODIUM = liquid("liquid_sodium", 930, 700, 0xFFC4CAD2, 1, 5);
+    public static final Liquid HOT_SODIUM = liquid("hot_sodium", 880, 600, 0xFFF2B456, 1, 5);
+    public static final Liquid MOLTEN_SALT = liquid("molten_salt", 1940, 1800, 0xFFDCEEE6, 1, 15);
+    public static final Liquid HOT_MOLTEN_SALT = liquid("hot_molten_salt", 1900, 1500, 0xFFFF6A2E, 1, 15);
+
+    public static final Liquid[] LIQUIDS = {CRUDE_OIL, DIESEL, JET_FUEL, SULFURIC_ACID, HEAVY_WATER, HOT_HEAVY_WATER, LIQUID_SODIUM, HOT_SODIUM,
+            MOLTEN_SALT, HOT_MOLTEN_SALT};
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);

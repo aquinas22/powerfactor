@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "powerfactor:block/drone_hub_front_on",
+    "south": "powerfactor:block/drone_hub_side",
+    "east": "powerfactor:block/drone_hub_side",
+    "west": "powerfactor:block/drone_hub_side",
+    "up": "powerfactor:block/drone_hub_top_on",
+    "down": "powerfactor:block/drone_hub_side",
+    "particle": "powerfactor:block/drone_hub_side"
+  }
+}

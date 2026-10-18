@@ -1,0 +1,18 @@
+{
+  "type": "powerfactor:centrifuging",
+  "inputs": [
+    {
+      "ingredient": "minecraft:coal",
+      "count": 2
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:coal_dust"
+    },
+    {
+      "item": "powerfactor:sulfur_dust",
+      "chance": 0.5
+    }
+  ]
+}

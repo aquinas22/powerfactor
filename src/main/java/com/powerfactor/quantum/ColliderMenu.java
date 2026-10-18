@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class ColliderMenu extends MachineMenu {
-    public static final int IN_X = 26, IN_Y = 52, OUT_X = 128, OUT_Y = 52;
+    public static final int IN_X = 28, IN_Y = 40, OUT_X = 132, OUT_Y = 40;   // mirrored about the ring on the centre line
 
     public ColliderMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
         this(id, inventory, null, new SimpleContainer(2), new SimpleContainerData(ColliderBlockEntity.DATA_COUNT));
@@ -27,6 +27,7 @@ public class ColliderMenu extends MachineMenu {
             }
         });
         addSlot(new OutputSlot(slots, 1, OUT_X, OUT_Y));
+        addUpgradeBay(be == null ? com.powerfactor.upgrade.UpgradeInventory.client(com.powerfactor.upgrade.UpgradeInventory.CONSOLE) : be.upgrades());
         addPlayerInventory(inventory, 108);
     }
 

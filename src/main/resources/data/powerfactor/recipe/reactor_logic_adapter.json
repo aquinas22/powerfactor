@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " R ",
+    "QCQ",
+    " R "
+  ],
+  "key": {
+    "R": "minecraft:redstone",
+    "Q": "minecraft:comparator",
+    "C": "powerfactor:reactor_casing"
+  },
+  "result": {
+    "id": "powerfactor:reactor_logic_adapter",
+    "count": 1
+  }
+}

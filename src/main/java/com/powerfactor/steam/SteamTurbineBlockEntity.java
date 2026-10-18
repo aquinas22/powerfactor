@@ -47,17 +47,23 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil;
 import org.jspecify.annotations.Nullable;
 
 /** 3x2x5 turbine/alternator: steam energy is spent on FE and rotor loss, condensate returns as hot water. */
-public final class SteamTurbineBlockEntity extends PushingGenerator implements GridGenerator, Bus, Buildable, MachineAudio.Looping {
+public class SteamTurbineBlockEntity extends PushingGenerator implements GridGenerator, Bus, Buildable, MachineAudio.Looping {
     public static final int RATED_FE = 800, RATED_CE = 1000, TANK = 32000, BUFFER = 128000;
     public static final int STEAM = 0, CONDENSATE = 1, CHAMBER_FE = 3200;
     public static final Structure STRUCTURE = new Structure.Builder()
             .key('B', ModBlocks.TURBINE_CASING).key('R', ModBlocks.STEAM_ROTOR).key('M', ModBlocks.GENERATOR_MAGNET)
             .layer(0, "BCB", "BBB", "BBB", "BBB", "BBB")
             .layer(1, "BBB", "BRB", "BRB", "BMB", "BBB").build();
+    /** A turbine size: rating, tanks, output buffer, steam chamber and structure. */
+    public record Tier(int ratedFe, int ratedCe, int tank, int buffer, int chamber, Structure structure) {}
+
+    public static final Tier STANDARD = new Tier(RATED_FE, RATED_CE, TANK, BUFFER, CHAMBER_FE, STRUCTURE);
+    protected final Tier tier;
     private final StructureAssembly assembly = new StructureAssembly();
-    private final TurbineModel turbine = new TurbineModel(new TurbineModel.Spec(RATED_FE, RATED_CE, 20, 200, 600));
-    private final HydrogenTanks tanks = new HydrogenTanks(TANK,
-            new net.minecraft.world.level.material.Fluid[] {ModFluids.STEAM.get(), ModFluids.HOT_WATER.get()}, new boolean[] {false, true}, this::setChanged);
+    private final TurbineModel turbine;
+    private final HydrogenTanks tanks;
+    private HydrogenTanks makeTanks() { return new HydrogenTanks(tier.tank(),
+            new net.minecraft.world.level.material.Fluid[] {ModFluids.STEAM.get(), ModFluids.HOT_WATER.get()}, new boolean[] {false, true}, this::setChanged); }
     private long condensateEnergy;
     private boolean valveOpen;
     private int lastSteam, syncedRpm, clientRpm;
@@ -72,7 +78,7 @@ public final class SteamTurbineBlockEntity extends PushingGenerator implements G
                 case ThermalMenu.DATA_TANK -> tanks.amount(STEAM);
                 case ThermalMenu.DATA_TANK2 -> tanks.amount(CONDENSATE);
                 case ThermalMenu.DATA_STORED -> buffer.getAmountAsInt() / 10;
-                case ThermalMenu.DATA_FLAGS -> (online() ? 1 : 0) | (formed() ? 2 : 0) | (tanks.amount(CONDENSATE) > TANK - 5 ? 4 : 0);
+                case ThermalMenu.DATA_FLAGS -> (online() ? 1 : 0) | (formed() ? 2 : 0) | (tanks.amount(CONDENSATE) > tier.tank() - 5 ? 4 : 0);
                 case ThermalMenu.DATA_REDSTONE -> redstoneMode().ordinal();
                 case ThermalMenu.DATA_RATE -> lastSteam;
                 default -> 0;
@@ -82,8 +88,17 @@ public final class SteamTurbineBlockEntity extends PushingGenerator implements G
         @Override public int getCount() { return ThermalMenu.DATA_COUNT; }
     };
 
-    public SteamTurbineBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.STEAM_TURBINE.get(), pos, state, BUFFER); }
-    @Override public Structure buildStructure() { return STRUCTURE; }
+    public SteamTurbineBlockEntity(BlockPos pos, BlockState state) { this(ModBlockEntities.STEAM_TURBINE.get(), pos, state, STANDARD); }
+
+    protected SteamTurbineBlockEntity(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state, Tier tier) {
+        super(type, pos, state, tier.buffer());
+        this.tier = tier;
+        this.turbine = new TurbineModel(new TurbineModel.Spec(tier.ratedFe(), tier.ratedCe(), 20, 200, 600));
+        this.tanks = makeTanks();
+    }
+
+    public Tier tier() { return tier; }
+    @Override public Structure buildStructure() { return tier.structure(); }
     public boolean formed() { return assembly.formed(); }
     public TurbineModel model() { return turbine; }
     public HydrogenTanks getTanks() { return tanks; }
@@ -91,10 +106,10 @@ public final class SteamTurbineBlockEntity extends PushingGenerator implements G
     private boolean online() { return formed() && valveOpen && turbine.breakerClosed(); }
 
     @Override public void serverTick(ServerLevel level, BlockPos pos, BlockState state) {
-        assembly.tick(level, pos, state.getValue(MachineBlock.FACING), STRUCTURE);
-        valveOpen = formed() && enabled(level, pos) && tanks.amount(CONDENSATE) <= TANK - 5;
+        assembly.tick(level, pos, state.getValue(MachineBlock.FACING), tier.structure());
+        valveOpen = formed() && enabled(level, pos) && tanks.amount(CONDENSATE) <= tier.tank() - 5;
         if (valveOpen) {
-            int steam = (int) Math.min(tanks.amount(STEAM), Math.max(0, CHAMBER_FE - turbine.fuelEnergy()) / BoilerModel.FE_PER_STEAM);
+            int steam = (int) Math.min(tanks.amount(STEAM), Math.max(0, tier.chamber() - turbine.fuelEnergy()) / BoilerModel.FE_PER_STEAM);
             if (steam > 0) {
                 tanks.add(STEAM, -steam);
                 turbine.addFuel((long) steam * BoilerModel.FE_PER_STEAM);
@@ -167,11 +182,11 @@ public final class SteamTurbineBlockEntity extends PushingGenerator implements G
         }
         com.powerfactor.machine.EnergyOut.distribute(buffer, targets, outputCursor++);
     }
-    @Override public double ratedCe() { return online() ? RATED_CE : 0; }
+    @Override public double ratedCe() { return online() ? tier.ratedCe() : 0; }
     @Override public double hertz() { return online() ? turbine.hertz() : 0; }
-    @Override public double eeCapacity() { return online() ? Math.sqrt(Math.max(0, (double) RATED_CE * RATED_CE - (double) lastFe * lastFe)) : 0; }
+    @Override public double eeCapacity() { return online() ? Math.sqrt(Math.max(0, (double) tier.ratedCe() * tier.ratedCe() - (double) lastFe * lastFe)) : 0; }
     @Override public BusSolver.Result state() {
-        return online() ? BusSolver.solve(RATED_CE, 0, lastFe, turbine.lastOutput().ee(), 0, eeCapacity(), 1)
+        return online() ? BusSolver.solve(tier.ratedCe(), 0, lastFe, turbine.lastOutput().ee(), 0, eeCapacity(), 1)
                 : new BusSolver.Result(0, 0, 0, 0, 0, 0);
     }
     @Override public boolean hasMenu() { return true; }
@@ -181,16 +196,28 @@ public final class SteamTurbineBlockEntity extends PushingGenerator implements G
     @Override public float loopVolume() { return 0.25F + 0.65F * (level != null && level.isClientSide() ? clientRpm : turbine.rpm()) / 3600F; }
     @Override public ScadaReading scadaReading() {
         return new ScadaReading(worldPosition, getDisplayName(), !formed() ? ScadaReading.Status.ALARM : online() ? ScadaReading.Status.RUNNING
-                : tanks.amount(CONDENSATE) > TANK - 5 ? ScadaReading.Status.ALARM : ScadaReading.Status.WARNING,
+                : tanks.amount(CONDENSATE) > tier.tank() - 5 ? ScadaReading.Status.ALARM : ScadaReading.Status.WARNING,
                 lastFe, (int) Math.round(turbine.lastOutput().ee()), Component.translatable(!formed() ? "scada.powerfactor.multiblock.incomplete"
                 : "scada.powerfactor.steam_turbine", turbine.rpm(), tanks.amount(STEAM), tanks.amount(CONDENSATE)),
-                true, remoteEnabled(), true, online() ? 1 : 0, (float) hertz());
+                true, remoteEnabled(), true, online() ? 1 : 0, (float) hertz()).with(java.util.List.of(
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.rpm"), turbine.rpm(), "rpm", 0, 4000,
+                        turbine.rpm() > 3800 ? 2 : 0),
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.hertz"), (float) hertz(), "Hz", 50, 65,
+                        online() && (hertz() < 57 || hertz() > 62) ? 1 : 0),
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.output"), lastFe, "FE/t", 0, tier.ratedFe(), 0),
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.steam"), tanks.amount(STEAM), "mB", 0, tier.tank(), 0),
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.condensate"), tanks.amount(CONDENSATE), "mB", 0, tier.tank(),
+                        tanks.amount(CONDENSATE) > tier.tank() - 5 ? 2 : tanks.amount(CONDENSATE) > tier.tank() * 0.8 ? 1 : 0),
+                new ScadaReading.Point(Component.translatable("scada.powerfactor.point.breaker"), turbine.breakerClosed() ? 1 : 0, "", 0, 1, 0)),
+                java.util.List.of());
     }
     @Override public void clientTick() { super.clientTick(); motion.tick(clientRpm / 3600.0 * 0.7, 0.1, 0.03); }
     public float rotorPhase(float partial) { return motion.phase(partial); }
-    @Override public void setRemoved() {
-        if (level instanceof ServerLevel server) assembly.release(server, worldPosition);
-        super.setRemoved();
+    /** Only a real removal frees the casings: setRemoved also runs when the chunk unloads. */
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (level instanceof ServerLevel s) assembly.release(s, worldPosition);
     }
     @Override protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
@@ -211,6 +238,6 @@ public final class SteamTurbineBlockEntity extends PushingGenerator implements G
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) { var tag = new CompoundTag(); tag.putInt("rpm", turbine.rpm()); return tag; }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
     @Override public @Nullable AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new ThermalMenu(ThermalMenu.Device.STEAM_TURBINE, id, inventory, worldPosition, data, this);
+        return new ThermalMenu(tier == STANDARD ? ThermalMenu.Device.STEAM_TURBINE : ThermalMenu.Device.HP_TURBINE, id, inventory, worldPosition, data, this);
     }
 }

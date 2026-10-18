@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "powerfactor:block/redstone/lamp/cyan"
+    },
+    "lit=true": {
+      "model": "powerfactor:block/redstone/lamp/cyan_on"
+    }
+  }
+}

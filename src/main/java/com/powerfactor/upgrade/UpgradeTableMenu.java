@@ -24,10 +24,10 @@ import org.jspecify.annotations.Nullable;
  * modules with it.
  */
 public class UpgradeTableMenu extends AbstractContainerMenu {
-    public static final int TOOL_X = 76, TOOL_Y = 58;
+    public static final int TOOL_X = 76, TOOL_Y = 66;
     /** Module socket item origins, clockwise from the top. */
-    public static final int[][] SOCKETS = {{76, 24}, {112, 45}, {112, 87}, {76, 108}, {40, 87}, {40, 45}};
-    public static final int INV_X = 44, INV_Y = 136;
+    public static final int[][] SOCKETS = {{76, 24}, {112, 45}, {112, 87}, {76, 108}, {40, 87}, {40, 45}};   // hexagon about the bay centre (84, 74)
+    public static final int INV_X = 44, INV_Y = 146;
     public static final int TOOL_SLOT = 0, FIRST_MODULE = 1, FIRST_INV = 1 + ToolModules.SLOTS;
 
     private final Container tool;

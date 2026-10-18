@@ -33,7 +33,7 @@ import org.jspecify.annotations.Nullable;
  * collection beam. Each one-minute pass costs 3M FE and yields Cosmic Dust, sometimes qubit crystal,
  * raw faradaenium or Meteorite, and very rarely a Nether Star.
  */
-public class OrbitalCollectorBlockEntity extends MachineBlockEntity {
+public class OrbitalCollectorBlockEntity extends MachineBlockEntity implements com.powerfactor.upgrade.Upgradeable {
     public static final int CAPACITY = 4_000_000, MAX_INPUT = 20_000, RATE = 2_500, PASS = 1200, SLOTS = 9;
     public static final int DATA_PROGRESS = 0, DATA_STATE = 1, DATA_ENERGY = 2, DATA_COUNT = 3;
     /** 0 working, 1 daytime, 2 no sky, 3 no power, 4 output full, 5 off. */
@@ -64,8 +64,22 @@ public class OrbitalCollectorBlockEntity extends MachineBlockEntity {
     };
     private final ResourceHandler<ItemResource> items = VanillaContainerWrapper.of(out);
     private int progress, state = OFF;
+    private float work;
     private int clientState = OFF;
     private float clientProgress;
+
+    private final com.powerfactor.upgrade.UpgradeInventory upgrades = new com.powerfactor.upgrade.UpgradeInventory(
+            com.powerfactor.upgrade.UpgradeInventory.CONSOLE, this::setChanged, p -> net.minecraft.world.Container.stillValidBlockEntity(this, p));
+
+    public com.powerfactor.upgrade.UpgradeInventory upgrades() {
+        return upgrades;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (level != null && !level.isClientSide()) net.minecraft.world.Containers.dropContents(level, pos, upgrades);
+    }
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -106,11 +120,16 @@ public class OrbitalCollectorBlockEntity extends MachineBlockEntity {
     @Override
     public void serverTick(ServerLevel level, BlockPos pos, BlockState bs) {
         int was = state;
+        var fx = upgrades.effects();
+        int rate = (int) Math.ceil(RATE * fx.powerMultiplier());
         state = !enabled(level, pos) ? OFF : !level.canSeeSky(pos.above()) ? NO_SKY : !level.isDarkOutside() ? DAY
-                : energy.getAmountAsInt() < RATE ? NO_POWER : !hasRoom() ? FULL : WORKING;
+                : energy.getAmountAsInt() < rate ? NO_POWER : !hasRoom() ? FULL : WORKING;
         if (state == WORKING) {
-            energy.set(energy.getAmountAsInt() - RATE);
-            if (++progress >= PASS) {
+            energy.set(energy.getAmountAsInt() - rate);
+            work += (float) fx.speedMultiplier();
+            progress = (int) work;
+            if (work >= PASS) {
+                work = 0;
                 progress = 0;
                 collect(level, pos);
             }
@@ -204,6 +223,8 @@ public class OrbitalCollectorBlockEntity extends MachineBlockEntity {
         out.clearContent();
         ContainerHelper.loadAllItems(input, out.getItems());
         progress = input.getIntOr("progress", 0);
+        work = progress;
+        upgrades.load(input);
     }
 
     @Override
@@ -212,6 +233,7 @@ public class OrbitalCollectorBlockEntity extends MachineBlockEntity {
         energy.serialize(output);
         ContainerHelper.saveAllItems(output, out.getItems());
         output.putInt("progress", progress);
+        upgrades.save(output);
     }
 
     @Override

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CGC",
+    "GLG",
+    "CGC"
+  ],
+  "key": {
+    "C": "powerfactor:reactor_casing",
+    "G": "#c:glass_blocks",
+    "L": "#c:ingots/lead"
+  },
+  "result": {
+    "id": "powerfactor:reactor_glass",
+    "count": 4
+  }
+}

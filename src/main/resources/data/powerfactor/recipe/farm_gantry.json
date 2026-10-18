@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SHS",
+    "MCM",
+    "SDS"
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "H": "minecraft:diamond_hoe",
+    "M": "powerfactor:electric_motor",
+    "C": "powerfactor:advanced_circuit",
+    "D": "minecraft:dispenser"
+  },
+  "result": {
+    "id": "powerfactor:farm_gantry",
+    "count": 1
+  }
+}

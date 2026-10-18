@@ -22,7 +22,7 @@ public class EngineMenu extends MachineMenu {
 
     public EngineMenu(int containerId, Inventory inventory, Container fuel, ContainerData data) {
         super(ModMenus.ENGINE.get(), containerId, fuel, data);
-        addSlot(new Slot(fuel, 0, 44, 53) {
+        addSlot(new Slot(fuel, 0, 9, 49) {   // under its flame window, left column
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.getBurnTime(null, inventory.player.level().fuelValues()) > 0;

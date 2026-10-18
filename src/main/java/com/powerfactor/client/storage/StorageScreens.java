@@ -27,7 +27,12 @@ public final class StorageScreens {
 
     /** A 176x180 storage-device screen: panel, title, slot wells, player inventory and custom buttons. */
     public abstract static class Base<M extends AbstractContainerMenu> extends AbstractContainerScreen<M> {
-        public record Btn(int x, int y, int w, int h, Component label, Component tip, int color, boolean selected, Runnable action) {}
+        public record Btn(int x, int y, int w, int h, Component label, Component tip, int color, boolean selected, Runnable action,
+                Skin.@org.jspecify.annotations.Nullable Icon icon, boolean dim) {
+            public Btn(int x, int y, int w, int h, Component label, Component tip, int color, boolean selected, Runnable action) {
+                this(x, y, w, h, label, tip, color, selected, action, null, false);
+            }
+        }
 
         protected final List<Btn> buttons = new ArrayList<>();
 
@@ -42,10 +47,17 @@ public final class StorageScreens {
             super.extractBackground(g, mx, my, a);
             buttons.clear();
             int x = leftPos, y = topPos;
+            boolean bay = menu.slots.stream().anyMatch(sl -> sl instanceof com.powerfactor.machine.MachineMenu.BaySlot);
+            if (bay) Skin.panel(g, x + imageWidth - 4, y + 8, 32, 4 * 18 + 22);   // the upgrade bay, docked behind the right edge
             Skin.panel(g, x, y, imageWidth, imageHeight);
+            if (bay) Skin.icon(g, Skin.Icon.UPGRADE, x + imageWidth + 9, y + 12, Component.translatable("gui.powerfactor.upgrades.bay"));
             Skin.title(g, font, title, x, y, imageWidth);
             for (Slot s : menu.slots) {
-                if (s.container instanceof Inventory) continue;
+                if (s.container instanceof Inventory || !s.isActive()) continue;
+                if (s instanceof com.powerfactor.machine.MachineMenu.BaySlot) {
+                    Skin.slot(g, x + s.x - 1, y + s.y - 1, 0xFF9C74F0);
+                    continue;
+                }
                 if (s instanceof IoPortMenu.GhostSlot) ghost(g, x + s.x - 1, y + s.y - 1);
                 else Skin.slot(g, x + s.x - 1, y + s.y - 1, slotRing(s));
             }
@@ -54,8 +66,29 @@ public final class StorageScreens {
             for (Btn b : buttons) {
                 boolean hover = mx >= b.x() && mx < b.x() + b.w() && my >= b.y() && my < b.y() + b.h();
                 Skin.control(g, b.x(), b.y(), b.w(), b.h(), b.selected(), hover);
-                g.centeredText(font, Skin.fit(font, b.label(), b.w() - 4), b.x() + b.w() / 2, b.y() + (b.h() - 8) / 2, b.color());
+                boolean hasText = !b.label().getString().isEmpty();
+                int iw = b.icon() == null ? 0 : hasText ? 11 : 9;
+                int lw = hasText ? Math.min(b.w() - 4 - iw, font.width(b.label())) : 0;
+                int cx = b.x() + (b.w() - iw - lw) / 2;
+                if (b.icon() != null) {
+                    Skin.icon(g, b.icon(), cx, b.y() + (b.h() - 9) / 2, null);
+                    if (b.dim()) g.fill(cx, b.y() + (b.h() - 9) / 2, cx + 9, b.y() + (b.h() - 9) / 2 + 9, 0x9A17242E);
+                }
+                if (hasText) Skin.condensed(g, font, b.label(), cx + iw, b.y() + (b.h() - 8) / 2, b.w() - 4 - iw, b.color());
             }
+        }
+
+        /** Areas outside the main panel that JEI must keep clear: the upgrade bay. */
+        public java.util.List<net.minecraft.client.renderer.Rect2i> extraAreas() {
+            boolean bay = menu.slots.stream().anyMatch(sl -> sl instanceof com.powerfactor.machine.MachineMenu.BaySlot);
+            return bay ? java.util.List.of(new net.minecraft.client.renderer.Rect2i(leftPos + imageWidth - 4, topPos + 8, 34, 4 * 18 + 24)) : java.util.List.of();
+        }
+
+        @Override
+        protected boolean hasClickedOutside(double mx, double my, int left, int top) {
+            boolean bay = menu.slots.stream().anyMatch(sl -> sl instanceof com.powerfactor.machine.MachineMenu.BaySlot);
+            if (bay && mx >= left + imageWidth - 2 && mx < left + imageWidth + 28 && my >= top + 8 && my < top + 8 + 4 * 18 + 22) return false;
+            return super.hasClickedOutside(mx, my, left, top);
         }
 
         protected int slotRing(Slot s) {
@@ -73,6 +106,12 @@ public final class StorageScreens {
 
         protected void button(int x, int y, int w, int h, Component label, Component tip, int color, boolean selected, Runnable action) {
             buttons.add(new Btn(leftPos + x, topPos + y, w, h, label, tip, color, selected, action));
+        }
+
+        /** An icon chip (show, don't tell); a toggle that is off shows its icon dimmed. Label may be empty. */
+        protected void iconButton(int x, int y, int w, int h, Skin.Icon icon, Component label, Component tip, int color, boolean on, boolean toggle,
+                Runnable action) {
+            buttons.add(new Btn(leftPos + x, topPos + y, w, h, label, tip, color, toggle && on, action, icon, toggle && !on));
         }
 
         protected void send(int id) {
@@ -109,8 +148,8 @@ public final class StorageScreens {
             String[] labels = {"-10", "-1", "+1", "+10"};
             for (int i = 0; i < 4; i++) {
                 int id = firstButton + i;
-                int bx = x + (i < 2 ? i * 26 : 54 + (i - 2) * 26);
-                button(bx, y, 25, 13, Component.literal(labels[i]), Component.translatable("gui.powerfactor.storage.priority.tip"),
+                int bx = x + i * 22;   // the guide's stepper: four 20-px chips, 2-px gutters (86 px)
+                button(bx, y, 20, 13, Component.literal(labels[i]), Component.translatable("gui.powerfactor.storage.priority.tip"),
                         i < 2 ? 0xFFFFA090 : 0xFF8FF0B0, false, () -> send(id));
             }
         }
@@ -140,8 +179,9 @@ public final class StorageScreens {
                 }
                 g.fill(lx + 4, ly - 1, lx + 12, ly, color);
             }
-            g.text(font, Component.translatable("gui.powerfactor.storage.priority", menu.priority()), x + 8, y + 70, Skin.DIM, false);
-            priority(menu.priority(), 62, 68, 0);
+            Skin.iconValue(g, font, Skin.Icon.PRIORITY, Component.literal(String.valueOf(menu.priority())), x + 8, y + 70, Skin.TEXT,
+                    Component.translatable("gui.powerfactor.storage.priority", menu.priority()));
+            priority(menu.priority(), 83, 68, 0);   // right-aligned to the content edge (x 169)
             // Total capacity across cells.
             long used = 0, total = 0;
             for (int i = 0; i < 10; i++) {
@@ -181,30 +221,31 @@ public final class StorageScreens {
         @Override
         protected void main(GuiGraphicsExtractor g, int x, int y, int mx, int my) {
             IoPortBlockEntity.Kind kind = menu.kind();
-            g.text(font, Component.translatable(menu.deny() ? "gui.powerfactor.port.deny" : "gui.powerfactor.port.allow"), x + 8, y + 24,
+            Skin.icon(g, Skin.Icon.FILTER, x + 8, y + 22, Component.translatable(menu.deny() ? "gui.powerfactor.port.deny" : "gui.powerfactor.port.allow"));
+            g.text(font, Component.translatable(menu.deny() ? "gui.powerfactor.port.deny" : "gui.powerfactor.port.allow"), x + 19, y + 23,
                     menu.deny() ? 0xFFC8402A : 0xFF1E9E5A, false);
-            button(8, 58, 46, 14, Component.translatable(menu.deny() ? "gui.powerfactor.port.deny.short" : "gui.powerfactor.port.allow.short"),
-                    Component.translatable("gui.powerfactor.port.mode.tip"), menu.deny() ? 0xFFFF9080 : 0xFF8FF0B0, false,
-                    () -> send(IoPortMenu.BUTTON_DENY));
-            button(58, 58, 46, 14, Component.translatable(menu.exact() ? "gui.powerfactor.port.exact" : "gui.powerfactor.port.fuzzy"),
-                    Component.translatable("gui.powerfactor.port.exact.tip"), ACCENT, menu.exact(), () -> send(IoPortMenu.BUTTON_EXACT));
+            iconButton(8, 56, 22, 14, menu.deny() ? Skin.Icon.DENY : Skin.Icon.ALLOW, Component.empty(), Component.translatable("gui.powerfactor.port.mode.tip"),
+                    0, false, false, () -> send(IoPortMenu.BUTTON_DENY));
+            iconButton(32, 56, 22, 14, Skin.Icon.EXACT, Component.empty(), Component.translatable(menu.exact() ? "gui.powerfactor.port.exact.tip"
+                    : "gui.powerfactor.port.fuzzy"), ACCENT, menu.exact(), true, () -> send(IoPortMenu.BUTTON_EXACT));
             if (kind == IoPortBlockEntity.Kind.STORAGE_BUS) {
-                g.text(font, Component.translatable("gui.powerfactor.storage.priority", menu.priority()), x + 8, y + 79, Skin.DIM, false);
-                priority(menu.priority(), 58, 76, IoPortMenu.BUTTON_PRIORITY);
+                Skin.iconValue(g, font, Skin.Icon.PRIORITY, Component.literal(String.valueOf(menu.priority())), x + 8, y + 81, Skin.TEXT,
+                        Component.translatable("gui.powerfactor.storage.priority", menu.priority()));
+                priority(menu.priority(), 83, 78, IoPortMenu.BUTTON_PRIORITY);
             } else {
                 // Arrows show which way items flow.
                 long t = Util.getMillis();
                 boolean in = kind == IoPortBlockEntity.Kind.IMPORTER;
+                // Bottom-left (beside the upgrade row): which way items flow, with marching arrows.
+                Skin.icon(g, in ? Skin.Icon.INPUT : Skin.Icon.OUTPUT, x + 8, y + 75);
+                Skin.condensed(g, font, Component.translatable(in ? "gui.powerfactor.port.importing" : "gui.powerfactor.port.exporting"), x + 19, y + 76, 71,
+                        in ? 0xFF0E8FA6 : 0xFFC06A00);
                 for (int k = 0; k < 6; k++) {
-                    int px = (int) ((t / 40 + k * 14) % 84);
-                    int ax = x + 8 + (in ? 84 - px : px);
-                    g.fill(ax, y + 80, ax + 3, y + 82, in ? 0xFF19C6D8 : 0xFFE08A1A);
+                    int px = (int) ((t / 40 + k * 14) % 82);
+                    int ax = x + 8 + (in ? 82 - px : px);
+                    g.fill(ax, y + 88, ax + 3, y + 90, in ? 0xFF19C6D8 : 0xFFE08A1A);
                 }
-                g.text(font, Component.translatable(in ? "gui.powerfactor.port.importing" : "gui.powerfactor.port.exporting"), x + 98, y + 78,
-                        in ? 0xFF0E8FA6 : 0xFFC06A00, false);
-            }
-            if (kind != IoPortBlockEntity.Kind.STORAGE_BUS) {
-                g.text(font, Component.literal("⏩"), x + IoPortMenu.UPGRADE_X - 12, y + IoPortMenu.UPGRADE_Y + 4, Skin.DIM, false);
+                Skin.icon(g, Skin.Icon.SPEED, x + 160, y + 61, Component.translatable("gui.powerfactor.port.speed_upgrades"));
             }
         }
     }

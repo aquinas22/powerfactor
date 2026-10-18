@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QTQ",
+    "SWS",
+    "QXQ"
+  ],
+  "key": {
+    "Q": "#c:ingots/quantum_alloy",
+    "T": "powerfactor:tesseract",
+    "S": "powerfactor:singularity",
+    "W": "powerfactor:wireless_charger",
+    "X": "powerfactor:exotic_matter"
+  },
+  "result": {
+    "id": "powerfactor:dimensional_charger",
+    "count": 1
+  }
+}

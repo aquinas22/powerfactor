@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "powerfactor:block/reactor_controller_front_on",
+    "south": "powerfactor:block/reactor_casing",
+    "east": "powerfactor:block/reactor_casing",
+    "west": "powerfactor:block/reactor_casing",
+    "up": "powerfactor:block/reactor_casing",
+    "down": "powerfactor:block/reactor_casing",
+    "particle": "powerfactor:block/reactor_casing"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AAA"
+  ],
+  "key": {
+    "A": "#c:ingots/red_alloy"
+  },
+  "result": {
+    "id": "powerfactor:red_alloy_wire",
+    "count": 12
+  }
+}

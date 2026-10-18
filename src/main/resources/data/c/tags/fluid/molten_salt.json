@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powerfactor:molten_salt",
+    "powerfactor:flowing_molten_salt"
+  ]
+}

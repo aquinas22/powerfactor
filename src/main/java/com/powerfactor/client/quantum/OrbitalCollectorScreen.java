@@ -24,7 +24,7 @@ public class OrbitalCollectorScreen extends StorageScreens.Base<OrbitalCollector
     protected void main(GuiGraphicsExtractor g, int x, int y, int mx, int my) {
         long ms = Util.getMillis();
         boolean working = menu.state() == OrbitalCollectorBlockEntity.WORKING;
-        int sx = x + 8, sy = y + 20, w = 84, h = 54;
+        int sx = x + 8, sy = y + 20, w = 84, h = 56;   // hero sky: same height as the 3x3 catch grid beside it
         Skin.lcd(g, sx, sy, w, h);
         // Stars: fixed positions from a hash, each twinkling on its own phase.
         for (int i = 0; i < 40; i++) {
@@ -61,19 +61,22 @@ public class OrbitalCollectorScreen extends StorageScreens.Base<OrbitalCollector
         // Status and progress.
         int state = menu.state();
         int lamp = working ? 0xFF5CFF8A : state == OrbitalCollectorBlockEntity.DAY ? 0xFFFFB347 : 0xFFC8402A;
-        Skin.lamp(g, x + 8, y + 79, lamp);
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.orbital.state." + state), 76), x + 16, y + 78, Skin.TEXT, false);
-        Skin.bar(g, x + 8, y + 90, 84, menu.progress(), VIOLET);
-        Skin.energyTube(g, x + 156, y + 20, 12, 74, menu.energy(), OrbitalCollectorBlockEntity.CAPACITY, working);
+        // Status strip across the bottom of the content zone: lamp, state, and this pass's progress.
+        Skin.lcd(g, x + 8, y + 80, 144, 12);
+        Skin.icon(g, working ? Skin.Icon.OK : state == OrbitalCollectorBlockEntity.DAY ? Skin.Icon.DAY : Skin.Icon.ERROR, x + 10, y + 81);
+        Skin.condensed(g, font, Component.translatable("gui.powerfactor.orbital.state." + state), x + 19, y + 82, 78,
+                working ? Skin.LCD_TEXT : Skin.LCD_DIM);
+        Skin.bar(g, x + 102, y + 85, 46, menu.progress(), VIOLET);
+        Skin.energyTube(g, x + 156, y + 20, 12, 72, menu.energy(), OrbitalCollectorBlockEntity.CAPACITY, working);
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float a) {
         super.extractRenderState(g, mx, my, a);
-        if (mx >= leftPos + 156 && mx < leftPos + 168 && my >= topPos + 20 && my < topPos + 94) {
+        if (mx >= leftPos + 156 && mx < leftPos + 168 && my >= topPos + 20 && my < topPos + 92) {
             g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.buffer", String.format("%,d", menu.energy()),
                     String.format("%,d", OrbitalCollectorBlockEntity.CAPACITY)), mx, my);
-        } else if (mx >= leftPos + 8 && mx < leftPos + 92 && my >= topPos + 88 && my < topPos + 94) {
+        } else if (mx >= leftPos + 8 && mx < leftPos + 152 && my >= topPos + 80 && my < topPos + 92) {
             g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.orbital.pass", Math.round(menu.progress() * 100)), mx, my);
         }
     }

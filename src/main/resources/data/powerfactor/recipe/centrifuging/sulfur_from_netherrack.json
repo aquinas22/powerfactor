@@ -1,0 +1,17 @@
+{
+  "type": "powerfactor:centrifuging",
+  "inputs": [
+    {
+      "ingredient": "minecraft:netherrack",
+      "count": 4
+    }
+  ],
+  "results": [
+    {
+      "item": "powerfactor:sulfur_dust"
+    },
+    {
+      "item": "minecraft:gravel"
+    }
+  ]
+}

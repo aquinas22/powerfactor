@@ -29,7 +29,7 @@ public final class SteamBoilerMenu extends MachineMenu {
         super(ModMenus.STEAM_BOILER.get(), id, fuel, data);
         this.pos = pos;
         this.boiler = boiler;
-        addSlot(new Slot(fuel, 0, 16, 52) {
+        addSlot(new Slot(fuel, 0, 9, 47) {
             @Override public boolean mayPlace(ItemStack stack) { return CoalTurbineBlockEntity.isFuel(stack); }
         });
         addPlayerInventory(inventory, 116);

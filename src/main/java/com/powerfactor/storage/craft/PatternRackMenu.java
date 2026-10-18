@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Nine pattern slots, shared by the Assembler (crafting patterns + speed cards) and Pattern Provider (processing). */
 public class PatternRackMenu extends NodeMenu {
-    public static final int PATTERN_X = 62, PATTERN_Y = 22, UPGRADE_X = 152, UPGRADE_Y = 18, BUTTON_BLOCKING = 0;
+    public static final int PATTERN_X = 62, PATTERN_Y = 22, UPGRADE_X = 152, UPGRADE_Y = 21, BUTTON_BLOCKING = 0;   // upgrade column fills the content zone (y 20-92)
 
     private final boolean assembler;
     private final @Nullable PatternProviderBlockEntity provider;

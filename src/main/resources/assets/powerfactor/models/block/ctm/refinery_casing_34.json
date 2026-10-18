@@ -1,0 +1,85 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:solid",
+  "textures": {
+    "side": "powerfactor:block/ctm/refinery_casing",
+    "particle": "powerfactor:block/refinery_casing",
+    "top": "powerfactor:block/ctm/refinery_casing_top"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            5,
+            9,
+            7,
+            11
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            5,
+            1,
+            7,
+            3
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            5,
+            1,
+            7,
+            3
+          ],
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#top",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#top",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ],
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

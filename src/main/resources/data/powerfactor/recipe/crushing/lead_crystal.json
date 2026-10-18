@@ -1,0 +1,7 @@
+{
+  "type": "powerfactor:crushing",
+  "ingredient": "powerfactor:lead_crystal",
+  "result": {
+    "item": "powerfactor:lead_dust"
+  }
+}

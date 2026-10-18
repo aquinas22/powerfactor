@@ -37,16 +37,16 @@ public final class RadioHud {
         String text;
         int color;
         if (txChannel > 0) {
-            text = "TX  CH " + txChannel;
+            text = "TX · Ch " + txChannel;
             color = 0xFFFF5A4A;
         } else if (rxChannel > 0) {
-            text = "RX  CH " + rxChannel + "  " + speaker;
+            text = "RX · Ch " + rxChannel + "  " + speaker;
             color = 0xFF7CFF8A;
         } else if (!WalkieTalkieItem.on(held)) {
-            text = "RADIO OFF";
+            text = "Radio off";
             color = 0xFF8A8A8A;
         } else {
-            text = "CH " + WalkieTalkieItem.channel(held);
+            text = "Ch " + WalkieTalkieItem.channel(held);
             color = 0xFFB8F5FF;
         }
         // Right of the hotbar (the jetpack gauge takes the left), clear of the action-bar text above it.

@@ -27,6 +27,9 @@ public class PowerFactorJeiPlugin implements IModPlugin {
         }
         registration.addRecipeCategories(new QuantumCategories.Collider(gui, com.powerfactor.registry.ModQuantum.PARTICLE_COLLIDER.get()),
                 new QuantumCategories.Starforge(gui, com.powerfactor.registry.ModQuantum.STARFORGE.get()));
+        registration.addRecipeCategories(new ProcessCategories.WashPlant(gui, com.powerfactor.registry.ModWash.WASH_PLANT.get()),
+                new ProcessCategories.Reactor(gui, com.powerfactor.registry.ModChem.CHEMICAL_REACTOR.get()),
+                new ProcessCategories.Dissolver(gui, com.powerfactor.registry.ModChem.ORE_DISSOLVER.get()));
     }
 
     @Override
@@ -43,6 +46,9 @@ public class PowerFactorJeiPlugin implements IModPlugin {
         }
         registration.addRecipes(QuantumCategories.COLLIDER, com.powerfactor.quantum.ColliderRecipes.ALL);
         registration.addRecipes(QuantumCategories.STARFORGE, com.powerfactor.quantum.StarforgeBlockEntity.RECIPES);
+        registration.addRecipes(ProcessCategories.WASH, ProcessCategories.washes());
+        registration.addRecipes(ProcessCategories.REACT, java.util.List.of(new ProcessCategories.React(0)));
+        registration.addRecipes(ProcessCategories.DISSOLVE, ProcessCategories.dissolves());
     }
 
     @Override
@@ -53,6 +59,10 @@ public class PowerFactorJeiPlugin implements IModPlugin {
         }
         registration.addRecipeCatalysts(QuantumCategories.COLLIDER, com.powerfactor.registry.ModQuantum.PARTICLE_COLLIDER.get());
         registration.addRecipeCatalysts(QuantumCategories.STARFORGE, com.powerfactor.registry.ModQuantum.STARFORGE.get());
+        registration.addRecipeCatalysts(ProcessCategories.WASH, com.powerfactor.registry.ModWash.WASH_PLANT.get(), com.powerfactor.registry.ModWash.TROMMEL.get(),
+                com.powerfactor.registry.ModWash.SLUICE_BOX.get());
+        registration.addRecipeCatalysts(ProcessCategories.REACT, com.powerfactor.registry.ModChem.CHEMICAL_REACTOR.get());
+        registration.addRecipeCatalysts(ProcessCategories.DISSOLVE, com.powerfactor.registry.ModChem.ORE_DISSOLVER.get());
     }
 
     @Override
@@ -68,6 +78,13 @@ public class PowerFactorJeiPlugin implements IModPlugin {
         registration.addGuiContainerHandler((Class) MachineScreen.class, new IGuiContainerHandler<MachineScreen<?>>() {
             @Override
             public List<Rect2i> getGuiExtraAreas(MachineScreen<?> screen) {
+                return screen.extraAreas();
+            }
+        });
+        registration.addGuiContainerHandler((Class) com.powerfactor.client.storage.StorageScreens.Base.class,
+                new IGuiContainerHandler<com.powerfactor.client.storage.StorageScreens.Base<?>>() {
+            @Override
+            public List<Rect2i> getGuiExtraAreas(com.powerfactor.client.storage.StorageScreens.Base<?> screen) {
                 return screen.extraAreas();
             }
         });

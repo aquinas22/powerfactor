@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SLS",
+    "L L",
+    "SLS"
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "L": "#c:ingots/lead"
+  },
+  "result": {
+    "id": "powerfactor:reactor_casing",
+    "count": 4
+  }
+}

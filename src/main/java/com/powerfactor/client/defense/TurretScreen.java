@@ -31,7 +31,7 @@ public class TurretScreen extends StorageScreens.Base<TurretMenu> {
         boolean rail = tier == TurretBlockEntity.Tier.RAIL;
         int accent = rail ? CYAN : GREEN;
         // Radar scope.
-        int sx = x + 8, sy = y + 20, size = 74, cx = sx + size / 2, cy = sy + size / 2, r = size / 2 - 3;
+        int sx = x + 8, sy = y + 20, size = 72, cx = sx + size / 2, cy = sy + size / 2, r = size / 2 - 3;
         Skin.lcd(g, sx, sy, size, size);
         for (int i = 0; i < 64; i++) {
             double a = i * Math.PI * 2 / 64;
@@ -66,31 +66,36 @@ public class TurretScreen extends StorageScreens.Base<TurretMenu> {
         boolean powered = menu.energy() >= tier.shotCost;
         Component status = Component.translatable(!powered ? "gui.powerfactor.turret.no_power"
                 : menu.tracking() ? "gui.powerfactor.turret.tracking" : "gui.powerfactor.turret.scanning");
-        int tx = x + 94;
-        Skin.lamp(g, tx, y + 22, !powered ? RED : menu.tracking() ? accent : AMBER);
-        g.text(font, Skin.fit(font, status, 48), tx + 8, y + 21, Skin.TEXT, false);
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.turret.kills", menu.kills()), 56), tx, y + 33, Skin.DIM, false);
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.turret.range", tier.range), 56), tx, y + 43, Skin.DIM, false);
+        // Readout glass over the target toggles (x 86-150), 6 px from the radar and from the FE tube.
+        int tx = x + 86, tw = 64;
+        Skin.lcd(g, tx, y + 20, tw, 40);
+        Skin.icon(g, !powered ? Skin.Icon.ERROR : menu.tracking() ? Skin.Icon.OK : Skin.Icon.WAIT, tx + 2, y + 22);
+        Skin.condensed(g, font, status, tx + 12, y + 23, tw - 15, !powered ? 0xFFFF6A5A : Skin.LCD_TEXT);
+        Skin.iconValue(g, font, Skin.Icon.KILLS, Component.literal(String.valueOf(menu.kills())), tx + 4, y + 33, Skin.LCD_TEXT,
+                Component.translatable("gui.powerfactor.turret.kills", menu.kills()));
+        Skin.iconValue(g, font, Skin.Icon.RANGE, Component.literal(tier.range + " m"), tx + 4, y + 43, Skin.LCD_TEXT,
+                Component.translatable("gui.powerfactor.turret.range", tier.range));
         if (rail) {
-            g.text(font, Component.translatable("gui.powerfactor.turret.charge"), tx, y + 53, Skin.DIM, false);
-            Skin.bar(g, tx, y + 63, 52, menu.charge(), CYAN);
+            Skin.icon(g, Skin.Icon.FE, tx + 36, y + 32, Component.translatable("gui.powerfactor.turret.charge"));
+            Skin.bar(g, tx + 47, y + 35, tw - 51, menu.charge(), CYAN);
         }
         // Target toggles (hostiles are always engaged).
-        int by = y + (rail ? 69 : 56) - topPos;
         int mode = menu.mode();
-        button(94, by, 52, 13, Component.translatable("gui.powerfactor.turret.animals"), Component.translatable("gui.powerfactor.turret.animals.tip"),
-                (mode & TurretBlockEntity.MODE_ANIMALS) != 0 ? GREEN : Skin.LCD_DIM, (mode & TurretBlockEntity.MODE_ANIMALS) != 0,
+        // Who it engages, as icons: hostiles always (shown lit, not a button), animals and players toggle.
+        Skin.lcd(g, leftPos + 86, topPos + 64, 20, 28);
+        Skin.icon(g, Skin.Icon.HOSTILE, leftPos + 91, topPos + 73, Component.translatable("gui.powerfactor.turret.hostiles.tip"));
+        boolean animals = (mode & TurretBlockEntity.MODE_ANIMALS) != 0, players = (mode & TurretBlockEntity.MODE_PLAYERS) != 0;
+        iconButton(108, 64, 42, 13, Skin.Icon.ANIMAL, Component.empty(), Component.translatable("gui.powerfactor.turret.animals.tip"), GREEN, animals, true,
                 () -> send(TurretBlockEntity.BUTTON_ANIMALS));
-        button(94, by + 15, 52, 13, Component.translatable("gui.powerfactor.turret.players"), Component.translatable("gui.powerfactor.turret.players.tip"),
-                (mode & TurretBlockEntity.MODE_PLAYERS) != 0 ? RED : Skin.LCD_DIM, (mode & TurretBlockEntity.MODE_PLAYERS) != 0,
+        iconButton(108, 79, 42, 13, Skin.Icon.PLAYER, Component.empty(), Component.translatable("gui.powerfactor.turret.players.tip"), RED, players, true,
                 () -> send(TurretBlockEntity.BUTTON_PLAYERS));
-        Skin.energyTube(g, x + 152, y + 20, 14, 74, menu.energy(), tier.capacity, menu.tracking());
+        Skin.energyTube(g, x + 156, y + 20, 12, 72, menu.energy(), tier.capacity, menu.tracking());
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float a) {
         super.extractRenderState(g, mx, my, a);
-        if (mx >= leftPos + 152 && mx < leftPos + 166 && my >= topPos + 20 && my < topPos + 94) {
+        if (mx >= leftPos + 156 && mx < leftPos + 168 && my >= topPos + 20 && my < topPos + 92) {
             g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.buffer", String.format("%,d", menu.energy()),
                     String.format("%,d", menu.tier().capacity)), mx, my);
         }

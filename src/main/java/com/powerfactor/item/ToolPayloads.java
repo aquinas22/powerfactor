@@ -100,6 +100,13 @@ public final class ToolPayloads {
     public static void register(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
         com.powerfactor.movement.MovementPayloads.register(registrar);
+        com.powerfactor.fission.ReactorPayloads.register(registrar);
+        com.powerfactor.pocketvoid.PocketVoidPayloads.register(registrar);
+        com.powerfactor.elevator.ElevatorPayload.register(registrar);
+        com.powerfactor.powernet.PowerNetPayloads.register(registrar);
+        com.powerfactor.fission.RadiationPayload.register(registrar);
+        com.powerfactor.blackhole.BlackHolePayloads.register(registrar);
+        com.powerfactor.drone.DronePayloads.register(registrar);
         com.powerfactor.storage.GridPayloads.register(registrar);
         com.powerfactor.storage.fluid.FluidPayloads.register(registrar);
         registrar.playToClient(com.powerfactor.weapon.FxPayload.TYPE, com.powerfactor.weapon.FxPayload.STREAM_CODEC,
@@ -128,6 +135,9 @@ public final class ToolPayloads {
             if (context.player() instanceof ServerPlayer player) {
                 JetpackServer.toggleHover(player);
             }
+        });
+        registrar.playToServer(VeinMiner.KeyState.TYPE, VeinMiner.KeyState.STREAM_CODEC, (payload, context) -> {
+            if (context.player() instanceof ServerPlayer player) VeinMiner.setHolding(player.getUUID(), payload.held());
         });
         registrar.playToServer(ArmorControl.TYPE, ArmorControl.STREAM_CODEC, (payload, context) -> {
             if (context.player() instanceof ServerPlayer player) PowerArmorServer.control(player, payload.action());

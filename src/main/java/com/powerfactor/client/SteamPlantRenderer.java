@@ -55,6 +55,13 @@ public final class SteamPlantRenderer<T extends MachineBlockEntity & Buildable> 
     }
     public static SteamPlantRenderer<SteamBoilerBlockEntity> boiler(BlockEntityRendererProvider.Context context) { return new SteamPlantRenderer<>(context, true); }
     public static SteamPlantRenderer<SteamTurbineBlockEntity> turbine(BlockEntityRendererProvider.Context context) { return new SteamPlantRenderer<>(context, false); }
+    /** The High-Pressure Turbine: the same machine drawn at 5/3 scale to fill its 5x3x9 casing. */
+    public static SteamPlantRenderer<com.powerfactor.steam.HighPressureTurbineBlockEntity> highPressure(BlockEntityRendererProvider.Context context) {
+        var r = new SteamPlantRenderer<com.powerfactor.steam.HighPressureTurbineBlockEntity>(context, false);
+        r.scale = 5F / 3F;
+        return r;
+    }
+    private float scale = 1F;
     public static LayerDefinition createLayer() {
         var mesh = new MeshDefinition(); var root = mesh.getRoot();
         root.addOrReplaceChild("boiler_frame", CubeListBuilder.create()
@@ -99,6 +106,7 @@ public final class SteamPlantRenderer<T extends MachineBlockEntity & Buildable> 
     @Override public void submit(State s, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
         MultiblockGhost.submit(pose, collector, s.ghosts, s.time); if (!s.formed) return;
         pose.pushPose(); pose.translate(0.5, 0, 0.5); pose.mulPose(Axis.YP.rotationDegrees(-s.facing.toYRot()));
+        if (scale != 1F) pose.scale(scale, scale, scale);
         collector.submitModelPart(s.boiler ? boilerFrame : turbineFrame, pose, TYPE, s.lightCoords, OverlayTexture.NO_OVERLAY, null, -1, s.breakProgress);
         if (!s.boiler) collector.submitModelPart(alternator, pose, TYPE, s.lightCoords, OverlayTexture.NO_OVERLAY, null, 0xFF78A7B8, s.breakProgress);
         pose.translate(0, s.boiler ? 1.6F : 1.15F, 0);
@@ -129,7 +137,7 @@ public final class SteamPlantRenderer<T extends MachineBlockEntity & Buildable> 
             }
         }
     }
-    @Override public AABB getRenderBoundingBox(T entity) { return new AABB(entity.getBlockPos()).inflate(5, 0, 5).expandTowards(0, 4, 0); }
+    @Override public AABB getRenderBoundingBox(T entity) { return new AABB(entity.getBlockPos()).inflate(5 * scale, 0, 5 * scale).expandTowards(0, 4 * scale, 0); }
     @Override public boolean shouldRenderOffScreen() { return true; }
     @Override public int getViewDistance() { return 192; }
 }

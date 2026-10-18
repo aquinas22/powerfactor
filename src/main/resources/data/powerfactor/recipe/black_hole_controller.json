@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QSQ",
+    "XNX",
+    "CCC"
+  ],
+  "key": {
+    "Q": "powerfactor:quantum_processor",
+    "S": "powerfactor:singularity",
+    "X": "powerfactor:exotic_matter",
+    "N": "minecraft:nether_star",
+    "C": "powerfactor:containment_casing"
+  },
+  "result": {
+    "id": "powerfactor:black_hole_controller",
+    "count": 1
+  }
+}

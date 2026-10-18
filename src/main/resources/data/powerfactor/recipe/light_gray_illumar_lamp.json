@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PGP",
+    "GDG",
+    "PRP"
+  ],
+  "key": {
+    "P": "minecraft:glass_pane",
+    "G": "minecraft:glowstone_dust",
+    "D": "minecraft:light_gray_dye",
+    "R": "powerfactor:red_alloy_wire"
+  },
+  "result": {
+    "id": "powerfactor:light_gray_illumar_lamp",
+    "count": 1
+  }
+}

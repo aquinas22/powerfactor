@@ -8,6 +8,7 @@
     "powerfactor:deepslate_bauxite_ore",
     "powerfactor:deepslate_adamantium_ore",
     "powerfactor:cortanium_ore",
-    "powerfactor:qubit_ore"
+    "powerfactor:qubit_ore",
+    "powerfactor:deepslate_uranium_ore"
   ]
 }

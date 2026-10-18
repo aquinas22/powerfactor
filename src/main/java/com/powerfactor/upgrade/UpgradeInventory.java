@@ -19,15 +19,26 @@ public class UpgradeInventory extends SimpleContainer {
     private final Runnable onChange;
     private final java.util.function.Predicate<Player> stillValid;
     private UpgradeEffects effects = UpgradeEffects.NONE;
+    private boolean chunkLoading;
 
     public UpgradeInventory(Set<UpgradeType> supported, Runnable onChange, java.util.function.Predicate<Player> stillValid) {
         super(SLOTS);
-        this.supported = supported;
+        // The Chunk Loader card fits every machine.
+        var all = java.util.EnumSet.of(UpgradeType.CHUNK_LOADER);
+        all.addAll(supported);
+        this.supported = java.util.Collections.unmodifiableSet(all);
         this.onChange = onChange;
         this.stillValid = stillValid;
     }
 
     /** Client-side placeholder with every type allowed; the server copy does the real checking. */
+    /** Speed and Efficiency: the cards console machines (collider, chemistry, wash plant...) take. */
+    public static final Set<UpgradeType> CONSOLE = java.util.EnumSet.of(UpgradeType.SPEED, UpgradeType.EFFICIENCY);
+
+    public static UpgradeInventory client(Set<UpgradeType> supported) {
+        return new UpgradeInventory(supported, () -> {}, p -> true);
+    }
+
     public static UpgradeInventory client() {
         return new UpgradeInventory(Set.of(UpgradeType.values()), () -> {}, p -> true);
     }
@@ -70,6 +81,11 @@ public class UpgradeInventory extends SimpleContainer {
         return effects;
     }
 
+    /** A Chunk Loader card is fitted. */
+    public boolean chunkLoading() {
+        return chunkLoading;
+    }
+
     private void recompute() {
         Map<UpgradeType, Integer> counts = new EnumMap<>(UpgradeType.class);
         for (int i = 0; i < SLOTS; i++) {
@@ -81,6 +97,7 @@ public class UpgradeInventory extends SimpleContainer {
         effects = new UpgradeEffects(counts.getOrDefault(UpgradeType.SPEED, 0), counts.getOrDefault(UpgradeType.EFFICIENCY, 0),
                 counts.getOrDefault(UpgradeType.CAPACITOR, 0), counts.containsKey(UpgradeType.VFD), counts.containsKey(UpgradeType.SURGE),
                 counts.getOrDefault(UpgradeType.CAPACITY, 0));
+        chunkLoading = counts.containsKey(UpgradeType.CHUNK_LOADER);
     }
 
     public void load(ValueInput input) {

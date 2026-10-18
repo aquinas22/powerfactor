@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "powerfactor:block/elevator/light_blue_top",
+    "bottom": "powerfactor:block/elevator/light_blue_top",
+    "side": "powerfactor:block/elevator/light_blue_side"
+  }
+}

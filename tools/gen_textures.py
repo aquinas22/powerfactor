@@ -1561,10 +1561,12 @@ EMBLEMS = {
     "vfd": ["........", ".##.....", "#..#....", "....#..#", ".....##.", "........", "########"],
     "surge": ["....##..", "...##...", "..####..", "...##...", "..##....", ".##.....", ".#......"],
     "capacity": ["..####..", ".######.", ".#....#.", ".######.", ".#....#.", ".######.", ".######."],
+    # An anchor: the card holds its machine's chunk in place.
+    "chunk_loader": ["...##...", "..#..#..", "...##...", "...##...", "#..##..#", ".#.##.#.", "..####.."],
 }
 
 EMBLEM_COLORS = {"speed": "ff5a4a", "efficiency": "55ff55", "capacitor": "33e0b0", "vfd": "4aa8ff",
-                 "surge": "ffd24a", "capacity": "e070ff"}
+                 "surge": "ffd24a", "capacity": "e070ff", "chunk_loader": "8a6aff"}
 
 
 def upgrade_card(kind):
@@ -4545,7 +4547,73 @@ def wind_turbine_nacelle():
     box_uv(img, 100, 66, 4, 1, 1, lambda f, w, h: Image.new("RGBA", (w, h), hexc("8a9399")))
     box_uv(img, 110, 62, 2, 2, 2, lambda f, w, h: Image.new("RGBA", (w, h), hexc("2a2e31")))
     ImageDraw.Draw(img).rectangle((120, 120, 127, 127), fill=(255, 255, 255, 255))
+    img.paste(blade_skin(), (0, 80))
+    img.paste(spinner_skin(), (64, 80))
     return img
+
+
+def blade_skin():
+    """64x40 composite blade surface, mapped by WindTurbineRenderer: x walks round the aerofoil (0 = leading
+    edge, 32 = trailing edge, 4 px per section point), y runs root (0) to tip (39) in proportion to span.
+    The root sleeve is bolted grey steel; the rest is glass-fibre with spar-cap lines, faint layup seams, a
+    leading-edge protection strip and a dark trailing-edge bond line. Red tip bands come from vertex tint."""
+    w, h = 64, 40
+    t = Image.new("RGBA", (w, h))
+    rr = random.Random(4471)
+    for y in range(h):
+        for x in range(w):
+            c = shade(GRP, 1 + rr.uniform(-0.01, 0.01))
+            # Shading round the section: the lower surface (x > 32) sits a touch darker.
+            if x > 32:
+                c = shade(c, 0.975)
+            if x <= 2 or x >= 61:                      # leading-edge protection tape
+                c = shade(hexc("e2e8ec"), 1 + rr.uniform(-0.01, 0.01))
+            if x in (12, 52):                          # spar caps, seen through the skin
+                c = shade(c, 0.965)
+            if 31 <= x <= 33:                          # trailing-edge bond line
+                c = shade(GRP_SEAM, 0.9)
+            if y > 6 and y % 9 == 0:                   # layup seams along the span
+                c = shade(c, 0.97)
+            t.putpixel((x, y), c)
+    # Root sleeve (inner ~16% of span): bolted steel collar with a flange line and a rubber boot edge.
+    for y in range(0, 7):
+        for x in range(w):
+            base = hexc("8f9aa1") if y < 5 else hexc("5d676d")
+            t.putpixel((x, y), shade(base, 1 + rr.uniform(-0.03, 0.03) + (0.06 if y == 1 else 0)))
+    for x in range(1, w, 4):
+        t.putpixel((x, 3), hexc("3d4448"))
+        t.putpixel((x, 2), hexc("c8d0d4"))
+    # Lightning receptor near the tip on both surfaces.
+    for x in (20, 44):
+        t.putpixel((x, 36), hexc("6c7378"))
+    return t
+
+
+def spinner_skin():
+    """64x40 nose cone, mapped by WindTurbineRenderer: x is the angle round the shaft, y runs from the drum
+    (0) to the nose tip (39). A bolted drum band with the nacelle's green stripe, three panel seams down
+    the cone and a darker nose cap."""
+    w, h = 64, 40
+    t = Image.new("RGBA", (w, h))
+    rr = random.Random(4472)
+    for y in range(h):
+        for x in range(w):
+            c = shade(GRP, 1 + rr.uniform(-0.01, 0.01) - 0.03 * (y / h))
+            if x % 21 == 0 and y > 6:                  # three cone panels
+                c = shade(GRP_SEAM, 0.97)
+            if y in (5, 6):
+                c = hexc("1f7a5c") if y == 5 else hexc("176048")   # green stripe, like the nacelle
+            if y < 4:
+                c = shade(hexc("c9d0d3"), 1 + rr.uniform(-0.02, 0.02))
+            if y >= 35:
+                c = shade(hexc("b9c1c5"), 1 + rr.uniform(-0.02, 0.02))
+            t.putpixel((x, y), c)
+    for x in range(2, w, 8):
+        t.putpixel((x, 1), hexc("4a5257"))
+        t.putpixel((x, 2), hexc("eef2f3"))
+    for x in range(w):
+        t.putpixel((x, 34), shade(GRP_SEAM, 0.92))
+    return t
 
 
 def wind_tower():
@@ -5634,7 +5702,7 @@ def gui_upgrade_table():
             img.putpixel((cx + i * sx, cy), HOLO)
             img.putpixel((cx, cy + i * sy), HOLO)
     # Central bay.
-    CX, CY = 84, 66
+    CX, CY = 84, 70   # bay centre: the tool, ring and socket hexagon all share it
     for y in range(CY - 31, CY + 32):
         for x in range(CX - 31, CX + 32):
             r = math.hypot(x - CX, y - CY)
@@ -5650,10 +5718,10 @@ def gui_upgrade_table():
                     c = hexc("164650")                          # bearing ticks
                 img.putpixel((x, y), c)
     # Circuit traces from each socket to the bay rim.
-    traces = [[(74, 30), (64, 30), (64, 40)], [(93, 30), (104, 30), (104, 40)],
-              [(74, 118), (64, 118), (64, 90)], [(93, 118), (104, 118), (104, 90)],
-              [(120, 64), (120, 72), (100, 72)], [(120, 84), (120, 78), (100, 78)],
-              [(48, 64), (48, 72), (68, 72)], [(48, 84), (48, 78), (68, 78)]]
+    traces = [[(74, 26), (64, 26), (64, 36)], [(93, 26), (104, 26), (104, 36)],
+              [(74, 114), (64, 114), (64, 86)], [(93, 114), (104, 114), (104, 86)],
+              [(120, 60), (120, 68), (100, 68)], [(120, 80), (120, 74), (100, 74)],
+              [(48, 60), (48, 68), (68, 68)], [(48, 80), (48, 74), (68, 74)]]
     for pts in traces:
         end = None
         for (ax, ay), (bx, by) in zip(pts, pts[1:]):
@@ -5670,11 +5738,11 @@ def gui_upgrade_table():
         if end:
             for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
                 img.putpixel((end[0] + dx - (end[0] > CX), end[1] + dy - (end[1] > CY)), HOLO)
-    sockets = [(76, 24), (112, 45), (112, 87), (76, 108), (40, 87), (40, 45)]
+    sockets = [(76, 20), (112, 41), (112, 83), (76, 104), (40, 83), (40, 41)]
     for ox, oy in sockets:
         socket_frame(img, ox, oy, hexc("0a1016"), hexc("2f8090"), hexc("163a44"))
         img.putpixel((ox - 1, oy - 1), HOLO_DIM)
-    dark_slot(img, 76, 58)
+    dark_slot(img, 76, 62)
     # Stats panel.
     d.rectangle((160, 18, 240, 124), fill=hexc("070c11"), outline=HOLO_DIM)
     for x in (160, 240):
@@ -6881,4 +6949,6 @@ if __name__ == "__main__":
     fx_textures()
     from quantum_art import generate_textures as quantum_textures
     quantum_textures()
+    from connected_art import generate_textures as connected_textures
+    connected_textures()
     print("textures written to", os.path.normpath(ROOT))

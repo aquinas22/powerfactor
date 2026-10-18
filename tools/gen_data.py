@@ -687,7 +687,8 @@ def lang():
     logistics_lang(LANG)
     from armor_finish import generate_lang as armor_lang
     armor_lang(LANG)
-    write(asset("lang", "en_us.json"), dict(sorted(LANG.items())))
+    from text_style import normalize
+    write(asset("lang", "en_us.json"), dict(sorted(normalize(LANG).items())))
 
 
 # ======================================================================== Phase B: materials, machines, logistics
@@ -2194,7 +2195,7 @@ def phase_radio():
 
 def phase_oil():
     six = ("north", "east", "south", "west", "up", "down")
-    liquids = {"crude_oil": "Crude Oil", "diesel": "Diesel", "jet_fuel": "Jet Fuel"}
+    liquids = {"crude_oil": "Crude Oil", "diesel": "Diesel", "jet_fuel": "Jet Fuel", "sulfuric_acid": "Sulfuric Acid"}
     for lid, label in liquids.items():
         write(asset("models", "block", f"{lid}.json"), {"textures": {"particle": "minecraft:block/water_still"}})
         write(asset("blockstates", f"{lid}.json"), {"variants": {"": {"model": pf(f"block/{lid}")}}})
@@ -2781,6 +2782,41 @@ if __name__ == "__main__":
     space_elevator(globals())
     from quantum_data import shield_generator
     shield_generator(globals())
+    from quantum_data import laser_transport
+    laser_transport(globals())
+    from process_data import process_line, utility
+    process_line(globals())
+    utility(globals())
+    from process_data import time_field
+    time_field(globals())
+    from process_data import tesseract
+    tesseract(globals())
+    from process_data import chargers
+    chargers(globals())
+    from process_data import farm
+    farm(globals())
+    from process_data import mobs
+    mobs(globals())
+    from process_data import pockets
+    pockets(globals())
+    from process_data import vein
+    vein(globals())
+    from process_data import fission
+    fission(globals())
+    from process_data import coolants
+    coolants(globals())
+    from void_data import generate_data as void_data
+    void_data(globals())
+    from powernet_data import generate_data as powernet_data
+    powernet_data(globals())
+    from redstone_data import generate_data as redstone_data
+    redstone_data(globals())
+    from process_data import blackhole
+    blackhole(globals())
+    from process_data import drones
+    drones(globals())
+    from connected_art import generate_data as connected_data
+    connected_data(globals())   # last: formed multiblock blockstates replace the plain ones
     flush_tags()
     from pipe_routing_data import generate as routing_data
     routing_data(LANG)

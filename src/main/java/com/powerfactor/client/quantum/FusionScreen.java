@@ -44,7 +44,7 @@ public class FusionScreen extends StorageScreens.Base<FusionMenu> {
         int state = menu.state();
         long ms = Util.getMillis();
         // Tokamak cross-section: magnet ring, vacuum vessel, plasma torus.
-        int sx = x + 8, sy = y + 20, w = 84, h = 74, cx = sx + w / 2, cy = sy + h / 2;
+        int sx = x + 8, sy = y + 20, w = 78, h = 72, cx = sx + w / 2, cy = sy + h / 2;
         Skin.lcd(g, sx, sy, w, h);
         for (int k = 0; k < 16; k++) {
             double a = k * Math.PI * 2 / 16;
@@ -82,7 +82,7 @@ public class FusionScreen extends StorageScreens.Base<FusionMenu> {
         g.fill(cx - 3, cy - 9, cx + 4, cy + 10, 0xFF3A4652);
         g.fill(cx - 2, cy - 8, cx + 3, cy + 9, menu.formed() ? 0xFF7A8C99 : 0xFF4A5560);
         // Readouts.
-        int tx = x + 96;
+        int tx = x + 92;   // 6 px from the plasma view and from the FE tube
         String key = !menu.formed() ? "unformed" : switch (state) {
             case FusionReactorBlockEntity.STATE_BURNING -> "burning";
             case FusionReactorBlockEntity.STATE_IGNITING -> "igniting";
@@ -90,24 +90,29 @@ public class FusionScreen extends StorageScreens.Base<FusionMenu> {
         };
         int lamp = !menu.formed() ? 0xFFC8402A : state == FusionReactorBlockEntity.STATE_BURNING ? 0xFF5CFF8A
                 : state == FusionReactorBlockEntity.STATE_IGNITING ? 0xFFFFB347 : 0xFF7FA4B4;
-        Skin.lamp(g, tx, y + 22, lamp);
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.fusion." + key), 46), tx + 8, y + 21, Skin.TEXT, false);
-        g.text(font, Component.translatable("gui.powerfactor.fusion.temp", Math.round(t * 150)), tx, y + 33, t > 0 ? Skin.TEXT : Skin.DIM, false);
-        Skin.bar(g, tx, y + 43, 52, t, halo(t));
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.fusion.output", Skin.compact(menu.output())), 54), tx, y + 50,
-                menu.output() > 0 ? 0xFFD0503A : Skin.DIM, false);
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.fusion.fuel", Skin.compact(menu.fuel())), 54), tx, y + 62, Skin.DIM, false);
-        Skin.bar(g, tx, y + 72, 52, menu.fuel() / (float) FusionReactorBlockEntity.TANK, 0xFF48C4F0);
+        // Readout glass (x 98-150), the same height as the plasma view; FE tube on the right edge.
+        Skin.lcd(g, tx, y + 20, 58, 72);
+        int ix = tx + 4, iw = 50;
+        Skin.icon(g, Skin.statusIcon(lamp), ix, y + 22);
+        Skin.condensed(g, font, Component.translatable("gui.powerfactor.fusion." + key), ix + 11, y + 23, iw - 11, Skin.LCD_TEXT);
+        Skin.iconValue(g, font, Skin.Icon.TEMP, Component.translatable("gui.powerfactor.fusion.temp", Math.round(t * 150)), ix, y + 34,
+                t > 0 ? Skin.LCD_TEXT : Skin.LCD_DIM, null);
+        Skin.bar(g, ix, y + 44, iw, t, halo(t));
+        Skin.iconValue(g, font, Skin.Icon.FE, Component.translatable("gui.powerfactor.fusion.output", Skin.compact(menu.output())), ix, y + 51,
+                menu.output() > 0 ? Skin.FE : Skin.LCD_DIM, null);
+        Skin.iconValue(g, font, Skin.Icon.FLUID, Component.literal(Skin.compact(menu.fuel()) + " mB"), ix, y + 64, Skin.LCD_DIM,
+                Component.translatable("gui.powerfactor.fusion.fuel_tip", menu.fuel(), FusionReactorBlockEntity.TANK));
+        Skin.bar(g, ix, y + 74, iw, menu.fuel() / (float) FusionReactorBlockEntity.TANK, 0xFF48C4F0);
         if (menu.formed() && state == FusionReactorBlockEntity.STATE_COLD) {
-            g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.fusion.ignite_hint"), 54), tx, y + 80, Skin.DIM, false);
+            Skin.condensed(g, font, Component.translatable("gui.powerfactor.fusion.ignite_hint"), ix, y + 80, iw, Skin.LCD_DIM);
         }
-        Skin.energyTube(g, x + 152, y + 20, 14, 74, menu.energy(), FusionReactorBlockEntity.CAPACITY, menu.output() > 0);
+        Skin.energyTube(g, x + 156, y + 20, 12, 72, menu.energy(), FusionReactorBlockEntity.CAPACITY, menu.output() > 0);
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float a) {
         super.extractRenderState(g, mx, my, a);
-        if (mx >= leftPos + 152 && mx < leftPos + 166 && my >= topPos + 20 && my < topPos + 94) {
+        if (mx >= leftPos + 156 && mx < leftPos + 168 && my >= topPos + 20 && my < topPos + 92) {
             g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.buffer", String.format("%,d", menu.energy()),
                     String.format("%,d", FusionReactorBlockEntity.CAPACITY)), mx, my);
         } else if (mx >= leftPos + 96 && mx < leftPos + 150 && my >= topPos + 60 && my < topPos + 90) {

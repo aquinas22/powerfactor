@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WWW",
+    "WFW",
+    "WWW"
+  ],
+  "key": {
+    "W": "#minecraft:wool",
+    "F": "powerfactor:bedrock_fragment"
+  },
+  "result": {
+    "id": "powerfactor:elevator",
+    "count": 2
+  }
+}

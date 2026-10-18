@@ -18,6 +18,7 @@ public final class StructureAssembly {
     public void tick(ServerLevel level, BlockPos origin, Direction facing, Structure structure) {
         if (initialized && level.getGameTime() % 20 != Math.floorMod(origin.asLong(), 20)) return;
         initialized = true;
+        if (!structure.loaded(level, origin, facing)) return;
         boolean complete = true;
         Set<BlockPos> parts = new LinkedHashSet<>();
         for (var part : structure.parts()) {

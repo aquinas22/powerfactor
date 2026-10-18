@@ -1,0 +1,19 @@
+{
+  "model": {
+    "type": "minecraft:composite",
+    "models": [
+      {
+        "type": "minecraft:model",
+        "model": "powerfactor:item/deep_pocket_void"
+      },
+      {
+        "type": "minecraft:special",
+        "base": "powerfactor:item/deep_pocket_void",
+        "model": {
+          "type": "powerfactor:pocket_void",
+          "deep": true
+        }
+      }
+    ]
+  }
+}

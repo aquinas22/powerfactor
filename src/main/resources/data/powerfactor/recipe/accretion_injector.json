@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "C C",
+    "HXH",
+    "CCC"
+  ],
+  "key": {
+    "C": "powerfactor:containment_casing",
+    "H": "minecraft:hopper",
+    "X": "powerfactor:exotic_matter"
+  },
+  "result": {
+    "id": "powerfactor:accretion_injector",
+    "count": 1
+  }
+}

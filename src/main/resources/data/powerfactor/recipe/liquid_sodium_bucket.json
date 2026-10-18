@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:bucket",
+    "#c:dusts/soda_ash",
+    "#c:dusts/soda_ash",
+    "#c:dusts/soda_ash",
+    "#c:dusts/soda_ash",
+    "minecraft:coal",
+    "minecraft:coal",
+    "minecraft:coal",
+    "minecraft:coal"
+  ],
+  "result": {
+    "id": "powerfactor:liquid_sodium_bucket",
+    "count": 1
+  }
+}

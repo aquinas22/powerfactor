@@ -14,7 +14,8 @@ import org.jspecify.annotations.Nullable;
 public final class ThermalMenu extends DieselMenu {
     public enum Device {
         STEAM_TURBINE("steam_turbine"), COOLING_TOWER("cooling_tower"), GEOTHERMAL("geothermal_generator"),
-        THERMOELECTRIC("thermoelectric_generator"), RAIN_COLLECTOR("rain_collector");
+        THERMOELECTRIC("thermoelectric_generator"), RAIN_COLLECTOR("rain_collector"), HP_TURBINE("high_pressure_turbine"),
+        HEAT_EXCHANGER("heat_exchanger");
         public final String id;
         Device(String id) { this.id = id; }
     }

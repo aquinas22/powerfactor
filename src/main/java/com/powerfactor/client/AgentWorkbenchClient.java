@@ -119,6 +119,18 @@ public final class AgentWorkbenchClient {
             case "hud" -> { HudPreferences.set(args.get("armor").getAsBoolean(),args.get("movement").getAsBoolean());reply(id,snapshot(),null); }
             case "open_settings" -> { mc.gui.setScreen(new PowerArmorScreen());later(id,2,()->reply(id,snapshot(),null)); }
             case "close_gui" -> { mc.gui.setScreen(null);later(id,2,()->reply(id,snapshot(),null)); }
+            case "hover_gui" -> {
+                var screen=mc.gui.screen();if(screen==null)throw new IllegalStateException("No GUI open");
+                double x=number(args,"x"),y=number(args,"y");
+                if(x<0 || y<0 || x>=screen.width || y>=screen.height)throw new IllegalArgumentException("Invalid GUI position");
+                double scale=mc.getWindow().getGuiScale();
+                double wx=x*scale+scale/2,wy=y*scale+scale/2;
+                org.lwjgl.glfw.GLFW.glfwSetCursorPos(mc.getWindow().handle(),wx,wy);
+                // Headless displays don't report the warp: feed the game's own move handler too.
+                try{var move=net.minecraft.client.MouseHandler.class.getDeclaredMethod("onMove",long.class,double.class,double.class);move.setAccessible(true);move.invoke(mc.mouseHandler,mc.getWindow().handle(),wx,wy);}
+                catch(ReflectiveOperationException e){throw new IllegalStateException("Cannot move the cursor: "+e);}
+                later(id,4,()->reply(id,snapshot(),null));
+            }
             case "click_gui" -> {
                 var screen=mc.gui.screen();if(screen==null)throw new IllegalStateException("No GUI open");
                 double x=number(args,"x"),y=number(args,"y");int button=args.has("button")?args.get("button").getAsInt():0;
@@ -181,7 +193,7 @@ public final class AgentWorkbenchClient {
                         var hit=new BlockHitResult(Vec3.atCenterOf(pos).add(direction.getStepX()*.5,direction.getStepY()*.5,direction.getStepZ()*.5),direction,pos,false);
                         boolean sneak=args.has("sneak") && args.get("sneak").getAsBoolean();player.setShiftKeyDown(sneak);
                         boolean held=args.has("held") && args.get("held").getAsBoolean();
-                        try{if(held)world.getBlockState(pos).useItemOn(player.getMainHandItem(),world,player,net.minecraft.world.InteractionHand.MAIN_HAND,hit);else world.getBlockState(pos).useWithoutItem(world,player,hit);}finally{player.setShiftKeyDown(false);}
+                        try{if(held)player.gameMode.useItemOn(player,world,player.getMainHandItem(),net.minecraft.world.InteractionHand.MAIN_HAND,hit);else world.getBlockState(pos).useWithoutItem(world,player,hit);}finally{player.setShiftKeyDown(false);}
                     }
                     case "fill_tank","drain_tank" -> {
                         var pos=position(args);if(!world.hasChunkAt(pos))throw new IllegalArgumentException("Block chunk is not loaded");
@@ -209,9 +221,11 @@ public final class AgentWorkbenchClient {
                         // Fixture helper: hold a fully charged item and use it (release after charge_ticks for charged weapons).
                         var key=Identifier.parse(args.get("item").getAsString());
                         if(!BuiltInRegistries.ITEM.containsKey(key))throw new IllegalArgumentException("Unknown item "+key);
-                        var stack=new ItemStack(BuiltInRegistries.ITEM.getValue(key));
-                        if(stack.getItem() instanceof com.powerfactor.item.PoweredItem powered)stack.set(ModComponents.ENERGY.get(),powered.capacity(stack));
-                        player.setItemSlot(EquipmentSlot.MAINHAND,stack);
+                        // keep=true uses the item already in hand (with its contents) instead of a fresh one.
+                        boolean keep=args.has("keep")&&args.get("keep").getAsBoolean()&&player.getMainHandItem().is(BuiltInRegistries.ITEM.getValue(key));
+                        var stack=keep?player.getMainHandItem():new ItemStack(BuiltInRegistries.ITEM.getValue(key));
+                        if(!keep&&stack.getItem() instanceof com.powerfactor.item.PoweredItem powered)stack.set(ModComponents.ENERGY.get(),powered.capacity(stack));
+                        if(!keep)player.setItemSlot(EquipmentSlot.MAINHAND,stack);
                         var hand=net.minecraft.world.InteractionHand.MAIN_HAND;
                         result.addProperty("use",stack.getItem().use(world,player,hand).toString());
                         if(args.has("charge_ticks")){int t=Math.clamp(args.get("charge_ticks").getAsInt(),0,200);
@@ -224,8 +238,13 @@ public final class AgentWorkbenchClient {
                         if(handler==null)throw new IllegalArgumentException("Block has no item capability");
                         var key=Identifier.parse(args.get("item").getAsString());
                         if(!BuiltInRegistries.ITEM.containsKey(key))throw new IllegalArgumentException("Unknown item "+key);
+                        var resource=net.neoforged.neoforge.transfer.item.ItemResource.of(BuiltInRegistries.ITEM.getValue(key));
+                        if(args.has("custom_data")){var stack=resource.toStack(1);
+                            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,stack,
+                                    t->args.getAsJsonObject("custom_data").entrySet().forEach(e->t.putString(e.getKey(),e.getValue().getAsString())));
+                            resource=net.neoforged.neoforge.transfer.item.ItemResource.of(stack);}
                         try(var tx=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
-                            result.addProperty("inserted",handler.insert(net.neoforged.neoforge.transfer.item.ItemResource.of(BuiltInRegistries.ITEM.getValue(key)),
+                            result.addProperty("inserted",handler.insert(resource,
                                     Math.clamp(args.get("count").getAsInt(),1,4096),tx));tx.commit();}
                     }
                     case "network_insert" -> {
@@ -308,6 +327,7 @@ public final class AgentWorkbenchClient {
         var mc=Minecraft.getInstance();var result=object();result.addProperty("game_time",mc.level.getGameTime());
         result.addProperty("x",mc.player.getX());result.addProperty("y",mc.player.getY());result.addProperty("z",mc.player.getZ());
         result.addProperty("yaw",mc.player.getYRot());result.addProperty("pitch",mc.player.getXRot());
+        result.addProperty("mouse_x",mc.mouseHandler.getScaledXPos(mc.getWindow()));result.addProperty("mouse_y",mc.mouseHandler.getScaledYPos(mc.getWindow()));
         result.addProperty("gui_width",mc.getWindow().getGuiScaledWidth());result.addProperty("gui_height",mc.getWindow().getGuiScaledHeight());
         result.addProperty("armor_hud",HudPreferences.armor());result.addProperty("movement_hud",HudPreferences.movement());
         var screen=mc.gui.screen();result.addProperty("screen",screen==null?"none":screen.getClass().getName());

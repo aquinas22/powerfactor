@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "RLR",
+    "RGR"
+  ],
+  "key": {
+    "R": "powerfactor:rubber",
+    "L": "#c:ingots/lead",
+    "G": "minecraft:glass_pane"
+  },
+  "result": {
+    "id": "powerfactor:hazmat_helmet",
+    "count": 1
+  }
+}

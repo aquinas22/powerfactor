@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "NAN",
+    "AOA",
+    "NAN"
+  ],
+  "key": {
+    "N": "minecraft:netherite_ingot",
+    "A": "#c:ingots/adamantium",
+    "O": "minecraft:crying_obsidian"
+  },
+  "result": {
+    "id": "powerfactor:containment_casing",
+    "count": 8
+  }
+}

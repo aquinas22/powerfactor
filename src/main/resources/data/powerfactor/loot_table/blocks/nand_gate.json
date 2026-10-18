@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "powerfactor:blocks/nand_gate",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powerfactor:nand_gate"
+        }
+      ]
+    }
+  ]
+}

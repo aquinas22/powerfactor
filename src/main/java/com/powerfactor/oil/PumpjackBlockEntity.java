@@ -69,6 +69,7 @@ public class PumpjackBlockEntity extends com.powerfactor.machine.MachineBlockEnt
     private void checkStructure(ServerLevel level, BlockPos pos) {
         var structure = buildStructure();
         Direction facing = getBlockState().getValue(com.powerfactor.machine.MachineBlock.FACING);
+        if (!structure.loaded(level, pos, facing)) return;
         boolean now = structure.complete(level, pos, facing);
         Set<BlockPos> parts = new HashSet<>();
         if (now) {
@@ -90,15 +91,11 @@ public class PumpjackBlockEntity extends com.powerfactor.machine.MachineBlockEnt
         }
     }
 
+    /** Only a real removal frees the casings: setRemoved also runs when the chunk unloads, and must not touch other blocks then. */
     @Override
-    public void setRemoved() {
-        super.setRemoved();
-        if (level != null && !level.isClientSide()) {
-            for (BlockPos part : linked) {
-                if (level.getBlockEntity(part) instanceof com.powerfactor.multiblock.CasingBlockEntity casing
-                        && worldPosition.equals(casing.controllerPos())) casing.link(null);
-            }
-        }
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (level != null && !level.isClientSide()) com.powerfactor.multiblock.CasingBlockEntity.release(level, linked, worldPosition);
     }
     private final com.powerfactor.animation.RotaryMotion motion = new com.powerfactor.animation.RotaryMotion();
 

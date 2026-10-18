@@ -38,6 +38,16 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     }
 
     private boolean remoteEnabled = true;
+    /** A Chunk Loader card's ticket is held (see upgrade/ChunkCard). */
+    private boolean chunkForced;
+
+    public boolean chunkForced() {
+        return chunkForced;
+    }
+
+    public void setChunkForced(boolean forced) {
+        chunkForced = forced;
+    }
     private RedstoneMode redstoneMode = RedstoneMode.LOW;
     private final com.powerfactor.animation.RotaryMotion industrialMotion = new com.powerfactor.animation.RotaryMotion();
 
@@ -123,6 +133,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level instanceof ServerLevel s) com.powerfactor.upgrade.ChunkCard.release(s, this);
         Container inv = inventory();
         if (inv != null && level != null) {
             Containers.dropContents(level, pos, inv);

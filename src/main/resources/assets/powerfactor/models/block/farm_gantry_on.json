@@ -1,0 +1,217 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "yellow": "powerfactor:block/mining_yellow",
+    "galv": "powerfactor:block/galvanized_steel",
+    "dark": "powerfactor:block/industrial_dark",
+    "lit": "powerfactor:block/storage_casing_lit",
+    "particle": "powerfactor:block/mining_yellow"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        12,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#yellow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#yellow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#yellow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#galv",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#yellow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        4,
+        0.5
+      ],
+      "to": [
+        12,
+        10,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lit",
+          "uv": [
+            4,
+            6,
+            12,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#lit",
+          "uv": [
+            4,
+            6,
+            12,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#lit",
+          "uv": [
+            0.5,
+            6,
+            1.0,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#lit",
+          "uv": [
+            0.5,
+            6,
+            1.0,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#lit",
+          "uv": [
+            4,
+            0.5,
+            12,
+            1.0
+          ]
+        },
+        "down": {
+          "texture": "#lit",
+          "uv": [
+            4,
+            0.5,
+            12,
+            1.0
+          ]
+        }
+      },
+      "light_emission": 12
+    },
+    {
+      "from": [
+        3,
+        12,
+        3
+      ],
+      "to": [
+        13,
+        14,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#galv",
+          "uv": [
+            3,
+            2,
+            13,
+            4
+          ]
+        },
+        "south": {
+          "texture": "#galv",
+          "uv": [
+            3,
+            2,
+            13,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#galv",
+          "uv": [
+            3,
+            2,
+            13,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#galv",
+          "uv": [
+            3,
+            2,
+            13,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#galv",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#galv",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        }
+      }
+    }
+  ]
+}

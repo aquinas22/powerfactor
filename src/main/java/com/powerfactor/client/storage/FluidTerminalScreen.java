@@ -24,7 +24,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
  * one to pour it in. Scroll for more.
  */
 public class FluidTerminalScreen extends AbstractContainerScreen<FluidTerminalMenu> {
-    private static final int GX = 9, GY = 20, CELL = 18;
+    private static final int GX = 9, GY = 22, CELL = 18;   // grid glass at y 20-96: inside the content zone
     private static List<FluidPayloads.Line> lines = new ArrayList<>();
     private static int status = 3;
     private int scroll;
@@ -107,10 +107,12 @@ public class FluidTerminalScreen extends AbstractContainerScreen<FluidTerminalMe
             int cy = y + GY + FluidTerminalMenu.ROWS * CELL / 2 - wrapped.size() * 5;
             for (int i = 0; i < wrapped.size(); i++) g.centeredText(font, wrapped.get(i), x + GX + FluidTerminalMenu.COLS * CELL / 2, cy + i * 10, 0xFFFF7060);
         } else if (lines.isEmpty()) {
-            g.centeredText(font, Component.translatable("gui.powerfactor.fluid_terminal.empty"), x + GX + FluidTerminalMenu.COLS * CELL / 2,
-                    y + GY + FluidTerminalMenu.ROWS * CELL / 2 - 4, Skin.LCD_DIM);
+            // Empty network: say so, and how to put fluid in (cells repeat the hint in their tooltips).
+            int mid = x + GX + FluidTerminalMenu.COLS * CELL / 2, cy = y + GY + FluidTerminalMenu.ROWS * CELL / 2;
+            g.centeredText(font, Component.translatable("gui.powerfactor.fluid_terminal.empty"), mid, cy - 9, Skin.LCD_TEXT);
+            g.centeredText(font, Skin.fit(font, Component.translatable("gui.powerfactor.fluid_terminal.hint"), FluidTerminalMenu.COLS * CELL - 12), mid, cy + 2,
+                    Skin.LCD_DIM);
         }
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.fluid_terminal.hint"), 160), x + 9, y + 97, Skin.DIM, false);
         Skin.inventory(g, font, x + 8, y + 118);
     }
 

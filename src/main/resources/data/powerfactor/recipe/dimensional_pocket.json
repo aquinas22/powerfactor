@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BEB",
+    "EPE",
+    "BEB"
+  ],
+  "key": {
+    "B": "powerfactor:essence_of_bedrock",
+    "E": "minecraft:ender_eye",
+    "P": "powerfactor:exotic_matter"
+  },
+  "result": {
+    "id": "powerfactor:dimensional_pocket",
+    "count": 1
+  }
+}

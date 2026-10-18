@@ -40,6 +40,9 @@ public final class ToolEvents {
     /** One cut at a tree's log brings the whole tree down (unless sneaking). */
     @SubscribeEvent
     static void onBreak(BreakBlockEvent event) {
+        if (event.getPlayer() instanceof ServerPlayer p && p.level() instanceof ServerLevel l && !event.isCanceled()) {
+            com.powerfactor.item.VeinMiner.onBreak(l, p, event.getPos(), event.getState());
+        }
         if (!(event.getPlayer() instanceof ServerPlayer player) || player.isShiftKeyDown() || !(player.level() instanceof ServerLevel level)) {
             return;
         }
@@ -72,6 +75,7 @@ public final class ToolEvents {
     static void onServerTick(ServerTickEvent.Post event) {
         for (ServerLevel level : event.getServer().getAllLevels()) {
             TreeFeller.tick(level);
+            com.powerfactor.item.VeinMiner.tick(level);
         }
         com.powerfactor.radio.RadioNet.tick(event.getServer());
     }
@@ -79,6 +83,7 @@ public final class ToolEvents {
     @SubscribeEvent
     static void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            if (player.tickCount % 20 == 0) com.powerfactor.fission.Radiation.tick(player);
             JetpackServer.tick(player);
             com.powerfactor.grid.WireBlock.checkPlayer((ServerLevel) player.level(), player);
         }
@@ -87,6 +92,26 @@ public final class ToolEvents {
     @SubscribeEvent
     static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         JetpackServer.forget(event.getEntity().getUUID());
+        com.powerfactor.item.VeinMiner.forget(event.getEntity().getUUID());
+    }
+
+    /** Any digging tool and a Vein Mining Matrix in an anvil: the tool learns vein mining, for 30 levels. */
+    @SubscribeEvent
+    static void onAnvil(net.neoforged.neoforge.event.AnvilUpdateEvent event) {
+        if (!event.getRight().is(com.powerfactor.registry.ModItems.VEIN_MATRIX.get()) || !com.powerfactor.item.VeinMiner.fits(event.getLeft())) return;
+        var out = event.getLeft().copy();
+        out.set(com.powerfactor.registry.ModComponents.VEIN_MINER.get(), net.minecraft.util.Unit.INSTANCE);
+        event.setOutput(out);
+        event.setXpCost(30);
+        event.setMaterialCost(1);
+    }
+
+    /** Fitted tools say so. */
+    @SubscribeEvent
+    static void onTooltip(net.neoforged.neoforge.event.entity.player.ItemTooltipEvent event) {
+        if (com.powerfactor.item.VeinMiner.fitted(event.getItemStack())) {
+            event.getToolTip().add(1, net.minecraft.network.chat.Component.translatable("tooltip.powerfactor.vein_miner").withStyle(net.minecraft.ChatFormatting.AQUA));
+        }
     }
 
     private ToolEvents() {}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PGP",
+    "GMG",
+    "PCP"
+  ],
+  "key": {
+    "P": "#c:plates/steel",
+    "G": "#c:glass_blocks",
+    "M": "powerfactor:electric_motor",
+    "C": "powerfactor:advanced_circuit"
+  },
+  "result": {
+    "id": "powerfactor:chemical_reactor",
+    "count": 1
+  }
+}

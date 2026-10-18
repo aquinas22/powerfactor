@@ -20,7 +20,7 @@ public class ShieldScreen extends StorageScreens.Base<ShieldGeneratorMenu> {
     @Override
     protected void main(GuiGraphicsExtractor g, int x, int y, int mx, int my) {
         long ms = Util.getMillis();
-        int sx = x + 8, sy = y + 18, w = 92, h = 64;
+        int sx = x + 8, sy = y + 20, w = 88, h = 72;   // hero: the dome to scale
         Skin.lcd(g, sx, sy, w, h);
         int cx = sx + w / 2, ground = sy + h - 8;
         g.fill(sx + 1, ground, sx + w - 1, sy + h - 1, 0xFF1E4A2C);
@@ -44,24 +44,28 @@ public class ShieldScreen extends StorageScreens.Base<ShieldGeneratorMenu> {
                 g.fill(px, py, px + 1, py + 1, 0x506FE3FF);
             }
         }
-        int tx = x + 104;
-        Skin.lamp(g, tx, y + 22, on ? 0xFF5CFF8A : 0xFFC8402A);
-        g.text(font, Skin.fit(font, Component.translatable(on ? "gui.powerfactor.shield.up" : "gui.powerfactor.shield.down"), 42), tx + 8, y + 21,
-                Skin.TEXT, false);
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.shield.radius", menu.radius()), 46), tx, y + 33, Skin.DIM, false);
-        g.text(font, Skin.fit(font, Component.literal("-" + Skin.compact(menu.upkeep()) + "/t"), 46), tx, y + 44, 0xFFD0503A, false);
-        g.text(font, Skin.fit(font, Component.translatable("gui.powerfactor.shield.hits", menu.hits()), 46), tx, y + 55, Skin.DIM, false);
-        button(104, 68, 21, 13, Component.literal("−"), Component.translatable("gui.powerfactor.shield.radius_tip"), Skin.LCD_TEXT, false,
+        // Readout glass and the radius stepper (x 102-150), 6 px from the view and from the FE tube.
+        int tx = x + 102;
+        Skin.lcd(g, tx, y + 20, 48, 52);
+        Skin.icon(g, on ? Skin.Icon.SHIELD : Skin.Icon.ERROR, tx + 2, y + 22);
+        Skin.condensed(g, font, Component.translatable(on ? "gui.powerfactor.shield.up" : "gui.powerfactor.shield.down"), tx + 12, y + 23, 33,
+                on ? Skin.LCD_TEXT : 0xFFFF6A5A);
+        Skin.iconValue(g, font, Skin.Icon.RANGE, Component.literal(menu.radius() + " m"), tx + 4, y + 33, Skin.LCD_TEXT,
+                Component.translatable("gui.powerfactor.shield.radius", menu.radius()));
+        Skin.iconValue(g, font, Skin.Icon.FE, Component.literal("-" + Skin.compact(menu.upkeep()) + "/t"), tx + 4, y + 43, Skin.FE, null);
+        Skin.iconValue(g, font, Skin.Icon.HIT, Component.literal(String.valueOf(menu.hits())), tx + 4, y + 53, Skin.LCD_TEXT,
+                Component.translatable("gui.powerfactor.shield.hits", menu.hits()));
+        iconButton(102, 78, 23, 14, Skin.Icon.MINUS, Component.empty(), Component.translatable("gui.powerfactor.shield.radius_tip"), Skin.LCD_TEXT, false, false,
                 () -> send(ShieldGeneratorBlockEntity.BUTTON_SMALLER));
-        button(127, 68, 21, 13, Component.literal("+"), Component.translatable("gui.powerfactor.shield.radius_tip"), Skin.LCD_TEXT, false,
+        iconButton(127, 78, 23, 14, Skin.Icon.PLUS, Component.empty(), Component.translatable("gui.powerfactor.shield.radius_tip"), Skin.LCD_TEXT, false, false,
                 () -> send(ShieldGeneratorBlockEntity.BUTTON_BIGGER));
-        Skin.energyTube(g, x + 156, y + 18, 12, 76, menu.energy(), ShieldGeneratorBlockEntity.CAPACITY, on);
+        Skin.energyTube(g, x + 156, y + 20, 12, 72, menu.energy(), ShieldGeneratorBlockEntity.CAPACITY, on);
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float a) {
         super.extractRenderState(g, mx, my, a);
-        if (mx >= leftPos + 156 && mx < leftPos + 168 && my >= topPos + 18 && my < topPos + 94) {
+        if (mx >= leftPos + 156 && mx < leftPos + 168 && my >= topPos + 20 && my < topPos + 92) {
             g.setTooltipForNextFrame(font, Component.translatable("gui.powerfactor.buffer", String.format("%,d", menu.energy()),
                     String.format("%,d", ShieldGeneratorBlockEntity.CAPACITY)), mx, my);
         }

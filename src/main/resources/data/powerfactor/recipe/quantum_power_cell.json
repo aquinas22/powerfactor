@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CXC",
+    "XNX",
+    "CXC"
+  ],
+  "key": {
+    "C": "powerfactor:dense_power_cell",
+    "X": "powerfactor:exotic_matter",
+    "N": "minecraft:nether_star"
+  },
+  "result": {
+    "id": "powerfactor:quantum_power_cell",
+    "count": 1
+  }
+}

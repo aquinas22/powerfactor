@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "DXD",
+    "QNQ",
+    "DXD"
+  ],
+  "key": {
+    "D": "minecraft:diamond_block",
+    "X": "powerfactor:exotic_matter",
+    "Q": "powerfactor:qubit_crystal",
+    "N": "minecraft:nether_star"
+  },
+  "result": {
+    "id": "powerfactor:vein_mining_matrix",
+    "count": 1
+  }
+}

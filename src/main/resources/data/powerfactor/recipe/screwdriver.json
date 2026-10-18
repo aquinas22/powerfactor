@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "  I",
+    " I ",
+    "R  "
+  ],
+  "key": {
+    "I": "#c:ingots/iron",
+    "R": "#c:ingots/red_alloy"
+  },
+  "result": {
+    "id": "powerfactor:screwdriver",
+    "count": 1
+  }
+}

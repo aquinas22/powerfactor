@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "powerfactor:block/accretion_injector"
+    },
+    "formed=true": {
+      "model": "powerfactor:block/accretion_injector"
+    }
+  }
+}

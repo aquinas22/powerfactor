@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "FDF",
+    "PBP",
+    "FCF"
+  ],
+  "key": {
+    "F": "powerfactor:fulgurite",
+    "D": "minecraft:diamond",
+    "P": "powerfactor:power_plug",
+    "B": "powerfactor:bedrock_fragment",
+    "C": "powerfactor:capacitor_bank"
+  },
+  "result": {
+    "id": "powerfactor:power_net_controller",
+    "count": 1
+  }
+}

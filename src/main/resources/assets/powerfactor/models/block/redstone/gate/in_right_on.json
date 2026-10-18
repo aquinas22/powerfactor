@@ -1,0 +1,45 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "side": "powerfactor:block/redstone/gate/side",
+    "lamp": "powerfactor:block/redstone/gate/lamp",
+    "lamp_on": "powerfactor:block/redstone/gate/lamp_on",
+    "particle": "powerfactor:block/redstone/gate/side"
+  },
+  "elements": [
+    {
+      "from": [
+        13,
+        2,
+        7
+      ],
+      "to": [
+        15,
+        3,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp_on"
+        },
+        "south": {
+          "texture": "#lamp_on"
+        },
+        "east": {
+          "texture": "#lamp_on"
+        },
+        "west": {
+          "texture": "#lamp_on"
+        },
+        "up": {
+          "texture": "#lamp_on"
+        },
+        "down": {
+          "texture": "#lamp_on"
+        }
+      },
+      "light_emission": 10
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CDC",
+    "DED",
+    "CDC"
+  ],
+  "key": {
+    "C": "powerfactor:power_cell",
+    "D": "minecraft:diamond",
+    "E": "powerfactor:essence_of_bedrock"
+  },
+  "result": {
+    "id": "powerfactor:dense_power_cell",
+    "count": 1
+  }
+}

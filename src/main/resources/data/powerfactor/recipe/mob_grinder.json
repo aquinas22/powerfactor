@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SDS",
+    "DMD",
+    "SCS"
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "D": "minecraft:diamond_sword",
+    "M": "powerfactor:electric_motor",
+    "C": "powerfactor:advanced_circuit"
+  },
+  "result": {
+    "id": "powerfactor:mob_grinder",
+    "count": 1
+  }
+}

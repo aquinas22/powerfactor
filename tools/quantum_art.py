@@ -1374,6 +1374,9 @@ def generate_textures():
     save(mech_entity(), "entity/mech.png")
     save(mech_icon(), I + "mech_suit.png")
     save(nanotube_tether(), I + "nanotube_tether.png")
+    save(photonic_lens(), I + "photonic_lens.png")
+    save(laser_wrench(), I + "laser_wrench.png")
+    save(laser_lens_block(), B + "laser_lens.png")
     save(hover_bike_icon(), I + "hover_bike.png")
     save(meteor_rock(), "entity/meteor.png")
     save(meteor_glow(), "entity/meteor_glow.png")
@@ -1963,6 +1966,77 @@ def nanotube_tether():
     return stamp(TETHER_ICON, cols)
 
 
+# ---------------------------------------------------------------- laser transport
+LENS_ICON = [
+    "................",
+    "................",
+    ".....gggggg.....",
+    "...ggcwwccccg...",
+    "..gcwwcccccbbg..",
+    "..gwwcccccbbbg..",
+    ".gccccccccbbbbg.",
+    ".gccccccbbbbbbg.",
+    ".gcccccbbbbbbbg.",
+    ".gccccbbbbbbddg.",
+    "..gcbbbbbbbddg..",
+    "..gbbbbbbbdddg..",
+    "...gbbbbbdddg...",
+    ".....gggggg.....",
+    "................",
+    "................",
+]
+WRENCH_ICON = [
+    "................",
+    ".........lll....",
+    "........lwwcl...",
+    "........lwccl...",
+    ".......sslccl...",
+    "......sss.ll....",
+    ".....sss........",
+    "....sss.........",
+    "...sss..........",
+    "..sss...........",
+    ".ass............",
+    ".aa.............",
+    "................",
+    "................",
+    "................",
+    "................",
+]
+
+
+def photonic_lens():
+    """A cut lens: bright cyan glass with a white glint, deepening to blue, in a gold bezel."""
+    cols = {"g": C("c8a040"), "w": C("ffffff"), "c": C("8fe8ff"), "b": C("3f9cff"), "d": C("1f5ab0")}
+    return outline(stamp(LENS_ICON, cols), C("2a1f08"))
+
+
+def laser_lens_block():
+    """The node's lens face: a cyan radial glow with a white core and glint, in a dark bezel ring."""
+    img = Image.new("RGBA", (16, 16), C("10202c"))
+    px = img.load()
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d > 7.6:
+                continue
+            if d > 6.4:
+                px[x, y] = C("2a4a5c") if (x + y) % 2 else C("355c70")
+                continue
+            t = d / 6.4
+            ramp = QC[::-1]
+            px[x, y] = C(ramp[min(len(ramp) - 1, int(t * (len(ramp) - 0.01)))])
+    for x, y in ((5, 4), (6, 4), (4, 5), (5, 5), (4, 6)):
+        px[x, y] = WHITE
+    return img
+
+
+def laser_wrench():
+    """A steel wrench whose head holds a photonic lens."""
+    cols = {"s": C("a2bad8"), "a": C("485c78"), "l": C("c8a040"), "w": C("ffffff"), "c": C("6fe3ff")}
+    return outline(stamp(WRENCH_ICON, cols), C("10141a"))
+
+
 ARMOR_KINDS = ("helmet", "chestplate", "leggings", "boots")
 ARMOR_FILES = [f"item/{m}_{k}" for m in ARMOR_SETS for k in ARMOR_KINDS] + \
     [f"entity/equipment/humanoid/{m}" for m in ARMOR_SETS] + [f"entity/equipment/humanoid_leggings/{m}" for m in ARMOR_SETS] +     [f"entity/equipment/humanoid_baby/{m}" for m in ARMOR_SETS]
@@ -1982,7 +2056,7 @@ FILES = [
 ]
 
 
-FILES += STARFORGE_FILES + PAXEL_FILES + ARMOR_FILES + ["item/nanotube_tether", "item/mech_suit", "entity/mech", "item/hover_bike", "entity/hover_bike", "item/cosmic_dust", "entity/robot_arm", "entity/turret", "entity/meteor", "entity/meteor_glow", "block/meteorite"] + FUSION_FILES
+FILES += STARFORGE_FILES + PAXEL_FILES + ARMOR_FILES + ["item/photonic_lens", "item/laser_wrench", "item/nanotube_tether", "item/mech_suit", "entity/mech", "item/hover_bike", "entity/hover_bike", "item/cosmic_dust", "entity/robot_arm", "entity/turret", "entity/meteor", "entity/meteor_glow", "block/meteorite"] + FUSION_FILES
 
 
 if __name__ == "__main__":

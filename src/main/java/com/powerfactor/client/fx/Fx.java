@@ -37,6 +37,16 @@ public final class Fx {
         b.addVertex(p, x, y, z).setColor(argb).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT).setNormal(p, 0, 1, 0);
     }
 
+    /** A textured additive quad through four corners (pose-local), u/v 0..1 across it. */
+    public static void quad(SubmitNodeCollector c, PoseStack pose, Identifier tex, float[] a, float[] b, float[] cc, float[] d, int argb) {
+        c.submitCustomGeometry(pose, additive(tex), (p, buf) -> {
+            vertex(buf, p, a[0], a[1], a[2], 0, 1, argb);
+            vertex(buf, p, b[0], b[1], b[2], 1, 1, argb);
+            vertex(buf, p, cc[0], cc[1], cc[2], 1, 0, argb);
+            vertex(buf, p, d[0], d[1], d[2], 0, 0, argb);
+        });
+    }
+
     /** A camera-facing glow sprite of the given size at the pose origin. */
     public static void glow(SubmitNodeCollector c, PoseStack pose, Quaternionf camera, float size, int argb) {
         sprite(c, pose, camera, GLOW, size, argb);
@@ -116,6 +126,32 @@ public final class Fx {
                 }
             });
         }
+    }
+
+    /**
+     * A solid, alpha-blended glowing tube between two points (pose-local): four faces, so it reads as
+     * a bright rod even against daylight, where additive beams wash out. Pair with {@link #beam} for a halo.
+     */
+    public static void tube(SubmitNodeCollector c, PoseStack pose, Vec3 from, Vec3 to, float radius, int argb) {
+        Vec3 d = to.subtract(from);
+        double len = d.length();
+        if (len < 1e-4) return;
+        Vec3 n = d.scale(1 / len);
+        Vec3 u = (Math.abs(n.y) < 0.95 ? n.cross(new Vec3(0, 1, 0)) : n.cross(new Vec3(1, 0, 0))).normalize().scale(radius);
+        Vec3 v = n.cross(u).normalize().scale(radius);
+        Vec3[] ring = {u.add(v), u.subtract(v), u.scale(-1).subtract(v), v.subtract(u)};
+        c.submitCustomGeometry(pose, RenderTypes.entityTranslucentEmissive(BEAM), (p, b) -> {
+            for (int i = 0; i < 4; i++) {
+                Vec3 a = ring[i], z = ring[(i + 1) % 4];
+                for (int side = 0; side < 2; side++) {
+                    Vec3 p0 = from.add(side == 0 ? a : z), p1 = from.add(side == 0 ? z : a), p2 = to.add(side == 0 ? z : a), p3 = to.add(side == 0 ? a : z);
+                    vertexLit(b, p, (float) p0.x, (float) p0.y, (float) p0.z, 0.5F, 0, argb);
+                    vertexLit(b, p, (float) p1.x, (float) p1.y, (float) p1.z, 0.5F, 0, argb);
+                    vertexLit(b, p, (float) p2.x, (float) p2.y, (float) p2.z, 0.5F, 1, argb);
+                    vertexLit(b, p, (float) p3.x, (float) p3.y, (float) p3.z, 0.5F, 1, argb);
+                }
+            }
+        });
     }
 
     /** A glowing textured cube centred on the origin (inner energy cores, qubits). */

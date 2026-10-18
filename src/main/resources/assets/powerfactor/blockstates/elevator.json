@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "color=white": {
+      "model": "powerfactor:block/elevator/white"
+    },
+    "color=orange": {
+      "model": "powerfactor:block/elevator/orange"
+    },
+    "color=magenta": {
+      "model": "powerfactor:block/elevator/magenta"
+    },
+    "color=light_blue": {
+      "model": "powerfactor:block/elevator/light_blue"
+    },
+    "color=yellow": {
+      "model": "powerfactor:block/elevator/yellow"
+    },
+    "color=lime": {
+      "model": "powerfactor:block/elevator/lime"
+    },
+    "color=pink": {
+      "model": "powerfactor:block/elevator/pink"
+    },
+    "color=gray": {
+      "model": "powerfactor:block/elevator/gray"
+    },
+    "color=light_gray": {
+      "model": "powerfactor:block/elevator/light_gray"
+    },
+    "color=cyan": {
+      "model": "powerfactor:block/elevator/cyan"
+    },
+    "color=purple": {
+      "model": "powerfactor:block/elevator/purple"
+    },
+    "color=blue": {
+      "model": "powerfactor:block/elevator/blue"
+    },
+    "color=brown": {
+      "model": "powerfactor:block/elevator/brown"
+    },
+    "color=green": {
+      "model": "powerfactor:block/elevator/green"
+    },
+    "color=red": {
+      "model": "powerfactor:block/elevator/red"
+    },
+    "color=black": {
+      "model": "powerfactor:block/elevator/black"
+    }
+  }
+}

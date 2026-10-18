@@ -1,5 +1,38 @@
 # PowerFactor to-do
 
+## October 14 GUI style pass
+- [x] Style guide: docs/gui-style-guide.md (grid, composition, text, controls, motion, checklist).
+- [x] Text case rule enforced in generation (tools/text_style.py) and by check_resources.py; hard-coded labels converted.
+- [x] Mod Bench: socket hexagon, tool slot and ring share one centre.
+- [x] Title Case labels (articles lower case) enforced by tools/text_style.py.
+- [x] "Show, don't tell": 55-icon hand-drawn set (tools/gui_icons.py, Skin.Icon) with automatic tooltips; icon rows, icon chips and icon toggles across the generator, thermal, boiler, processing, engine, quarry, turret, shield, IO port, laser node, fusion, zero-point, collider, elevator, orbital, starforge and Mod Bench screens.
+- [x] Shared layout helpers (Skin.Layout content zone, Skin.lcdLines, Skin.condensed) and 48 screens re-captured and fixed against the checklist: generator family, thermal, steam boiler, processing strip, collider, zero-point, fusion, orbital, space elevator, starforge, quarry console, shield, turrets, engine, laser node, terminals, IO ports (fixed an upgrade slot drawn on top of a filter slot), pattern racks, Mod Bench.
+
+## October 14 requested features (queued, in order)
+- [x] Vein mining (FTB Ultimine style): Vein Mining Matrix fitted in an anvil (30 levels) to any digging tool; hold ` to outline the vein with a ripple and count; up to 64 blocks within 16, ore variants across stone; durability/charge and hunger per block; drops gathered. Compiles; not yet exercised in the client.
+- [x] Full SCADA: readings carry telemetry points (ranges, alarm states) and controls (buttons, toggles, setpoints, guarded danger buttons); terminal detail view and alarm filter; reactor, boiler and turbine publish telemetry.
+- [x] High-Pressure Turbine: 5x3x9, 50,000 FE/t on 2,500 mB/t steam; GameTest and client check.
+- [ ] Laser transport polish follow-ups if any (shipped October 14: nodes, wrench, lens).
+- [x] Wind turbine blades and spinner textured: bolted steel root sleeves, composite layup seams, leading-edge tape, spinner drum band and panels.
+- [x] Every generator and machine animated: audited all 55 block entities; the 9 static ones (solar, charging pad, grow lamp, radio tower, geothermal, thermoelectric, transformer, both capacitor banks) and the logic controller got AmbientMachineRenderer effects that run only while working. Circuit breaker animates by state.
+- [x] Ore multiplication: Wash Plant multiblock (trommel, sloped sluice, shaker table; 4x + placer finds) and the acid route (Chemical Reactor → Ore Dissolver, 4x/5x with Quantum Catalyst); 8 metals; JEI pages; sounds; acid hazard; GameTests and client checks.
+- [ ] Wash Plant / chemistry follow-ups: other mods' ores (nickel, osmium, platinum, uranium), a trash/void filter for byproducts.
+- [ ] Moving machinery that integrates with Create: blocked, Create has no 26.2 release (only 1.21.1). Revisit when it ships.
+- [x] Farm Gantry: overhead crane over a 9x9 field (bridge, carriage, dropping tool head with job-coloured flash) that tills and sows in one drop, harvests ripe crops/melons/pumpkins, replants from the harvest and irrigates from its tank; field-map console; GameTest and client check (a full field sown in real time). Still to add: tree feller.
+- [x] Mob farming: Soul Snare (imprint a mob, bosses refused), Spawner Cage (the mob turns inside the bars in a rising soul-fire swirl; health-scaled FE; crowd limit; upgrade bay), Mob Grinder (spinning saw disc, sparks, laser fence posts; kills as a player so player drops and XP fall; gathers drops and stores XP drawn from the console); GameTest and client check (pigs spawned and ground into pork). Still to add: liquid XP.
+- [x] Pocket dimensions: Dimensional Pocket (rooms within rooms renderer, deeper with size), private room in its own void dimension, exit through any wall, room travels on the item, Spatial Expander 7³→13³→21³ keeping contents, Pocket Port passes items/fluids/energy, room chunks loaded with the door; GameTest and client check (entered, left, expanded, re-entered).
+- [x] Wireless redstone: transmitter/receiver pads, 16 dye channels, cross-dimension, channel-coloured lamps and motes; GameTest.
+- [x] Item Magnet: toggle, pulls items and XP within 8 blocks, respects pickup delay, sneak pauses; GameTest.
+- [x] Chunk Loader (obsidian, gold, eye of ender): NeoForge tickets with load-time validation, 3x3 growing to 9x9 with Range Upgrades, area hologram while sneaking; GameTest.
+- [x] Machine upgrades: an upgrade bay docked on console machines (wash plant, chemical reactor, ore dissolver, particle collider, starforge, orbital collector) taking Speed and Efficiency cards; JEI keeps clear of it; GameTest. Still to add: turrets, shield, teleporter, robot arm.
+- [x] Time Dilation Field: x2-x16 machine and random-tick acceleration, (N²-1)·40 + (N-1)²·8 per machine FE/t, Range Upgrades 5³→13³, clock console, bubble renderer; GameTest and client check.
+- [x] Black Hole Power Plant: 5³ containment sphere; Hawking ∝ 1/M², evaporation, accretion, containment ∝ M; auto-feed to a target mass; burst and escape failures; console with live hole and power/mass curve; renderer (black horizon, photon ring, accretion disk, jets, infall); GameTest and client check.
+- [x] AI mining drones: Drone Hub survey/cluster/score/dispatch AI with a readable decision log and live map; quadcopter drones that bore, laser-mine and return; GameTest and client check (four drones working six veins).
+- [x] Tesseract: interdimensional item, fluid and energy transfer on 0-9999 frequencies, private or shared; hypercube renderer; GameTest and client check.
+- [x] Wireless Charger (late game): 16 blocks + 8 per Range Upgrade, 8,000 FE/t, arcs to charged players; GameTest and client check.
+- [x] Dimensional Wireless Charger (very late game): bound players charged anywhere, 40,000 FE/t at 25% loss, sky pillar; GameTest and client check.
+- [x] Fission reactor (variable 5³–11³ multiblock, water pool glowing Cherenkov blue, point-kinetics physics with Doppler, voids, xenon/iodine pit, decay heat; meltdown to corium and radiation), uranium ore and fuel cycle (Isotope Centrifuge enrich/reprocess, MOX), Hazmat Suit, control console (core map, instruments, guarded SCRAM, Auto, rod drives, annunciator with first-out, trips, trend), Logic Adapter, Luminous Cherenkov Well hook; GameTest and client check (built 7³ reactor, started on Auto to 43%, coolant-loss trip).
+
 ## October 13 quantum & logistics expansion
 - [x] Storage network: controller, data cables, drive bay with six cell tiers, storage bus, importer/exporter, grid/crafting/pattern terminals, wireless terminals.
 - [x] Autocrafting: crafting planner (unit-tested), crafting and quantum processors, molecular assembler, pattern provider, plan preview and job status.
@@ -91,7 +124,7 @@ Development has resumed with the October 13 logistics pass.
 - [ ] **Mini airplane**: runs on jet fuel (from the refinery), takeoff/landing, fuel gauge.
 - [ ] **Quarry**: area miner using the mining-drill head, FE powered, multiblock frame.
 - [ ] **Powered elevator**.
-- [ ] **Reactor** (nuclear or fusion) as late-game power; multiblock.
+- [x] **Reactor** (nuclear or fusion) as late-game power; multiblock. (Fusion Reactor; Fission Reactor October 14.)
 
 ## Verify in a real client (can't be tested headless)
 - [ ] Walkie-talkies with real microphones (two players, Simple Voice Chat); radio tower relay at long range.
@@ -116,10 +149,10 @@ Development has resumed with the October 13 logistics pass.
 - [ ] Detailed large models for future reactors and other major generators.
 
 ## Nuclear
-- [ ] Uranium ore and processing.
+- [x] Uranium ore and processing (ore, smelting, Isotope Centrifuge enrichment and reprocessing).
 - [ ] Small modular reactors (SMRs).
 - [ ] Thorium and a thorium path.
-- [ ] Fusion reactor (late game).
+- [x] Fusion reactor (late game).
 
 ## Rare ores and fictional materials
 - [ ] Rare fake ores that fit with other Forge (c: tag) ores and resources. Check the tags so other mods' recipes and worldgen pick them up.
@@ -140,21 +173,21 @@ Development has resumed with the October 13 logistics pass.
 ## Heat and steam
 - [x] Steam network: coal boiler, insulated steam pipes, steam turbine. Built on `EngineHeat`; reactor connection follows nuclear implementation.
 - [x] Cooling systems: hot condensate → powered cooling tower → cold boiler feed, conserving water. Towers require open vents.
-- [ ] Attach the cooling/steam infrastructure to future reactors.
+- [x] Attach the cooling/steam infrastructure to future reactors (fission steam out of coolant ports into turbines; High-Pressure Turbine).
 - [x] Geothermal generators placed next to lava or magma.
 
 ## Radiation and safety
-- [ ] Radiation: uranium, thorium, and reactor areas expose players over time. **High priority (needed for nuclear).**
-- [ ] Protection: hazmat suit, lead blocks.
+- [x] Radiation: spent fuel, waste, corium and meltdown zones expose players (poison → wither → nausea).
+- [x] Protection: Hazmat Suit (full set blocks radiation). Lead blocks still to do.
 - [ ] Dosimeter / Geiger counter item that warns before dangerous exposure.
-- [ ] Reactor meltdown and containment: overheating with failed cooling causes an explosion.
-- [ ] Spent fuel handling: storage or reprocessing, so the nuclear chain has an end.
+- [x] Reactor meltdown and containment: interlocks SCRAM first; core damage → steam explosion, corium, radiation (config `reactor_explosions`).
+- [x] Spent fuel handling: reprocessing into plutonium, depleted uranium and waste; MOX fuel.
 
 ## Logistics and automation
 - [x] Item filters and sorters for item pipes.
 - [x] Fluid filters and routing for fluid pipes.
 - [ ] Inserters and extractors that move items between machines and chests without pipes.
-- [ ] Mining drones and farming drones that automate ores and crops in a small area.
+- [x] Mining drones (AI Drone Hub). Farming drones still to do (the Farm Gantry covers crops).
 
 ## Robots and builders
 - [ ] Builder drone: flies to a multiblock and places missing parts. Implements the multiblock auto-build from the in-progress list. **Medium-high priority.**
@@ -215,7 +248,7 @@ Development has resumed with the October 13 logistics pass.
 - [ ] Machine paint and skins: cosmetic colors for machines and cables.
 - [ ] Power surge storms: weather event that overloads unshielded grids; surge protectors counter it.
 - [ ] Meteor impacts: crash sites with rare materials, linked to the fictional ore plan.
-- [ ] Mining veins: rich ore veins that a vein miner clears in one action.
+- [x] Mining veins: Vein Mining Matrix for any digging tool.
 - [ ] Power-based drawer storage: compact high-capacity storage using FE.
 
 ## Endgame quantum (ideas)
@@ -252,3 +285,18 @@ Development has resumed with the October 13 logistics pass.
 - [x] Original Just Cause 3-inspired flight step, fast grapple pulls, retained launch momentum and W/S pitch.
 - [x] JSON/MCP workbench: build/test/package jobs, native previews and guarded dedicated client actions.
 - [ ] Hands-on movement comparison, current armor/HUD rendering and multiplayer latency testing on a desktop.
+
+## Done 2026-10-15 (second batch)
+- [x] Connected textures for formed multiblocks; glass anywhere in casing positions
+- [x] Fission: darker hull, glass walls inside a casing frame (edges and corners casing only), 18×18×18, coolants (water, heavy water, liquid sodium, molten salt) + Heat Exchanger, purge
+- [x] Wireless power networks (Flux-style), Net Configurator, fulgurite
+- [x] Project-Red-style redstone: red alloy, insulated (16), bundled, 16 gates, Illumar lamps, screwdriver
+- [x] Pocket Void (bedrock fragments from TNT, Essence of Bedrock), elevators, Chunk Loader Card
+- [x] Pocket Void as a cube: frame model with an animated trim, End-portal walls and a black hole (disk, photon ring, infalling motes) from a special item renderer; Deep version gold with a second disk
+- [x] Reactor visuals: 3D fuel bundles (rods round a guide tube, spacer grids), Cherenkov light columns and sparks in the pool, glass drawn as the pool (water, blue wash, caustics; water faces hidden behind formed glass), real block light from fuel by power, blue flash on surges, boiling bubbles, red heat glow for dry fuel, blue halos on the console core map
+- [x] Reactor gamma leak through glass, radiation speckle on screen in strong fields; autopilot holds a 5 s period above 1% power; reactors across chunk borders wait for the whole box to load; structure trips named on the console
+- [x] Geiger Counter and Dosimeter
+
+## Open (Noah to choose; see ATM10 report)
+- [ ] Industrial (variable-size) turbine and fusion fuel chain for full Mekanism parity
+- [ ] Bundled-cable input/output on the wireless antennas

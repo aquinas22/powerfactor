@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SPS",
+    "SMS",
+    "SCS"
+  ],
+  "key": {
+    "S": "#c:ingots/steel",
+    "P": "minecraft:piston",
+    "M": "powerfactor:electric_motor",
+    "C": "powerfactor:reactor_casing"
+  },
+  "result": {
+    "id": "powerfactor:control_rod_drive",
+    "count": 1
+  }
+}

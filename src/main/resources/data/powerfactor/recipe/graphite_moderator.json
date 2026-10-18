@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GG",
+    "GG"
+  ],
+  "key": {
+    "G": "powerfactor:graphite"
+  },
+  "result": {
+    "id": "powerfactor:graphite_moderator",
+    "count": 1
+  }
+}

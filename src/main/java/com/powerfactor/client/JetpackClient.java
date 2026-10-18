@@ -157,10 +157,10 @@ public final class JetpackClient {
             return;
         }
         int w = g.guiWidth(), h = g.guiHeight();
-        String label = localMode == JetpackServer.THRUST ? "THRUST" : JetpackItem.hover(chest) ? "HOVER" : "JETPACK";
+        String label = localMode == JetpackServer.THRUST ? "Thrust" : JetpackItem.hover(chest) ? "Hover" : "Jetpack";
         String pct = Math.round(Mth.clamp((float) PoweredItem.energy(chest) / jetpack.capacity(chest), 0, 1) * 100) + "%";
         // Wide enough for the longest label and "100%" side by side, with a gap.
-        int width = mc.font.width("JETPACK") + mc.font.width("100%") + 10;
+        int width = mc.font.width("Jetpack") + mc.font.width("100%") + 10;
         int x = Math.max(5, w / 2 - 91 - width - 6), y = h - (w < 420 ? 48 : 21);
         float frac = Mth.clamp((float) PoweredItem.energy(chest) / jetpack.capacity(chest), 0, 1);
         g.fill(x - 1, y - 1, x + width + 1, y + 19, 0x90000000);

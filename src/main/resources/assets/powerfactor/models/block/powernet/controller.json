@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "powerfactor:block/powernet/controller_side",
+    "top": "powerfactor:block/powernet/controller_top",
+    "bottom": "powerfactor:block/powernet/controller_top"
+  }
+}

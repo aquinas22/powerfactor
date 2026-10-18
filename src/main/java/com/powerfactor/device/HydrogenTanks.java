@@ -19,7 +19,7 @@ import net.neoforged.neoforge.transfer.transaction.TransactionContext;
  */
 public class HydrogenTanks extends FluidStacksResourceHandler {
     private static final Map<String, TagKey<Fluid>> COMMON_FLUIDS = java.util.stream.Stream
-            .of("hydrogen", "crude_oil", "steam", "hot_water", "diesel", "jet_fuel")
+            .of("hydrogen", "crude_oil", "steam", "hot_water", "diesel", "jet_fuel", "sulfuric_acid")
             .collect(java.util.stream.Collectors.toUnmodifiableMap(name -> name,
                     name -> TagKey.create(Registries.FLUID, Identifier.fromNamespaceAndPath("c", name))));
     private final net.minecraft.world.level.material.Fluid[] fluids;
