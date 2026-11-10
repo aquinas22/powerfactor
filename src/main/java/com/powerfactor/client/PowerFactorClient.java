@@ -148,7 +148,6 @@ public final class PowerFactorClient {
         event.registerLayerDefinition(GrappleHookRenderer.LAYER, GrappleHookRenderer::createLayer);
         event.registerLayerDefinition(GrappleWristLayer.LAYER, GrappleWristLayer::createLayer);
         event.registerLayerDefinition(RoverRenderer.LAYER, RoverRenderer::createLayer);
-        event.registerLayerDefinition(PumpjackRenderer.LAYER, PumpjackRenderer::createLayer);
         event.registerLayerDefinition(WorkshopRenderer.LAYER, WorkshopRenderer::createLayer);
         event.registerLayerDefinition(SteamPlantRenderer.LAYER, SteamPlantRenderer::createLayer);
         event.registerLayerDefinition(LaserEngraverRenderer.LAYER, LaserEngraverRenderer::createLayer);

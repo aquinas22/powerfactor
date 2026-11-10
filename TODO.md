@@ -1,5 +1,16 @@
 # PowerFactor to-do
 
+## Pumpjack rebuild and oil worldgen (November 10)
+- [x] Pumpjack redrawn at full size on its 3x3 foundation: raked samson post, I-beam walking beam, arc
+      horsehead with bridle, carrier bar and polished rod, cranks with counterweights, pitman arms and
+      equalizer, and a belt drive whose motor, sheave and belt run in ratio with the cranks.
+- [x] New base model (skid, gear reducer, motor, wellhead, control cabinet with a running lamp) on a parts
+      sheet at one texel per pixel; `Mesh` builder and `tools/machine_art.py` toolkit for further machines.
+- [x] Oil is easier to find: reservoirs under every other chunk (up to Y 40), tar pits 1 in 12 chunks in
+      deserts and badlands, and a surface seep 1 in 64 chunks in any other overworld biome. New chunks only.
+- [ ] Refinery: same treatment (platforms, pipework, burner and flare animation, tank sight glasses).
+- [ ] Texture pass over the steam, workshop, casing and industrial block textures with the new toolkit.
+
 ## Implemented in the October 12 pass
 - [x] **Multiblocks**: refinery, wind tower, and pumpjack (two-block mechanism over nine foundation blocks).
       Missing parts have holograms; refinery and pumpjack casings expose controller energy and fluids.

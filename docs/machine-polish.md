@@ -25,6 +25,15 @@ Battery banks show actual charge across five segments, with a partial final segm
 blue charging or amber discharging activity. Updates are throttled to changes in readings;
 initial chunk snapshots include the current charge and meter values.
 
+The pumpjack fills its 3×3 foundation. A raked samson post carries an I-beam walking beam; the
+horsehead's arc keeps the bridle plumb, so the carrier bar lifts the polished rod straight out of
+the stuffing box. Behind it the motor's belt turns the gearbox sheave six times for each turn of
+the cranks, whose counterweights swing past the pitman arms. The skid carries the gear reducer,
+motor, wellhead with its flow line, and a control cabinet whose lamp lights while pumping.
+The GUI preview is scaled to the larger machine.
+
+[Pumpjack](previews/pumpjack.png) · [Pumpjack GUI](previews/pumpjack-gui.png)
+
 [Live meter](previews/live-meter.png) · [Disconnected meter](previews/cold-meter.png) ·
 [Empty, partial and full battery banks](previews/battery-charge-levels.png)
 

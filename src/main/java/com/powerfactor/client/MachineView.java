@@ -46,8 +46,9 @@ public final class MachineView {
             beState.lightCoords = 0xF000F0;
         }
         boolean pumpjack = be instanceof com.powerfactor.oil.PumpjackBlockEntity;
-        float size = pumpjack ? Math.min((x1 - x0) / 2.8F, (y1 - y0) / 2.6F) : Math.min(x1 - x0, y1 - y0) * 0.6F;
-        g.submitPictureInPictureRenderState(new State(block, renderer, beState, yaw, 26, pumpjack ? 0.9F : 0.5F, x0, y0, x1, y1, size, null,
+        // The pumpjack stands three blocks long and nearly as tall; everything else fits its own block.
+        float size = pumpjack ? Math.min((x1 - x0) / 3.5F, (y1 - y0) / 3.3F) : Math.min(x1 - x0, y1 - y0) * 0.6F;
+        g.submitPictureInPictureRenderState(new State(block, renderer, beState, yaw, 26, pumpjack ? 1.35F : 0.5F, x0, y0, x1, y1, size, null,
                 PictureInPictureRenderState.getBounds(x0, y0, x1, y1, null)));
     }
 
