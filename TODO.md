@@ -8,8 +8,11 @@
       sheet at one texel per pixel; `Mesh` builder and `tools/machine_art.py` toolkit for further machines.
 - [x] Oil is easier to find: reservoirs under every other chunk (up to Y 40), tar pits 1 in 12 chunks in
       deserts and badlands, and a surface seep 1 in 64 chunks in any other overworld biome. New chunks only.
-- [ ] Refinery: same treatment (platforms, pipework, burner and flare animation, tank sight glasses).
-- [ ] Texture pass over the steam, workshop, casing and industrial block textures with the new toolkit.
+- [x] Refinery plant drawn round the formed column: two railed decks and a caged ladder, fired heater with
+      flickering burners, feed pump and fin-fan cooler that spin with the unit, insulated crude, diesel and
+      jet-fuel drums whose gauge glasses follow the synced tanks, overhead vapour line, flare and beacon.
+- [x] Texture pass (`tools/texture_pass.py`): refinery and pumpjack casings, controller faces, column cladding,
+      steam plant parts and controllers, thermal machines, workshop bodies, building blocks and shared materials.
 
 ## Implemented in the October 12 pass
 - [x] **Multiblocks**: refinery, wind tower, and pumpjack (two-block mechanism over nine foundation blocks).

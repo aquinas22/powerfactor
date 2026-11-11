@@ -6286,6 +6286,7 @@ def phase_oil():
     import oil_art
     save(oil_art.pumpjack_sheet(), "entity/pumpjack.png")
     save(oil_art.pumpjack_parts(), "block/pumpjack_parts.png")
+    save(oil_art.refinery_sheet(), "entity/refinery.png")
     save(refinery_column(), "block/refinery_column.png")
     save(refinery_base(), "block/refinery_base.png")
     save(pumpjack_wellhead(), "block/pumpjack_wellhead.png")
@@ -6806,4 +6807,6 @@ if __name__ == "__main__":
     phase_movement()
     phase_rover()
     phase_machine_polish()
+    import texture_pass
+    texture_pass.phase_texture_pass(save, anim, write_mcmeta, write_mcmeta_interp)
     print("textures written to", os.path.normpath(ROOT))

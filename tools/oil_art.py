@@ -382,3 +382,244 @@ def pumpjack_parts():
     tube_v(post, 0, 0, 1, 7, IRON)
     paste(sheet, t["POST"], post)
     return sheet
+
+
+# ------------------------------------------------------------------ refinery plant (entity/refinery.png, 128x128)
+REFINERY = {
+    "GRATE": (0, 0, 24, 24), "RAIL": (0, 25, 32, 2), "TOE": (0, 28, 32, 2), "POST": (0, 31, 32, 2),
+    "LADDER": (0, 34, 48, 1), "RUNG": (0, 36, 8, 1),
+    "PIPE_STEEL": (32, 25, 16, 4), "PIPE_HOT": (32, 30, 16, 4), "PIPE_DIESEL": (48, 25, 16, 4), "PIPE_JET": (48, 30, 16, 4),
+    "PIPE_CRUDE": (64, 25, 16, 4), "FLANGE": (64, 30, 16, 2), "PIPE_END": (80, 25, 4, 4),
+    "DRUM_DIESEL": (24, 0, 32, 24), "DRUM_JET": (56, 0, 32, 24), "DRUM_CRUDE": (88, 0, 32, 24),
+    "HEAD": (0, 40, 12, 12), "DOME": (12, 40, 12, 12),
+    "HEATER_FRONT": (24, 40, 12, 14), "HEATER_SIDE": (36, 40, 12, 14), "HEATER_TOP": (48, 40, 12, 12), "STACK": (60, 40, 8, 4),
+    "FLAME": (68, 40, 8, 16), "FLARE": (76, 40, 8, 16), "GAUGE": (84, 40, 3, 16), "FLUID": (88, 40, 2, 2),
+    "PUMP": (92, 40, 8, 6), "MOTOR": (92, 47, 8, 5), "MOTOR_END": (100, 40, 5, 5), "FAN": (106, 40, 12, 12),
+    "BUNDLE": (0, 56, 16, 8), "FRAME": (16, 56, 32, 2), "PLENUM": (48, 56, 16, 8), "VALVE": (38, 74, 6, 6),
+    "LAMP": (0, 74, 2, 2), "LAMP_ON": (3, 74, 2, 2), "SADDLE": (6, 74, 8, 6), "SKID": (16, 74, 12, 6),
+    "PLATE": (30, 74, 6, 4),
+}
+# Flame strips repeat every 16 texels and are 32 tall, so the renderer can slide a 16-texel window up them.
+FLAME_STRIP = (68, 40, 8, 32)
+FLARE_STRIP = (76, 40, 8, 32)
+
+
+def _cols(h, colours):
+    img = blank(len(colours), h)
+    for x, c in enumerate(colours):
+        vline(img, x, 0, h - 1, c)
+    return img
+
+
+def _drum(band, seed):
+    """Insulated vessel cladding: aluminium sheets with lap seams, banding straps and a product colour band.
+    u runs around the drum (u = 0 faces the front), v along its axis."""
+    img = plate(32, 24, INSULATION, seed, wear=0.35)
+    for v in (5, 12, 19):                                  # banding straps round the drum
+        hline(img, 0, 31, v, INSULATION[1])
+        hline(img, 0, 31, v + 1, INSULATION[5])
+    for u in (10, 26):                                     # lap seams along it
+        vline(img, u, 0, 23, INSULATION[2])
+    rect(img, 0, 8, 31, 10, band[3])                       # product colour band
+    hline(img, 0, 31, 8, band[5])
+    hline(img, 0, 31, 10, band[1])
+    for u in range(1, 8):                                  # stencilled tag on the front of the band
+        put(img, u, 9, WHITE[6] if u % 2 else band[3])
+    return weather(img, seed + 1, 0.6)
+
+
+def _flame_strip(seed, width, tongues, height=32, period=16):
+    """Vertically repeating flame tongues on a clear background (alpha), hottest at their roots."""
+    r = random.Random(seed)
+    img = blank(width, height)
+    for _ in range(tongues):
+        x = r.uniform(0.5, width - 0.5)
+        root = r.uniform(0, period)
+        length = r.uniform(5, 9)
+        w = r.uniform(1.0, 2.2)
+        for repeat in range(-1, height // period + 2):
+            base = root + repeat * period
+            for y in range(height):
+                t = (base - y) / length                    # 0 at the root, 1 at the tip (flames rise: smaller y)
+                if 0 <= t <= 1:
+                    half = w * (1 - t) ** 0.7
+                    for xx in range(width):
+                        if abs(xx + 0.5 - x) <= half:
+                            heat = (1 - t) * (1 - abs(xx + 0.5 - x) / (half + 0.01) * 0.6)
+                            c = FLAME[min(4, int(heat * 5))]
+                            old = img.getpixel((xx, y))
+                            if not old[3] or FLAME.index(c) > FLAME.index(old) if old in FLAME else True:
+                                put(img, xx, y, c)
+    return img
+
+
+def refinery_sheet():
+    sheet = blank(128, 128)
+    t = REFINERY
+
+    grate = blank(24, 24)                                  # bar grating: bearing bars with cross rods
+    for y in range(24):
+        for x in range(24):
+            if x % 3 == 0:
+                c = IRON[5]
+            elif y % 6 == 0:
+                c = IRON[3]
+            else:
+                c = CLEAR if x % 3 == 1 else IRON[1]
+            put(grate, x, y, c)
+    for x in range(24):
+        put(grate, x, 0, YELLOW[4]); put(grate, x, 23, YELLOW[2])
+    for y in range(24):
+        put(grate, 0, y, YELLOW[4]); put(grate, 23, y, YELLOW[2])
+    paste(sheet, t["GRATE"], grate)
+    paste(sheet, t["RAIL"], _rows(32, [YELLOW[5], YELLOW[2]]))
+    toe = _rows(32, [YELLOW[4], YELLOW[2]])
+    for x in range(0, 32, 8):
+        put(toe, x, 0, YELLOW[1])
+    paste(sheet, t["TOE"], toe)
+    paste(sheet, t["POST"], _rows(32, [YELLOW[4], YELLOW[1]]))
+    ladder = blank(48, 1)
+    for x in range(48):
+        put(ladder, x, 0, STEEL[5] if x % 3 else STEEL[3])
+    paste(sheet, t["LADDER"], ladder)
+    paste(sheet, t["RUNG"], _rows(8, [STEEL[4]]))
+
+    # Pipes: u runs round the pipe, so only u varies; the renderer's normals do the shading.
+    for name, mat in (("PIPE_STEEL", STEEL), ("PIPE_DIESEL", YELLOW), ("PIPE_JET", BLUE), ("PIPE_CRUDE", CAST)):
+        p = _cols(4, [mat[3]] * 16)
+        for u in (3, 11):
+            vline(p, u, 0, 3, mat[4])
+        vline(p, 7, 0, 3, mat[2])
+        paste(sheet, t[name], p)
+    hot = _cols(4, [INSULATION[3]] * 16)                   # aluminium-jacketed hot line
+    for u in range(0, 16, 4):
+        vline(hot, u, 0, 3, INSULATION[5])
+    vline(hot, 8, 0, 3, INSULATION[1])
+    paste(sheet, t["PIPE_HOT"], hot)
+    flange = _cols(2, [CAST[3]] * 16)
+    for u in range(1, 16, 4):
+        vline(flange, u, 0, 1, STEEL[5])
+    paste(sheet, t["FLANGE"], flange)
+    end = blank(4, 4, CAST[2])
+    rect(end, 1, 1, 2, 2, CAST[0])
+    paste(sheet, t["PIPE_END"], end)
+
+    paste(sheet, t["DRUM_DIESEL"], _drum(ORANGE, 61))
+    paste(sheet, t["DRUM_JET"], _drum(BLUE, 62))
+    paste(sheet, t["DRUM_CRUDE"], _drum(CAST, 63))
+
+    for name, mat in (("HEAD", INSULATION), ("DOME", INSULATION)):
+        head = blank(12, 12)
+        for y in range(12):
+            for x in range(12):
+                d = math.hypot(x + 0.5 - 6, y + 0.5 - 6)
+                put(head, x, y, mat[5] if d < 2 else mat[4] if d < 4 else mat[3] if d < 5.2 else mat[1])
+        for a in range(0, 360, 45):                        # weld ring bolts / cladding segments
+            x, y = 6 + math.cos(math.radians(a)) * 4.6, 6 + math.sin(math.radians(a)) * 4.6
+            put(head, int(x), int(y), mat[1])
+        rect(head, 5, 5, 6, 6, CAST[3])                    # nozzle
+        put(head, 5, 5, CAST[5])
+        paste(sheet, t[name], head)
+
+    # Fired heater: refractory-lined steel box, three peep windows the flames show through.
+    front = plate(12, 14, BRICK, 64, wear=0.4)
+    bevel(front, 0, 0, 11, 13, BRICK)
+    hline(front, 0, 11, 0, STEEL[4]); hline(front, 0, 11, 13, STEEL[1])
+    for x in (1, 5, 9):
+        rect(front, x, 6, x + 1, 10, BLACK)                # windows; renderer lays flames over them
+        hline(front, x - 1, x + 2, 5, STEEL[4])
+        hline(front, x - 1, x + 2, 11, STEEL[2])
+    stripes(front, 1, 1, 10, 2, width=2)
+    panel(front, 3, 3, 8, 4, STEEL, 4)
+    paste(sheet, t["HEATER_FRONT"], front)
+    side = plate(12, 14, BRICK, 65, wear=0.4)
+    bevel(side, 0, 0, 11, 13, BRICK)
+    for y in (4, 9):
+        seam(side, 1, y, 10, y, BRICK)
+    for (x, y) in ((1, 1), (9, 1), (1, 11), (9, 11)):
+        bolt(side, x, y, STEEL)
+    paste(sheet, t["HEATER_SIDE"], weather(side, 66, 0.8))
+    top = plate(12, 12, STEEL, 67, wear=0.3)
+    bevel(top, 0, 0, 11, 11, STEEL)
+    disc(top, 6, 6, 3.5, CAST, 2)
+    disc(top, 6, 6, 2, CAST, 0, rim=False)
+    paste(sheet, t["HEATER_TOP"], top)
+    stack = _cols(4, [CAST[3], CAST[4], CAST[3], CAST[2], CAST[3], CAST[4], CAST[3], CAST[2]])
+    hline(stack, 0, 7, 0, CAST[1])
+    paste(sheet, t["STACK"], stack)
+
+    sheet.paste(_flame_strip(71, 8, 7), FLAME_STRIP[:2])
+    flare = _flame_strip(72, 8, 4)
+    sheet.paste(flare, FLARE_STRIP[:2])
+
+    gauge = blank(3, 16)
+    for y in range(16):
+        put(gauge, 0, y, CAST[4]); put(gauge, 1, y, GLASS_DARK); put(gauge, 2, y, CAST[1])
+    for y in (0, 15):
+        hline(gauge, 0, 2, y, CAST[3])
+    put(gauge, 1, 2, hexc("6f8f9a"))                       # glint on the glass
+    paste(sheet, t["GAUGE"], gauge)
+    paste(sheet, t["FLUID"], blank(2, 2, hexc("ffffff")))
+
+    pump = plate(8, 6, BLUE, 68, wear=0.2)
+    bevel(pump, 0, 0, 7, 5, BLUE)
+    disc(pump, 4, 3, 2.2, BLUE, 4)
+    paste(sheet, t["PUMP"], pump)
+    motor = blank(8, 5)
+    for y, c in enumerate((TEAL[5], TEAL[2], TEAL[4], TEAL[1], TEAL[3])):
+        hline(motor, 0, 7, y, c)
+    paste(sheet, t["MOTOR"], motor)
+    bell = blank(5, 5, TEAL[3])
+    bevel(bell, 0, 0, 4, 4, TEAL)
+    put(bell, 2, 2, CHROME[5])
+    paste(sheet, t["MOTOR_END"], bell)
+
+    fan = blank(12, 12)                                    # four swept blades on a hub, clear between
+    for y in range(12):
+        for x in range(12):
+            dx, dy = x + 0.5 - 6, y + 0.5 - 6
+            d = math.hypot(dx, dy)
+            a = (math.degrees(math.atan2(dy, dx)) - d * 9) % 90
+            if d < 1.6:
+                put(fan, x, y, CAST[4] if dx + dy < 0 else CAST[2])
+            elif d < 5.8 and a < 34:
+                put(fan, x, y, STEEL[5] if a < 12 else STEEL[3])
+            elif 5.8 <= d < 6.3:
+                put(fan, x, y, CAST[2])
+    paste(sheet, t["FAN"], fan)
+
+    bundle = blank(16, 8, CAST[2])                         # finned tubes seen end-on through the side frame
+    for y in range(1, 8, 2):
+        for x in range(16):
+            put(bundle, x, y, COPPER[4] if x % 2 else COPPER[2])
+    hline(bundle, 0, 15, 0, STEEL[4]); hline(bundle, 0, 15, 7, STEEL[1])
+    paste(sheet, t["BUNDLE"], bundle)
+    paste(sheet, t["FRAME"], _rows(32, [DARK[5], DARK[2]]))
+    plenum = plate(16, 8, GREEN, 69, wear=0.3)
+    bevel(plenum, 0, 0, 15, 7, GREEN)
+    for x in (4, 8, 12):
+        seam(plenum, x, 1, x, 6, GREEN)
+    paste(sheet, t["PLENUM"], plenum)
+
+    valve = blank(6, 6)                                    # handwheel
+    for y in range(6):
+        for x in range(6):
+            d = math.hypot(x + 0.5 - 3, y + 0.5 - 3)
+            if 2.1 < d < 3 or abs(x + 0.5 - 3) < 0.6 or abs(y + 0.5 - 3) < 0.6 and d < 3:
+                put(valve, x, y, RED[4] if x + y < 5 else RED[2])
+    paste(sheet, t["VALVE"], valve)
+    paste(sheet, t["LAMP"], blank(2, 2, hexc("5a1410")))
+    on = blank(2, 2, hexc("ff3a24"))
+    put(on, 0, 0, hexc("ffb09a"))
+    paste(sheet, t["LAMP_ON"], on)
+    saddle = plate(8, 6, CONCRETE, 70, wear=0.4)
+    bevel(saddle, 0, 0, 7, 5, CONCRETE)
+    paste(sheet, t["SADDLE"], saddle)
+    skid = plate(12, 6, IRON, 71, wear=0.3)
+    bevel(skid, 0, 0, 11, 5, IRON)
+    stripes(skid, 0, 4, 11, 5, width=2)
+    paste(sheet, t["SKID"], skid)
+    plate_ = plate(6, 4, STEEL, 72, wear=0.1)
+    bevel(plate_, 0, 0, 5, 3, STEEL, 4)
+    paste(sheet, t["PLATE"], plate_)
+    return sheet

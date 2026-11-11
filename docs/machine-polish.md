@@ -34,6 +34,18 @@ The GUI preview is scaled to the larger machine.
 
 [Pumpjack](previews/pumpjack.png) · [Pumpjack GUI](previews/pumpjack-gui.png)
 
+A formed refinery becomes a small process unit. Railed decks and a caged ladder surround the
+column; a fired heater's burners flicker in their peep windows, and the feed pump and fin-fan
+cooler turn with the unit. Insulated crude, diesel and jet-fuel drums carry gauge glasses that
+follow the tanks. The overhead vapour line runs to the cooler, and the flare burns at the top
+with a blinking beacon. The heater cools down gradually after the refinery stops.
+
+Casings, controller faces, the column, steam plant parts, thermal and workshop machines and the
+building blocks were repainted with shared bevels, bolts, shading and status lights.
+
+[Refinery](previews/refinery.png) · [Refinery from behind](previews/refinery-back.png) ·
+[Pumpjack foundation](previews/pumpjack-foundation.png) · [Texture pass](previews/texture-pass.png)
+
 [Live meter](previews/live-meter.png) · [Disconnected meter](previews/cold-meter.png) ·
 [Empty, partial and full battery banks](previews/battery-charge-levels.png)
 

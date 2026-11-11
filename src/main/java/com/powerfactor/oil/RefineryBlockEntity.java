@@ -42,6 +42,11 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
             ModFluids.DIESEL.source().get(), ModFluids.JET_FUEL.source().get()}, new boolean[] {false, true, true}, this::setChanged);
     private int lastFe;
     private boolean formed;
+    /** Tank amounts last sent to clients, and on the client the amounts they show. */
+    private final int[] synced = {-1, -1, -1};
+    private final float[] shown = new float[3], shownBefore = new float[3];
+    private float heat, heatBefore;
+    private boolean seeded;
     private final java.util.Set<BlockPos> linked = new java.util.HashSet<>();
 
     /** 3x3 casing base with this controller front-centre, and a three-block distillation column in the middle. */
@@ -104,6 +109,52 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
             }
         }
         setRunning(level, pos, state, run);
+        // Gauge glasses on the plant follow the tanks: resend when a level moves by a few percent or empties.
+        for (int i = 0; i < 3; i++) {
+            int amount = tanks.amount(i);
+            if (synced[i] < 0 || Math.abs(amount - synced[i]) >= TANK / 40 || (amount == 0) != (synced[i] == 0)) {
+                for (int j = 0; j < 3; j++) synced[j] = tanks.amount(j);
+                level.sendBlockUpdated(pos, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void clientTick() {
+        super.clientTick();
+        heatBefore = heat;
+        // The heater lights quickly and cools slowly.
+        heat += ((isRunning() ? 1 : 0) - heat) * (isRunning() ? 0.05F : 0.015F);
+        for (int i = 0; i < 3; i++) {
+            shownBefore[i] = shown[i];
+            float target = synced[i] < 0 ? 0 : synced[i] / (float) TANK;
+            shown[i] = seeded ? shown[i] + (target - shown[i]) * 0.08F : target;
+            if (!seeded) shownBefore[i] = shown[i];
+        }
+        seeded = seeded || synced[0] >= 0;
+    }
+
+    /** 0 cold .. 1 fully fired, for the burner and flare glow. */
+    public float heat(float partial) {
+        return heatBefore + (heat - heatBefore) * partial;
+    }
+
+    /** Fraction full of tank {@code i} as the client shows it. */
+    public float level(int i, float partial) {
+        return shownBefore[i] + (shown[i] - shownBefore[i]) * partial;
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+        var tag = new net.minecraft.nbt.CompoundTag();
+        for (int i = 0; i < 3; i++) tag.putInt("shown_tank_" + i, tanks.amount(i));
+        return tag;
+    }
+
+    @Override
+    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
     }
 
     private net.minecraft.core.Direction facing() {
@@ -208,6 +259,7 @@ public class RefineryBlockEntity extends com.powerfactor.machine.MachineBlockEnt
         super.loadAdditional(input);
         energy.deserialize(input);
         tanks.deserialize(input.childOrEmpty("tanks"));
+        for (int i = 0; i < 3; i++) synced[i] = input.getIntOr("shown_tank_" + i, synced[i]);
     }
 
     @Override

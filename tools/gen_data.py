@@ -2226,9 +2226,10 @@ def phase_oil():
         els += octagon(12, 1, 2, "#steel", caps=("up", "down"))
         els += octagon(12, 14, 15, "#steel", caps=("up", "down"))
         # Service ladder and an external return pipe, joining seamlessly between column sections.
-        els += [box([4, 0, 14], [5, 16, 15], "#steel"), box([11, 0, 14], [12, 16, 15], "#steel"),
-                box([14, 0, 7], [15, 16, 9], "#steel")]
-        els += [box([5, y, 14], [11, y + 1, 15], "#steel") for y in (2, 6, 10, 14)]
+        if not formed:  # once formed, RefineryRenderer draws the caged ladder, decks and pipework instead
+            els += [box([4, 0, 14], [5, 16, 15], "#steel"), box([11, 0, 14], [12, 16, 15], "#steel"),
+                    box([14, 0, 7], [15, 16, 9], "#steel")]
+            els += [box([5, y, 14], [11, y + 1, 15], "#steel") for y in (2, 6, 10, 14)]
         write(asset("models", "block", "distillation_column" + suffix + ".json"), {"parent": "minecraft:block/block", "textures": t, "elements": els})
     write(asset("blockstates", "distillation_column.json"), {"variants": {f"formed={f}": {"model": pf("block/distillation_column" + ("_formed" if f == "true" else ""))}
                                                                           for f in ("false", "true")}})

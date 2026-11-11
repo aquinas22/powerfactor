@@ -232,6 +232,30 @@ public final class Mesh {
             return this;
         }
 
+        /** A square bar from one point to another, {@code half} pixels either side of the line. */
+        public Builder bar(float x0, float y0, float z0, float x1, float y1, float z1, float half) {
+            float length = along(x0, y0, z0, x1, y1, z1);
+            box(-half, 0, -half, half, length, half);
+            return pop();
+        }
+
+        /** A round pipe from one point to another, {@code rim} wrapped around it and {@code cap} on its ends. */
+        public Builder tube(float x0, float y0, float z0, float x1, float y1, float z1, float radius, int segments, Tile rim, Tile cap) {
+            float length = along(x0, y0, z0, x1, y1, z1);
+            rotateZ(90).wheel(radius, 0, length, segments, cap, rim);
+            return pop();
+        }
+
+        /** Pushes a transform whose +Y runs from the first point toward the second; returns the distance. */
+        private float along(float x0, float y0, float z0, float x1, float y1, float z1) {
+            float dx = x1 - x0, dy = y1 - y0, dz = z1 - z0;
+            float length = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+            float lean = (float) Math.toDegrees(Math.asin(Math.clamp(-dx / length, -1, 1)));
+            float pitch = (float) Math.toDegrees(Math.atan2(dz, dy));
+            push().translate(x0, y0, z0).rotateX(pitch).rotateZ(lean);
+            return length;
+        }
+
         public Mesh build() {
             float[] data = new float[quads.size() * STRIDE];
             for (int i = 0; i < quads.size(); i++) {
