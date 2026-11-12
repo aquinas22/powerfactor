@@ -25,6 +25,27 @@ Battery banks show actual charge across five segments, with a partial final segm
 blue charging or amber discharging activity. Updates are throttled to changes in readings;
 initial chunk snapshots include the current charge and meter values.
 
+The pumpjack fills its 3×3 foundation. A raked samson post carries an I-beam walking beam; the
+horsehead's arc keeps the bridle plumb, so the carrier bar lifts the polished rod straight out of
+the stuffing box. Behind it the motor's belt turns the gearbox sheave six times for each turn of
+the cranks, whose counterweights swing past the pitman arms. The skid carries the gear reducer,
+motor, wellhead with its flow line, and a control cabinet whose lamp lights while pumping.
+The GUI preview is scaled to the larger machine.
+
+[Pumpjack](previews/pumpjack.png) · [Pumpjack GUI](previews/pumpjack-gui.png)
+
+A formed refinery becomes a small process unit. Railed decks and a caged ladder surround the
+column; a fired heater's burners flicker in their peep windows, and the feed pump and fin-fan
+cooler turn with the unit. Insulated crude, diesel and jet-fuel drums carry gauge glasses that
+follow the tanks. The overhead vapour line runs to the cooler, and the flare burns at the top
+with a blinking beacon. The heater cools down gradually after the refinery stops.
+
+Casings, controller faces, the column, steam plant parts, thermal and workshop machines and the
+building blocks were repainted with shared bevels, bolts, shading and status lights.
+
+[Refinery](previews/refinery.png) · [Refinery from behind](previews/refinery-back.png) ·
+[Pumpjack foundation](previews/pumpjack-foundation.png) · [Texture pass](previews/texture-pass.png)
+
 [Live meter](previews/live-meter.png) · [Disconnected meter](previews/cold-meter.png) ·
 [Empty, partial and full battery banks](previews/battery-charge-levels.png)
 

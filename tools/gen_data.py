@@ -2203,22 +2203,10 @@ def phase_oil():
     tag("item", "c", "buckets/diesel", [pf("diesel_bucket")])
     tag("item", "c", "buckets/jet_fuel", [pf("jet_fuel_bucket")])
 
-    # Pumpjack: concrete pad, wellhead, motor box; the moving parts are drawn by PumpjackRenderer.
-    t = {"pad": pf("block/pumpjack_skid"), "steel": pf("block/pumpjack_wellhead"), "motor": pf("block/pumpjack_motor"),
-         "particle": pf("block/pumpjack_skid")}
+    # Pumpjack: skid, gear reducer, motor, wellhead and cabinet; the moving parts are drawn by PumpjackRenderer.
+    import oil_models
+    oil_models.generate(write, asset, pf)
     box = lambda frm, to, tex: {"from": frm, "to": to, "faces": {d: {"texture": tex} for d in six}}
-    els = [box([-3, 0, -5], [19, 2, 22], "#pad"),
-           box([5, 2, -5], [11, 4, 1], "#steel"), box([6, 4, -4], [10, 6, 0], "#steel"),
-           box([7, 6, -3], [9, 8, -1], "#steel"),
-           box([3, 2, 15], [13, 7, 21], "#motor"), box([2, 2, 7], [14, 3, 9], "#steel"),
-           box([2, 3, 16], [4, 9, 18], "#steel"), box([12, 3, 16], [14, 9, 18], "#steel"),
-           box([0, 2, 4], [2, 3, 13], "#steel"), box([14, 2, 4], [16, 3, 13], "#steel")]
-    # Explicit UVs keep the extended skid within the atlas's 0..16 UV range.
-    for el in els:
-        for f in el["faces"].values():
-            f["uv"] = [0, 0, 16, 16]
-    write(asset("models", "block", "pumpjack.json"), {"parent": "minecraft:block/block", "textures": t, "elements": els,
-        "display": {"gui": {"rotation": [30, 225, 0], "translation": [0, 1, 0], "scale": [0.45, 0.45, 0.45]}}})
     # Refinery multiblock: controller (front-centre of a 3x3 casing base) and a three-block column.
     for formed in (False, True):
         suf = "_formed" if formed else ""
@@ -2238,9 +2226,10 @@ def phase_oil():
         els += octagon(12, 1, 2, "#steel", caps=("up", "down"))
         els += octagon(12, 14, 15, "#steel", caps=("up", "down"))
         # Service ladder and an external return pipe, joining seamlessly between column sections.
-        els += [box([4, 0, 14], [5, 16, 15], "#steel"), box([11, 0, 14], [12, 16, 15], "#steel"),
-                box([14, 0, 7], [15, 16, 9], "#steel")]
-        els += [box([5, y, 14], [11, y + 1, 15], "#steel") for y in (2, 6, 10, 14)]
+        if not formed:  # once formed, RefineryRenderer draws the caged ladder, decks and pipework instead
+            els += [box([4, 0, 14], [5, 16, 15], "#steel"), box([11, 0, 14], [12, 16, 15], "#steel"),
+                    box([14, 0, 7], [15, 16, 9], "#steel")]
+            els += [box([5, y, 14], [11, y + 1, 15], "#steel") for y in (2, 6, 10, 14)]
         write(asset("models", "block", "distillation_column" + suffix + ".json"), {"parent": "minecraft:block/block", "textures": t, "elements": els})
     write(asset("blockstates", "distillation_column.json"), {"variants": {f"formed={f}": {"model": pf("block/distillation_column" + ("_formed" if f == "true" else ""))}
                                                                           for f in ("false", "true")}})
@@ -2293,7 +2282,7 @@ def phase_oil():
         for f, y in HORIZONTAL.items():
             for half in ("lower", "upper"):
                 for running in ("false", "true"):
-                    m = {"model": pf(f"block/{b}" if half == "lower" else f"block/{b}_top")}
+                    m = {"model": pf((f"block/{b}_on" if running == "true" else f"block/{b}") if half == "lower" else f"block/{b}_top")}
                     if y and half == "lower":
                         m["y"] = y
                     variants[f"facing={f},half={half},running={running}"] = m
@@ -2326,7 +2315,8 @@ def phase_oil():
         "gui.powerfactor.config.face_name.top": "Top", "gui.powerfactor.config.face_name.bottom": "Bottom",
         "handbook.powerfactor.oil.title": "Oil",
         "handbook.powerfactor.oil.text":
-            "Crude oil lies in reservoirs deep underground, and sometimes seeps up as tar pits in deserts and badlands. Build a "
+            "Crude oil lies in reservoirs underground, from the deepslate up to just below the surface. Black tar pits mark it in deserts "
+            "and badlands, and now and then a seep breaks the surface in any other biome. Build a "
             "Pumpjack above a 3x3 layer of nine Pumpjack Foundation blocks, over a reservoir (it searches straight down, then up to 8 blocks sideways): the nodding donkey "
             "lifts 25 mB of crude per tick for 60 FE/t until the reservoir runs dry.\n\nPipe the crude to an Oil Refinery, a multiblock: the "
             "controller sits front-centre of a 3x3 base of Refinery Casing, with three Distillation Column blocks stacked on the "
@@ -2336,7 +2326,8 @@ def phase_oil():
             "runs the Diesel Generator; jet fuel is available for future aircraft. Buckets work for all three. "
             "The refinery accepts other mods' fluids tagged c:crude_oil.",
     })
-    # Worldgen: deep reservoirs everywhere in the overworld, tar pits in dry biomes.
+    # Worldgen: reservoirs under every other chunk of the overworld, tar pits common in dry biomes
+    # and an occasional surface seep anywhere else, so there is always something to find on foot.
     oil_lake = {"type": "minecraft:lake", "config": {
         "barrier": {"type": "minecraft:simple_state_provider", "state": {"Name": "minecraft:stone"}},
         "can_place_feature": {"type": "minecraft:true"},
@@ -2345,18 +2336,21 @@ def phase_oil():
         "fluid": {"type": "minecraft:simple_state_provider", "state": {"Name": pf("crude_oil"), "Properties": {"level": "0"}}}}}
     write(data(NS, "worldgen", "configured_feature", "oil_lake.json"), oil_lake)
     write(data(NS, "worldgen", "placed_feature", "oil_reservoir.json"), {"feature": pf("oil_lake"), "placement": [
-        {"type": "minecraft:rarity_filter", "chance": 4}, {"type": "minecraft:in_square"},
-        {"type": "minecraft:height_range", "height": {"type": "minecraft:uniform", "min_inclusive": {"absolute": -48}, "max_inclusive": {"absolute": 20}}},
+        {"type": "minecraft:rarity_filter", "chance": 2}, {"type": "minecraft:in_square"},
+        {"type": "minecraft:height_range", "height": {"type": "minecraft:uniform", "min_inclusive": {"absolute": -48}, "max_inclusive": {"absolute": 40}}},
         {"type": "minecraft:biome"}]})
-    write(data(NS, "worldgen", "placed_feature", "tar_pit.json"), {"feature": pf("oil_lake"), "placement": [
-        {"type": "minecraft:rarity_filter", "chance": 40}, {"type": "minecraft:in_square"},
-        {"type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE_WG"}, {"type": "minecraft:biome"}]})
+    for feature, chance in (("tar_pit", 12), ("oil_seep", 64)):
+        write(data(NS, "worldgen", "placed_feature", feature + ".json"), {"feature": pf("oil_lake"), "placement": [
+            {"type": "minecraft:rarity_filter", "chance": chance}, {"type": "minecraft:in_square"},
+            {"type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE_WG"}, {"type": "minecraft:biome"}]})
     cond = [{"type": pf("worldgen_enabled"), "feature": "oil"}]
     write(data(NS, "neoforge", "biome_modifier", "add_oil_reservoirs.json"), {"type": "neoforge:add_features", "biomes": "#minecraft:is_overworld",
         "features": pf("oil_reservoir"), "step": "lakes", "neoforge:conditions": cond})
     write(data(NS, "neoforge", "biome_modifier", "add_tar_pits.json"), {"type": "neoforge:add_features",
         "biomes": {"type": "neoforge:or", "values": ["#c:is_desert", "#minecraft:is_badlands"]},
         "features": pf("tar_pit"), "step": "lakes", "neoforge:conditions": cond})
+    write(data(NS, "neoforge", "biome_modifier", "add_oil_seeps.json"), {"type": "neoforge:add_features", "biomes": "#minecraft:is_overworld",
+        "features": pf("oil_seep"), "step": "lakes", "neoforge:conditions": cond})
 
 
 def industrial_building():

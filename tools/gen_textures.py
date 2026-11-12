@@ -6237,44 +6237,6 @@ def phase_radio():
 
 # ---------------------------------------------------------------- oil: pumpjack and refinery
 
-def pumpjack_entity():
-    """64x64 sheet for the pumpjack's moving parts (see PumpjackRenderer.createLayer)."""
-    img = Image.new("RGBA", (64, 64), CLEAR)
-
-    def solid(c, edge=None, stripe=None):
-        def paint(face, fw, fh):
-            t = Image.new("RGBA", (fw, fh), hexc(c))
-            for y in range(fh):
-                for x in range(fw):
-                    if (x * 7 + y * 3) % 5 == 0:
-                        t.putpixel((x, y), shade(hexc(c), 0.92))
-            if stripe:
-                for x in range(fw):
-                    t.putpixel((x, fh // 2), hexc(stripe))
-            if edge:
-                face_edges(t, hexc(edge))
-            return t
-        return paint
-
-    def hazard(face, fw, fh):
-        t = Image.new("RGBA", (fw, fh))
-        for y in range(fh):
-            for x in range(fw):
-                t.putpixel((x, y), hexc("f2c230") if ((x + y) // 2) % 2 == 0 else hexc("1e1e1e"))
-        return t
-
-    box_uv(img, 0, 0, 24, 2, 2, solid("c8382c", "7a1c16", "e86a5a"))     # walking beam: red I-beam
-    box_uv(img, 0, 6, 4, 8, 6, hazard)                                     # horse head
-    box_uv(img, 24, 6, 2, 12, 2, solid("7d868e", "3d444b"))                # samson post legs
-    box_uv(img, 0, 22, 6, 6, 2, solid("3a4046", "22272b"))                 # counterweight
-    box_uv(img, 20, 22, 1, 10, 1, solid("aab4bc"))                         # pitman arm / polished rod
-    box_uv(img, 32, 22, 2, 2, 2, solid("2a2e31"))                          # pivot bearing
-    box_uv(img, 40, 22, 1, 16, 1, solid("aab4bc", "58636c"))              # pitman arms
-    box_uv(img, 0, 36, 24, 1, 4, solid("b72f25", "ee7562"))              # I-beam flanges
-    box_uv(img, 0, 44, 12, 2, 2, solid("596670", "aab4bc"))              # pivot axle
-    return img
-
-
 def refinery_column(frame=None):
     """Distillation column skin: insulated steel with tray flanges every 4 px and a teal stripe."""
     img = Image.new("RGBA", (16, 16))
@@ -6294,31 +6256,6 @@ def refinery_column(frame=None):
     for x, y in ((3, 2), (9, 2), (3, 14), (9, 14)):
         img.putpixel((x, y), hexc("d7e1e6"))
         img.putpixel((x, y + 1), hexc("4c5862"))
-    return img
-
-
-def pumpjack_skid():
-    img = painted(941, hexc("56616b"))
-    d = ImageDraw.Draw(img)
-    for y in (0, 1, 14, 15):
-        for x in range(16):
-            img.putpixel((x, y), hexc("e7b738") if ((x + y) // 3) % 2 == 0 else hexc("252a2e"))
-    d.rectangle((2, 3, 13, 12), outline=hexc("283139"))
-    for x, y in ((2, 3), (13, 3), (2, 12), (13, 12)):
-        img.putpixel((x, y), hexc("c0cbd0"))
-    return img
-
-
-def pumpjack_motor():
-    img = painted(942, hexc("40576b"))
-    d = ImageDraw.Draw(img)
-    d.rectangle((1, 1, 14, 14), outline=hexc("7691a1"))
-    for x in range(3, 14, 2):
-        d.line((x, 4, x, 11), fill=hexc("1a2c39"))
-        d.line((x + 1, 4, x + 1, 11), fill=hexc("526f83"))
-    d.rectangle((3, 12, 10, 14), fill=hexc("b4c1c7"))
-    d.line((4, 13, 8, 13), fill=hexc("445562"))
-    rivets(img, CORNERS)
     return img
 
 
@@ -6346,11 +6283,12 @@ def refinery_base():
 
 
 def phase_oil():
-    save(pumpjack_entity(), "entity/pumpjack.png")
+    import oil_art
+    save(oil_art.pumpjack_sheet(), "entity/pumpjack.png")
+    save(oil_art.pumpjack_parts(), "block/pumpjack_parts.png")
+    save(oil_art.refinery_sheet(), "entity/refinery.png")
     save(refinery_column(), "block/refinery_column.png")
     save(refinery_base(), "block/refinery_base.png")
-    save(pumpjack_skid(), "block/pumpjack_skid.png")
-    save(pumpjack_motor(), "block/pumpjack_motor.png")
     save(pumpjack_wellhead(), "block/pumpjack_wellhead.png")
     save(anim([refinery_column(frame) for frame in range(8)]), "block/refinery_column_formed.png")
     write_mcmeta_interp("block/refinery_column_formed.png", 4)
@@ -6869,4 +6807,6 @@ if __name__ == "__main__":
     phase_movement()
     phase_rover()
     phase_machine_polish()
+    import texture_pass
+    texture_pass.phase_texture_pass(save, anim, write_mcmeta, write_mcmeta_interp)
     print("textures written to", os.path.normpath(ROOT))

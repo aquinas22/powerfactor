@@ -7,10 +7,10 @@
       "model": "powerfactor:block/pumpjack"
     },
     "facing=north,half=lower,running=true,formed=false": {
-      "model": "powerfactor:block/pumpjack"
+      "model": "powerfactor:block/pumpjack_on"
     },
     "facing=north,half=lower,running=true,formed=true": {
-      "model": "powerfactor:block/pumpjack"
+      "model": "powerfactor:block/pumpjack_on"
     },
     "facing=north,half=upper,running=false,formed=false": {
       "model": "powerfactor:block/pumpjack_top"
@@ -33,11 +33,11 @@
       "y": 90
     },
     "facing=east,half=lower,running=true,formed=false": {
-      "model": "powerfactor:block/pumpjack",
+      "model": "powerfactor:block/pumpjack_on",
       "y": 90
     },
     "facing=east,half=lower,running=true,formed=true": {
-      "model": "powerfactor:block/pumpjack",
+      "model": "powerfactor:block/pumpjack_on",
       "y": 90
     },
     "facing=east,half=upper,running=false,formed=false": {
@@ -61,11 +61,11 @@
       "y": 180
     },
     "facing=south,half=lower,running=true,formed=false": {
-      "model": "powerfactor:block/pumpjack",
+      "model": "powerfactor:block/pumpjack_on",
       "y": 180
     },
     "facing=south,half=lower,running=true,formed=true": {
-      "model": "powerfactor:block/pumpjack",
+      "model": "powerfactor:block/pumpjack_on",
       "y": 180
     },
     "facing=south,half=upper,running=false,formed=false": {
@@ -89,11 +89,11 @@
       "y": 270
     },
     "facing=west,half=lower,running=true,formed=false": {
-      "model": "powerfactor:block/pumpjack",
+      "model": "powerfactor:block/pumpjack_on",
       "y": 270
     },
     "facing=west,half=lower,running=true,formed=true": {
-      "model": "powerfactor:block/pumpjack",
+      "model": "powerfactor:block/pumpjack_on",
       "y": 270
     },
     "facing=west,half=upper,running=false,formed=false": {
